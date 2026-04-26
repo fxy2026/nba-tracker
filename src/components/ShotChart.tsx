@@ -32,8 +32,10 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
     return true;
   });
 
-  // Court dimensions: landscape half-court, basket on the left
-  // API: x = left-right (0-100), y = distance from basket (0-100)
+  // Landscape half-court, basket on the left
+  // API coords: x = court width (0-100), y = court length full-court (0-100)
+  // y<50 = one basket side, y>50 = other basket side
+  // We fold all shots onto one half-court by mirroring y>50
   const courtWidth = 500;
   const courtHeight = 340;
 
@@ -107,11 +109,15 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
 
           {/* Shot dots */}
           {filtered.map((shot, i) => {
-            // Convert API coordinates to landscape court SVG
-            // API: x = left-right (0-100), y = distance from basket (0-100)
-            // SVG: basket at left (x=40), court extends right; y maps top-to-bottom
-            const svgX = 40 + (shot.y / 100) * 440;
-            const svgY = 20 + (shot.x / 100) * 300;
+            // Fold full-court y onto half-court:
+            // y<50: basket at y=0, distance = y (0-50)
+            // y>50: basket at y=100, distance = 100-y (0-50)
+            // Also mirror x for y>50 side so both sides overlay correctly
+            const halfY = shot.y <= 50 ? shot.y : 100 - shot.y;
+            const halfX = shot.y <= 50 ? shot.x : 100 - shot.x;
+            // Map to SVG: basket at left (svgX=40), half-court spans 0-50 in data
+            const svgX = 40 + (halfY / 50) * 440;
+            const svgY = 20 + (halfX / 100) * 300;
 
             const isMade = shot.shotResult === "Made";
             const is3pt = shot.actionType === "3pt";
