@@ -39,8 +39,13 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const twosMade = twos.filter((s) => s.shotResult === "Made");
 
   const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
-  const courtWidth = 500;
-  const courtHeight = 340;
+  const courtWidth = 370;
+  const courtHeight = 700;
+  const pad = 20;
+  const cw = courtWidth - pad * 2;
+  const ch = courtHeight - pad * 2;
+  const ccx = pad + cw / 2;
+  const midY = pad + ch / 2;
 
   const info = playerInfo;
 
@@ -150,23 +155,28 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="px-5 pb-3">
               <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full">
                 <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#141414" rx="8" />
-                {/* Landscape half-court: basket on left */}
-                <line x1="40" y1="20" x2="40" y2="320" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="40" y1="20" x2="480" y2="20" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="40" y1="320" x2="480" y2="320" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="480" y1="20" x2="480" y2="320" stroke="#2a2a2a" strokeWidth="1" />
-                <rect x="40" y="100" width="110" height="140" fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-                <circle cx="150" cy="170" r="55" fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
-                <circle cx="55" cy="170" r="7" fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                <line x1="47" y1="150" x2="47" y2="190" stroke="#444" strokeWidth="2" />
-                <path d="M 40 145 A 25 25 0 0 1 40 195" fill="none" stroke="#2a2a2a" strokeWidth="1" />
-                <path d="M 40 50 L 100 50 Q 310 50 310 170 Q 310 290 100 290 L 40 290" fill="none" stroke="#333" strokeWidth="1.5" />
+                {/* Vertical full-court */}
+                <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+                <line x1={pad} y1={midY} x2={pad + cw} y2={midY} stroke="#2a2a2a" strokeWidth="1.5" />
+                <circle cx={ccx} cy={midY} r={40} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+                {/* Top half */}
+                <rect x={ccx - 60} y={pad} width={120} height={110} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+                <circle cx={ccx} cy={pad + 110} r={40} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+                <circle cx={ccx} cy={pad + 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+                <line x1={ccx - 20} y1={pad + 17} x2={ccx + 20} y2={pad + 17} stroke="#444" strokeWidth="2" />
+                <path d={`M ${ccx - 20} ${pad} A 22 22 0 0 0 ${ccx + 20} ${pad}`} fill="none" stroke="#2a2a2a" strokeWidth="1" />
+                <path d={`M ${pad + 25} ${pad} L ${pad + 25} ${pad + 80} Q ${pad + 25} ${pad + 230} ${ccx} ${pad + 230} Q ${pad + cw - 25} ${pad + 230} ${pad + cw - 25} ${pad + 80} L ${pad + cw - 25} ${pad}`} fill="none" stroke="#333" strokeWidth="1.5" />
+                {/* Bottom half */}
+                <rect x={ccx - 60} y={pad + ch - 110} width={120} height={110} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+                <circle cx={ccx} cy={pad + ch - 110} r={40} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+                <circle cx={ccx} cy={pad + ch - 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+                <line x1={ccx - 20} y1={pad + ch - 17} x2={ccx + 20} y2={pad + ch - 17} stroke="#444" strokeWidth="2" />
+                <path d={`M ${ccx - 20} ${pad + ch} A 22 22 0 0 1 ${ccx + 20} ${pad + ch}`} fill="none" stroke="#2a2a2a" strokeWidth="1" />
+                <path d={`M ${pad + 25} ${pad + ch} L ${pad + 25} ${pad + ch - 80} Q ${pad + 25} ${pad + ch - 230} ${ccx} ${pad + ch - 230} Q ${pad + cw - 25} ${pad + ch - 230} ${pad + cw - 25} ${pad + ch - 80} L ${pad + cw - 25} ${pad + ch}`} fill="none" stroke="#333" strokeWidth="1.5" />
 
                 {playerShots.map((shot, i) => {
-                  const halfY = shot.y <= 50 ? shot.y : 100 - shot.y;
-                  const halfX = shot.y <= 50 ? shot.x : 100 - shot.x;
-                  const svgX = 40 + (halfY / 50) * 440;
-                  const svgY = 20 + (halfX / 100) * 300;
+                  const svgX = pad + (shot.x / 100) * cw;
+                  const svgY = pad + (shot.y / 100) * ch;
                   const isMade = shot.shotResult === "Made";
                   const is3pt = shot.actionType === "3pt";
                   return isMade ? (

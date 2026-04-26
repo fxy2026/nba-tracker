@@ -32,12 +32,18 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
     return true;
   });
 
-  // Landscape half-court, basket on the left
-  // API coords: x = court width (0-100), y = court length full-court (0-100)
-  // y<50 = one basket side, y>50 = other basket side
-  // We fold all shots onto one half-court by mirroring y>50
-  const courtWidth = 500;
-  const courtHeight = 340;
+  // Vertical full-court layout matching API coordinate system
+  // API: x = horizontal (0-100, left to right), y = vertical (0-100, top to bottom, full court)
+  // Top basket at y≈0, bottom basket at y≈100
+  const courtWidth = 370;
+  const courtHeight = 700;
+
+  // SVG drawing area with padding
+  const pad = 20;
+  const cw = courtWidth - pad * 2;  // 330 usable width
+  const ch = courtHeight - pad * 2; // 660 usable height
+  const cx = pad + cw / 2;          // center x = 185
+  const midY = pad + ch / 2;        // center y = 350
 
   return (
     <div>
@@ -75,49 +81,52 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
         </span>
       </div>
 
-      {/* Court SVG */}
+      {/* Court SVG - vertical full court */}
       <div className="bg-bg-card rounded-xl border border-border p-2 overflow-hidden">
-        <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full" style={{ maxHeight: 400 }}>
+        <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full" style={{ maxHeight: 600 }}>
           {/* Court background */}
           <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#1a1a1a" rx="8" />
 
-          {/* Landscape half-court: basket on left */}
-          {/* Baseline (left) */}
-          <line x1="40" y1="20" x2="40" y2="320" stroke="#333" strokeWidth="1.5" />
-          {/* Sidelines (top & bottom) */}
-          <line x1="40" y1="20" x2="480" y2="20" stroke="#333" strokeWidth="1.5" />
-          <line x1="40" y1="320" x2="480" y2="320" stroke="#333" strokeWidth="1.5" />
-          {/* Half court line (right) */}
-          <line x1="480" y1="20" x2="480" y2="320" stroke="#333" strokeWidth="1" />
+          {/* Court outline */}
+          <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="#333" strokeWidth="1.5" />
+          {/* Half court line */}
+          <line x1={pad} y1={midY} x2={pad + cw} y2={midY} stroke="#333" strokeWidth="1.5" />
+          {/* Center circle */}
+          <circle cx={cx} cy={midY} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
 
-          {/* Paint / key */}
-          <rect x="40" y="100" width="110" height="140" fill="none" stroke="#333" strokeWidth="1.5" />
-
+          {/* === Top half (basket at top) === */}
+          {/* Paint */}
+          <rect x={cx - 60} y={pad} width={120} height={110} fill="none" stroke="#333" strokeWidth="1.5" />
           {/* Free throw circle */}
-          <circle cx="150" cy="170" r="55" fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
-
+          <circle cx={cx} cy={pad + 110} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
           {/* Basket */}
-          <circle cx="55" cy="170" r="7" fill="none" stroke="#928CEE" strokeWidth="1.5" />
+          <circle cx={cx} cy={pad + 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
           {/* Backboard */}
-          <line x1="47" y1="150" x2="47" y2="190" stroke="#555" strokeWidth="2" />
-
+          <line x1={cx - 20} y1={pad + 17} x2={cx + 20} y2={pad + 17} stroke="#555" strokeWidth="2" />
           {/* Restricted area */}
-          <path d="M 40 145 A 25 25 0 0 1 40 195" fill="none" stroke="#333" strokeWidth="1" />
-
+          <path d={`M ${cx - 20} ${pad} A 22 22 0 0 0 ${cx + 20} ${pad}`} fill="none" stroke="#333" strokeWidth="1" />
           {/* 3-point line */}
-          <path d="M 40 50 L 100 50 Q 310 50 310 170 Q 310 290 100 290 L 40 290" fill="none" stroke="#444" strokeWidth="1.5" />
+          <path d={`M ${pad + 25} ${pad} L ${pad + 25} ${pad + 80} Q ${pad + 25} ${pad + 230} ${cx} ${pad + 230} Q ${pad + cw - 25} ${pad + 230} ${pad + cw - 25} ${pad + 80} L ${pad + cw - 25} ${pad}`} fill="none" stroke="#444" strokeWidth="1.5" />
+
+          {/* === Bottom half (basket at bottom) === */}
+          {/* Paint */}
+          <rect x={cx - 60} y={pad + ch - 110} width={120} height={110} fill="none" stroke="#333" strokeWidth="1.5" />
+          {/* Free throw circle */}
+          <circle cx={cx} cy={pad + ch - 110} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+          {/* Basket */}
+          <circle cx={cx} cy={pad + ch - 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+          {/* Backboard */}
+          <line x1={cx - 20} y1={pad + ch - 17} x2={cx + 20} y2={pad + ch - 17} stroke="#555" strokeWidth="2" />
+          {/* Restricted area */}
+          <path d={`M ${cx - 20} ${pad + ch} A 22 22 0 0 1 ${cx + 20} ${pad + ch}`} fill="none" stroke="#333" strokeWidth="1" />
+          {/* 3-point line */}
+          <path d={`M ${pad + 25} ${pad + ch} L ${pad + 25} ${pad + ch - 80} Q ${pad + 25} ${pad + ch - 230} ${cx} ${pad + ch - 230} Q ${pad + cw - 25} ${pad + ch - 230} ${pad + cw - 25} ${pad + ch - 80} L ${pad + cw - 25} ${pad + ch}`} fill="none" stroke="#444" strokeWidth="1.5" />
 
           {/* Shot dots */}
           {filtered.map((shot, i) => {
-            // Fold full-court y onto half-court:
-            // y<50: basket at y=0, distance = y (0-50)
-            // y>50: basket at y=100, distance = 100-y (0-50)
-            // Also mirror x for y>50 side so both sides overlay correctly
-            const halfY = shot.y <= 50 ? shot.y : 100 - shot.y;
-            const halfX = shot.y <= 50 ? shot.x : 100 - shot.x;
-            // Map to SVG: basket at left (svgX=40), half-court spans 0-50 in data
-            const svgX = 40 + (halfY / 50) * 440;
-            const svgY = 20 + (halfX / 100) * 300;
+            // Direct mapping: API x,y (0-100) -> SVG coordinates
+            const svgX = pad + (shot.x / 100) * cw;
+            const svgY = pad + (shot.y / 100) * ch;
 
             const isMade = shot.shotResult === "Made";
             const is3pt = shot.actionType === "3pt";
