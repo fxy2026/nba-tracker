@@ -82,7 +82,7 @@ function PlayerLeaders() {
   const [rows, setRows] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [seasonType, setSeasonType] = useState("Regular+Season");
+  const [seasonType, setSeasonType] = useState("Regular Season");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,7 +137,7 @@ function PlayerLeaders() {
         </div>
         <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)}
           className="bg-bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary">
-          <option value="Regular+Season">Regular Season</option>
+          <option value="Regular Season">Regular Season</option>
           <option value="Playoffs">Playoffs</option>
         </select>
       </div>
