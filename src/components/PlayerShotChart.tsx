@@ -38,6 +38,15 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const twos = playerShots.filter((s) => s.actionType === "2pt");
   const twosMade = twos.filter((s) => s.shotResult === "Made");
 
+  // Per-quarter scoring from field goals
+  const periods = [...new Set(playerShots.map((s) => s.period))].sort((a, b) => a - b);
+  const quarterScoring = periods.map((period) => {
+    const qs = playerShots.filter((s) => s.period === period && s.shotResult === "Made");
+    const pts2 = qs.filter((s) => s.actionType === "2pt").length * 2;
+    const pts3 = qs.filter((s) => s.actionType === "3pt").length * 3;
+    return { period, pts: pts2 + pts3, fg2: qs.filter((s) => s.actionType === "2pt").length, fg3: qs.filter((s) => s.actionType === "3pt").length };
+  });
+
   const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
   const courtWidth = 370;
   const courtHeight = 700;
@@ -161,6 +170,35 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                 <p className="text-xs text-accent">{threes.length > 0 ? ((threesMade.length / threes.length) * 100).toFixed(1) : "0"}%</p>
               </div>
             </div>
+
+            {/* Per-quarter scoring */}
+            {quarterScoring.length > 0 && (
+              <div className="px-5 pb-3">
+                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">得分分布（投篮）</h4>
+                <div className="flex gap-2">
+                  {quarterScoring.map((q) => (
+                    <div key={q.period} className="flex-1 bg-bg-card rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-text-secondary">
+                        {q.period <= 4 ? `Q${q.period}` : `OT${q.period - 4}`}
+                      </p>
+                      <p className="text-lg font-bold text-accent">{q.pts}</p>
+                      <p className="text-[10px] text-text-secondary">
+                        {q.fg2 > 0 && <span>{q.fg2}×2</span>}
+                        {q.fg2 > 0 && q.fg3 > 0 && <span> </span>}
+                        {q.fg3 > 0 && <span>{q.fg3}×3</span>}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="flex-1 bg-accent/10 rounded-lg p-2 text-center border border-accent/20">
+                    <p className="text-[10px] text-text-secondary">Total</p>
+                    <p className="text-lg font-bold text-accent">
+                      {quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
+                    </p>
+                    <p className="text-[10px] text-text-secondary">FG pts</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Court */}
             <div className="px-5 pb-3">

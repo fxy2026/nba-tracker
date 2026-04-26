@@ -55,3 +55,27 @@ body {
 table {
   border-collapse: collapse;
 }
+
+/* Scroll performance: GPU-accelerate scrollable containers */
+.overflow-x-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Promote sticky navbar to own compositing layer to avoid repaint on scroll */
+nav.sticky {
+  will-change: transform;
+}
+
+/* Card containment for layout/paint isolation */
+.game-card {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
+}
+
+/* Schedule section containment */
+.schedule-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}

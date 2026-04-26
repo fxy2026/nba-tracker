@@ -29,7 +29,7 @@ export default function RecentHighlights({ games }: Props) {
             <Link
               key={game.gameId}
               href={`/game/${game.gameId}`}
-              className="bg-bg-card rounded-xl border border-border hover:border-accent/40 transition-all p-3 group"
+              className="game-card bg-bg-card rounded-xl border border-border hover:border-accent/40 transition-colors p-3 group"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-text-secondary">{dateStr}</span>

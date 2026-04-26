@@ -19,7 +19,7 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
 
   return (
     <Link href={`/game/${game.gameId}`} className="block group">
-      <div className="bg-bg-card rounded-xl border border-border hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/5 p-4">
+      <div className="game-card bg-bg-card rounded-xl border border-border hover:border-accent/50 transition-colors p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">

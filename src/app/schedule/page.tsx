@@ -41,7 +41,7 @@ export default async function SchedulePage() {
       {recentDates.length > 0 ? (
         <div className="space-y-8">
           {recentDates.map(({ dateStr, displayDate, games }) => (
-            <div key={dateStr}>
+            <div key={dateStr} className="schedule-section">
               <h2 className="text-sm font-medium text-text-secondary mb-3 sticky top-16 bg-bg-primary py-2 z-10">
                 {displayDate}
                 <span className="ml-2 text-xs text-text-secondary/60">

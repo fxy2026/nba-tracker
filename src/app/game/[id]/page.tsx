@@ -20,7 +20,7 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
     const s = p.statistics;
     const mins = parseMinutes(s.minutes);
     return (
-      <tr key={p.personId} className="border-b border-border/30 hover:bg-bg-hover/50 transition-colors">
+      <tr key={p.personId} className="border-b border-border/30 hover:bg-bg-hover/50">
         <td className="py-2.5 px-2 sticky left-0 bg-bg-card z-10">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-text-secondary w-5 text-right">#{p.jerseyNum}</span>
