@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, Search } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3 } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -13,6 +13,7 @@ export default function Navbar() {
   const links = [
     { href: "/", label: "Today", icon: Trophy },
     { href: "/schedule", label: "Schedule", icon: Calendar },
+    { href: "/stats", label: "Stats", icon: BarChart3 },
   ];
 
   return (
