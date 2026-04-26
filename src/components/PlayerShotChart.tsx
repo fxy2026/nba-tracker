@@ -175,8 +175,8 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                 <path d={`M ${pad + 25} ${pad + ch} L ${pad + 25} ${pad + ch - 80} Q ${pad + 25} ${pad + ch - 230} ${ccx} ${pad + ch - 230} Q ${pad + cw - 25} ${pad + ch - 230} ${pad + cw - 25} ${pad + ch - 80} L ${pad + cw - 25} ${pad + ch}`} fill="none" stroke="#333" strokeWidth="1.5" />
 
                 {playerShots.map((shot, i) => {
-                  const svgX = pad + (shot.x / 100) * cw;
-                  const svgY = pad + (shot.y / 100) * ch;
+                  const svgX = pad + (shot.y / 100) * cw;
+                  const svgY = pad + (shot.x / 100) * ch;
                   const isMade = shot.shotResult === "Made";
                   const is3pt = shot.actionType === "3pt";
                   return isMade ? (

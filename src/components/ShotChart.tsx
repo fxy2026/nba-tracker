@@ -124,9 +124,9 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
 
           {/* Shot dots */}
           {filtered.map((shot, i) => {
-            // Direct mapping: API x,y (0-100) -> SVG coordinates
-            const svgX = pad + (shot.x / 100) * cw;
-            const svgY = pad + (shot.y / 100) * ch;
+            // API x maps to vertical (court length), y maps to horizontal (court width)
+            const svgX = pad + (shot.y / 100) * cw;
+            const svgY = pad + (shot.x / 100) * ch;
 
             const isMade = shot.shotResult === "Made";
             const is3pt = shot.actionType === "3pt";
