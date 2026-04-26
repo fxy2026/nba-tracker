@@ -210,31 +210,10 @@ function TeamStandings() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/games?date=standings");
-        // Fallback: compute from schedule
-        const schedRes = await fetch("https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json", {
-          headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" },
-        });
-        if (!schedRes.ok) throw new Error("Failed");
-        const data = await schedRes.json();
-        const dates = data.leagueSchedule?.gameDates || [];
-        const teamMap: Record<string, TeamRecord> = {};
-        for (const gd of dates) {
-          for (const g of gd.games) {
-            if (g.gameStatus !== 3) continue; // only finished games
-            const h = g.homeTeam;
-            const a = g.awayTeam;
-            if (!teamMap[h.teamTricode]) teamMap[h.teamTricode] = { tricode: h.teamTricode, teamId: h.teamId, teamName: h.teamName, teamCity: h.teamCity, wins: 0, losses: 0 };
-            if (!teamMap[a.teamTricode]) teamMap[a.teamTricode] = { tricode: a.teamTricode, teamId: a.teamId, teamName: a.teamName, teamCity: a.teamCity, wins: 0, losses: 0 };
-            if (h.score > a.score) { teamMap[h.teamTricode].wins++; teamMap[a.teamTricode].losses++; }
-            else { teamMap[a.teamTricode].wins++; teamMap[h.teamTricode].losses++; }
-          }
-        }
-        setTeams(Object.values(teamMap).sort((a, b) => {
-          const wa = a.wins / (a.wins + a.losses || 1);
-          const wb = b.wins / (b.wins + b.losses || 1);
-          return wb - wa;
-        }));
+        const res = await fetch("/api/standings");
+        if (!res.ok) throw new Error("Failed");
+        const json = await res.json();
+        setTeams(json.data || []);
       } catch { setTeams([]); }
       setLoading(false);
     })();
