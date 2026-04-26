@@ -39,8 +39,8 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const twosMade = twos.filter((s) => s.shotResult === "Made");
 
   const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
-  const courtWidth = 470;
-  const courtHeight = 450;
+  const courtWidth = 500;
+  const courtHeight = 340;
 
   const info = playerInfo;
 
@@ -150,20 +150,21 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="px-5 pb-3">
               <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full">
                 <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#141414" rx="8" />
-                <line x1="30" y1="420" x2="440" y2="420" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="30" y1="20" x2="30" y2="420" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="440" y1="20" x2="440" y2="420" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1="30" y1="20" x2="440" y2="20" stroke="#2a2a2a" strokeWidth="1" />
-                <rect x="155" y="340" width="160" height="80" fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-                <circle cx="235" cy="340" r="55" fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
-                <circle cx="235" cy="405" r="7" fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                <line x1="213" y1="413" x2="257" y2="413" stroke="#444" strokeWidth="2" />
-                <path d="M 210 420 A 25 25 0 0 1 260 420" fill="none" stroke="#2a2a2a" strokeWidth="1" />
-                <path d="M 60 420 L 60 310 Q 60 140 235 140 Q 410 140 410 310 L 410 420" fill="none" stroke="#333" strokeWidth="1.5" />
+                {/* Landscape half-court: basket on left */}
+                <line x1="40" y1="20" x2="40" y2="320" stroke="#2a2a2a" strokeWidth="1.5" />
+                <line x1="40" y1="20" x2="480" y2="20" stroke="#2a2a2a" strokeWidth="1.5" />
+                <line x1="40" y1="320" x2="480" y2="320" stroke="#2a2a2a" strokeWidth="1.5" />
+                <line x1="480" y1="20" x2="480" y2="320" stroke="#2a2a2a" strokeWidth="1" />
+                <rect x="40" y="100" width="110" height="140" fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+                <circle cx="150" cy="170" r="55" fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+                <circle cx="55" cy="170" r="7" fill="none" stroke="#928CEE" strokeWidth="1.5" />
+                <line x1="47" y1="150" x2="47" y2="190" stroke="#444" strokeWidth="2" />
+                <path d="M 40 145 A 25 25 0 0 1 40 195" fill="none" stroke="#2a2a2a" strokeWidth="1" />
+                <path d="M 40 50 L 100 50 Q 310 50 310 170 Q 310 290 100 290 L 40 290" fill="none" stroke="#333" strokeWidth="1.5" />
 
                 {playerShots.map((shot, i) => {
-                  const svgX = 30 + (shot.x / 100) * 410;
-                  const svgY = 420 - (shot.y / 100) * 400;
+                  const svgX = 40 + (shot.y / 100) * 440;
+                  const svgY = 20 + (shot.x / 100) * 300;
                   const isMade = shot.shotResult === "Made";
                   const is3pt = shot.actionType === "3pt";
                   return isMade ? (
