@@ -29,22 +29,24 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const playerShots = shots.filter((s) => s.personId === playerId);
   const hasShots = playerShots.length > 0;
 
-  const made = playerShots.filter((s) => s.shotResult === "Made");
-  const fg = hasShots ? `${made.length}/${playerShots.length}` : "";
-  const pct = hasShots ? ((made.length / playerShots.length) * 100).toFixed(1) : "0";
+  const fieldGoalShots = playerShots.filter((s) => s.actionType === "2pt" || s.actionType === "3pt");
+  const made = fieldGoalShots.filter((s) => s.shotResult === "Made");
 
   const threes = playerShots.filter((s) => s.actionType === "3pt");
   const threesMade = threes.filter((s) => s.shotResult === "Made");
   const twos = playerShots.filter((s) => s.actionType === "2pt");
   const twosMade = twos.filter((s) => s.shotResult === "Made");
 
-  // Per-quarter scoring from field goals
+  // Per-quarter scoring (FG + FT)
+  const fts = playerShots.filter((s) => s.actionType === "freethrow");
+  const ftsMade = fts.filter((s) => s.shotResult === "Made");
   const periods = [...new Set(playerShots.map((s) => s.period))].sort((a, b) => a - b);
   const quarterScoring = periods.map((period) => {
     const qs = playerShots.filter((s) => s.period === period && s.shotResult === "Made");
-    const pts2 = qs.filter((s) => s.actionType === "2pt").length * 2;
-    const pts3 = qs.filter((s) => s.actionType === "3pt").length * 3;
-    return { period, pts: pts2 + pts3, fg2: qs.filter((s) => s.actionType === "2pt").length, fg3: qs.filter((s) => s.actionType === "3pt").length };
+    const fg2 = qs.filter((s) => s.actionType === "2pt").length;
+    const fg3 = qs.filter((s) => s.actionType === "3pt").length;
+    const ft = qs.filter((s) => s.actionType === "freethrow").length;
+    return { period, pts: fg2 * 2 + fg3 * 3 + ft, fg2, fg3, ft };
   });
 
   const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
@@ -153,11 +155,11 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="px-5 pt-2 pb-1">
               <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">This Game</h4>
             </div>
-            <div className="grid grid-cols-3 gap-2 px-5 pb-3">
+            <div className="grid grid-cols-4 gap-2 px-5 pb-3">
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">Total FG</p>
-                <p className="text-lg font-bold">{made.length}/{playerShots.length}</p>
-                <p className="text-xs text-accent">{pct}%</p>
+                <p className="text-lg font-bold">{made.length}/{fieldGoalShots.length}</p>
+                <p className="text-xs text-accent">{fieldGoalShots.length > 0 ? ((made.length / fieldGoalShots.length) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">2PT</p>
@@ -169,12 +171,17 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                 <p className="text-lg font-bold">{threesMade.length}/{threes.length}</p>
                 <p className="text-xs text-accent">{threes.length > 0 ? ((threesMade.length / threes.length) * 100).toFixed(1) : "0"}%</p>
               </div>
+              <div className="bg-bg-card rounded-lg p-2.5 text-center">
+                <p className="text-[10px] text-text-secondary">FT</p>
+                <p className="text-lg font-bold">{ftsMade.length}/{fts.length}</p>
+                <p className="text-xs text-accent">{fts.length > 0 ? ((ftsMade.length / fts.length) * 100).toFixed(1) : "0"}%</p>
+              </div>
             </div>
 
             {/* Per-quarter scoring */}
             {quarterScoring.length > 0 && (
               <div className="px-5 pb-3">
-                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">得分分布（投篮）</h4>
+                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">每节得分</h4>
                 <div className="flex gap-2">
                   {quarterScoring.map((q) => (
                     <div key={q.period} className="flex-1 bg-bg-card rounded-lg p-2 text-center">
@@ -182,19 +189,21 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                         {q.period <= 4 ? `Q${q.period}` : `OT${q.period - 4}`}
                       </p>
                       <p className="text-lg font-bold text-accent">{q.pts}</p>
-                      <p className="text-[10px] text-text-secondary">
+                      <div className="text-[10px] text-text-secondary leading-tight">
                         {q.fg2 > 0 && <span>{q.fg2}×2</span>}
-                        {q.fg2 > 0 && q.fg3 > 0 && <span> </span>}
+                        {q.fg2 > 0 && (q.fg3 > 0 || q.ft > 0) && <span> </span>}
                         {q.fg3 > 0 && <span>{q.fg3}×3</span>}
-                      </p>
+                        {q.fg3 > 0 && q.ft > 0 && <span> </span>}
+                        {q.ft > 0 && <span>{q.ft}FT</span>}
+                      </div>
                     </div>
                   ))}
                   <div className="flex-1 bg-accent/10 rounded-lg p-2 text-center border border-accent/20">
-                    <p className="text-[10px] text-text-secondary">Total</p>
+                    <p className="text-[10px] text-text-secondary">合计</p>
                     <p className="text-lg font-bold text-accent">
                       {quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
                     </p>
-                    <p className="text-[10px] text-text-secondary">FG pts</p>
+                    <p className="text-[10px] text-text-secondary">pts</p>
                   </div>
                 </div>
               </div>
@@ -244,7 +253,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                   </>);
                 })()}
 
-                {playerShots.map((shot, i) => {
+                {fieldGoalShots.map((shot, i) => {
                   const svgX = toSvgX(shot.y);
                   const svgY = toSvgY(shot.x);
                   const isMade = shot.shotResult === "Made";

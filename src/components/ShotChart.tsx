@@ -15,6 +15,7 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
   const filtered = shots.filter((s) => {
+    if (s.actionType === "freethrow") return false; // FTs have no court coordinates
     if (filter === "home" && s.teamTricode !== homeTricode) return false;
     if (filter === "away" && s.teamTricode !== awayTricode) return false;
     if (selectedPlayer && s.personId !== selectedPlayer) return false;
