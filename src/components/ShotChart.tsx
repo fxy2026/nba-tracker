@@ -33,17 +33,36 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
   });
 
   // Vertical full-court layout matching API coordinate system
-  // API: x = horizontal (0-100, left to right), y = vertical (0-100, top to bottom, full court)
-  // Top basket at y≈0, bottom basket at y≈100
+  // API: x = court length 0-100 (maps to 94ft), y = court width 0-100 (maps to 50ft)
+  // Baskets at (x≈5.59, y=50) and (x≈94.41, y=50)
+  // SVG: x→horizontal (y data), y→vertical (x data)
   const courtWidth = 370;
   const courtHeight = 700;
 
-  // SVG drawing area with padding
   const pad = 20;
   const cw = courtWidth - pad * 2;  // 330 usable width
   const ch = courtHeight - pad * 2; // 660 usable height
-  const cx = pad + cw / 2;          // center x = 185
-  const midY = pad + ch / 2;        // center y = 350
+  const svgCx = pad + cw / 2;       // court center x in SVG
+  const svgMidY = pad + ch / 2;     // court center y in SVG
+
+  // Helper: convert API percentage coords to SVG coords
+  // courtPctX (0-100) along 94ft length -> SVG Y axis
+  // courtPctY (0-100) along 50ft width  -> SVG X axis
+  const toSvgX = (pctY: number) => pad + (pctY / 100) * cw;
+  const toSvgY = (pctX: number) => pad + (pctX / 100) * ch;
+
+  // Key positions in API percentage coordinates
+  const basketPctX = 5.59;           // basket center from baseline
+  const ftLinePctX = 19.15;          // free throw line = 19ft from baseline / 94 * 100
+  const paintWidthPct = 32;          // paint is 16ft wide / 50ft * 100
+  const ftCircleR = (6 / 50) * cw;  // 6ft radius in SVG
+  const restrictedR = (4 / 50) * cw; // 4ft restricted arc
+  const centerCircleR = (6 / 50) * cw;
+  const rimR = 5;
+
+  // 3-point line: 23.75ft from basket center, corner 3 at 22ft, corner extends 14ft from baseline
+  const corner3PctY = 6.3;          // 3.15ft from sideline / 50 * 100
+  const corner3ExtPctX = 14.89;     // 14ft from baseline / 94 * 100
 
   return (
     <div>
@@ -90,43 +109,56 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
           {/* Court outline */}
           <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="#333" strokeWidth="1.5" />
           {/* Half court line */}
-          <line x1={pad} y1={midY} x2={pad + cw} y2={midY} stroke="#333" strokeWidth="1.5" />
+          <line x1={pad} y1={svgMidY} x2={pad + cw} y2={svgMidY} stroke="#333" strokeWidth="1.5" />
           {/* Center circle */}
-          <circle cx={cx} cy={midY} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+          <circle cx={svgCx} cy={svgMidY} r={centerCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
 
-          {/* === Top half (basket at top) === */}
-          {/* Paint */}
-          <rect x={cx - 60} y={pad} width={120} height={110} fill="none" stroke="#333" strokeWidth="1.5" />
-          {/* Free throw circle */}
-          <circle cx={cx} cy={pad + 110} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
-          {/* Basket */}
-          <circle cx={cx} cy={pad + 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-          {/* Backboard */}
-          <line x1={cx - 20} y1={pad + 17} x2={cx + 20} y2={pad + 17} stroke="#555" strokeWidth="2" />
-          {/* Restricted area */}
-          <path d={`M ${cx - 20} ${pad} A 22 22 0 0 0 ${cx + 20} ${pad}`} fill="none" stroke="#333" strokeWidth="1" />
-          {/* 3-point line */}
-          <path d={`M ${pad + 25} ${pad} L ${pad + 25} ${pad + 80} Q ${pad + 25} ${pad + 230} ${cx} ${pad + 230} Q ${pad + cw - 25} ${pad + 230} ${pad + cw - 25} ${pad + 80} L ${pad + cw - 25} ${pad}`} fill="none" stroke="#444" strokeWidth="1.5" />
+          {/* === Top half (basket near top) === */}
+          {(() => {
+            const basketY = toSvgY(basketPctX);
+            const ftLineY = toSvgY(ftLinePctX);
+            const paintHalfW = (paintWidthPct / 100) * cw / 2;
+            const corner3X1 = toSvgX(corner3PctY);
+            const corner3X2 = toSvgX(100 - corner3PctY);
+            const corner3Y = toSvgY(corner3ExtPctX);
+            const arcPeakY = toSvgY(basketPctX + 25.26); // 23.75ft/94*100 = 25.26%
+            return (
+              <>
+                <rect x={svgCx - paintHalfW} y={pad} width={paintHalfW * 2} height={ftLineY - pad} fill="none" stroke="#333" strokeWidth="1.5" />
+                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+                <circle cx={svgCx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+                <line x1={svgCx - 15} y1={basketY - 5} x2={svgCx + 15} y2={basketY - 5} stroke="#555" strokeWidth="2" />
+                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="#333" strokeWidth="1" />
+                <path d={`M ${corner3X1} ${pad} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad}`} fill="none" stroke="#444" strokeWidth="1.5" />
+              </>
+            );
+          })()}
 
-          {/* === Bottom half (basket at bottom) === */}
-          {/* Paint */}
-          <rect x={cx - 60} y={pad + ch - 110} width={120} height={110} fill="none" stroke="#333" strokeWidth="1.5" />
-          {/* Free throw circle */}
-          <circle cx={cx} cy={pad + ch - 110} r={40} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
-          {/* Basket */}
-          <circle cx={cx} cy={pad + ch - 25} r={7} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-          {/* Backboard */}
-          <line x1={cx - 20} y1={pad + ch - 17} x2={cx + 20} y2={pad + ch - 17} stroke="#555" strokeWidth="2" />
-          {/* Restricted area */}
-          <path d={`M ${cx - 20} ${pad + ch} A 22 22 0 0 1 ${cx + 20} ${pad + ch}`} fill="none" stroke="#333" strokeWidth="1" />
-          {/* 3-point line */}
-          <path d={`M ${pad + 25} ${pad + ch} L ${pad + 25} ${pad + ch - 80} Q ${pad + 25} ${pad + ch - 230} ${cx} ${pad + ch - 230} Q ${pad + cw - 25} ${pad + ch - 230} ${pad + cw - 25} ${pad + ch - 80} L ${pad + cw - 25} ${pad + ch}`} fill="none" stroke="#444" strokeWidth="1.5" />
+          {/* === Bottom half (basket near bottom) === */}
+          {(() => {
+            const basketY = toSvgY(100 - basketPctX);
+            const ftLineY = toSvgY(100 - ftLinePctX);
+            const paintHalfW = (paintWidthPct / 100) * cw / 2;
+            const corner3X1 = toSvgX(corner3PctY);
+            const corner3X2 = toSvgX(100 - corner3PctY);
+            const corner3Y = toSvgY(100 - corner3ExtPctX);
+            const arcPeakY = toSvgY(100 - basketPctX - 25.26);
+            return (
+              <>
+                <rect x={svgCx - paintHalfW} y={ftLineY} width={paintHalfW * 2} height={pad + ch - ftLineY} fill="none" stroke="#333" strokeWidth="1.5" />
+                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+                <circle cx={svgCx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+                <line x1={svgCx - 15} y1={basketY + 5} x2={svgCx + 15} y2={basketY + 5} stroke="#555" strokeWidth="2" />
+                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="#333" strokeWidth="1" />
+                <path d={`M ${corner3X1} ${pad + ch} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad + ch}`} fill="none" stroke="#444" strokeWidth="1.5" />
+              </>
+            );
+          })()}
 
           {/* Shot dots */}
           {filtered.map((shot, i) => {
-            // API x maps to vertical (court length), y maps to horizontal (court width)
-            const svgX = pad + (shot.y / 100) * cw;
-            const svgY = pad + (shot.x / 100) * ch;
+            const svgX = toSvgX(shot.y);
+            const svgY = toSvgY(shot.x);
 
             const isMade = shot.shotResult === "Made";
             const is3pt = shot.actionType === "3pt";
