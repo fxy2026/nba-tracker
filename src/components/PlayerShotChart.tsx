@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type { ShotAction, PlayerInfo } from "@/lib/api";
 import { X } from "lucide-react";
@@ -12,6 +12,57 @@ interface Props {
   playerInfo?: PlayerInfo | null;
 }
 
+/* ── Court constants (computed once) ── */
+const CW_TOTAL = 370, CH_TOTAL = 700, PAD = 20;
+const CW = CW_TOTAL - PAD * 2, CH = CH_TOTAL - PAD * 2;
+const CCX = PAD + CW / 2, MID_Y = PAD + CH / 2;
+const toSvgX = (pctY: number) => PAD + (pctY / 100) * CW;
+const toSvgY = (pctX: number) => PAD + (pctX / 100) * CH;
+const BASKET_X = 5.59, FT_X = 19.15, PAINT_W = 32;
+const FT_R = (6 / 50) * CW, RESTRICTED_R = (4 / 50) * CW;
+const CENTER_R = (6 / 50) * CW, RIM_R = 5;
+const C3_Y = 6.3, C3_EXT_X = 14.89;
+
+/* Static court SVG elements – never re-rendered */
+function CourtLines() {
+  const halfCourt = (top: boolean) => {
+    const sign = top ? 1 : -1;
+    const bx = top ? BASKET_X : 100 - BASKET_X;
+    const fx = top ? FT_X : 100 - FT_X;
+    const basketY = toSvgY(bx);
+    const ftLineY = toSvgY(fx);
+    const paintHW = (PAINT_W / 100) * CW / 2;
+    const c3x1 = toSvgX(C3_Y), c3x2 = toSvgX(100 - C3_Y);
+    const c3y = toSvgY(top ? C3_EXT_X : 100 - C3_EXT_X);
+    const arcY = toSvgY(top ? BASKET_X + 25.26 : 100 - BASKET_X - 25.26);
+    const bbY = top ? basketY - 5 : basketY + 5;
+    const paintTop = top ? PAD : ftLineY;
+    const paintH = top ? ftLineY - PAD : PAD + CH - ftLineY;
+    const c3Start = top ? PAD : PAD + CH;
+    return (
+      <>
+        <rect x={CCX - paintHW} y={paintTop} width={paintHW * 2} height={paintH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+        <circle cx={CCX} cy={ftLineY} r={FT_R} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+        <circle cx={CCX} cy={basketY} r={RIM_R} fill="none" stroke="#928CEE" strokeWidth="1.5" />
+        <line x1={CCX - 15} y1={bbY} x2={CCX + 15} y2={bbY} stroke="#444" strokeWidth="2" />
+        <circle cx={CCX} cy={basketY} r={RESTRICTED_R} fill="none" stroke="#2a2a2a" strokeWidth="1" />
+        <path d={`M ${c3x1} ${c3Start} L ${c3x1} ${c3y} Q ${c3x1} ${arcY} ${CCX} ${arcY} Q ${c3x2} ${arcY} ${c3x2} ${c3y} L ${c3x2} ${c3Start}`} fill="none" stroke="#333" strokeWidth="1.5" />
+      </>
+    );
+  };
+  return (
+    <>
+      <rect x="0" y="0" width={CW_TOTAL} height={CH_TOTAL} fill="#141414" rx="8" />
+      <rect x={PAD} y={PAD} width={CW} height={CH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+      <line x1={PAD} y1={MID_Y} x2={PAD + CW} y2={MID_Y} stroke="#2a2a2a" strokeWidth="1.5" />
+      <circle cx={CCX} cy={MID_Y} r={CENTER_R} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+      {halfCourt(true)}
+      {halfCourt(false)}
+    </>
+  );
+}
+
+/* ── Main component ── */
 export default function PlayerShotChart({ playerName, playerId, shots, playerInfo }: Props) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -26,53 +77,40 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
     }
   }, [open]);
 
-  const playerShots = shots.filter((s) => s.personId === playerId);
-  const hasShots = playerShots.length > 0;
+  /* ── ALL heavy computation deferred until modal opens ── */
+  const data = useMemo(() => {
+    if (!open) return null;
 
-  const fieldGoalShots = playerShots.filter((s) => s.actionType === "2pt" || s.actionType === "3pt");
-  const made = fieldGoalShots.filter((s) => s.shotResult === "Made");
+    const playerShots = shots.filter((s) => s.personId === playerId);
+    const fieldGoalShots = playerShots.filter((s) => s.actionType === "2pt" || s.actionType === "3pt");
+    const made = fieldGoalShots.filter((s) => s.shotResult === "Made");
+    const threes = playerShots.filter((s) => s.actionType === "3pt");
+    const threesMade = threes.filter((s) => s.shotResult === "Made");
+    const twos = playerShots.filter((s) => s.actionType === "2pt");
+    const twosMade = twos.filter((s) => s.shotResult === "Made");
+    const fts = playerShots.filter((s) => s.actionType === "freethrow");
+    const ftsMade = fts.filter((s) => s.shotResult === "Made");
 
-  const threes = playerShots.filter((s) => s.actionType === "3pt");
-  const threesMade = threes.filter((s) => s.shotResult === "Made");
-  const twos = playerShots.filter((s) => s.actionType === "2pt");
-  const twosMade = twos.filter((s) => s.shotResult === "Made");
+    const periods = [...new Set(playerShots.map((s) => s.period))].sort((a, b) => a - b);
+    const quarterScoring = periods.map((period) => {
+      const qs = playerShots.filter((s) => s.period === period && s.shotResult === "Made");
+      const fg2 = qs.filter((s) => s.actionType === "2pt").length;
+      const fg3 = qs.filter((s) => s.actionType === "3pt").length;
+      const ft = qs.filter((s) => s.actionType === "freethrow").length;
+      return { period, pts: fg2 * 2 + fg3 * 3 + ft, fg2, fg3, ft };
+    });
 
-  // Per-quarter scoring (FG + FT)
-  const fts = playerShots.filter((s) => s.actionType === "freethrow");
-  const ftsMade = fts.filter((s) => s.shotResult === "Made");
-  const periods = [...new Set(playerShots.map((s) => s.period))].sort((a, b) => a - b);
-  const quarterScoring = periods.map((period) => {
-    const qs = playerShots.filter((s) => s.period === period && s.shotResult === "Made");
-    const fg2 = qs.filter((s) => s.actionType === "2pt").length;
-    const fg3 = qs.filter((s) => s.actionType === "3pt").length;
-    const ft = qs.filter((s) => s.actionType === "freethrow").length;
-    return { period, pts: fg2 * 2 + fg3 * 3 + ft, fg2, fg3, ft };
-  });
-
-  const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
-  const courtWidth = 370;
-  const courtHeight = 700;
-  const pad = 20;
-  const cw = courtWidth - pad * 2;
-  const ch = courtHeight - pad * 2;
-  const ccx = pad + cw / 2;
-  const svgMidY = pad + ch / 2;
-  const toSvgX = (pctY: number) => pad + (pctY / 100) * cw;
-  const toSvgY = (pctX: number) => pad + (pctX / 100) * ch;
-  const basketPctX = 5.59;
-  const ftLinePctX = 19.15;
-  const paintWidthPct = 32;
-  const ftCircleR = (6 / 50) * cw;
-  const restrictedR = (4 / 50) * cw;
-  const centerCircleR = (6 / 50) * cw;
-  const rimR = 5;
-  const corner3PctY = 6.3;
-  const corner3ExtPctX = 14.89;
+    return {
+      playerShots, fieldGoalShots, made, threes, threesMade, twos, twosMade,
+      fts, ftsMade, quarterScoring, hasShots: playerShots.length > 0,
+    };
+  }, [open, shots, playerId]);
 
   const info = playerInfo;
+  const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
 
-  const modal = open && mounted ? createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setOpen(false)}>
+  const modal = open && mounted && data ? createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" onClick={() => setOpen(false)}>
       <div
         className="bg-bg-secondary rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -81,7 +119,6 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
         <div className="relative overflow-hidden rounded-t-2xl">
           <div className="absolute inset-0 bg-gradient-to-r from-bg-secondary via-bg-secondary/90 to-transparent z-10" />
           <div className="relative z-20 flex items-center gap-4 p-5">
-            {/* Headshot */}
             <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-card border-2 border-accent/30 shrink-0">
               {!imgError ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -150,7 +187,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
         )}
 
         {/* This game shot stats */}
-        {hasShots && (
+        {data.hasShots && (
           <>
             <div className="px-5 pt-2 pb-1">
               <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">This Game</h4>
@@ -158,32 +195,32 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="grid grid-cols-4 gap-2 px-5 pb-3">
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">Total FG</p>
-                <p className="text-lg font-bold">{made.length}/{fieldGoalShots.length}</p>
-                <p className="text-xs text-accent">{fieldGoalShots.length > 0 ? ((made.length / fieldGoalShots.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.made.length}/{data.fieldGoalShots.length}</p>
+                <p className="text-xs text-accent">{data.fieldGoalShots.length > 0 ? ((data.made.length / data.fieldGoalShots.length) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">2PT</p>
-                <p className="text-lg font-bold">{twosMade.length}/{twos.length}</p>
-                <p className="text-xs text-accent">{twos.length > 0 ? ((twosMade.length / twos.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.twosMade.length}/{data.twos.length}</p>
+                <p className="text-xs text-accent">{data.twos.length > 0 ? ((data.twosMade.length / data.twos.length) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">3PT</p>
-                <p className="text-lg font-bold">{threesMade.length}/{threes.length}</p>
-                <p className="text-xs text-accent">{threes.length > 0 ? ((threesMade.length / threes.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.threesMade.length}/{data.threes.length}</p>
+                <p className="text-xs text-accent">{data.threes.length > 0 ? ((data.threesMade.length / data.threes.length) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">FT</p>
-                <p className="text-lg font-bold">{ftsMade.length}/{fts.length}</p>
-                <p className="text-xs text-accent">{fts.length > 0 ? ((ftsMade.length / fts.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.ftsMade.length}/{data.fts.length}</p>
+                <p className="text-xs text-accent">{data.fts.length > 0 ? ((data.ftsMade.length / data.fts.length) * 100).toFixed(1) : "0"}%</p>
               </div>
             </div>
 
             {/* Per-quarter scoring */}
-            {quarterScoring.length > 0 && (
+            {data.quarterScoring.length > 0 && (
               <div className="px-5 pb-3">
                 <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">每节得分</h4>
                 <div className="flex gap-2">
-                  {quarterScoring.map((q) => (
+                  {data.quarterScoring.map((q) => (
                     <div key={q.period} className="flex-1 bg-bg-card rounded-lg p-2 text-center">
                       <p className="text-[10px] text-text-secondary">
                         {q.period <= 4 ? `Q${q.period}` : `OT${q.period - 4}`}
@@ -201,7 +238,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                   <div className="flex-1 bg-accent/10 rounded-lg p-2 text-center border border-accent/20">
                     <p className="text-[10px] text-text-secondary">合计</p>
                     <p className="text-lg font-bold text-accent">
-                      {quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
+                      {data.quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
                     </p>
                     <p className="text-[10px] text-text-secondary">pts</p>
                   </div>
@@ -211,57 +248,16 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
 
             {/* Court */}
             <div className="px-5 pb-3">
-              <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full">
-                <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#141414" rx="8" />
-                <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-                <line x1={pad} y1={svgMidY} x2={pad + cw} y2={svgMidY} stroke="#2a2a2a" strokeWidth="1.5" />
-                <circle cx={ccx} cy={svgMidY} r={centerCircleR} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
-                {/* Top half */}
-                {(() => {
-                  const basketY = toSvgY(basketPctX);
-                  const ftLineY = toSvgY(ftLinePctX);
-                  const paintHalfW = (paintWidthPct / 100) * cw / 2;
-                  const c3x1 = toSvgX(corner3PctY);
-                  const c3x2 = toSvgX(100 - corner3PctY);
-                  const c3y = toSvgY(corner3ExtPctX);
-                  const arcY = toSvgY(basketPctX + 25.26);
-                  return (<>
-                    <rect x={ccx - paintHalfW} y={pad} width={paintHalfW * 2} height={ftLineY - pad} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-                    <circle cx={ccx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
-                    <circle cx={ccx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                    <line x1={ccx - 15} y1={basketY - 5} x2={ccx + 15} y2={basketY - 5} stroke="#444" strokeWidth="2" />
-                    <circle cx={ccx} cy={basketY} r={restrictedR} fill="none" stroke="#2a2a2a" strokeWidth="1" />
-                    <path d={`M ${c3x1} ${pad} L ${c3x1} ${c3y} Q ${c3x1} ${arcY} ${ccx} ${arcY} Q ${c3x2} ${arcY} ${c3x2} ${c3y} L ${c3x2} ${pad}`} fill="none" stroke="#333" strokeWidth="1.5" />
-                  </>);
-                })()}
-                {/* Bottom half */}
-                {(() => {
-                  const basketY = toSvgY(100 - basketPctX);
-                  const ftLineY = toSvgY(100 - ftLinePctX);
-                  const paintHalfW = (paintWidthPct / 100) * cw / 2;
-                  const c3x1 = toSvgX(corner3PctY);
-                  const c3x2 = toSvgX(100 - corner3PctY);
-                  const c3y = toSvgY(100 - corner3ExtPctX);
-                  const arcY = toSvgY(100 - basketPctX - 25.26);
-                  return (<>
-                    <rect x={ccx - paintHalfW} y={ftLineY} width={paintHalfW * 2} height={pad + ch - ftLineY} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-                    <circle cx={ccx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
-                    <circle cx={ccx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                    <line x1={ccx - 15} y1={basketY + 5} x2={ccx + 15} y2={basketY + 5} stroke="#444" strokeWidth="2" />
-                    <circle cx={ccx} cy={basketY} r={restrictedR} fill="none" stroke="#2a2a2a" strokeWidth="1" />
-                    <path d={`M ${c3x1} ${pad + ch} L ${c3x1} ${c3y} Q ${c3x1} ${arcY} ${ccx} ${arcY} Q ${c3x2} ${arcY} ${c3x2} ${c3y} L ${c3x2} ${pad + ch}`} fill="none" stroke="#333" strokeWidth="1.5" />
-                  </>);
-                })()}
-
-                {fieldGoalShots.map((shot, i) => {
-                  const svgX = toSvgX(shot.y);
-                  const svgY = toSvgY(shot.x);
+              <svg viewBox={`0 0 ${CW_TOTAL} ${CH_TOTAL}`} className="w-full">
+                <CourtLines />
+                {data.fieldGoalShots.map((shot, i) => {
+                  const sx = toSvgX(shot.y), sy = toSvgY(shot.x);
                   const isMade = shot.shotResult === "Made";
-                  const is3pt = shot.actionType === "3pt";
+                  const is3 = shot.actionType === "3pt";
                   return isMade ? (
-                    <circle key={i} cx={svgX} cy={svgY} r={is3pt ? 7 : 6} fill={is3pt ? "#928CEE" : "#22c55e"} fillOpacity={0.85} />
+                    <circle key={i} cx={sx} cy={sy} r={is3 ? 7 : 6} fill={is3 ? "#928CEE" : "#22c55e"} fillOpacity={0.85} />
                   ) : (
-                    <g key={i} transform={`translate(${svgX}, ${svgY})`}>
+                    <g key={i} transform={`translate(${sx}, ${sy})`}>
                       <line x1="-4" y1="-4" x2="4" y2="4" stroke="#ef4444" strokeWidth="2" strokeOpacity={0.7} />
                       <line x1="4" y1="-4" x2="-4" y2="4" stroke="#ef4444" strokeWidth="2" strokeOpacity={0.7} />
                     </g>
@@ -288,7 +284,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="px-5 pb-5">
               <h4 className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Shot Log</h4>
               <div className="space-y-1 max-h-36 overflow-y-auto">
-                {playerShots.map((s, i) => (
+                {data.playerShots.map((s, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <span className={`w-2 h-2 rounded-full shrink-0 ${s.shotResult === "Made" ? "bg-success" : "bg-danger"}`} />
                     <span className="text-text-secondary">Q{s.period}</span>
@@ -300,7 +296,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
           </>
         )}
 
-        {!hasShots && (
+        {!data.hasShots && (
           <div className="px-5 pb-5 text-center text-sm text-text-secondary py-6">
             No shot data for this game
           </div>

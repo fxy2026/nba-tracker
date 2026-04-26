@@ -57,8 +57,8 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto box-score-wrap">
+      <table className="w-full text-sm box-score-table">
         <thead>
           <tr className="border-b border-border text-text-secondary text-xs">
             <th className="text-left py-3 px-2 font-medium sticky left-0 bg-bg-card z-10 min-w-[160px]">Player</th>

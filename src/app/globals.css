@@ -79,3 +79,14 @@ nav.sticky {
   content-visibility: auto;
   contain-intrinsic-size: auto 300px;
 }
+
+/* Box score table: promote sticky columns to own layer */
+.box-score-table td.sticky,
+.box-score-table th.sticky {
+  will-change: transform;
+}
+
+/* Box score wrapper containment */
+.box-score-wrap {
+  contain: layout style;
+}
