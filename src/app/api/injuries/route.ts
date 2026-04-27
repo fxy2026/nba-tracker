@@ -17,7 +17,8 @@ export async function GET() {
     }
 
     const json = await res.json();
-    return NextResponse.json({ data: json }, {
+    // ESPN returns { injuries: [...teams], season: {...} }
+    return NextResponse.json({ data: json.injuries || [] }, {
       headers: {
         "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
       },

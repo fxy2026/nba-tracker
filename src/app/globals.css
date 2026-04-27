@@ -109,3 +109,8 @@ nav.sticky {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
+
+/* Mobile bottom nav safe area */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

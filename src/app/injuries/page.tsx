@@ -5,25 +5,25 @@ export const revalidate = 1800;
 
 interface Athlete {
   displayName: string;
+  firstName?: string;
+  lastName?: string;
   position?: { abbreviation?: string };
+  links?: { href?: string }[];
 }
 
-interface Injury {
-  athlete?: Athlete;
+interface InjuryItem {
+  id?: string;
   status?: string;
   date?: string;
-  type?: { description?: string; detail?: { description?: string } };
-  details?: { detail?: string; side?: string; returnDate?: string };
-  description?: string;
+  athlete?: Athlete;
+  shortComment?: string;
+  longComment?: string;
 }
 
 interface TeamInjury {
-  team?: {
-    displayName?: string;
-    abbreviation?: string;
-    logos?: { href?: string }[];
-  };
-  injuries?: Injury[];
+  id?: string;
+  displayName?: string;
+  injuries?: InjuryItem[];
 }
 
 async function getInjuries(): Promise<TeamInjury[]> {
@@ -37,7 +37,8 @@ async function getInjuries(): Promise<TeamInjury[]> {
     );
     if (!res.ok) return [];
     const json = await res.json();
-    return json.teams || json.resultSets || [];
+    // ESPN returns { injuries: [...teams] } — each team has { displayName, injuries: [...] }
+    return json.injuries || [];
   } catch {
     return [];
   }
@@ -47,13 +48,24 @@ function getStatusColor(status: string | undefined): string {
   if (!status) return "text-text-secondary";
   const s = status.toLowerCase();
   if (s.includes("out")) return "text-danger";
-  if (s.includes("day-to-day") || s.includes("questionable")) return "text-warning";
-  if (s.includes("doubtful")) return "text-danger";
+  if (s.includes("day-to-day") || s.includes("questionable")) return "text-yellow-400";
+  if (s.includes("doubtful")) return "text-orange-400";
   return "text-text-secondary";
+}
+
+function getStatusBg(status: string | undefined): string {
+  if (!status) return "bg-text-secondary/10";
+  const s = status.toLowerCase();
+  if (s.includes("out")) return "bg-danger/10";
+  if (s.includes("day-to-day") || s.includes("questionable")) return "bg-yellow-400/10";
+  if (s.includes("doubtful")) return "bg-orange-400/10";
+  return "bg-text-secondary/10";
 }
 
 export default async function InjuriesPage() {
   const teams = await getInjuries();
+
+  const totalInjured = teams.reduce((sum, t) => sum + (t.injuries?.length || 0), 0);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -62,28 +74,36 @@ export default async function InjuriesPage() {
         Back to home
       </Link>
 
-      <div className="flex items-center gap-3 mt-4 mb-6">
-        <AlertTriangle size={24} className="text-warning" />
-        <h1 className="text-2xl font-bold text-text-primary">Injury Report</h1>
+      <div className="flex items-center justify-between mt-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
+            <AlertTriangle size={20} className="text-danger" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">Injury Report</h1>
+            <p className="text-xs text-text-secondary">Data from ESPN &middot; Updated every 30 minutes</p>
+          </div>
+        </div>
+        {totalInjured > 0 && (
+          <span className="text-sm text-text-secondary">{totalInjured} players &middot; {teams.length} teams</span>
+        )}
       </div>
 
       {teams.length === 0 ? (
-        <div className="bg-bg-card rounded-xl border border-border p-8 text-center">
+        <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
+          <AlertTriangle size={32} className="text-text-secondary mx-auto mb-3 opacity-30" />
           <p className="text-text-secondary">No injury data available at this time.</p>
+          <p className="text-xs text-text-secondary mt-1">This may happen during the off-season.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {teams.map((t) => {
             if (!t.injuries || t.injuries.length === 0) return null;
             return (
-              <div key={t.team?.abbreviation || t.team?.displayName} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+              <div key={t.id || t.displayName} className="bg-bg-card rounded-xl border border-border overflow-hidden">
                 <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-                  {t.team?.logos?.[0]?.href && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={t.team.logos[0].href} alt="" className="w-5 h-5" />
-                  )}
                   <h2 className="font-semibold text-sm text-text-primary">
-                    {t.team?.displayName || "Unknown"}
+                    {t.displayName || "Unknown Team"}
                   </h2>
                   <span className="text-xs text-text-secondary ml-auto">
                     {t.injuries.length} player{t.injuries.length !== 1 ? "s" : ""}
@@ -91,21 +111,25 @@ export default async function InjuriesPage() {
                 </div>
                 <div className="divide-y divide-border/50">
                   {t.injuries.map((inj, idx) => (
-                    <div key={`${inj.athlete?.displayName || idx}`} className="px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <span className="font-medium text-sm text-text-primary min-w-[140px]">
-                        {inj.athlete?.displayName || "Unknown"}
+                    <div key={inj.id || idx} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="flex items-center gap-3 min-w-[180px]">
+                        <span className="font-medium text-sm text-text-primary">
+                          {inj.athlete?.displayName || "Unknown"}
+                        </span>
                         {inj.athlete?.position?.abbreviation && (
-                          <span className="text-text-secondary text-xs ml-1">({inj.athlete.position.abbreviation})</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary">
+                            {inj.athlete.position.abbreviation}
+                          </span>
                         )}
-                      </span>
-                      <span className={`text-xs font-semibold uppercase ${getStatusColor(inj.status)}`}>
+                      </div>
+                      <span className={`text-xs font-semibold uppercase px-2 py-0.5 rounded ${getStatusColor(inj.status)} ${getStatusBg(inj.status)}`}>
                         {inj.status || "Unknown"}
                       </span>
-                      <span className="text-xs text-text-secondary flex-1">
-                        {inj.details?.detail || inj.type?.detail?.description || inj.type?.description || inj.description || ""}
+                      <span className="text-xs text-text-secondary flex-1 line-clamp-2">
+                        {inj.shortComment || ""}
                       </span>
                       {inj.date && (
-                        <span className="text-[10px] text-text-secondary">
+                        <span className="text-[10px] text-text-secondary shrink-0">
                           {new Date(inj.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       )}
