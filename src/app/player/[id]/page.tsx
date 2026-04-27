@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper } from "lucide-react";
+import PlayerCareerStats from "@/components/player/PlayerCareerStats";
+import PlayerGameLog from "@/components/player/PlayerGameLog";
+import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 
 // ISR: serve cached page, revalidate every 30 minutes
 export const revalidate = 1800;
@@ -158,6 +161,13 @@ export default async function PlayerPage({ params }: PageProps) {
               href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodeURIComponent(fullName)}`}
             />
           </div>
+        </div>
+
+        {/* Dynamic data sections (client-fetched) */}
+        <div className="p-6 border-t border-border space-y-6">
+          <PlayerMeasurements draftYear={player.draftYear} />
+          <PlayerGameLog playerId={personId} />
+          <PlayerCareerStats playerId={personId} />
         </div>
 
         {/* Team Link */}
