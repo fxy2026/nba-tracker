@@ -9,8 +9,8 @@ import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
 
-// ISR: serve cached page, revalidate every 30 minutes
-export const revalidate = 1800;
+// Revalidate every 5 minutes
+export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ id: string }>;
