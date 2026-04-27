@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import type { ShotAction, PlayerInfo } from "@/lib/api";
 import { X } from "lucide-react";
 
@@ -121,10 +122,11 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
           <div className="relative z-20 flex items-center gap-4 p-5">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-card border-2 border-accent/30 shrink-0">
               {!imgError ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={headshotUrl}
                   alt={playerName}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover object-top"
                   onError={() => setImgError(true)}
                 />

@@ -3,12 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl+K / Cmd+K shortcut to open search
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+        setTimeout(() => inputRef.current?.focus(), 0);
+      }
+      if (e.key === "Escape" && searchOpen) {
+        setSearchOpen(false);
+        setSearchQuery("");
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
 
   const links = [
     { href: "/", label: "Today", icon: Trophy },
@@ -54,11 +72,12 @@ export default function Navbar() {
           <div className="relative ml-2">
             {searchOpen ? (
               <form
-                action={`/search`}
+                action="/search"
                 className="flex items-center"
                 onSubmit={() => setSearchOpen(false)}
               >
                 <input
+                  ref={inputRef}
                   autoFocus
                   name="q"
                   value={searchQuery}
@@ -73,9 +92,13 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => setSearchOpen(true)}
-                className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                className="flex items-center gap-1.5 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                title="Search (Ctrl+K)"
               >
                 <Search size={18} />
+                <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">
+                  ⌘K
+                </kbd>
               </button>
             )}
           </div>

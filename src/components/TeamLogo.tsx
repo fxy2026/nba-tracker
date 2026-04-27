@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface TeamLogoProps {
   teamId?: number;
@@ -27,13 +28,13 @@ export default function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoProps) 
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src={url}
       alt={tricode}
       width={size}
       height={size}
       className="object-contain"
+      unoptimized
       onError={() => setError(true)}
     />
   );

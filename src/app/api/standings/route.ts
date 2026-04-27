@@ -10,8 +10,16 @@ interface TeamRecord {
   losses: number;
 }
 
+// In-memory standings cache — avoids re-parsing 11MB schedule on every request
+let standingsCache: { data: TeamRecord[]; ts: number } | null = null;
+const STANDINGS_TTL = 5 * 60 * 1000; // 5 minutes
+
 export async function GET() {
   try {
+    if (standingsCache && Date.now() - standingsCache.ts < STANDINGS_TTL) {
+      return NextResponse.json({ data: standingsCache.data });
+    }
+
     const dates = await getFullSchedule();
     const teamMap: Record<string, TeamRecord> = {};
 
@@ -40,6 +48,7 @@ export async function GET() {
       return wb - wa;
     });
 
+    standingsCache = { data: teams, ts: Date.now() };
     return NextResponse.json({ data: teams });
   } catch {
     return NextResponse.json({ error: "Failed to compute standings" }, { status: 500 });

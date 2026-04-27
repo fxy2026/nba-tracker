@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { BarChart3, Users, Trophy, Crown } from "lucide-react";
 
 const STATS_API = "/api/stats";
@@ -171,8 +172,8 @@ function PlayerLeaders() {
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bg-secondary shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={headshotUrl(r.PLAYER_ID)} alt="" className="w-full h-full object-cover object-top"
+                          <Image src={headshotUrl(r.PLAYER_ID)} alt="" width={32} height={32}
+                            className="w-full h-full object-cover object-top"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                         </div>
                         <span className="font-medium text-text-primary whitespace-nowrap">{r.PLAYER}</span>
@@ -262,8 +263,8 @@ function TeamStandings() {
                       <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={logoUrl} alt={t.tricode} className="w-6 h-6" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                          <Image src={logoUrl} alt={t.tricode} width={24} height={24} unoptimized
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                           <span className="font-medium text-text-primary whitespace-nowrap">{t.teamCity} {t.teamName}</span>
                           <span className="text-text-secondary text-xs">{t.tricode}</span>
                         </div>
