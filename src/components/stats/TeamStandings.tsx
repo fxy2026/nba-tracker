@@ -1,0 +1,97 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+interface TeamRecord { tricode: string; teamId: number; teamName: string; teamCity: string; wins: number; losses: number; }
+
+const EAST = ["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
+
+export default function TeamStandings() {
+  const [teams, setTeams] = useState<TeamRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [conf, setConf] = useState<"all" | "east" | "west">("all");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/standings");
+        if (!res.ok) throw new Error("Failed");
+        const json = await res.json();
+        if (!cancelled) setTeams(json.data || []);
+      } catch { if (!cancelled) setTeams([]); }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const filtered = conf === "all" ? teams : teams.filter((t) => conf === "east" ? EAST.includes(t.tricode) : !EAST.includes(t.tricode));
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        <div className="flex rounded-lg overflow-hidden border border-border">
+          {(["all","east","west"] as const).map((c) => (
+            <button key={c} onClick={() => setConf(c)}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${conf === c ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"}`}>
+              {c === "all" ? "All" : c === "east" ? "Eastern" : "Western"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-11 bg-bg-card rounded-lg animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm stats-table">
+              <thead>
+                <tr className="border-b border-border text-text-secondary text-xs">
+                  <th className="text-left py-3 px-3 w-8">#</th>
+                  <th className="text-left py-3 px-2">Team</th>
+                  <th className="text-center py-3 px-2">W</th>
+                  <th className="text-center py-3 px-2">L</th>
+                  <th className="text-center py-3 px-2">Win%</th>
+                  <th className="text-center py-3 px-2">GB</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((t, i) => {
+                  const pct = t.wins + t.losses > 0 ? t.wins / (t.wins + t.losses) : 0;
+                  const topPct = filtered[0] ? filtered[0].wins / (filtered[0].wins + filtered[0].losses || 1) : 0;
+                  const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
+                  const logoUrl = `https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`;
+                  return (
+                    <tr key={t.tricode} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 8 ? "bg-accent/5" : ""}`}>
+                      <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
+                      <td className="py-2.5 px-2">
+                        <Link href={`/team/${t.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                          <Image src={logoUrl} alt={t.tricode} width={24} height={24} unoptimized
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                          <span className="font-medium text-text-primary whitespace-nowrap">{t.teamCity} {t.teamName}</span>
+                          <span className="text-text-secondary text-xs">{t.tricode}</span>
+                        </Link>
+                      </td>
+                      <td className="py-2.5 px-2 text-center text-success font-medium">{t.wins}</td>
+                      <td className="py-2.5 px-2 text-center text-danger font-medium">{t.losses}</td>
+                      <td className="py-2.5 px-2 text-center font-medium text-accent">{(pct * 100).toFixed(1)}%</td>
+                      <td className="py-2.5 px-2 text-center text-text-secondary">{gb}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

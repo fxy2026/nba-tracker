@@ -90,3 +90,22 @@ nav.sticky {
 .box-score-wrap {
   contain: layout style;
 }
+
+/* Stats table containment for large tables */
+.stats-table {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* Smooth view transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+}
+
+/* Optimize scrollable containers */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}

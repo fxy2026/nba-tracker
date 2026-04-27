@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3 } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { TEAM_META } from "@/lib/teams";
+
+const TEAMS = Object.values(TEAM_META);
 
 export default function Navbar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const teamsRef = useRef<HTMLDivElement>(null);
 
   // Ctrl+K / Cmd+K shortcut to open search
   useEffect(() => {
@@ -19,19 +25,33 @@ export default function Navbar() {
         setSearchOpen(true);
         setTimeout(() => inputRef.current?.focus(), 0);
       }
-      if (e.key === "Escape" && searchOpen) {
-        setSearchOpen(false);
-        setSearchQuery("");
+      if (e.key === "Escape") {
+        if (searchOpen) { setSearchOpen(false); setSearchQuery(""); }
+        if (teamsOpen) setTeamsOpen(false);
       }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [searchOpen]);
+  }, [searchOpen, teamsOpen]);
+
+  // Close teams dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (teamsRef.current && !teamsRef.current.contains(e.target as Node)) {
+        setTeamsOpen(false);
+      }
+    }
+    if (teamsOpen) {
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }
+  }, [teamsOpen]);
 
   const links = [
     { href: "/", label: "Today", icon: Trophy },
     { href: "/schedule", label: "Schedule", icon: Calendar },
     { href: "/stats", label: "Stats", icon: BarChart3 },
+    { href: "/compare", label: "Compare", icon: GitCompareArrows },
   ];
 
   return (
@@ -63,19 +83,54 @@ export default function Navbar() {
                 }`}
               >
                 <Icon size={16} />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </Link>
             );
           })}
 
+          {/* Teams Dropdown */}
+          <div className="relative" ref={teamsRef}>
+            <button
+              onClick={() => setTeamsOpen(!teamsOpen)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                teamsOpen || pathname.startsWith("/team")
+                  ? "bg-accent/15 text-accent"
+                  : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+              }`}
+            >
+              <Users size={16} />
+              <span className="hidden sm:inline">Teams</span>
+            </button>
+            {teamsOpen && (
+              <div className="absolute right-0 top-full mt-2 w-[360px] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
+                <div className="grid grid-cols-5 gap-1.5">
+                  {TEAMS.map((t) => (
+                    <Link
+                      key={t.tricode}
+                      href={`/team/${t.tricode}`}
+                      onClick={() => setTeamsOpen(false)}
+                      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group"
+                      title={`${t.city} ${t.name}`}
+                    >
+                      <Image
+                        src={`https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`}
+                        alt={t.tricode}
+                        width={28}
+                        height={28}
+                        unoptimized
+                      />
+                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors">{t.tricode}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Search */}
-          <div className="relative ml-2">
+          <div className="relative ml-1">
             {searchOpen ? (
-              <form
-                action="/search"
-                className="flex items-center"
-                onSubmit={() => setSearchOpen(false)}
-              >
+              <form action="/search" className="flex items-center" onSubmit={() => setSearchOpen(false)}>
                 <input
                   ref={inputRef}
                   autoFocus
@@ -84,9 +139,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search players..."
                   className="w-48 bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
-                  onBlur={() => {
-                    if (!searchQuery) setSearchOpen(false);
-                  }}
+                  onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
                 />
               </form>
             ) : (
@@ -96,9 +149,7 @@ export default function Navbar() {
                 title="Search (Ctrl+K)"
               >
                 <Search size={18} />
-                <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">
-                  ⌘K
-                </kbd>
+                <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">⌘K</kbd>
               </button>
             )}
           </div>

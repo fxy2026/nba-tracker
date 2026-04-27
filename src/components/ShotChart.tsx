@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { ShotAction } from "@/lib/api";
 
 interface Props {
@@ -14,24 +14,25 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
-  const filtered = shots.filter((s) => {
-    if (s.actionType === "freethrow") return false; // FTs have no court coordinates
-    if (filter === "home" && s.teamTricode !== homeTricode) return false;
-    if (filter === "away" && s.teamTricode !== awayTricode) return false;
-    if (selectedPlayer && s.personId !== selectedPlayer) return false;
-    return true;
-  });
-
-  const made = filtered.filter((s) => s.shotResult === "Made").length;
-  const total = filtered.length;
-  const pct = total > 0 ? ((made / total) * 100).toFixed(1) : "0";
+  const { filtered, made, total, pct } = useMemo(() => {
+    const f = shots.filter((s) => {
+      if (s.actionType === "freethrow") return false;
+      if (filter === "home" && s.teamTricode !== homeTricode) return false;
+      if (filter === "away" && s.teamTricode !== awayTricode) return false;
+      if (selectedPlayer && s.personId !== selectedPlayer) return false;
+      return true;
+    });
+    const m = f.filter((s) => s.shotResult === "Made").length;
+    const t = f.length;
+    return { filtered: f, made: m, total: t, pct: t > 0 ? ((m / t) * 100).toFixed(1) : "0" };
+  }, [shots, filter, selectedPlayer, homeTricode, awayTricode]);
 
   // Get unique players for filter
-  const teamPlayers = players.filter((p) => {
+  const teamPlayers = useMemo(() => players.filter((p) => {
     if (filter === "home") return p.teamTricode === homeTricode;
     if (filter === "away") return p.teamTricode === awayTricode;
     return true;
-  });
+  }), [players, filter, homeTricode, awayTricode]);
 
   // Vertical full-court layout matching API coordinate system
   // API: x = court length 0-100 (maps to 94ft), y = court width 0-100 (maps to 50ft)
@@ -165,7 +166,7 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
             const is3pt = shot.actionType === "3pt";
 
             return (
-              <g key={i}>
+              <g key={`${shot.personId}-${shot.period}-${i}`}>
                 {isMade ? (
                   <circle
                     cx={svgX}

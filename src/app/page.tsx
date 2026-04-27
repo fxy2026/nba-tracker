@@ -8,6 +8,7 @@ import { getAllReplayGameIds } from "@/lib/supabase";
 import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
+import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -50,9 +51,12 @@ export default async function HomePage({ searchParams }: PageProps) {
   const games = isToday ? liveGames.map(mapLiveGame) : scheduledGames;
   const replaySet = new Set(replayGameIds);
 
+  const hasLiveGames = isToday && games.some((g) => g.gameStatus === 2);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <DateNav selectedDate={selectedDate} />
+      <LiveScoreRefresher hasLiveGames={hasLiveGames} />
 
       {games.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
