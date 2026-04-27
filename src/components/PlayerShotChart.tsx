@@ -27,7 +27,6 @@ const C3_Y = 6.3, C3_EXT_X = 14.89;
 /* Static court SVG elements – never re-rendered */
 function CourtLines() {
   const halfCourt = (top: boolean) => {
-    const sign = top ? 1 : -1;
     const bx = top ? BASKET_X : 100 - BASKET_X;
     const fx = top ? FT_X : 100 - FT_X;
     const basketY = toSvgY(bx);
@@ -68,6 +67,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [imgError, setImgError] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration pattern
   useEffect(() => { setMounted(true); }, []);
 
   // Lock body scroll when modal is open

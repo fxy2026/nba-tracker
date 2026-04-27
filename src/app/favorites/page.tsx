@@ -21,31 +21,33 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const teams = getFavoriteTeams();
-    const players = getFavoritePlayers();
-    setFavTeams(teams);
-    setFavPlayers(players);
+    setTimeout(() => {
+      const teams = getFavoriteTeams();
+      const players = getFavoritePlayers();
+      setFavTeams(teams);
+      setFavPlayers(players);
 
-    // Fetch player details if any favorites
-    if (players.length > 0) {
-      fetch("/api/search?q=")
-        .then((r) => r.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            const map = new Map<number, PlayerInfo>();
-            for (const p of data) {
-              if (players.includes(p.personId)) {
-                map.set(p.personId, p);
+      // Fetch player details if any favorites
+      if (players.length > 0) {
+        fetch("/api/search?q=")
+          .then((r) => r.json())
+          .then((data) => {
+            if (Array.isArray(data)) {
+              const map = new Map<number, PlayerInfo>();
+              for (const p of data) {
+                if (players.includes(p.personId)) {
+                  map.set(p.personId, p);
+                }
               }
+              setPlayerDetails(map);
             }
-            setPlayerDetails(map);
-          }
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+          })
+          .catch(() => {})
+          .finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    }, 0);
   }, []);
 
   const removeTeam = (tricode: string) => {

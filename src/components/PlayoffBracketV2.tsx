@@ -14,19 +14,6 @@ interface Series {
   round: number; // 1=First Round, 2=Conf Semis, 3=Conf Finals, 4=Finals
 }
 
-function getSeriesRound(totalGames: number, seed1: number, seed2: number): number {
-  // Infer round from seed matchups in a standard 16-team bracket
-  // First round: 1v8, 2v7, 3v6, 4v5
-  // We can also infer from total games played vs bracket position
-  // Simple heuristic: count unique series to determine round
-  const seedSum = seed1 + seed2;
-  if (seedSum === 9) return 1; // 1v8, 2v7, 3v6, 4v5
-  if (seedSum <= 6) return 2; // Winners play each other
-  if (seedSum <= 3) return 3;
-  // Fallback: use total games as rough indicator
-  return 1;
-}
-
 function inferRound(series: Series[], s: Series): number {
   // Count how many series exist for this conference to infer rounds
   const confSeries = series.filter((x) => x.conference === s.conference);
@@ -56,6 +43,82 @@ function getConference(tricode1: string, tricode2: string): "East" | "West" | "F
   if (!t1 || !t2) return "East";
   if (t1.conference !== t2.conference) return "Finals";
   return t1.conference;
+}
+
+const roundLabels: Record<number, string> = { 1: "First Round", 2: "Conf. Semis", 3: "Conf. Finals", 4: "Finals" };
+
+function SeriesCard({ s }: { s: Series }) {
+  const finished = s.team1.wins === 4 || s.team2.wins === 4;
+  const t1Leading = s.team1.wins > s.team2.wins;
+  const t2Leading = s.team2.wins > s.team1.wins;
+  const winner = finished ? (t1Leading ? s.team1 : s.team2) : null;
+
+  return (
+    <div className={`bg-bg-card rounded-lg border p-2.5 ${finished ? "border-accent/40" : "border-border"}`}>
+      {/* Team 1 */}
+      <div className={`flex items-center gap-2 py-1 ${winner && winner.tricode === s.team1.tricode ? "opacity-100" : winner ? "opacity-50" : ""}`}>
+        <TeamLogo teamId={s.team1.teamId} tricode={s.team1.tricode} size={20} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            {s.team1.seed > 0 && <span className="text-[10px] text-text-secondary">{s.team1.seed}</span>}
+            <span className={`text-xs font-medium truncate ${t1Leading ? "text-text-primary" : "text-text-secondary"}`}>
+              {s.team1.tricode}
+            </span>
+          </div>
+        </div>
+        <span className={`text-sm font-bold tabular-nums ${t1Leading ? "text-accent" : "text-text-secondary"}`}>
+          {s.team1.wins}
+        </span>
+      </div>
+      {/* Team 2 */}
+      <div className={`flex items-center gap-2 py-1 ${winner && winner.tricode === s.team2.tricode ? "opacity-100" : winner ? "opacity-50" : ""}`}>
+        <TeamLogo teamId={s.team2.teamId} tricode={s.team2.tricode} size={20} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            {s.team2.seed > 0 && <span className="text-[10px] text-text-secondary">{s.team2.seed}</span>}
+            <span className={`text-xs font-medium truncate ${t2Leading ? "text-text-primary" : "text-text-secondary"}`}>
+              {s.team2.tricode}
+            </span>
+          </div>
+        </div>
+        <span className={`text-sm font-bold tabular-nums ${t2Leading ? "text-accent" : "text-text-secondary"}`}>
+          {s.team2.wins}
+        </span>
+      </div>
+      {/* Status */}
+      {finished && (
+        <div className="text-[10px] text-center text-accent mt-1 border-t border-border/50 pt-1">
+          {winner?.tricode} wins {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BracketColumn({ series, title }: { series: Series[]; title: string }) {
+  const byRound = new Map<number, Series[]>();
+  for (const s of series) {
+    const arr = byRound.get(s.round) || [];
+    arr.push(s);
+    byRound.set(s.round, arr);
+  }
+  const rounds = [...byRound.keys()].sort((a, b) => a - b);
+
+  return (
+    <div className="flex-1 min-w-0">
+      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3 text-center">{title}</h3>
+      <div className="flex gap-2 items-stretch">
+        {rounds.map((round) => (
+          <div key={round} className="flex-1 flex flex-col gap-2">
+            <p className="text-[10px] text-text-secondary text-center mb-1">{roundLabels[round]}</p>
+            {byRound.get(round)!.map((s) => (
+              <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function PlayoffBracketV2({ games }: Props) {
@@ -122,82 +185,6 @@ export default function PlayoffBracketV2({ games }: Props) {
   const eastSeries = allSeries.filter((s) => s.conference === "East").sort((a, b) => a.round - b.round || a.team1.seed - b.team1.seed);
   const westSeries = allSeries.filter((s) => s.conference === "West").sort((a, b) => a.round - b.round || a.team1.seed - b.team1.seed);
   const finalsSeries = allSeries.filter((s) => s.conference === "Finals");
-
-  const roundLabels: Record<number, string> = { 1: "First Round", 2: "Conf. Semis", 3: "Conf. Finals", 4: "Finals" };
-
-  function SeriesCard({ s }: { s: Series }) {
-    const finished = s.team1.wins === 4 || s.team2.wins === 4;
-    const t1Leading = s.team1.wins > s.team2.wins;
-    const t2Leading = s.team2.wins > s.team1.wins;
-    const winner = finished ? (t1Leading ? s.team1 : s.team2) : null;
-
-    return (
-      <div className={`bg-bg-card rounded-lg border p-2.5 ${finished ? "border-accent/40" : "border-border"}`}>
-        {/* Team 1 */}
-        <div className={`flex items-center gap-2 py-1 ${winner && winner.tricode === s.team1.tricode ? "opacity-100" : winner ? "opacity-50" : ""}`}>
-          <TeamLogo teamId={s.team1.teamId} tricode={s.team1.tricode} size={20} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              {s.team1.seed > 0 && <span className="text-[10px] text-text-secondary">{s.team1.seed}</span>}
-              <span className={`text-xs font-medium truncate ${t1Leading ? "text-text-primary" : "text-text-secondary"}`}>
-                {s.team1.tricode}
-              </span>
-            </div>
-          </div>
-          <span className={`text-sm font-bold tabular-nums ${t1Leading ? "text-accent" : "text-text-secondary"}`}>
-            {s.team1.wins}
-          </span>
-        </div>
-        {/* Team 2 */}
-        <div className={`flex items-center gap-2 py-1 ${winner && winner.tricode === s.team2.tricode ? "opacity-100" : winner ? "opacity-50" : ""}`}>
-          <TeamLogo teamId={s.team2.teamId} tricode={s.team2.tricode} size={20} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              {s.team2.seed > 0 && <span className="text-[10px] text-text-secondary">{s.team2.seed}</span>}
-              <span className={`text-xs font-medium truncate ${t2Leading ? "text-text-primary" : "text-text-secondary"}`}>
-                {s.team2.tricode}
-              </span>
-            </div>
-          </div>
-          <span className={`text-sm font-bold tabular-nums ${t2Leading ? "text-accent" : "text-text-secondary"}`}>
-            {s.team2.wins}
-          </span>
-        </div>
-        {/* Status */}
-        {finished && (
-          <div className="text-[10px] text-center text-accent mt-1 border-t border-border/50 pt-1">
-            {winner?.tricode} wins {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function BracketColumn({ series, title }: { series: Series[]; title: string }) {
-    const byRound = new Map<number, Series[]>();
-    for (const s of series) {
-      const arr = byRound.get(s.round) || [];
-      arr.push(s);
-      byRound.set(s.round, arr);
-    }
-    const rounds = [...byRound.keys()].sort((a, b) => a - b);
-
-    return (
-      <div className="flex-1 min-w-0">
-        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3 text-center">{title}</h3>
-        <div className="flex gap-2 items-stretch">
-          {rounds.map((round) => (
-            <div key={round} className="flex-1 flex flex-col gap-2">
-              <p className="text-[10px] text-text-secondary text-center mb-1">{roundLabels[round]}</p>
-              {byRound.get(round)!.map((s) => (
-                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <section>

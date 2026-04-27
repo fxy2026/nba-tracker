@@ -10,8 +10,6 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
   const periods = Math.max(homeTeam.periods.length, awayTeam.periods.length);
   if (periods === 0) return null;
 
-  const hasOT = homeTeam.periods.some((p) => p.periodType === "OVERTIME");
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">

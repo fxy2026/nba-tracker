@@ -271,8 +271,9 @@ function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam:
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function KeyMomentsSection({ gameId }: { gameId: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let actions: any[] = [];
   try {
     const res = await fetch(
       `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
@@ -280,12 +281,12 @@ async function KeyMomentsSection({ gameId }: { gameId: string }) {
     );
     if (!res.ok) return null;
     const data = await res.json();
-    const actions = data.game?.actions || [];
-    if (actions.length === 0) return null;
-    return <KeyMoments actions={actions} />;
+    actions = data.game?.actions || [];
   } catch {
     return null;
   }
+  if (actions.length === 0) return null;
+  return <KeyMoments actions={actions} />;
 }
 
 function SectionSkeleton() {

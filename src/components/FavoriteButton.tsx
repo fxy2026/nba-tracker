@@ -18,11 +18,13 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
-    if (type === "team") {
-      setIsFav(getFavoriteTeams().includes(id as string));
-    } else {
-      setIsFav(getFavoritePlayers().includes(id as number));
-    }
+    setTimeout(() => {
+      if (type === "team") {
+        setIsFav(getFavoriteTeams().includes(id as string));
+      } else {
+        setIsFav(getFavoritePlayers().includes(id as number));
+      }
+    }, 0);
   }, [type, id]);
 
   const handleToggle = () => {

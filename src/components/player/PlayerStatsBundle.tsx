@@ -120,6 +120,13 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
   );
 }
 
+// Compare current to career average
+function CompareArrow({ current, career }: { current: number; career: number }) {
+  if (current > career) return <span className="text-success text-[9px] ml-0.5">&#9650;</span>;
+  if (current < career) return <span className="text-danger text-[9px] ml-0.5">&#9660;</span>;
+  return null;
+}
+
 function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
   // Find best season by PPG
   let bestIdx = 0;
@@ -174,13 +181,6 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
 
   // Current season = last one in the list
   const currentSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
-
-  // Compare current to career average
-  function CompareArrow({ current, career }: { current: number; career: number }) {
-    if (current > career) return <span className="text-success text-[9px] ml-0.5">&#9650;</span>;
-    if (current < career) return <span className="text-danger text-[9px] ml-0.5">&#9660;</span>;
-    return null;
-  }
 
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

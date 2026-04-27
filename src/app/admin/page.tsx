@@ -97,6 +97,7 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fetch games on auth
     if (authenticated) searchGames();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);

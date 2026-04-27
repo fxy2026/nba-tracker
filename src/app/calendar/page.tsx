@@ -53,7 +53,7 @@ export default function CalendarPage() {
   }, []);
 
   useEffect(() => {
-    fetchMonth(year, month);
+    setTimeout(() => fetchMonth(year, month), 0);
   }, [year, month, fetchMonth]);
 
   const goToPrevMonth = () => {
