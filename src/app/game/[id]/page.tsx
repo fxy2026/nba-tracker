@@ -106,12 +106,10 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
   );
 }
 
-/* Async components for Suspense streaming */
-async function ShotChartSection({ gameId, homeTricode, awayTricode, allPlayers }: {
-  gameId: string; homeTricode: string; awayTricode: string;
+function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers }: {
+  shots: ShotAction[]; homeTricode: string; awayTricode: string;
   allPlayers: { personId: number; nameI: string; teamTricode: string }[];
 }) {
-  const shots = await getPlayByPlay(gameId).catch(() => []);
   if (shots.length === 0) return null;
   return (
     <div className="bg-bg-card rounded-xl border border-border p-4">
@@ -172,9 +170,10 @@ function SectionSkeleton() {
 export default async function GamePage({ params }: PageProps) {
   const { id } = await params;
 
-  // Only fetch boxScore + playerIndex immediately (critical path)
-  const [boxScore, playerIndex] = await Promise.all([
+  // Fetch boxScore + shots + playerIndex in parallel
+  const [boxScore, shots, playerIndex] = await Promise.all([
     getBoxScore(id),
+    getPlayByPlay(id).catch(() => []),
     getPlayerIndex().catch(() => []),
   ]);
 
@@ -271,11 +270,9 @@ export default async function GamePage({ params }: PageProps) {
 
       {/* Shot Chart + Box Score + Play-by-Play */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Shot Chart — streamed */}
+        {/* Shot Chart */}
         <div className="lg:col-span-1 space-y-6">
-          <Suspense fallback={<SectionSkeleton />}>
-            <ShotChartSection gameId={id} homeTricode={boxScore.homeTeam.teamTricode} awayTricode={boxScore.awayTeam.teamTricode} allPlayers={allPlayers} />
-          </Suspense>
+          <ShotChartSection shots={shots} homeTricode={boxScore.homeTeam.teamTricode} awayTricode={boxScore.awayTeam.teamTricode} allPlayers={allPlayers} />
         </div>
 
         {/* Box Score Tables — immediate */}
@@ -286,7 +283,7 @@ export default async function GamePage({ params }: PageProps) {
               <h2 className="font-semibold">{boxScore.awayTeam.teamCity} {boxScore.awayTeam.teamName}</h2>
               <span className="text-text-secondary text-sm ml-auto">{boxScore.awayTeam.score} pts</span>
             </div>
-            <StatsTable players={boxScore.awayTeam.players} shots={[]} playerInfoMap={playerInfoMap} />
+            <StatsTable players={boxScore.awayTeam.players} shots={shots} playerInfoMap={playerInfoMap} />
           </div>
           <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center gap-2">
@@ -294,7 +291,7 @@ export default async function GamePage({ params }: PageProps) {
               <h2 className="font-semibold">{boxScore.homeTeam.teamCity} {boxScore.homeTeam.teamName}</h2>
               <span className="text-text-secondary text-sm ml-auto">{boxScore.homeTeam.score} pts</span>
             </div>
-            <StatsTable players={boxScore.homeTeam.players} shots={[]} playerInfoMap={playerInfoMap} />
+            <StatsTable players={boxScore.homeTeam.players} shots={shots} playerInfoMap={playerInfoMap} />
           </div>
         </div>
       </div>
