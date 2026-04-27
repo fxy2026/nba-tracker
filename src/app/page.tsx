@@ -10,6 +10,7 @@ import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 import TodayHighlights from "@/components/TodayHighlights";
+import NbaNews from "@/components/NbaNews";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -74,6 +75,9 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       {/* Scoring leaders ribbon */}
       <TodayHighlights />
+
+      {/* NBA News from ESPN */}
+      <NbaNews />
 
       {/* Lazy-loaded playoff bracket + recent results */}
       <HomeExtra />

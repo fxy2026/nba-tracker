@@ -6,6 +6,8 @@ import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Ne
 import PlayerCareerStats from "@/components/player/PlayerCareerStats";
 import PlayerGameLog from "@/components/player/PlayerGameLog";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
+import PlayerSalary from "@/components/player/PlayerSalary";
+import PlayerNews from "@/components/player/PlayerNews";
 
 // ISR: serve cached page, revalidate every 30 minutes
 export const revalidate = 1800;
@@ -165,7 +167,9 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
+          <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerMeasurements draftYear={player.draftYear} />
+          <PlayerNews playerName={fullName} />
           <PlayerGameLog playerId={personId} />
           <PlayerCareerStats playerId={personId} />
         </div>
