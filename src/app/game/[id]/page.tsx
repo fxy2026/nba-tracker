@@ -125,13 +125,19 @@ async function ShotChartSection({ gameId, homeTricode, awayTricode, allPlayers }
 }
 
 async function PlayByPlaySection({ gameId }: { gameId: string }) {
-  const res = await fetch(
-    `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
-    { headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" }, next: { revalidate: 60 } }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  const actions = data.game?.actions || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let actions: any[] = [];
+  try {
+    const res = await fetch(
+      `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
+      { headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" }, next: { revalidate: 60 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    actions = data.game?.actions || [];
+  } catch {
+    return null;
+  }
   if (actions.length === 0) return null;
   return <PlayByPlay actions={actions} />;
 }

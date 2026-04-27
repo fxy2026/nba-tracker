@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFullSchedule, getPlayerIndex, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "@/components/TeamLogo";
+import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
 
 interface PageProps {
@@ -16,8 +16,8 @@ export default async function TeamPage({ params }: PageProps) {
   if (!team) notFound();
 
   const [schedule, playerIndex] = await Promise.all([
-    getFullSchedule(),
-    getPlayerIndex(),
+    getFullSchedule().catch(() => []),
+    getPlayerIndex().catch(() => []),
   ]);
 
   // Compute team record and games
@@ -188,16 +188,7 @@ export default async function TeamPage({ params }: PageProps) {
                 <tr key={p.personId} className="border-b border-border/50 hover:bg-bg-hover transition-colors">
                   <td className="py-2.5 px-4">
                     <Link href={`/player/${p.personId}`} className="flex items-center gap-2 hover:text-accent transition-colors">
-                      <div className="w-7 h-7 rounded-full overflow-hidden bg-bg-secondary shrink-0">
-                        <Image
-                          src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.personId}.png`}
-                          alt={`${p.firstName} ${p.lastName}`}
-                          width={28}
-                          height={28}
-                          className="w-full h-full object-cover object-top"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                      </div>
+                      <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={28} />
                       <span className="font-medium text-text-primary">{p.firstName} {p.lastName}</span>
                     </Link>
                   </td>
