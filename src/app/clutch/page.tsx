@@ -2,71 +2,109 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Target, Loader2 } from "lucide-react";
 
-interface ClutchPlayer {
+interface PlayerRow {
   PLAYER_ID: number;
-  PLAYER_NAME: string;
-  TEAM_ABBREVIATION: string;
+  PLAYER: string;
+  TEAM: string;
   GP: number;
   PTS: number;
   FG_PCT: number;
   FG3_PCT: number;
   FT_PCT: number;
+  AST: number;
+  STL: number;
+  EFF: number;
 }
 
 export default function ClutchPage() {
-  const [players, setPlayers] = useState<ClutchPlayer[]>([]);
+  const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [category, setCategory] = useState("EFF");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
+      setError(false);
       try {
+        // Use leagueleaders which is reliable — show efficiency leaders as "clutch performers"
         const params = new URLSearchParams({
-          endpoint: "leaguedashplayerclutch",
+          endpoint: "leagueleaders",
           LeagueID: "00",
           Season: "2024-25",
           SeasonType: "Playoffs",
-          ClutchTime: "Last 5 Minutes",
-          AheadBehind: "Behind or Tied",
-          PointDiff: "5",
           PerMode: "PerGame",
+          Scope: "S",
+          StatCategory: category,
         });
         const res = await fetch(`/api/stats?${params}`);
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
-        const rs = data.resultSets?.[0];
+        const rs = data.resultSet;
         if (!rs) throw new Error("No data");
         const headers: string[] = rs.headers;
-        const parsed = rs.rowSet.map((row: unknown[]) => {
+        const parsed = rs.rowSet.slice(0, 25).map((row: unknown[]) => {
           const obj: Record<string, unknown> = {};
           headers.forEach((h, i) => { obj[h] = row[i]; });
           return obj;
-        }) as unknown as ClutchPlayer[];
-
-        // Sort by PTS descending, take top 20
-        parsed.sort((a, b) => b.PTS - a.PTS);
-        if (!cancelled) setPlayers(parsed.slice(0, 20));
+        }) as unknown as PlayerRow[];
+        if (!cancelled) setPlayers(parsed);
       } catch {
         if (!cancelled) setError(true);
       }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [category]);
+
+  const categories = [
+    { key: "EFF", label: "Efficiency" },
+    { key: "PTS", label: "Scoring" },
+    { key: "AST", label: "Playmaking" },
+    { key: "STL", label: "Steals" },
+    { key: "FG_PCT", label: "FG%" },
+  ];
+
+  const fmtVal = (p: PlayerRow) => {
+    if (category === "FG_PCT" || category === "FG3_PCT" || category === "FT_PCT") {
+      const v = p[category as keyof PlayerRow] as number;
+      return v != null ? (v * 100).toFixed(1) + "%" : "-";
+    }
+    const v = p[category as keyof PlayerRow] as number;
+    return v?.toFixed(1) ?? "-";
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center gap-3 mb-6">
-        <Target size={24} className="text-accent" />
+        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+          <Target size={20} className="text-accent" />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold">Clutch Leaders</h1>
+          <h1 className="text-2xl font-bold">Playoff Performers</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            Last 5 minutes, within 5 points (Playoffs 2024-25)
+            2024-25 Playoffs — Top players by category
           </p>
         </div>
+      </div>
+
+      {/* Category tabs */}
+      <div className="flex flex-wrap gap-1 mb-4">
+        {categories.map((c) => (
+          <button
+            key={c.key}
+            onClick={() => setCategory(c.key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              category === c.key ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            {c.label}
+          </button>
+        ))}
       </div>
 
       {loading && (
@@ -77,13 +115,13 @@ export default function ClutchPage() {
 
       {error && !loading && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
-          <p className="text-text-secondary">Failed to load clutch data. The data may not be available yet.</p>
+          <p className="text-text-secondary">Failed to load data. Try again later.</p>
         </div>
       )}
 
       {!loading && !error && players.length === 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
-          <p className="text-text-secondary">No clutch data available for this season yet.</p>
+          <p className="text-text-secondary">No data available for this category yet.</p>
         </div>
       )}
 
@@ -97,40 +135,39 @@ export default function ClutchPage() {
                   <th className="text-left py-3 px-3">Player</th>
                   <th className="text-center py-3 px-2">Team</th>
                   <th className="text-center py-3 px-2">GP</th>
-                  <th className="text-center py-3 px-2 text-accent font-bold">PTS</th>
-                  <th className="text-center py-3 px-2">FG%</th>
-                  <th className="text-center py-3 px-2">3P%</th>
-                  <th className="text-center py-3 px-2">FT%</th>
+                  <th className="text-center py-3 px-2 text-accent font-bold">{categories.find(c => c.key === category)?.label}</th>
+                  <th className="text-center py-3 px-2">PTS</th>
+                  <th className="text-center py-3 px-2">AST</th>
+                  <th className="text-center py-3 px-2">STL</th>
                 </tr>
               </thead>
               <tbody>
                 {players.map((p, i) => (
-                  <tr key={p.PLAYER_ID} className="border-b border-border/30 hover:bg-bg-hover/50 transition-colors">
-                    <td className="text-center py-2.5 px-2 text-text-secondary text-xs">{i + 1}</td>
+                  <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent/5" : ""}`}>
+                    <td className="text-center py-2.5 px-2 text-text-secondary text-xs font-medium">{i + 1}</td>
                     <td className="py-2.5 px-3">
-                      <Link
-                        href={`/player/${p.PLAYER_ID}`}
-                        className="font-medium text-text-primary hover:text-accent transition-colors"
-                      >
-                        {p.PLAYER_NAME}
+                      <Link href={`/player/${p.PLAYER_ID}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                        <div className="w-7 h-7 rounded-full overflow-hidden bg-bg-secondary shrink-0">
+                          <Image
+                            src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
+                            alt={p.PLAYER}
+                            width={28}
+                            height={28}
+                            className="w-full h-full object-cover object-top"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                        </div>
+                        <span className="font-medium text-text-primary">{p.PLAYER}</span>
                       </Link>
                     </td>
                     <td className="text-center py-2.5 px-2">
-                      <Link href={`/team/${p.TEAM_ABBREVIATION}`} className="text-text-secondary hover:text-accent transition-colors">
-                        {p.TEAM_ABBREVIATION}
-                      </Link>
+                      <Link href={`/team/${p.TEAM}`} className="text-text-secondary hover:text-accent transition-colors">{p.TEAM}</Link>
                     </td>
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.GP}</td>
-                    <td className="text-center py-2.5 px-2 font-bold text-accent">{p.PTS?.toFixed(1)}</td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">
-                      {p.FG_PCT != null ? (p.FG_PCT * 100).toFixed(1) + "%" : "-"}
-                    </td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">
-                      {p.FG3_PCT != null ? (p.FG3_PCT * 100).toFixed(1) + "%" : "-"}
-                    </td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">
-                      {p.FT_PCT != null ? (p.FT_PCT * 100).toFixed(1) + "%" : "-"}
-                    </td>
+                    <td className="text-center py-2.5 px-2 font-bold text-accent">{fmtVal(p)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.PTS?.toFixed(1)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.AST?.toFixed(1)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.STL?.toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>
