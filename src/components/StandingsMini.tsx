@@ -1,0 +1,82 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { TEAM_META } from "@/lib/teams";
+
+interface TeamRecord {
+  tricode: string;
+  teamId: number;
+  teamName: string;
+  teamCity: string;
+  wins: number;
+  losses: number;
+}
+
+export default function StandingsMini() {
+  const [east, setEast] = useState<TeamRecord[]>([]);
+  const [west, setWest] = useState<TeamRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/standings")
+      .then((r) => r.json())
+      .then((json) => {
+        const teams: TeamRecord[] = json.data || [];
+        const eastTeams = teams
+          .filter((t) => TEAM_META[t.tricode]?.conference === "East")
+          .slice(0, 4);
+        const westTeams = teams
+          .filter((t) => TEAM_META[t.tricode]?.conference === "West")
+          .slice(0, 4);
+        setEast(eastTeams);
+        setWest(westTeams);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 animate-pulse h-28" />
+    );
+  }
+
+  if (east.length === 0 && west.length === 0) return null;
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border p-3 mt-4">
+      <div className="grid grid-cols-2 gap-4">
+        {/* East */}
+        <div>
+          <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">East</p>
+          {east.map((t, i) => (
+            <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
+              <span className="text-text-secondary w-3 text-right">{i + 1}</span>
+              <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+                {t.tricode}
+              </Link>
+              <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
+            </div>
+          ))}
+        </div>
+        {/* West */}
+        <div>
+          <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">West</p>
+          {west.map((t, i) => (
+            <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
+              <span className="text-text-secondary w-3 text-right">{i + 1}</span>
+              <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+                {t.tricode}
+              </Link>
+              <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Link href="/stats" className="block text-center text-[10px] text-accent hover:underline mt-2">
+        Full Standings &rarr;
+      </Link>
+    </div>
+  );
+}

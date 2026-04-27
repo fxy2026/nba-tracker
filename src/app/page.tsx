@@ -11,6 +11,7 @@ import HomeExtra from "@/components/HomeExtra";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 import TodayHighlights from "@/components/TodayHighlights";
 import NbaNews from "@/components/NbaNews";
+import StandingsMini from "@/components/StandingsMini";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -65,6 +66,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <DateNav selectedDate={selectedDate} />
+      <StandingsMini />
       <LiveScoreRefresher hasLiveGames={hasLiveGames} />
 
       {games.length > 0 ? (

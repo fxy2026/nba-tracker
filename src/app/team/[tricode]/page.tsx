@@ -9,6 +9,11 @@ import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
 // ISR: serve cached page, revalidate every 10 minutes
 export const revalidate = 600;
 
+// Pre-render all 30 team pages at build time
+export async function generateStaticParams() {
+  return Object.keys(TEAM_META).map((tricode) => ({ tricode }));
+}
+
 interface PageProps {
   params: Promise<{ tricode: string }>;
 }
@@ -71,6 +76,19 @@ export default async function TeamPage({ params }: PageProps) {
   // Sort recent (most recent first), upcoming (soonest first)
   recentGames.sort((a, b) => b.date.localeCompare(a.date));
   upcomingGames.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Compute head-to-head rivalries
+  const h2hMap: Record<string, { opponent: string; opponentId: number; wins: number; losses: number }> = {};
+  for (const g of recentGames) {
+    if (!h2hMap[g.opponent]) {
+      h2hMap[g.opponent] = { opponent: g.opponent, opponentId: g.opponentId, wins: 0, losses: 0 };
+    }
+    if (g.won) h2hMap[g.opponent].wins++;
+    else h2hMap[g.opponent].losses++;
+  }
+  const rivalries = Object.values(h2hMap)
+    .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses))
+    .slice(0, 5);
 
   // Roster
   const roster = playerIndex
@@ -167,6 +185,45 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Head-to-Head */}
+      {rivalries.length > 0 && (
+        <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+            <Trophy size={16} className="text-accent" />
+            <h2 className="font-semibold text-sm">Head-to-Head</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text-secondary text-xs">
+                  <th className="text-left py-3 px-4">Opponent</th>
+                  <th className="text-center py-3 px-2">W</th>
+                  <th className="text-center py-3 px-2">L</th>
+                  <th className="text-center py-3 px-2">Win%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rivalries.map((r) => (
+                  <tr key={r.opponent} className="border-b border-border/50 hover:bg-bg-hover transition-colors">
+                    <td className="py-2.5 px-4">
+                      <Link href={`/team/${r.opponent}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                        <TeamLogo teamId={r.opponentId} tricode={r.opponent} size={20} />
+                        <span className="font-medium text-text-primary">{r.opponent}</span>
+                      </Link>
+                    </td>
+                    <td className="text-center py-2.5 px-2 text-success font-medium">{r.wins}</td>
+                    <td className="text-center py-2.5 px-2 text-danger font-medium">{r.losses}</td>
+                    <td className="text-center py-2.5 px-2 font-medium text-accent">
+                      {((r.wins / (r.wins + r.losses)) * 100).toFixed(0)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Roster */}
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
