@@ -2,6 +2,15 @@
 
 import { useState, useMemo } from "react";
 
+function formatClock(raw: string): string {
+  if (!raw) return "";
+  const match = raw.match(/PT(\d+)M([\d.]+)S/);
+  if (!match) return raw;
+  const min = parseInt(match[1]);
+  const sec = Math.floor(parseFloat(match[2]));
+  return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
 interface PlayAction {
   actionNumber: number;
   clock: string;
@@ -86,7 +95,7 @@ export default function PlayByPlay({ actions }: Props) {
             className={`flex items-start gap-3 px-4 py-2.5 border-l-2 ${getActionStyle(action)}`}
           >
             <span className="text-xs text-text-secondary font-mono w-12 shrink-0 pt-0.5">
-              {action.clock || ""}
+              {formatClock(action.clock)}
             </span>
             <span className="text-sm shrink-0 w-5">{getActionIcon(action)}</span>
             <div className="flex-1 min-w-0">

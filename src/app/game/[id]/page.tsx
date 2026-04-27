@@ -22,6 +22,27 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
   const starters = players.filter((p) => p.starter === "1");
   const bench = players.filter((p) => p.starter !== "1" && p.played === "1");
   const dnp = players.filter((p) => p.played !== "1" && p.starter !== "1");
+  const played = players.filter((p) => p.played === "1");
+
+  // Team totals
+  const totals = played.reduce((acc, p) => {
+    const s = p.statistics;
+    return {
+      pts: acc.pts + s.points,
+      reb: acc.reb + s.reboundsTotal,
+      ast: acc.ast + s.assists,
+      stl: acc.stl + s.steals,
+      blk: acc.blk + s.blocks,
+      tov: acc.tov + s.turnovers,
+      pf: acc.pf + s.foulsPersonal,
+      fgm: acc.fgm + s.fieldGoalsMade,
+      fga: acc.fga + s.fieldGoalsAttempted,
+      tpm: acc.tpm + s.threePointersMade,
+      tpa: acc.tpa + s.threePointersAttempted,
+      ftm: acc.ftm + s.freeThrowsMade,
+      fta: acc.fta + s.freeThrowsAttempted,
+    };
+  }, { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0, pf: 0, fgm: 0, fga: 0, tpm: 0, tpa: 0, ftm: 0, fta: 0 });
 
   const renderRow = (p: PlayerStats) => {
     const s = p.statistics;
@@ -104,6 +125,22 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
           {dnp.length > 0 && (
             <tr><td colSpan={13} className="py-1.5 px-2 text-xs text-text-secondary/60 sticky left-0">DNP: {dnp.map((p) => p.nameI).join(", ")}</td></tr>
           )}
+          {/* Team Totals */}
+          <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
+            <td className="py-2.5 px-2 sticky left-0 bg-bg-secondary/50 z-10 text-sm font-bold text-text-primary">TEAM</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">-</td>
+            <td className="text-center py-2.5 px-1 text-sm font-bold">{totals.pts}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.reb}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.ast}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.fgm}-{totals.fga}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.tpm}-{totals.tpa}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.ftm}-{totals.fta}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.stl}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.blk}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.tov}</td>
+            <td className="text-center py-2.5 px-1 text-sm">{totals.pf}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">-</td>
+          </tr>
         </tbody>
       </table>
     </div>
