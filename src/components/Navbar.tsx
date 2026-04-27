@@ -3,9 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { TEAM_META } from "@/lib/teams";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const TEAMS = Object.values(TEAM_META);
 
@@ -50,10 +51,11 @@ export default function Navbar() {
 
   const links = [
     { href: "/", label: "Today", icon: Trophy },
-    { href: "/schedule", label: "Schedule", icon: Calendar },
+    { href: "/calendar", label: "Calendar", icon: Calendar },
     { href: "/stats", label: "Stats", icon: BarChart3 },
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/injuries", label: "Injuries", icon: AlertTriangle },
+    { href: "/history", label: "History", icon: History },
   ];
 
   return (
@@ -129,6 +131,9 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Search */}
           <div className="relative ml-1">

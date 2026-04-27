@@ -9,9 +9,11 @@ import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
-import TodayHighlights from "@/components/TodayHighlights";
+import TopPerformers from "@/components/TopPerformers";
 import NbaNews from "@/components/NbaNews";
 import StandingsMini from "@/components/StandingsMini";
+import HotStreaks from "@/components/HotStreaks";
+import SeasonLeaders from "@/components/SeasonLeaders";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -82,11 +84,17 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       )}
 
-      {/* Scoring leaders ribbon */}
-      <TodayHighlights />
+      {/* Top Performers */}
+      <TopPerformers />
 
       {/* NBA News from ESPN */}
       <NbaNews />
+
+      {/* Playoff Hot Streaks */}
+      <HotStreaks />
+
+      {/* Season Leaders */}
+      <SeasonLeaders />
 
       {/* Lazy-loaded playoff bracket + recent results */}
       <HomeExtra />

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo } from "@/lib/api";
+import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
@@ -7,8 +7,10 @@ import ShotChart from "@/components/ShotChart";
 import PlayerShotChart from "@/components/PlayerShotChart";
 import TeamCompare from "@/components/TeamCompare";
 import PlayByPlay from "@/components/PlayByPlay";
+import KeyMoments from "@/components/KeyMoments";
 import { Play, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import GameAutoRefresh from "@/components/GameAutoRefresh";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -163,6 +165,127 @@ async function ReplaySection({ gameId }: { gameId: string }) {
   );
 }
 
+function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam }) {
+  // Find highest scorer from each team
+  const getTopScorer = (team: BoxScoreTeam) => {
+    const played = team.players.filter((p) => p.played === "1");
+    if (played.length === 0) return null;
+    return played.reduce((best, p) => p.statistics.points > best.statistics.points ? p : best);
+  };
+
+  // Find double-doubles and triple-doubles
+  const getSpecialPerformances = (team: BoxScoreTeam) => {
+    return team.players.filter((p) => {
+      if (p.played !== "1") return false;
+      const s = p.statistics;
+      const doubleDigits = [s.points, s.reboundsTotal, s.assists, s.steals, s.blocks].filter(v => v >= 10).length;
+      return doubleDigits >= 2;
+    }).map((p) => {
+      const s = p.statistics;
+      const doubleDigits = [s.points, s.reboundsTotal, s.assists, s.steals, s.blocks].filter(v => v >= 10).length;
+      return { name: p.nameI, isTriple: doubleDigits >= 3, pts: s.points, reb: s.reboundsTotal, ast: s.assists };
+    });
+  };
+
+  // Compute largest lead for each team using period scores
+  const getLargestLead = (team: BoxScoreTeam, opponent: BoxScoreTeam) => {
+    // Approximate from period cumulative scores
+    let teamTotal = 0;
+    let oppTotal = 0;
+    let maxLead = 0;
+    for (let i = 0; i < team.periods.length; i++) {
+      teamTotal += team.periods[i]?.score || 0;
+      oppTotal += opponent.periods[i]?.score || 0;
+      const lead = teamTotal - oppTotal;
+      if (lead > maxLead) maxLead = lead;
+    }
+    return maxLead;
+  };
+
+  const homeTopScorer = getTopScorer(homeTeam);
+  const awayTopScorer = getTopScorer(awayTeam);
+  const homeSpecial = getSpecialPerformances(homeTeam);
+  const awaySpecial = getSpecialPerformances(awayTeam);
+  const homeLargestLead = getLargestLead(homeTeam, awayTeam);
+  const awayLargestLead = getLargestLead(awayTeam, homeTeam);
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+      <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+        <span className="w-1 h-4 bg-accent rounded-full" />
+        Game Summary
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        {/* Away team summary */}
+        <div>
+          <p className="text-xs font-medium text-text-secondary mb-1.5">{awayTeam.teamCity} {awayTeam.teamName}</p>
+          {awayTopScorer && (
+            <p className="text-text-primary">
+              <span className="font-medium">{awayTopScorer.nameI}</span>
+              <span className="text-text-secondary ml-1">
+                {awayTopScorer.statistics.points} PTS, {awayTopScorer.statistics.reboundsTotal} REB, {awayTopScorer.statistics.assists} AST
+              </span>
+            </p>
+          )}
+          {awaySpecial.length > 0 && (
+            <div className="mt-1">
+              {awaySpecial.map((p) => (
+                <span key={p.name} className={`inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 ${p.isTriple ? "bg-accent/20 text-accent" : "bg-accent/10 text-accent"}`}>
+                  {p.name}: {p.isTriple ? "Triple-Double" : "Double-Double"} ({p.pts}/{p.reb}/{p.ast})
+                </span>
+              ))}
+            </div>
+          )}
+          {awayLargestLead > 0 && (
+            <p className="text-xs text-text-secondary mt-1">Largest lead: {awayLargestLead} pts</p>
+          )}
+        </div>
+        {/* Home team summary */}
+        <div>
+          <p className="text-xs font-medium text-text-secondary mb-1.5">{homeTeam.teamCity} {homeTeam.teamName}</p>
+          {homeTopScorer && (
+            <p className="text-text-primary">
+              <span className="font-medium">{homeTopScorer.nameI}</span>
+              <span className="text-text-secondary ml-1">
+                {homeTopScorer.statistics.points} PTS, {homeTopScorer.statistics.reboundsTotal} REB, {homeTopScorer.statistics.assists} AST
+              </span>
+            </p>
+          )}
+          {homeSpecial.length > 0 && (
+            <div className="mt-1">
+              {homeSpecial.map((p) => (
+                <span key={p.name} className={`inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 ${p.isTriple ? "bg-accent/20 text-accent" : "bg-accent/10 text-accent"}`}>
+                  {p.name}: {p.isTriple ? "Triple-Double" : "Double-Double"} ({p.pts}/{p.reb}/{p.ast})
+                </span>
+              ))}
+            </div>
+          )}
+          {homeLargestLead > 0 && (
+            <p className="text-xs text-text-secondary mt-1">Largest lead: {homeLargestLead} pts</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function KeyMomentsSection({ gameId }: { gameId: string }) {
+  try {
+    const res = await fetch(
+      `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
+      { headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" }, next: { revalidate: 60 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const actions = data.game?.actions || [];
+    if (actions.length === 0) return null;
+    return <KeyMoments actions={actions} />;
+  } catch {
+    return null;
+  }
+}
+
 function SectionSkeleton() {
   return <div className="h-48 bg-bg-card rounded-xl border border-border animate-pulse" />;
 }
@@ -213,6 +336,7 @@ export default async function GamePage({ params }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <Link href={`/?date=${backDate}`} className="text-sm text-text-secondary hover:text-accent transition-colors">&larr; Back to games</Link>
+      <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
       {/* Scoreboard — renders immediately */}
       <div className="bg-bg-card rounded-xl border border-border p-6 mt-4">
@@ -256,6 +380,11 @@ export default async function GamePage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Game Summary — right after scoreboard for final games */}
+      {isFinal && (
+        <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
+      )}
+
       {/* Replay links — streamed */}
       <Suspense fallback={null}>
         <ReplaySection gameId={id} />
@@ -266,6 +395,13 @@ export default async function GamePage({ params }: PageProps) {
         <div className="mt-6">
           <TeamCompare homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
         </div>
+      )}
+
+      {/* Key Moments — between TeamCompare and Shot Chart */}
+      {isFinal && (
+        <Suspense fallback={<SectionSkeleton />}>
+          <KeyMomentsSection gameId={id} />
+        </Suspense>
       )}
 
       {/* Shot Chart + Box Score + Play-by-Play */}

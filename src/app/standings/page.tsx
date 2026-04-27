@@ -1,0 +1,163 @@
+import Image from "next/image";
+import Link from "next/link";
+import { TEAM_META } from "@/lib/teams";
+
+export const revalidate = 600;
+
+interface TeamRecord {
+  tricode: string;
+  teamId: number;
+  teamName: string;
+  teamCity: string;
+  wins: number;
+  losses: number;
+}
+
+const EAST_DIVISIONS = ["Atlantic", "Central", "Southeast"] as const;
+const WEST_DIVISIONS = ["Northwest", "Pacific", "Southwest"] as const;
+
+async function getStandings(): Promise<TeamRecord[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+  try {
+    const res = await fetch(`${baseUrl}/api/standings`, { next: { revalidate: 600 } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+function DivisionCard({ division, teams, conferenceRanks }: {
+  division: string;
+  teams: TeamRecord[];
+  conferenceRanks: Map<string, number>;
+}) {
+  // Sort by win pct within the division
+  const sorted = [...teams].sort((a, b) => {
+    const wpa = a.wins / (a.wins + a.losses || 1);
+    const wpb = b.wins / (b.wins + b.losses || 1);
+    return wpb - wpa;
+  });
+
+  const leader = sorted[0];
+  const leaderWins = leader?.wins || 0;
+  const leaderLosses = leader?.losses || 0;
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50">
+        <h3 className="text-sm font-semibold">{division}</h3>
+      </div>
+      <div className="divide-y divide-border/30">
+        {/* Header row */}
+        <div className="grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] uppercase text-text-secondary font-medium">
+          <span className="w-5">#</span>
+          <span>Team</span>
+          <span className="text-center">W</span>
+          <span className="text-center">L</span>
+          <span className="text-center">PCT</span>
+          <span className="text-center">GB</span>
+        </div>
+        {sorted.map((team, idx) => {
+          const winPct = team.wins / (team.wins + team.losses || 1);
+          const gb = idx === 0 ? "-" : (((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2).toFixed(1);
+          const confRank = conferenceRanks.get(team.tricode) || 99;
+          const isPlayoff = confRank <= 6;
+
+          return (
+            <Link
+              key={team.tricode}
+              href={`/team/${team.tricode}`}
+              className={`grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2.5 hover:bg-bg-hover transition-colors ${
+                isPlayoff ? "border-l-2 border-l-accent" : "border-l-2 border-l-transparent"
+              }`}
+            >
+              <span className="text-xs text-text-secondary w-5">{idx + 1}</span>
+              <div className="flex items-center gap-2.5">
+                <Image
+                  src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+                  alt={team.tricode}
+                  width={24}
+                  height={24}
+                  unoptimized
+                />
+                <div>
+                  <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
+                  {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">Playoff</span>}
+                </div>
+              </div>
+              <span className="text-center text-sm font-medium tabular-nums">{team.wins}</span>
+              <span className="text-center text-sm text-text-secondary tabular-nums">{team.losses}</span>
+              <span className="text-center text-sm tabular-nums">{winPct.toFixed(3).slice(1)}</span>
+              <span className="text-center text-xs text-text-secondary tabular-nums">{gb}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default async function StandingsPage() {
+  const standings = await getStandings();
+
+  // Compute conference ranks
+  const eastTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "East");
+  const westTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "West");
+
+  const conferenceRanks = new Map<string, number>();
+  eastTeams.forEach((t, i) => conferenceRanks.set(t.tricode, i + 1));
+  westTeams.forEach((t, i) => conferenceRanks.set(t.tricode, i + 1));
+
+  // Group by division
+  const byDivision = new Map<string, TeamRecord[]>();
+  for (const team of standings) {
+    const meta = TEAM_META[team.tricode];
+    if (!meta) continue;
+    const div = meta.division;
+    if (!byDivision.has(div)) byDivision.set(div, []);
+    byDivision.get(div)!.push(team);
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-2">Division Standings</h1>
+      <p className="text-sm text-text-secondary mb-6">Top 6 in each conference highlighted for playoff eligibility</p>
+
+      {/* Eastern Conference */}
+      <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-5 bg-accent rounded-full" />
+        Eastern Conference
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        {EAST_DIVISIONS.map((div) => (
+          <DivisionCard
+            key={div}
+            division={div}
+            teams={byDivision.get(div) || []}
+            conferenceRanks={conferenceRanks}
+          />
+        ))}
+      </div>
+
+      {/* Western Conference */}
+      <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-5 bg-accent rounded-full" />
+        Western Conference
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {WEST_DIVISIONS.map((div) => (
+          <DivisionCard
+            key={div}
+            division={div}
+            teams={byDivision.get(div) || []}
+            conferenceRanks={conferenceRanks}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
