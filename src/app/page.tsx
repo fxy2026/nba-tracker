@@ -38,16 +38,23 @@ function mapLiveGame(g: {
   };
 }
 
+// Revalidate homepage every 30s when dynamic
+export const revalidate = 30;
+
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const today = formatDate(new Date());
   const selectedDate = params.date || today;
   const isToday = selectedDate === today;
 
+  // Fetch games (critical path) + replay IDs (timeout at 2s so it never blocks long)
   const [liveGames, scheduledGames, replayGameIds] = await Promise.all([
     isToday ? getTodayScoreboard() : Promise.resolve([]),
     !isToday ? getGamesByDate(selectedDate) : Promise.resolve([]),
-    getAllReplayGameIds().catch(() => [] as string[]),
+    Promise.race([
+      getAllReplayGameIds().catch(() => [] as string[]),
+      new Promise<string[]>((r) => setTimeout(() => r([]), 2000)),
+    ]),
   ]);
 
   const games = isToday ? liveGames.map(mapLiveGame) : scheduledGames;

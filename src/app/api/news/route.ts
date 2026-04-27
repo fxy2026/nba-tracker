@@ -48,7 +48,9 @@ export async function GET(request: NextRequest) {
       image: a.images?.[0]?.url || "",
     }));
 
-    return NextResponse.json({ data: result });
+    return NextResponse.json({ data: result }, {
+      headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
+    });
   } catch {
     return NextResponse.json({ data: [] });
   }

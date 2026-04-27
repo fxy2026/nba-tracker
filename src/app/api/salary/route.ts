@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a: { season: number }, b: { season: number }) => b.season - a.season);
 
-    return NextResponse.json({ data: playerContracts });
+    return NextResponse.json({ data: playerContracts }, {
+      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=172800" },
+    });
   } catch {
     return NextResponse.json({ data: [] });
   }

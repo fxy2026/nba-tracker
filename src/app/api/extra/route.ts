@@ -55,5 +55,7 @@ export async function GET() {
   return NextResponse.json({
     recent: recentFinished.slice(0, 6),
     playoffs: playoffGames,
+  }, {
+    headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" },
   });
 }

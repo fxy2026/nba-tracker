@@ -3,11 +3,10 @@ import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper } from "lucide-react";
-import PlayerCareerStats from "@/components/player/PlayerCareerStats";
-import PlayerGameLog from "@/components/player/PlayerGameLog";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
+import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
 
 // Revalidate every 5 minutes
 export const revalidate = 300;
@@ -170,8 +169,7 @@ export default async function PlayerPage({ params }: PageProps) {
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerNews playerName={fullName} />
-          <PlayerGameLog playerId={personId} />
-          <PlayerCareerStats playerId={personId} />
+          <PlayerStatsBundle playerId={personId} />
         </div>
 
         {/* Team Link */}

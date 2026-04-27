@@ -49,7 +49,9 @@ export async function GET() {
     });
 
     standingsCache = { data: teams, ts: Date.now() };
-    return NextResponse.json({ data: teams });
+    return NextResponse.json({ data: teams }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch {
     return NextResponse.json({ error: "Failed to compute standings" }, { status: 500 });
   }
