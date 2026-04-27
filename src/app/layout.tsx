@@ -20,6 +20,7 @@ import type { Viewport } from "next";
 export const metadata: Metadata = {
   title: "NBA Tracker - Live Scores & Box Scores",
   description: "NBA basketball game scores, player stats, and box scores",
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {

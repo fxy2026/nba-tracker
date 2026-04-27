@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PlayoffsBracket from "./PlayoffsBracket";
+import PlayoffBracketV2 from "./PlayoffBracketV2";
 import RecentHighlights from "./RecentHighlights";
 
 export default function HomeExtra() {
@@ -33,7 +33,7 @@ export default function HomeExtra() {
 
   return (
     <div className="mt-10 space-y-10">
-      {data.playoffs.length > 0 && <PlayoffsBracket games={data.playoffs} />}
+      {data.playoffs.length > 0 && <PlayoffBracketV2 games={data.playoffs} />}
       {data.recent.length > 0 && <RecentHighlights games={data.recent} />}
     </div>
   );

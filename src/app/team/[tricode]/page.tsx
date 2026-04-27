@@ -5,6 +5,7 @@ import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
+import FavoriteButton from "@/components/FavoriteButton";
 
 // ISR: serve cached page, revalidate every 10 minutes
 export const revalidate = 600;
@@ -77,6 +78,44 @@ export default async function TeamPage({ params }: PageProps) {
   recentGames.sort((a, b) => b.date.localeCompare(a.date));
   upcomingGames.sort((a, b) => a.date.localeCompare(b.date));
 
+  // Compute season stats
+  let totalPointsScored = 0;
+  let totalPointsAllowed = 0;
+  let homeWins = 0, homeLosses = 0;
+  let awayWins = 0, awayLosses = 0;
+  let gamesPlayed = 0;
+
+  for (const g of recentGames) {
+    gamesPlayed++;
+    const [scored, allowed] = g.score.split("-").map(Number);
+    totalPointsScored += scored;
+    totalPointsAllowed += allowed;
+    if (g.home) {
+      if (g.won) homeWins++; else homeLosses++;
+    } else {
+      if (g.won) awayWins++; else awayLosses++;
+    }
+  }
+
+  const ppg = gamesPlayed > 0 ? (totalPointsScored / gamesPlayed).toFixed(1) : "0.0";
+  const oppPpg = gamesPlayed > 0 ? (totalPointsAllowed / gamesPlayed).toFixed(1) : "0.0";
+
+  // Streak calculation (based on most recent games order which is already desc)
+  let streakType = "";
+  let streakCount = 0;
+  for (const g of recentGames) {
+    const curr = g.won ? "W" : "L";
+    if (streakCount === 0) {
+      streakType = curr;
+      streakCount = 1;
+    } else if (curr === streakType) {
+      streakCount++;
+    } else {
+      break;
+    }
+  }
+  const streakDisplay = streakCount > 0 ? `${streakType}${streakCount}` : "-";
+
   // Compute head-to-head rivalries
   const h2hMap: Record<string, { opponent: string; opponentId: number; wins: number; losses: number }> = {};
   for (const g of recentGames) {
@@ -109,7 +148,10 @@ export default async function TeamPage({ params }: PageProps) {
         <div className="flex items-center gap-5">
           <TeamLogo teamId={team.teamId} tricode={team.tricode} size={72} />
           <div>
-            <h1 className="text-3xl font-bold">{team.city} <span className="text-accent">{team.name}</span></h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold">{team.city} <span className="text-accent">{team.name}</span></h1>
+              <FavoriteButton type="team" id={team.tricode} />
+            </div>
             <p className="text-text-secondary text-sm mt-1">
               {team.conference}ern Conference &middot; {team.division} Division
             </p>
@@ -135,6 +177,42 @@ export default async function TeamPage({ params }: PageProps) {
             <p className="text-2xl font-bold mt-1">{roster.length}</p>
           </div>
         </div>
+
+        {/* Season Stats */}
+        {gamesPlayed > 0 && (
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">PPG</p>
+              <p className="text-lg font-bold text-accent mt-0.5">{ppg}</p>
+            </div>
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">OPP PPG</p>
+              <p className="text-lg font-bold mt-0.5">{oppPpg}</p>
+            </div>
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Home</p>
+              <p className="text-lg font-bold mt-0.5">
+                <span className="text-success">{homeWins}</span>
+                <span className="text-text-secondary mx-0.5">-</span>
+                <span className="text-danger">{homeLosses}</span>
+              </p>
+            </div>
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Away</p>
+              <p className="text-lg font-bold mt-0.5">
+                <span className="text-success">{awayWins}</span>
+                <span className="text-text-secondary mx-0.5">-</span>
+                <span className="text-danger">{awayLosses}</span>
+              </p>
+            </div>
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Streak</p>
+              <p className={`text-lg font-bold mt-0.5 ${streakType === "W" ? "text-success" : "text-danger"}`}>
+                {streakDisplay}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">

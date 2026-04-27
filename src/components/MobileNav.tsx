@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, AlertTriangle } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, Heart } from "lucide-react";
 
 const links = [
   { href: "/", label: "Today", icon: Trophy },
   { href: "/schedule", label: "Schedule", icon: Calendar },
   { href: "/search", label: "Search", icon: Search },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/injuries", label: "Injuries", icon: AlertTriangle },
+  { href: "/favorites", label: "Favorites", icon: Heart },
 ];
 
 export default function MobileNav() {

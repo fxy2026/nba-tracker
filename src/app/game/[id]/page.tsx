@@ -3,12 +3,14 @@ import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
+import WinProbability from "@/components/WinProbability";
 import ShotChart from "@/components/ShotChart";
 import PlayerShotChart from "@/components/PlayerShotChart";
 import TeamCompare from "@/components/TeamCompare";
 import PlayByPlay from "@/components/PlayByPlay";
 import KeyMoments from "@/components/KeyMoments";
 import { Play, ExternalLink } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 
@@ -346,9 +348,14 @@ export default async function GamePage({ params }: PageProps) {
             <span className="text-xs text-text-secondary">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
             {beijingTime && <span className="text-xs text-text-secondary">&middot; 北京时间 {beijingTime}</span>}
           </div>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${boxScore.gameStatus === 2 ? "bg-success/15 text-success animate-pulse" : "text-text-secondary"}`}>
-            {boxScore.gameStatusText.trim()}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2 py-0.5 rounded-full ${boxScore.gameStatus === 2 ? "bg-success/15 text-success animate-pulse" : "text-text-secondary"}`}>
+              {boxScore.gameStatusText.trim()}
+            </span>
+            {isFinal && (
+              <ShareButton text={`${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${boxScore.homeTeam.teamTricode} | NBA Tracker`} />
+            )}
+          </div>
         </div>
         <div className="flex items-center justify-center gap-6 sm:gap-10 py-4">
           <div className="flex flex-col items-center gap-2">
@@ -376,6 +383,15 @@ export default async function GamePage({ params }: PageProps) {
         {boxScore.homeTeam.periods?.length > 0 && (
           <div className="mt-2 border-t border-border pt-3">
             <QuarterScores homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
+            {isFinal && boxScore.homeTeam.periods.length > 0 && (
+              <WinProbability
+                periods={boxScore.homeTeam.periods.map((p, i) => ({
+                  period: p.period,
+                  homeScore: p.score,
+                  awayScore: boxScore.awayTeam.periods[i]?.score || 0,
+                }))}
+              />
+            )}
           </div>
         )}
       </div>

@@ -3,10 +3,12 @@ import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper } from "lucide-react";
+import FavoriteButton from "@/components/FavoriteButton";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
 import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
+import PlayerAdvancedStats from "@/components/player/PlayerAdvancedStats";
 
 // Revalidate every 5 minutes
 export const revalidate = 300;
@@ -47,9 +49,12 @@ export default async function PlayerPage({ params }: PageProps) {
               />
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-3xl font-bold">
-                {player.firstName} <span className="text-accent">{player.lastName}</span>
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold">
+                  {player.firstName} <span className="text-accent">{player.lastName}</span>
+                </h1>
+                <FavoriteButton type="player" id={personId} />
+              </div>
               <div className="flex items-center justify-center sm:justify-start gap-3 mt-2 flex-wrap">
                 <Link
                   href={`/team/${player.teamAbbr}`}
@@ -166,6 +171,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
+          <PlayerAdvancedStats playerId={personId} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerNews playerName={fullName} />

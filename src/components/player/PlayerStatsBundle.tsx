@@ -114,50 +114,171 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
 
       {/* Career Stats */}
       {seasons && seasons.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold">Season-by-Season Stats</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border text-text-secondary">
-                  <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">Season</th>
-                  <th className="text-left py-2.5 px-2">Team</th>
-                  <th className="text-center py-2.5 px-2">GP</th>
-                  <th className="text-center py-2.5 px-2">MIN</th>
-                  <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
-                  <th className="text-center py-2.5 px-2">REB</th>
-                  <th className="text-center py-2.5 px-2">AST</th>
-                  <th className="text-center py-2.5 px-2">STL</th>
-                  <th className="text-center py-2.5 px-2">BLK</th>
-                  <th className="text-center py-2.5 px-2">FG%</th>
-                  <th className="text-center py-2.5 px-2">3P%</th>
-                  <th className="text-center py-2.5 px-2">FT%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {seasons.map((s, i) => (
-                  <tr key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}-${i}`} className="border-b border-border/30 hover:bg-bg-hover/50">
-                    <td className="py-2 px-3 font-medium text-text-primary sticky left-0 bg-bg-card">{s.SEASON_ID}</td>
-                    <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.MIN?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2 font-bold text-accent">{s.PTS?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2">{s.REB?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2">{s.AST?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.STL?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.BLK?.toFixed(1)}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.FG_PCT != null ? (s.FG_PCT * 100).toFixed(1) + "%" : "-"}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.FG3_PCT != null ? (s.FG3_PCT * 100).toFixed(1) + "%" : "-"}</td>
-                    <td className="text-center py-2 px-2 text-text-secondary">{s.FT_PCT != null ? (s.FT_PCT * 100).toFixed(1) + "%" : "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <CareerStatsTable seasons={seasons} />
       )}
+    </div>
+  );
+}
+
+function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
+  // Find best season by PPG
+  let bestIdx = 0;
+  let bestPts = 0;
+  for (let i = 0; i < seasons.length; i++) {
+    if (seasons[i].PTS > bestPts) {
+      bestPts = seasons[i].PTS;
+      bestIdx = i;
+    }
+  }
+
+  // Compute career averages (weighted by GP)
+  let totalGP = 0, totalMIN = 0, totalPTS = 0, totalREB = 0, totalAST = 0;
+  let totalSTL = 0, totalBLK = 0;
+  let fgMadeTotal = 0, fgAttTotal = 0, fg3MadeTotal = 0, fg3AttTotal = 0, ftMadeTotal = 0, ftAttTotal = 0;
+
+  for (const s of seasons) {
+    totalGP += s.GP;
+    totalMIN += s.MIN * s.GP;
+    totalPTS += s.PTS * s.GP;
+    totalREB += s.REB * s.GP;
+    totalAST += s.AST * s.GP;
+    totalSTL += s.STL * s.GP;
+    totalBLK += s.BLK * s.GP;
+    // Approximate FG/3P/FT attempts from percentages
+    if (s.FG_PCT != null) {
+      fgMadeTotal += s.FG_PCT * s.GP;
+      fgAttTotal += s.GP;
+    }
+    if (s.FG3_PCT != null) {
+      fg3MadeTotal += s.FG3_PCT * s.GP;
+      fg3AttTotal += s.GP;
+    }
+    if (s.FT_PCT != null) {
+      ftMadeTotal += s.FT_PCT * s.GP;
+      ftAttTotal += s.GP;
+    }
+  }
+
+  const careerAvg = totalGP > 0 ? {
+    GP: totalGP,
+    MIN: totalMIN / totalGP,
+    PTS: totalPTS / totalGP,
+    REB: totalREB / totalGP,
+    AST: totalAST / totalGP,
+    STL: totalSTL / totalGP,
+    BLK: totalBLK / totalGP,
+    FG_PCT: fgAttTotal > 0 ? fgMadeTotal / fgAttTotal : null,
+    FG3_PCT: fg3AttTotal > 0 ? fg3MadeTotal / fg3AttTotal : null,
+    FT_PCT: ftAttTotal > 0 ? ftMadeTotal / ftAttTotal : null,
+  } : null;
+
+  // Current season = last one in the list
+  const currentSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
+
+  // Compare current to career average
+  function CompareArrow({ current, career }: { current: number; career: number }) {
+    if (current > career) return <span className="text-success text-[9px] ml-0.5">&#9650;</span>;
+    if (current < career) return <span className="text-danger text-[9px] ml-0.5">&#9660;</span>;
+    return null;
+  }
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border">
+        <h3 className="text-sm font-semibold">Season-by-Season Stats</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border text-text-secondary">
+              <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">Season</th>
+              <th className="text-left py-2.5 px-2">Team</th>
+              <th className="text-center py-2.5 px-2">GP</th>
+              <th className="text-center py-2.5 px-2">MIN</th>
+              <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
+              <th className="text-center py-2.5 px-2">REB</th>
+              <th className="text-center py-2.5 px-2">AST</th>
+              <th className="text-center py-2.5 px-2">STL</th>
+              <th className="text-center py-2.5 px-2">BLK</th>
+              <th className="text-center py-2.5 px-2">FG%</th>
+              <th className="text-center py-2.5 px-2">3P%</th>
+              <th className="text-center py-2.5 px-2">FT%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {seasons.map((s, i) => (
+              <tr
+                key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}-${i}`}
+                className={`border-b border-border/30 hover:bg-bg-hover/50 ${i === bestIdx ? "bg-accent/5" : ""}`}
+              >
+                <td className={`py-2 px-3 font-medium sticky left-0 ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
+                  <span className="flex items-center gap-1">
+                    {i === bestIdx && <span className="text-accent" title="Best PPG season">&#9733;</span>}
+                    {s.SEASON_ID}
+                  </span>
+                </td>
+                <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.MIN?.toFixed(1)}</td>
+                <td className={`text-center py-2 px-2 font-bold ${i === bestIdx ? "text-accent" : "text-accent"}`}>{s.PTS?.toFixed(1)}</td>
+                <td className="text-center py-2 px-2">{s.REB?.toFixed(1)}</td>
+                <td className="text-center py-2 px-2">{s.AST?.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.STL?.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.BLK?.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.FG_PCT != null ? (s.FG_PCT * 100).toFixed(1) + "%" : "-"}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.FG3_PCT != null ? (s.FG3_PCT * 100).toFixed(1) + "%" : "-"}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{s.FT_PCT != null ? (s.FT_PCT * 100).toFixed(1) + "%" : "-"}</td>
+              </tr>
+            ))}
+            {/* Career Average Row */}
+            {careerAvg && (
+              <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
+                <td className="py-2 px-3 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold">Career</td>
+                <td className="py-2 px-2 text-text-secondary">-</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.GP}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.MIN.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 font-bold text-text-primary">{careerAvg.PTS.toFixed(1)}</td>
+                <td className="text-center py-2 px-2">{careerAvg.REB.toFixed(1)}</td>
+                <td className="text-center py-2 px-2">{careerAvg.AST.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.STL.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.BLK.toFixed(1)}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.FG_PCT != null ? (careerAvg.FG_PCT * 100).toFixed(1) + "%" : "-"}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.FG3_PCT != null ? (careerAvg.FG3_PCT * 100).toFixed(1) + "%" : "-"}</td>
+                <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.FT_PCT != null ? (careerAvg.FT_PCT * 100).toFixed(1) + "%" : "-"}</td>
+              </tr>
+            )}
+            {/* Current Season vs Career Comparison */}
+            {currentSeason && careerAvg && seasons.length > 1 && (
+              <tr className="bg-bg-hover/30 text-[10px]">
+                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>vs Career Avg</td>
+                <td className="text-center py-1.5 px-2 font-medium">
+                  {currentSeason.PTS > careerAvg.PTS ? "+" : ""}{(currentSeason.PTS - careerAvg.PTS).toFixed(1)}
+                  <CompareArrow current={currentSeason.PTS} career={careerAvg.PTS} />
+                </td>
+                <td className="text-center py-1.5 px-2">
+                  {currentSeason.REB > careerAvg.REB ? "+" : ""}{(currentSeason.REB - careerAvg.REB).toFixed(1)}
+                  <CompareArrow current={currentSeason.REB} career={careerAvg.REB} />
+                </td>
+                <td className="text-center py-1.5 px-2">
+                  {currentSeason.AST > careerAvg.AST ? "+" : ""}{(currentSeason.AST - careerAvg.AST).toFixed(1)}
+                  <CompareArrow current={currentSeason.AST} career={careerAvg.AST} />
+                </td>
+                <td className="text-center py-1.5 px-2 text-text-secondary">
+                  {currentSeason.STL > careerAvg.STL ? "+" : ""}{(currentSeason.STL - careerAvg.STL).toFixed(1)}
+                  <CompareArrow current={currentSeason.STL} career={careerAvg.STL} />
+                </td>
+                <td className="text-center py-1.5 px-2 text-text-secondary">
+                  {currentSeason.BLK > careerAvg.BLK ? "+" : ""}{(currentSeason.BLK - careerAvg.BLK).toFixed(1)}
+                  <CompareArrow current={currentSeason.BLK} career={careerAvg.BLK} />
+                </td>
+                <td className="text-center py-1.5 px-2 text-text-secondary">-</td>
+                <td className="text-center py-1.5 px-2 text-text-secondary">-</td>
+                <td className="text-center py-1.5 px-2 text-text-secondary">-</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
