@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { TEAM_META } from "@/lib/teams";
@@ -11,6 +11,7 @@ const TEAMS = Object.values(TEAM_META);
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
@@ -130,7 +131,14 @@ export default function Navbar() {
           {/* Search */}
           <div className="relative ml-1">
             {searchOpen ? (
-              <form action="/search" className="flex items-center" onSubmit={() => setSearchOpen(false)}>
+              <form className="flex items-center" onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                  setSearchOpen(false);
+                  setSearchQuery("");
+                }
+              }}>
                 <input
                   ref={inputRef}
                   autoFocus
@@ -139,7 +147,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search players..."
                   className="w-48 bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
-                  onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
+                  onBlur={() => { setTimeout(() => { if (!searchQuery) setSearchOpen(false); }, 150); }}
                 />
               </form>
             ) : (

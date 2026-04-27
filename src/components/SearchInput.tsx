@@ -53,15 +53,18 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
+        clearTimeout(timeout);
         if (res.ok) {
           const json = await res.json();
           setResults(json.data || []);
           setShowDropdown(true);
         }
-      } catch { /* ignore */ }
+      } catch { /* timeout or network error */ }
       setLoading(false);
-    }, 300);
+    }, 250);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
