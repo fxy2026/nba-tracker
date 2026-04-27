@@ -32,7 +32,7 @@ export default function HomeExtra() {
   }
 
   return (
-    <div className="mt-10 space-y-10">
+    <div className="mt-10 space-y-10" style={{ contentVisibility: "auto", containIntrinsicSize: "auto 400px" }}>
       {data.playoffs.length > 0 && <PlayoffBracketV2 games={data.playoffs} />}
       {data.recent.length > 0 && <RecentHighlights games={data.recent} />}
     </div>

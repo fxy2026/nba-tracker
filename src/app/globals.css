@@ -70,15 +70,22 @@ table {
   border-collapse: collapse;
 }
 
-/* Scroll performance: GPU-accelerate scrollable containers */
+/* Scroll performance: GPU-accelerate all scrolling */
 .overflow-x-auto,
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+}
+
+/* Main scrollable area: isolate paint */
+main {
+  contain: layout style;
 }
 
 /* Promote sticky navbar to own compositing layer to avoid repaint on scroll */
 nav.sticky {
   will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Card containment for layout/paint isolation */
@@ -118,10 +125,11 @@ nav.sticky {
   animation-timing-function: ease-out;
 }
 
-/* Optimize scrollable containers */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+/* Smooth scroll only for explicit scroll-to actions, not during user swipe */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Mobile safe areas for PWA standalone mode */
