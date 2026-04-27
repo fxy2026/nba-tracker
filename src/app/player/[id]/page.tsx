@@ -5,6 +5,9 @@ import { TEAM_META } from "@/lib/teams";
 import { notFound } from "next/navigation";
 import { User } from "lucide-react";
 
+// ISR: serve cached page, revalidate every 30 minutes
+export const revalidate = 1800;
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

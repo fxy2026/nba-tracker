@@ -159,23 +159,52 @@ export async function getTodayScoreboard(): Promise<NbaGame[]> {
   return data.scoreboard?.games || [];
 }
 
-// In-memory cache for the 11MB schedule
+// In-memory cache for the 11MB schedule — extended TTL + stale-while-revalidate
 let scheduleCache: { data: ScheduleDate[]; ts: number } | null = null;
-const SCHEDULE_TTL = 30 * 60 * 1000; // 30 min
+const SCHEDULE_TTL = 2 * 60 * 60 * 1000; // 2 hours (data changes infrequently)
+let scheduleFetching = false;
 
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
-  if (scheduleCache && Date.now() - scheduleCache.ts < SCHEDULE_TTL) {
+  // Serve from cache immediately if available (even if stale)
+  if (scheduleCache) {
+    // Background revalidate if past TTL
+    if (Date.now() - scheduleCache.ts > SCHEDULE_TTL && !scheduleFetching) {
+      scheduleFetching = true;
+      fetchScheduleInBackground();
+    }
     return scheduleCache.data;
   }
-  const res = await fetch(
-    `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
-    { headers: HEADERS, next: { revalidate: 3600 } }
-  );
-  if (!res.ok) return scheduleCache?.data || [];
-  const data = await res.json();
-  const dates = data.leagueSchedule?.gameDates || [];
-  scheduleCache = { data: dates, ts: Date.now() };
-  return dates;
+  // Cold start: must fetch
+  return fetchScheduleBlocking();
+}
+
+async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
+  try {
+    const res = await fetch(
+      `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
+      { headers: HEADERS, next: { revalidate: 7200 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const dates = data.leagueSchedule?.gameDates || [];
+    scheduleCache = { data: dates, ts: Date.now() };
+    return dates;
+  } catch {
+    return scheduleCache?.data || [];
+  }
+}
+
+function fetchScheduleInBackground() {
+  fetch(`${CDN_BASE}/staticData/scheduleLeagueV2.json`, { headers: HEADERS, next: { revalidate: 7200 } })
+    .then((res) => res.ok ? res.json() : null)
+    .then((data) => {
+      if (data) {
+        const dates = data.leagueSchedule?.gameDates || [];
+        scheduleCache = { data: dates, ts: Date.now() };
+      }
+    })
+    .catch(() => {})
+    .finally(() => { scheduleFetching = false; });
 }
 
 // Get games for a specific date from the schedule
@@ -257,45 +286,56 @@ export interface PlayerInfo {
   ast: number;
 }
 
-// Get player index (all active players with basic info)
+// Get player index (all active players with basic info) — cached permanently until server restart
 let playerIndexCache: PlayerInfo[] | null = null;
+let playerIndexFetching = false;
 
 export async function getPlayerIndex(): Promise<PlayerInfo[]> {
   if (playerIndexCache) return playerIndexCache;
-  const res = await fetch(
-    `${CDN_BASE}/staticData/playerIndex.json`,
-    { headers: HEADERS, next: { revalidate: 86400 } }
-  );
-  if (!res.ok) return [];
-  const data = await res.json();
-  const rs = data.resultSets?.[0];
-  if (!rs) return [];
-  const players = rs.rowSet.map((r: (string | number | null)[]) => ({
-    personId: r[0] as number,
-    lastName: r[1] as string,
-    firstName: r[2] as string,
-    slug: r[3] as string,
-    teamId: r[4] as number,
-    teamAbbr: r[9] as string,
-    teamCity: r[7] as string,
-    teamName: r[8] as string,
-    jersey: r[10] as string,
-    position: r[11] as string,
-    height: r[12] as string,
-    weight: r[13] as string,
-    college: r[14] as string,
-    country: r[15] as string,
-    draftYear: r[16] as number | null,
-    draftRound: r[17] as number | null,
-    draftNumber: r[18] as number | null,
-    fromYear: r[20] as string,
-    toYear: r[21] as string,
-    pts: r[22] as number,
-    reb: r[23] as number,
-    ast: r[24] as number,
-  }));
-  playerIndexCache = players;
-  return players;
+  if (playerIndexFetching) {
+    // Avoid parallel fetches — wait briefly then return whatever we have
+    await new Promise((r) => setTimeout(r, 100));
+    return playerIndexCache || [];
+  }
+  playerIndexFetching = true;
+  try {
+    const res = await fetch(
+      `${CDN_BASE}/staticData/playerIndex.json`,
+      { headers: HEADERS, next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const rs = data.resultSets?.[0];
+    if (!rs) return [];
+    const players = rs.rowSet.map((r: (string | number | null)[]) => ({
+      personId: r[0] as number,
+      lastName: r[1] as string,
+      firstName: r[2] as string,
+      slug: r[3] as string,
+      teamId: r[4] as number,
+      teamAbbr: r[9] as string,
+      teamCity: r[7] as string,
+      teamName: r[8] as string,
+      jersey: r[10] as string,
+      position: r[11] as string,
+      height: r[12] as string,
+      weight: r[13] as string,
+      college: r[14] as string,
+      country: r[15] as string,
+      draftYear: r[16] as number | null,
+      draftRound: r[17] as number | null,
+      draftNumber: r[18] as number | null,
+      fromYear: r[20] as string,
+      toYear: r[21] as string,
+      pts: r[22] as number,
+      reb: r[23] as number,
+      ast: r[24] as number,
+    }));
+    playerIndexCache = players;
+    return players;
+  } finally {
+    playerIndexFetching = false;
+  }
 }
 
 export async function getPlayerInfo(personId: number): Promise<PlayerInfo | null> {

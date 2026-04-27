@@ -9,6 +9,7 @@ import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
+import TodayHighlights from "@/components/TodayHighlights";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -70,6 +71,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           <p className="text-sm mt-1">试试选择其他日期</p>
         </div>
       )}
+
+      {/* Scoring leaders ribbon */}
+      <TodayHighlights />
 
       {/* Lazy-loaded playoff bracket + recent results */}
       <HomeExtra />

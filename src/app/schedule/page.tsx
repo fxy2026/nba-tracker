@@ -1,12 +1,14 @@
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import GameCard from "@/components/GameCard";
 
+// Serve stale page instantly, revalidate in background every 10 min
+export const revalidate = 600;
+
 export default async function SchedulePage() {
   const allDates = await getFullSchedule();
 
   // Find dates with completed/in-progress games, show recent ones
   const today = new Date();
-  const todayStr = `${(today.getMonth() + 1).toString().padStart(2, "0")}/${today.getDate().toString().padStart(2, "0")}/${today.getFullYear()}`;
 
   // Get recent 14 days of games
   const recentDates: { dateStr: string; displayDate: string; games: ScheduleGame[] }[] = [];

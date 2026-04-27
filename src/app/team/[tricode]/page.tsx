@@ -6,6 +6,9 @@ import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
 
+// ISR: serve cached page, revalidate every 10 minutes
+export const revalidate = 600;
+
 interface PageProps {
   params: Promise<{ tricode: string }>;
 }
