@@ -19,7 +19,6 @@ export default function Navbar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const teamsRef = useRef<HTMLDivElement>(null);
 
-  // Ctrl+K / Cmd+K shortcut to open search
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -36,7 +35,6 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen, teamsOpen]);
 
-  // Close teams dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (teamsRef.current && !teamsRef.current.contains(e.target as Node)) {
@@ -60,21 +58,21 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top">
+      <div className="max-w-7xl mx-auto px-4 h-12 sm:h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center group-hover:bg-accent-hover transition-colors">
-            <Trophy size={20} className="text-white" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-accent rounded-lg flex items-center justify-center group-hover:bg-accent-hover transition-colors">
+            <Trophy size={18} className="text-white" />
           </div>
-          <span className="text-lg font-bold tracking-tight">
+          <span className="text-base sm:text-lg font-bold tracking-tight">
             NBA<span className="text-accent">Tracker</span>
             <span className="text-[10px] text-text-secondary font-normal ml-1.5 hidden sm:inline">by FXY</span>
           </span>
         </Link>
 
-        {/* Nav links */}
-        <div className="flex items-center gap-1">
+        {/* Desktop nav links — hidden on mobile */}
+        <div className="hidden sm:flex items-center gap-1">
           {links.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
@@ -89,7 +87,7 @@ export default function Navbar() {
                 }`}
               >
                 <Icon size={16} />
-                <span className="hidden sm:inline">{label}</span>
+                <span className="hidden lg:inline">{label}</span>
               </Link>
             );
           })}
@@ -105,7 +103,7 @@ export default function Navbar() {
               }`}
             >
               <Users size={16} />
-              <span className="hidden sm:inline">Teams</span>
+              <span className="hidden lg:inline">Teams</span>
             </button>
             {teamsOpen && (
               <div className="absolute right-0 top-full mt-2 w-[360px] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
@@ -133,7 +131,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Theme Toggle */}
           <ThemeToggle />
 
           {/* Search */}
@@ -165,10 +162,23 @@ export default function Navbar() {
                 title="Search (Ctrl+K)"
               >
                 <Search size={18} />
-                <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">⌘K</kbd>
+                <kbd className="hidden lg:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">⌘K</kbd>
               </button>
             )}
           </div>
+        </div>
+
+        {/* Mobile right side — only search + theme */}
+        <div className="flex sm:hidden items-center gap-1">
+          <ThemeToggle />
+          <button
+            onClick={() => {
+              router.push("/search");
+            }}
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+          >
+            <Search size={18} />
+          </button>
         </div>
       </div>
     </nav>

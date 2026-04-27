@@ -124,7 +124,18 @@ nav.sticky {
   scroll-behavior: smooth;
 }
 
-/* Mobile bottom nav safe area */
+/* Mobile safe areas for PWA standalone mode */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* PWA standalone mode adjustments */
+@media (display-mode: standalone) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 }

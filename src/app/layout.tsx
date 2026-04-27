@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   title: "NBA Tracker - Live Scores & Box Scores",
   description: "NBA basketball game scores, player stats, and box scores",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "NBA Tracker",
+  },
 };
 
 export const viewport: Viewport = {

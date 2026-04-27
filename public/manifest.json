@@ -1,13 +1,15 @@
 {
-  "name": "NBA Tracker",
-  "short_name": "NBATracker",
-  "description": "Live NBA scores, stats, and box scores",
+  "name": "NBA Tracker - Live Scores & Stats",
+  "short_name": "NBA Tracker",
+  "description": "Live NBA scores, player stats, box scores, and more",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
+  "categories": ["sports"],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
   ]
 }
