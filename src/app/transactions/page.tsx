@@ -119,7 +119,22 @@ export default function TransactionsPage() {
                 {/* Timeline dot */}
                 <div className="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-accent border-2 border-bg-primary z-10" />
 
-                <h2 className="text-sm font-semibold text-text-secondary mb-2">{dateKey}</h2>
+                <h2 className="text-sm font-semibold text-text-secondary mb-2">
+                  {dateKey}
+                  {(() => {
+                    const d = new Date(dateKey);
+                    if (isNaN(d.getTime())) return null;
+                    const now = new Date();
+                    const diffMs = now.getTime() - d.getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    let relative = "";
+                    if (diffDays === 0) relative = "today";
+                    else if (diffDays === 1) relative = "yesterday";
+                    else if (diffDays > 1 && diffDays < 365) relative = `${diffDays} days ago`;
+                    if (!relative) return null;
+                    return <span className="text-xs text-text-secondary/70 font-normal ml-2">({relative})</span>;
+                  })()}
+                </h2>
                 <div className="space-y-2">
                   {grouped.get(dateKey)!.map((t, idx) => (
                     <div

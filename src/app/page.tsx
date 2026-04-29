@@ -136,18 +136,30 @@ export default async function HomePage({ searchParams }: PageProps) {
       })()}
 
       {games.length > 0 ? (
-        <div className="flex items-center gap-2 mt-6 mb-3">
-          <span className="text-sm font-medium text-text-primary">{games.length} Games</span>
-          {games.filter(g => g.gameStatus === 2).length > 0 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-              {games.filter(g => g.gameStatus === 2).length} Live
-            </span>
-          )}
-          {games.filter(g => g.gameStatus === 3).length > 0 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">
-              {games.filter(g => g.gameStatus === 3).length} Final
-            </span>
-          )}
+        <div className="mt-6 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-text-primary">{games.length} Games</span>
+            {games.filter(g => g.gameStatus === 2).length > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+                {games.filter(g => g.gameStatus === 2).length} Live
+              </span>
+            )}
+            {games.filter(g => g.gameStatus === 3).length > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">
+                {games.filter(g => g.gameStatus === 3).length} Final
+              </span>
+            )}
+          </div>
+          {(() => {
+            const finishedGames = games.filter(g => g.gameStatus === 3);
+            if (finishedGames.length === 0) return null;
+            const totalPts = finishedGames.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0);
+            return (
+              <p className="text-xs text-text-secondary mt-1">
+                Total Points: <span className="font-bold text-accent">{totalPts}</span> across {finishedGames.length} finished game{finishedGames.length !== 1 ? "s" : ""}
+              </p>
+            );
+          })()}
         </div>
       ) : null}
       {games.length > 0 ? (

@@ -44,7 +44,22 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
               <span className="text-xs text-text-secondary">{game.seriesText}</span>
             )}
             {isScheduled && game.gameDateTimeUTC && (
-              <GameCountdown gameTimeUTC={game.gameDateTimeUTC} />
+              <>
+                <GameCountdown gameTimeUTC={game.gameDateTimeUTC} />
+                {(() => {
+                  try {
+                    const d = new Date(game.gameDateTimeUTC);
+                    if (isNaN(d.getTime())) return null;
+                    const hh = d.getUTCHours() + 8;
+                    const mm = d.getUTCMinutes();
+                    const adjustedH = ((hh % 24) + 24) % 24;
+                    const timeStr = `${String(adjustedH).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+                    return (
+                      <span className="text-[10px] text-text-secondary">{timeStr} 北京时间</span>
+                    );
+                  } catch { return null; }
+                })()}
+              </>
             )}
           </div>
           <div className="flex items-center gap-1.5">

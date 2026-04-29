@@ -209,7 +209,16 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
 
       {showDropdown && results.length === 0 && query.length >= 2 && !loading && (
         <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl p-6 text-center">
-          <p className="text-text-secondary text-sm">No players found for &ldquo;{query}&rdquo;</p>
+          <svg viewBox="0 0 80 80" className="w-16 h-16 mx-auto mb-3 opacity-20">
+            <circle cx="40" cy="40" r="28" fill="none" stroke="currentColor" strokeWidth="2.5" />
+            <line x1="40" y1="12" x2="40" y2="68" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M12,40 Q40,18 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M12,40 Q40,62 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+          <p className="text-text-primary text-sm font-medium">No players found</p>
+          <p className="text-text-secondary text-xs mt-1">
+            No results for &ldquo;{query}&rdquo;. Try a different spelling or search by last name.
+          </p>
         </div>
       )}
     </div>

@@ -280,6 +280,26 @@ export default async function StandingsPage() {
             <p className="text-[10px] text-text-secondary text-center">
               {eastWins > westWins ? `East leads by ${eastWins - westWins} wins` : westWins > eastWins ? `West leads by ${westWins - eastWins} wins` : "Tied"}
             </p>
+            {(() => {
+              // Inter-conference: East losses = games played vs West that East lost = West's wins against East
+              // Total inter-conference games = eastLosses that come from west + eastWins that come from west
+              // Since standings only has W/L totals, approximate: total games = sum of all team games / 2
+              const eastTotalGames = eastTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
+              const westTotalGames = westTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
+              const totalGames = eastTotalGames + westTotalGames;
+              // Intra-conference games: each conference plays within itself
+              // Inter-conference: total games - intra games on each side
+              // Rough estimate: each team plays 82 games, ~52 within conference, ~30 inter
+              const eastTeamCount = eastTeams.length || 15;
+              const westTeamCount = westTeams.length || 15;
+              const interConferenceGames = Math.round(totalGames - (eastTeamCount * (eastTeamCount - 1)) - (westTeamCount * (westTeamCount - 1)));
+              const estInterGames = Math.max(interConferenceGames, 0);
+              return estInterGames > 0 ? (
+                <p className="text-[10px] text-text-secondary text-center mt-1">
+                  ~{Math.round(totalGames)} total games played this season ({eastTeams.length + westTeams.length} teams)
+                </p>
+              ) : null;
+            })()}
           </div>
         );
       })()}

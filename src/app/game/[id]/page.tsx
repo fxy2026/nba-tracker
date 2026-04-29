@@ -655,6 +655,39 @@ export default async function GamePage({ params }: PageProps) {
         <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} />
       )}
 
+      {/* Player Ratings — for final games */}
+      {isFinal && (() => {
+        const allPlayedPlayers = [
+          ...boxScore.awayTeam.players.filter(p => p.played === "1").map(p => ({ ...p, teamTricode: boxScore.awayTeam.teamTricode })),
+          ...boxScore.homeTeam.players.filter(p => p.played === "1").map(p => ({ ...p, teamTricode: boxScore.homeTeam.teamTricode })),
+        ];
+        const scored = allPlayedPlayers.map(p => {
+          const s = p.statistics;
+          const gameScore = s.points + 0.4 * s.fieldGoalsMade - 0.7 * s.fieldGoalsAttempted + 0.3 * s.freeThrowsMade + s.reboundsTotal + s.steals + s.blocks - 0.7 * s.turnovers;
+          return { name: p.nameI, teamTricode: p.teamTricode, gameScore: Math.round(gameScore * 10) / 10 };
+        }).sort((a, b) => b.gameScore - a.gameScore).slice(0, 5);
+        if (scored.length === 0) return null;
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+              <span className="w-1 h-4 bg-accent rounded-full" />
+              Player Ratings
+            </h3>
+            <div className="space-y-2">
+              {scored.map((p, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-bg-secondary rounded-lg">
+                  <span className={`text-sm font-bold w-6 text-center ${i === 0 ? "text-accent" : "text-text-secondary"}`}>#{i + 1}</span>
+                  <span className="text-sm font-medium text-text-primary flex-1">{p.name}</span>
+                  <span className="text-[10px] text-text-secondary">{p.teamTricode}</span>
+                  <span className={`text-sm font-bold tabular-nums ${i === 0 ? "text-accent" : "text-text-primary"}`}>{p.gameScore}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[9px] text-text-secondary mt-2">Game Score = PTS + 0.4*FG - 0.7*FGA + 0.3*FT + REB + STL + BLK - 0.7*TO</p>
+          </div>
+        );
+      })()}
+
       {/* Replay links — streamed */}
       <Suspense fallback={null}>
         <ReplaySection gameId={id} />

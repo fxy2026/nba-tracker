@@ -269,6 +269,39 @@ export default async function TeamPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Season Progression — wins per 10-game segment */}
+      {recentGames.length >= 10 && (() => {
+        const chronological = [...recentGames].reverse();
+        const segments: { label: string; wins: number; total: number }[] = [];
+        for (let i = 0; i < chronological.length; i += 10) {
+          const chunk = chronological.slice(i, i + 10);
+          const w = chunk.filter(g => g.won).length;
+          const start = i + 1;
+          const end = Math.min(i + 10, chronological.length);
+          segments.push({ label: `${start}-${end}`, wins: w, total: chunk.length });
+        }
+        const maxWins = Math.max(...segments.map(s => s.total), 1);
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Season Progression (Wins per 10 games)</h3>
+            <div className="flex items-end gap-2 h-28">
+              {segments.map((seg, i) => {
+                const barH = (seg.wins / maxWins) * 100;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <span className="text-xs font-bold text-accent">{seg.wins}W</span>
+                    <div className="w-full rounded-t relative" style={{ height: `${barH}%`, minHeight: "4px" }}>
+                      <div className="w-full h-full bg-accent/70 rounded-t" />
+                    </div>
+                    <span className="text-[9px] text-text-secondary">{seg.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* vs Division Record */}
       {recentGames.length > 0 && (() => {
         const divisionTeams = new Set(

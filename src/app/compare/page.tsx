@@ -257,6 +257,56 @@ export default function ComparePage() {
             })()}
           </div>
 
+          {/* Radar Chart */}
+          <div className="px-6 pb-4">
+            <h3 className="text-xs text-text-secondary font-medium uppercase mb-2 text-center">Radar Comparison</h3>
+            {(() => {
+              const stats = COMPARE_STATS.map(({ key, label }) => {
+                const v1 = player1[key as keyof PlayerData] as number;
+                const v2 = player2[key as keyof PlayerData] as number;
+                const max = Math.max(v1, v2, 0.1);
+                return { label, v1: v1 / max, v2: v2 / max };
+              });
+              const cx = 100, cy = 100, r = 70;
+              const n = stats.length;
+              const angleStep = (2 * Math.PI) / n;
+              const getPoint = (ratio: number, i: number) => {
+                const angle = -Math.PI / 2 + i * angleStep;
+                return { x: cx + r * ratio * Math.cos(angle), y: cy + r * ratio * Math.sin(angle) };
+              };
+              const p1Points = stats.map((s, i) => getPoint(s.v1, i));
+              const p2Points = stats.map((s, i) => getPoint(s.v2, i));
+              const poly1 = p1Points.map(p => `${p.x},${p.y}`).join(" ");
+              const poly2 = p2Points.map(p => `${p.x},${p.y}`).join(" ");
+              // Grid rings
+              const rings = [0.33, 0.66, 1.0];
+              return (
+                <svg viewBox="0 0 200 200" className="w-full max-w-[240px] mx-auto">
+                  {rings.map((ring) => (
+                    <polygon key={ring} points={Array.from({ length: n }, (_, i) => {
+                      const pt = getPoint(ring, i);
+                      return `${pt.x},${pt.y}`;
+                    }).join(" ")} fill="none" stroke="var(--border)" strokeWidth="0.5" />
+                  ))}
+                  {stats.map((_, i) => {
+                    const pt = getPoint(1, i);
+                    return <line key={i} x1={cx} y1={cy} x2={pt.x} y2={pt.y} stroke="var(--border)" strokeWidth="0.3" />;
+                  })}
+                  <polygon points={poly1} fill="var(--accent)" fillOpacity="0.25" stroke="var(--accent)" strokeWidth="1.5" />
+                  <polygon points={poly2} fill="var(--success)" fillOpacity="0.15" stroke="var(--success)" strokeWidth="1.5" strokeDasharray="4 2" />
+                  {stats.map((s, i) => {
+                    const pt = getPoint(1.18, i);
+                    return <text key={i} x={pt.x} y={pt.y} textAnchor="middle" dominantBaseline="central" fill="var(--text-secondary)" fontSize="8" fontWeight="500">{s.label}</text>;
+                  })}
+                </svg>
+              );
+            })()}
+            <div className="flex justify-center gap-4 mt-1 text-[10px] text-text-secondary">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-accent" />{player1.lastName}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" />{player2.lastName}</span>
+            </div>
+          </div>
+
           {/* Visual Bar Chart */}
           <div className="px-6 pb-6">
             <svg viewBox="0 0 300 140" className="w-full max-w-md mx-auto">

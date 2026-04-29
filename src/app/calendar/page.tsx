@@ -196,6 +196,16 @@ export default function CalendarPage() {
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
                             {cell.calDay!.gameCount} {cell.calDay!.gameCount === 1 ? "game" : "games"}
                           </span>
+                          {(() => {
+                            const completedGames = cell.calDay!.games.filter(g => g.gameStatus === 3);
+                            if (completedGames.length === 0) return null;
+                            const totalPts = completedGames.reduce((s, g) => s + g.homeScore + g.awayScore, 0);
+                            return (
+                              <span className="block text-[8px] text-text-secondary mt-0.5">
+                                {totalPts} pts
+                              </span>
+                            );
+                          })()}
                           <div className="mt-1 space-y-0.5">
                             {cell.calDay!.games.slice(0, 2).map((g) => (
                               <div key={g.gameId} className="text-[9px] text-text-secondary truncate">

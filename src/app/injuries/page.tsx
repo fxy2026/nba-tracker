@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { TEAM_META } from "@/lib/teams";
 
 export const metadata: Metadata = {
   title: "伤病报告",
@@ -48,6 +50,17 @@ async function getInjuries(): Promise<TeamInjury[]> {
   } catch {
     return [];
   }
+}
+
+function findTeamMeta(displayName: string) {
+  if (!displayName) return null;
+  const lower = displayName.toLowerCase();
+  for (const meta of Object.values(TEAM_META)) {
+    if (lower.includes(meta.name.toLowerCase()) || lower.includes(meta.city.toLowerCase())) {
+      return meta;
+    }
+  }
+  return null;
 }
 
 function getStatusColor(status: string | undefined): string {
@@ -171,6 +184,19 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
             return (
               <div key={t.id || t.displayName} className="bg-bg-card rounded-xl border border-border overflow-hidden">
                 <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+                  {(() => {
+                    const meta = findTeamMeta(t.displayName || "");
+                    if (!meta) return null;
+                    return (
+                      <Image
+                        src={`https://cdn.nba.com/logos/nba/${meta.teamId}/global/L/logo.svg`}
+                        alt={meta.tricode}
+                        width={24}
+                        height={24}
+                        unoptimized
+                      />
+                    );
+                  })()}
                   <h2 className="font-semibold text-sm text-text-primary">
                     {t.displayName || "Unknown Team"}
                   </h2>

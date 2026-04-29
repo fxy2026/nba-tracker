@@ -233,6 +233,47 @@ export default async function H2HPage({ searchParams }: PageProps) {
             );
           })()}
 
+          {/* Point Differential Trend */}
+          {games.length >= 2 && t1 && (() => {
+            const chronological = [...games].reverse();
+            const diffs = chronological.map(g => {
+              const t1Score = g.homeTricode === t1 ? g.homeScore : g.awayScore;
+              const t2Score = g.homeTricode === t1 ? g.awayScore : g.homeScore;
+              return t1Score - t2Score;
+            });
+            const maxAbs = Math.max(...diffs.map(Math.abs), 1);
+            const w = 300;
+            const h = 100;
+            const midY = h / 2;
+            const padX = 20;
+            const plotW = w - padX * 2;
+            const xStep = diffs.length > 1 ? plotW / (diffs.length - 1) : 0;
+            const points = diffs.map((d, i) => ({
+              x: padX + i * xStep,
+              y: midY - (d / maxAbs) * (midY - 10),
+            }));
+            const polyline = points.map(p => `${p.x},${p.y}`).join(" ");
+            return (
+              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Point Differential Trend ({t1} perspective)</h3>
+                <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-md" preserveAspectRatio="xMidYMid meet">
+                  <line x1={padX} y1={midY} x2={w - padX} y2={midY} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 2" />
+                  <polyline points={polyline} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  {points.map((p, i) => (
+                    <g key={i}>
+                      <circle cx={p.x} cy={p.y} r="4" fill={diffs[i] >= 0 ? "var(--success)" : "var(--danger)"} />
+                      <text x={p.x} y={p.y - 8} textAnchor="middle" fill="var(--text-secondary)" fontSize="8">
+                        {diffs[i] > 0 ? "+" : ""}{diffs[i]}
+                      </text>
+                    </g>
+                  ))}
+                  <text x={padX} y={h - 2} fill="var(--text-secondary)" fontSize="7">{chronological[0]?.date.slice(5)}</text>
+                  <text x={w - padX} y={h - 2} textAnchor="end" fill="var(--text-secondary)" fontSize="7">{chronological[chronological.length - 1]?.date.slice(5)}</text>
+                </svg>
+              </div>
+            );
+          })()}
+
           {/* Game List */}
           {games.length > 0 && (
             <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

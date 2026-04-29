@@ -240,6 +240,36 @@ export default async function PlayerPage({ params }: PageProps) {
           })()}
         </div>
 
+        {/* Career PPG Highlight */}
+        {player.pts > 0 && (() => {
+          const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
+          if (isNaN(ppg) || ppg <= 0) return null;
+          const tier = ppg >= 25 ? { label: "Elite Scorer", color: "text-accent", bg: "bg-accent/10", icon: "star" }
+            : ppg >= 18 ? { label: "High Volume Scorer", color: "text-success", bg: "bg-success/10", icon: "up" }
+            : ppg >= 12 ? { label: "Solid Contributor", color: "text-blue-400", bg: "bg-blue-400/10", icon: "check" }
+            : { label: "Role Player", color: "text-text-secondary", bg: "bg-bg-hover", icon: "dot" };
+          return (
+            <div className="p-6 border-t border-border">
+              <div className={`${tier.bg} border border-border rounded-xl p-4 flex items-center gap-4`}>
+                <div className="text-center">
+                  <p className={`text-3xl font-bold ${tier.color}`}>{ppg}</p>
+                  <p className="text-[10px] text-text-secondary uppercase">Career PPG</p>
+                </div>
+                <div className="w-px h-10 bg-border" />
+                <div>
+                  <p className={`text-sm font-semibold ${tier.color}`}>{tier.label}</p>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    {ppg >= 25 ? "Top-tier scoring output in the NBA" :
+                     ppg >= 18 ? "Consistent high-level scorer" :
+                     ppg >= 12 ? "Reliable scoring contributor" :
+                     "Valuable role in the rotation"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* External Links */}
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
