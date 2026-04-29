@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import GameCard from "@/components/GameCard";
+
+export const metadata: Metadata = {
+  title: "赛程",
+  description: "NBA 完整赛程，包括常规赛和季后赛日程安排。",
+};
 
 // Serve stale page instantly, revalidate in background every 10 min
 export const revalidate = 600;

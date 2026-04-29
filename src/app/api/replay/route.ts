@@ -3,7 +3,8 @@ import { addReplayLink, deleteReplayLink, getReplayLinks } from "@/lib/supabase"
 
 function checkAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("x-admin-password");
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) return false;
   return authHeader === adminPassword;
 }
 
@@ -21,7 +22,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { game_id, title, url, source } = await request.json();
+  let body: { game_id?: string; title?: string; url?: string; source?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const { game_id, title, url, source } = body;
   if (!game_id || !title || !url) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }

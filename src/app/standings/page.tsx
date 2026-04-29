@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { TEAM_META } from "@/lib/teams";
+
+export const metadata: Metadata = {
+  title: "排名",
+  description: "NBA 东西部排名、胜率、连胜连败，实时更新。",
+};
 
 export const revalidate = 600;
 
@@ -17,9 +23,9 @@ const EAST_DIVISIONS = ["Atlantic", "Central", "Southeast"] as const;
 const WEST_DIVISIONS = ["Northwest", "Pacific", "Southwest"] as const;
 
 async function getStandings(): Promise<TeamRecord[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    || "http://localhost:3000";
   try {
     const res = await fetch(`${baseUrl}/api/standings`, { next: { revalidate: 600 } });
     if (!res.ok) return [];

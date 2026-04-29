@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
+
+export const metadata: Metadata = {
+  title: "搜索球员",
+  description: "搜索 NBA 球员，查看详细数据和职业生涯信息。",
+};
 
 interface PageProps {
   searchParams: Promise<{ q?: string }>;

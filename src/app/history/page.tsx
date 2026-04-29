@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "历届总冠军",
+  description: "NBA 历届总冠军、FMVP 和总决赛比分一览。",
+};
 
 const champions = [
   { year: 2025, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ScheduleGame } from "@/lib/api";
 import PlayoffBracketV2 from "./PlayoffBracketV2";
 import RecentHighlights from "./RecentHighlights";
 
 export default function HomeExtra() {
-  const [data, setData] = useState<{ playoffs: never[]; recent: never[] } | null>(null);
+  const [data, setData] = useState<{ playoffs: ScheduleGame[]; recent: ScheduleGame[] } | null>(null);
 
   useEffect(() => {
     fetch("/api/extra")

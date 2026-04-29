@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
@@ -15,6 +16,22 @@ export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const player = await getPlayerInfo(parseInt(id, 10));
+  if (!player) return {};
+  const name = `${player.firstName} ${player.lastName}`;
+  return {
+    title: `${name} — ${player.teamCity} ${player.teamName}`,
+    description: `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG，${player.position}，${player.teamCity} ${player.teamName}。`,
+    openGraph: {
+      title: name,
+      description: `${player.pts} PPG · ${player.reb} RPG · ${player.ast} APG`,
+      images: [getPlayerHeadshotUrl(player.personId)],
+    },
+  };
 }
 
 export default async function PlayerPage({ params }: PageProps) {

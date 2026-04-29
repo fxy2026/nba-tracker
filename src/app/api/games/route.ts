@@ -7,5 +7,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "date required" }, { status: 400 });
   }
   const games = await getGamesByDate(date);
-  return NextResponse.json({ data: games });
+  return NextResponse.json(
+    { data: games },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

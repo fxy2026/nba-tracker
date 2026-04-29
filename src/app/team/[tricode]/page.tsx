@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFullSchedule, getPlayerIndex, formatDate } from "@/lib/api";
@@ -9,6 +10,16 @@ import FavoriteButton from "@/components/FavoriteButton";
 
 // ISR: serve cached page, revalidate every 10 minutes
 export const revalidate = 600;
+
+export async function generateMetadata({ params }: { params: Promise<{ tricode: string }> }): Promise<Metadata> {
+  const { tricode } = await params;
+  const team = TEAM_META[tricode.toUpperCase()];
+  if (!team) return {};
+  return {
+    title: `${team.city} ${team.name}`,
+    description: `${team.city} ${team.name} 球队主页：阵容、赛程、近期战绩一览。`,
+  };
+}
 
 // Pre-render all 30 team pages at build time
 export async function generateStaticParams() {

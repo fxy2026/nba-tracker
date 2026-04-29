@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
 import { getReplayLinks } from "@/lib/supabase";
@@ -16,6 +17,19 @@ import GameAutoRefresh from "@/components/GameAutoRefresh";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const box = await getBoxScore(id);
+  if (!box) return {};
+  const away = box.awayTeam;
+  const home = box.homeTeam;
+  const score = box.gameStatus >= 2 ? ` ${away.score}-${home.score}` : "";
+  return {
+    title: `${away.teamTricode} vs ${home.teamTricode}${score}`,
+    description: `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName} — Box Score、投篮图、逐球回放。`,
+  };
 }
 
 function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[]; shots: ShotAction[]; playerInfoMap: Map<number, PlayerInfo> }) {

@@ -28,7 +28,7 @@ export async function GET() {
     );
 
     if (!res.ok) {
-      return NextResponse.json({ transactions: [] }, { status: 200 });
+      return NextResponse.json({ transactions: [] }, { status: 502 });
     }
 
     const data = await res.json();
@@ -52,6 +52,6 @@ export async function GET() {
       }
     );
   } catch {
-    return NextResponse.json({ transactions: [] }, { status: 200 });
+    return NextResponse.json({ transactions: [] }, { status: 500 });
   }
 }

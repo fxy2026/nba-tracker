@@ -13,7 +13,7 @@ interface ScheduleGame {
 
 interface ReplayLink {
   id: string;
-  game_id: number;
+  game_id: string;
   title: string;
   url: string;
   source: string;

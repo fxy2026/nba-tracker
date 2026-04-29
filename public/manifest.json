@@ -1,15 +1,17 @@
 {
-  "name": "NBA Tracker - Live Scores & Stats",
+  "name": "NBA Tracker — 实时比分与球员数据",
   "short_name": "NBA Tracker",
-  "description": "Live NBA scores, player stats, box scores, and more",
+  "description": "NBA 实时比分、Box Score、投篮图、球员数据、伤病报告、交易动态，一站式篮球数据追踪。",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
-  "categories": ["sports"],
+  "categories": ["sports", "entertainment"],
+  "lang": "zh-CN",
   "icons": [
     { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
-    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
