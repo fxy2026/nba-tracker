@@ -149,19 +149,22 @@ export default function ComparePage() {
       {player1 && player2 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           {/* Headers */}
-          <div className="grid grid-cols-3 p-6 border-b border-border">
+          <div className="grid grid-cols-[1fr_auto_1fr] p-6 border-b border-border">
             <div className="flex flex-col items-center gap-3">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
                 <Image src={headshotUrl(player1.personId)} alt={`${player1.firstName} ${player1.lastName}`} width={80} height={80} className="w-full h-full object-cover object-top" />
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player1.firstName} {player1.lastName}</p>
-                <p className="text-xs text-text-secondary">{player1.teamCity} {player1.teamName}</p>
-                <p className="text-xs text-accent">#{player1.jersey} {player1.position}</p>
+                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player1.position}</span>
+                <p className="text-sm font-semibold text-text-primary mt-1">{player1.teamAbbr}</p>
+                <p className="text-[10px] text-text-secondary">{player1.teamCity} {player1.teamName} &middot; #{player1.jersey}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-2 px-4">
+              <div className="w-px h-8 bg-border" />
               <span className="text-2xl font-bold text-text-secondary">VS</span>
+              <div className="w-px h-8 bg-border" />
             </div>
             <div className="flex flex-col items-center gap-3">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
@@ -169,10 +172,18 @@ export default function ComparePage() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player2.firstName} {player2.lastName}</p>
-                <p className="text-xs text-text-secondary">{player2.teamCity} {player2.teamName}</p>
-                <p className="text-xs text-accent">#{player2.jersey} {player2.position}</p>
+                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player2.position}</span>
+                <p className="text-sm font-semibold text-text-primary mt-1">{player2.teamAbbr}</p>
+                <p className="text-[10px] text-text-secondary">{player2.teamCity} {player2.teamName} &middot; #{player2.jersey}</p>
               </div>
             </div>
+          </div>
+
+          {/* Separator between header and stats */}
+          <div className="flex items-center gap-3 px-6 py-2 bg-bg-secondary/30">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[10px] text-text-secondary uppercase font-medium">Stats Comparison</span>
+            <div className="flex-1 h-px bg-border" />
           </div>
 
           {/* Stats bars */}

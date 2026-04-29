@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
 
 export const metadata: Metadata = {
@@ -10,7 +12,14 @@ export const metadata: Metadata = {
 // Serve stale page instantly, revalidate in background every 10 min
 export const revalidate = 600;
 
-export default async function SchedulePage() {
+interface PageProps {
+  searchParams: Promise<{ team?: string }>;
+}
+
+export default async function SchedulePage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const filterTeam = params.team?.toUpperCase() || "";
+
   const allDates = await getFullSchedule();
 
   // Find dates with completed/in-progress games, show recent ones
@@ -26,25 +35,61 @@ export default async function SchedulePage() {
     const diffDays = Math.floor((today.getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays >= -7 && diffDays <= 14 && gd.games.length > 0) {
-      recentDates.push({
-        dateStr: `${year}-${month}-${day}`,
-        displayDate: dateObj.toLocaleDateString("zh-CN", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          weekday: "long",
-        }),
-        games: gd.games,
-      });
+      let filteredGames = gd.games;
+      if (filterTeam && TEAM_META[filterTeam]) {
+        filteredGames = gd.games.filter(
+          (g) => g.homeTeam.teamTricode === filterTeam || g.awayTeam.teamTricode === filterTeam
+        );
+      }
+      if (filteredGames.length > 0) {
+        recentDates.push({
+          dateStr: `${year}-${month}-${day}`,
+          displayDate: dateObj.toLocaleDateString("zh-CN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          }),
+          games: filteredGames,
+        });
+      }
     }
   }
 
   // Sort by date descending (most recent first)
   recentDates.sort((a, b) => b.dateStr.localeCompare(a.dateStr));
 
+  const teamsList = Object.values(TEAM_META).sort((a, b) => a.city.localeCompare(b.city));
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Recent Schedule</h1>
+      <h1 className="text-2xl font-bold mb-4">Recent Schedule</h1>
+
+      {/* Team filter */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-text-secondary font-medium">Filter by team:</span>
+        <Link
+          href="/schedule"
+          className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
+            !filterTeam ? "bg-accent/20 text-accent border border-accent/30" : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
+          }`}
+        >
+          All
+        </Link>
+        {teamsList.map((t) => (
+          <Link
+            key={t.tricode}
+            href={`/schedule?team=${t.tricode}`}
+            className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
+              filterTeam === t.tricode
+                ? "bg-accent/20 text-accent border border-accent/30"
+                : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
+            }`}
+          >
+            {t.tricode}
+          </Link>
+        ))}
+      </div>
 
       {recentDates.length > 0 ? (
         <div className="space-y-8">
@@ -66,7 +111,7 @@ export default async function SchedulePage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-text-secondary">
-          <p className="text-lg">No games found</p>
+          <p className="text-lg">No games found{filterTeam ? ` for ${filterTeam}` : ""}</p>
         </div>
       )}
     </div>

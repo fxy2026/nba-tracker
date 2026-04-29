@@ -172,7 +172,15 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                       </div>
                     </div>
                   </td>
-                  <td className="text-center py-2 px-2 text-text-secondary text-xs tabular-nums">{gb}</td>
+                  <td className="text-center py-2 px-2 text-text-secondary text-xs tabular-nums">
+                    {gb}
+                    {isPlayoff && (() => {
+                      const gamesLeft = 82 - team.wins - team.losses;
+                      return gamesLeft > 0 ? (
+                        <span className="block text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}g left)</span>
+                      ) : null;
+                    })()}
+                  </td>
                 </tr>
               );
             })}

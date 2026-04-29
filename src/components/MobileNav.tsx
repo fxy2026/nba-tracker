@@ -27,6 +27,7 @@ const moreLinks = [
 export default function MobileNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const isMoreActive = moreLinks.some(({ href }) => pathname === href);
 
   return (
     <>
@@ -44,11 +45,14 @@ export default function MobileNav() {
                   key={href}
                   href={href}
                   onClick={() => setMoreOpen(false)}
-                  className={`px-3 py-2.5 rounded-lg text-center text-xs font-medium transition-colors ${
+                  className={`relative px-3 py-2.5 rounded-lg text-center text-xs font-medium transition-colors ${
                     pathname === href ? "bg-accent/15 text-accent" : "bg-bg-hover text-text-secondary"
                   }`}
                 >
                   {label}
+                  {pathname === href && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent" />
+                  )}
                 </Link>
               ))}
             </div>
@@ -77,7 +81,7 @@ export default function MobileNav() {
           <button
             onClick={() => setMoreOpen(!moreOpen)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-              moreOpen ? "text-accent" : "text-text-secondary"
+              moreOpen || isMoreActive ? "text-accent" : "text-text-secondary"
             }`}
           >
             <MoreHorizontal size={20} />

@@ -71,6 +71,18 @@ export default async function HomePage({ searchParams }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <DateNav selectedDate={selectedDate} />
+      {isToday && (() => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = formatDate(yesterday);
+        return (
+          <div className="mt-1 mb-1">
+            <a href={`/?date=${yStr}`} className="text-xs text-text-secondary hover:text-accent transition-colors">
+              &larr; Yesterday&apos;s Results ({yStr})
+            </a>
+          </div>
+        );
+      })()}
       <SeasonProgress />
       <StandingsMini />
       <LiveScoreRefresher hasLiveGames={hasLiveGames} />

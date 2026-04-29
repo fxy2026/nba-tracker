@@ -306,6 +306,59 @@ export default async function TeamPage({ params }: PageProps) {
         </div>
       )}
 
+      {/* Point Differential Chart (last 15 games) */}
+      {recentGames.length > 0 && (() => {
+        const last15 = recentGames.slice(0, 15).reverse();
+        const diffs = last15.map((g) => {
+          const [scored, allowed] = g.score.split("-").map(Number);
+          return scored - allowed;
+        });
+        const maxAbs = Math.max(...diffs.map(Math.abs), 1);
+        const barWidth = 100 / last15.length;
+        const chartH = 80;
+        const midY = chartH / 2;
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Point Differential (Last {last15.length})</h3>
+            <svg viewBox={`0 0 100 ${chartH}`} className="w-full" preserveAspectRatio="none">
+              <line x1="0" y1={midY} x2="100" y2={midY} stroke="var(--border)" strokeWidth="0.3" />
+              {diffs.map((d, i) => {
+                const barH = (Math.abs(d) / maxAbs) * (midY - 4);
+                const x = i * barWidth + barWidth * 0.15;
+                const w = barWidth * 0.7;
+                const y = d >= 0 ? midY - barH : midY;
+                return (
+                  <g key={i}>
+                    <rect
+                      x={x}
+                      y={y}
+                      width={w}
+                      height={barH}
+                      rx={0.8}
+                      fill={d >= 0 ? "var(--success)" : "var(--danger)"}
+                      opacity={0.8}
+                    />
+                    <text
+                      x={x + w / 2}
+                      y={d >= 0 ? y - 1.5 : y + barH + 4}
+                      textAnchor="middle"
+                      fill="var(--text-secondary)"
+                      fontSize="3"
+                    >
+                      {d > 0 ? `+${d}` : d}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+            <div className="flex justify-between text-[9px] text-text-secondary mt-1">
+              <span>{last15[0]?.date.slice(5)}</span>
+              <span>{last15[last15.length - 1]?.date.slice(5)}</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Last 10 Games W/L Streak */}
       {recentGames.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">

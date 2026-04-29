@@ -16,8 +16,19 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const teamsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      setScrollPct(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -181,6 +192,10 @@ export default function Navbar() {
             <Search size={18} />
           </button>
         </div>
+      </div>
+      {/* Scroll progress bar */}
+      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-transparent">
+        <div className="h-full bg-accent transition-[width] duration-75" style={{ width: `${scrollPct}%` }} />
       </div>
     </nav>
   );

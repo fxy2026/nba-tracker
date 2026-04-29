@@ -104,6 +104,14 @@ export default function CalendarPage() {
           <button onClick={goToNextMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">
             <ChevronRight size={18} />
           </button>
+          {(year !== now.getFullYear() || month !== now.getMonth()) && (
+            <button
+              onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
+              className="px-3 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium hover:bg-accent/25 transition-colors"
+            >
+              Today
+            </button>
+          )}
         </div>
       </div>
 

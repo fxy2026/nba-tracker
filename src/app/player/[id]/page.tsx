@@ -158,6 +158,48 @@ export default async function PlayerPage({ params }: PageProps) {
           )}
         </div>
 
+        {/* Career Timeline */}
+        {player.fromYear && player.toYear && (() => {
+          const from = parseInt(player.fromYear);
+          const to = parseInt(player.toYear);
+          const currentYear = new Date().getFullYear();
+          const spanStart = Math.min(from, currentYear - 1);
+          const spanEnd = Math.max(to, currentYear);
+          const totalSpan = spanEnd - spanStart + 1;
+          if (totalSpan <= 0) return null;
+          const careerLeft = ((from - spanStart) / totalSpan) * 100;
+          const careerWidth = ((to - from + 1) / totalSpan) * 100;
+          const currentPos = ((currentYear - spanStart) / totalSpan) * 100;
+          return (
+            <div className="p-6 border-t border-border">
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
+                <Calendar size={14} />
+                Career Timeline
+              </h2>
+              <div className="relative h-8 bg-bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="absolute top-0 h-full bg-accent/20 rounded-full"
+                  style={{ left: `${careerLeft}%`, width: `${careerWidth}%` }}
+                />
+                {currentYear >= from && currentYear <= to && (
+                  <div
+                    className="absolute top-0 h-full w-1 bg-accent rounded-full"
+                    style={{ left: `${currentPos}%` }}
+                    title={`Current: ${currentYear}`}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between text-[10px] text-text-secondary mt-1.5">
+                <span>{player.fromYear}</span>
+                {currentYear >= from && currentYear <= to && (
+                  <span className="text-accent font-medium">{currentYear} (current)</span>
+                )}
+                <span>{player.toYear}</span>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Career Stats */}
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">Career Averages</h2>

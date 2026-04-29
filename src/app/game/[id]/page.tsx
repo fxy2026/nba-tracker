@@ -484,6 +484,46 @@ export default async function GamePage({ params }: PageProps) {
         {boxScore.homeTeam.periods?.length > 0 && (
           <div className="mt-2 border-t border-border pt-3">
             <QuarterScores homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
+            {/* Quarter MVP - best player in highest-scoring quarter */}
+            {isFinal && shots.length > 0 && (() => {
+              // Calculate per-quarter scoring from made shots
+              const quarterScoring: Record<number, Record<string, { name: string; pts: number }>> = {};
+              for (const shot of shots) {
+                if (shot.shotResult !== "Made") continue;
+                const period = shot.period;
+                if (!quarterScoring[period]) quarterScoring[period] = {};
+                if (!quarterScoring[period][shot.personId]) {
+                  quarterScoring[period][shot.personId] = { name: shot.playerNameI, pts: 0 };
+                }
+                // Estimate points: 3-pointer if subType contains "3pt" or distance > 22ft, else 2
+                const is3 = shot.subType?.toLowerCase().includes("3pt") || shot.shotDistance > 22;
+                quarterScoring[period][shot.personId].pts += is3 ? 3 : 2;
+              }
+              // Find highest-scoring quarter
+              let bestQuarter = 0;
+              let bestQuarterTotal = 0;
+              for (const [q, players] of Object.entries(quarterScoring)) {
+                const total = Object.values(players).reduce((s, p) => s + p.pts, 0);
+                if (total > bestQuarterTotal) { bestQuarterTotal = total; bestQuarter = parseInt(q); }
+              }
+              if (bestQuarter === 0) return null;
+              // Find best player in that quarter
+              const qPlayers = quarterScoring[bestQuarter];
+              let mvpName = "";
+              let mvpPts = 0;
+              for (const p of Object.values(qPlayers)) {
+                if (p.pts > mvpPts) { mvpPts = p.pts; mvpName = p.name; }
+              }
+              if (!mvpName) return null;
+              const qLabel = bestQuarter <= 4 ? `Q${bestQuarter}` : `OT${bestQuarter - 4}`;
+              return (
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
+                  <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">{qLabel} MVP</span>
+                  <span className="font-medium text-text-primary">{mvpName}</span>
+                  <span>({mvpPts} pts from FG in highest-scoring quarter)</span>
+                </div>
+              );
+            })()}
             {isFinal && boxScore.homeTeam.periods.length > 0 && (
               <WinProbability
                 periods={boxScore.homeTeam.periods.map((p, i) => ({

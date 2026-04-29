@@ -138,6 +138,45 @@ export default async function H2HPage({ searchParams }: PageProps) {
             })()}
           </div>
 
+          {/* Home/Away Split */}
+          {games.length > 0 && (() => {
+            let t1HomeWins = 0, t1HomeLosses = 0, t1AwayWins = 0, t1AwayLosses = 0;
+            for (const g of games) {
+              const t1IsHome = g.homeTricode === t1;
+              const t1Won = t1IsHome ? g.homeScore > g.awayScore : g.awayScore > g.homeScore;
+              if (t1IsHome) {
+                if (t1Won) t1HomeWins++; else t1HomeLosses++;
+              } else {
+                if (t1Won) t1AwayWins++; else t1AwayLosses++;
+              }
+            }
+            return (
+              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Home / Away Split</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium text-text-primary mb-1">{t1}</p>
+                    <p className="text-text-secondary">
+                      Home: <span className="text-success font-medium">{t1HomeWins}W</span> - <span className="text-danger font-medium">{t1HomeLosses}L</span>
+                    </p>
+                    <p className="text-text-secondary">
+                      Away: <span className="text-success font-medium">{t1AwayWins}W</span> - <span className="text-danger font-medium">{t1AwayLosses}L</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-text-primary mb-1">{t2}</p>
+                    <p className="text-text-secondary">
+                      Home: <span className="text-success font-medium">{t1AwayLosses}W</span> - <span className="text-danger font-medium">{t1AwayWins}L</span>
+                    </p>
+                    <p className="text-text-secondary">
+                      Away: <span className="text-success font-medium">{t1HomeLosses}W</span> - <span className="text-danger font-medium">{t1HomeWins}L</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Game List */}
           {games.length > 0 && (
             <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

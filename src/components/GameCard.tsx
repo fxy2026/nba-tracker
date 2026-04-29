@@ -65,6 +65,9 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
             >
               {isLive && <span className="inline-block w-1.5 h-1.5 rounded-full bg-success live-pulse" />}
               {status}
+              {isLive && game.gameStatusText.toLowerCase().includes("half") && (
+                <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-yellow-500/15 text-yellow-500 rounded">HT</span>
+              )}
             </span>
           </div>
         </div>
