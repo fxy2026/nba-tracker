@@ -307,6 +307,13 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
     return { teamTricode: bestRun.team, points: bestRun.points, qLabel };
   })();
 
+  // Pace indicator
+  const totalPoints = homeTeam.score + awayTeam.score;
+  const numPeriods = Math.max(homeTeam.periods?.length || 4, 4);
+  const pacePerQ = numPeriods > 0 ? totalPoints / numPeriods : 0;
+  const paceLabel = pacePerQ > 55 ? "Fast Pace" : pacePerQ < 45 ? "Slow" : "Normal";
+  const paceColor = pacePerQ > 55 ? "text-success bg-success/10" : pacePerQ < 45 ? "text-yellow-400 bg-yellow-400/10" : "text-text-secondary bg-bg-hover";
+
   // Feature 7: Team foul comparison
   const homeFouls = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
   const awayFouls = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
@@ -336,6 +343,12 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
           </div>
         );
       })()}
+      {/* Pace Indicator */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs mb-3">
+        <span className="text-text-secondary">Pace:</span>
+        <span className={`font-bold px-1.5 py-0.5 rounded ${paceColor}`}>{paceLabel}</span>
+        <span className="text-text-secondary">({pacePerQ.toFixed(1)} pts/Q)</span>
+      </div>
       {/* Biggest Run & Foul Comparison */}
       <div className="flex flex-wrap gap-3 mb-3">
         {biggestRun && (
@@ -520,6 +533,16 @@ export default async function GamePage({ params }: PageProps) {
             )}
             <span className="text-xs text-text-secondary">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
             {beijingTime && <span className="text-xs text-text-secondary">&middot; 北京时间 {beijingTime}</span>}
+            {isFinal && (() => {
+              const periodsCount = boxScore.homeTeam.periods?.length || 4;
+              const otPeriods = Math.max(periodsCount - 4, 0);
+              const durationMin = 150 + otPeriods * 5; // ~2.5h regulation + 5min per OT
+              const hours = Math.floor(durationMin / 60);
+              const mins = durationMin % 60;
+              return (
+                <span className="text-xs text-text-secondary">&middot; ~{hours}h{mins > 0 ? `${mins}m` : ""}</span>
+              );
+            })()}
           </div>
           <div className="flex items-center gap-2">
             <span className={`text-xs px-2 py-0.5 rounded-full ${boxScore.gameStatus === 2 ? "bg-success/15 text-success animate-pulse" : "text-text-secondary"}`}>

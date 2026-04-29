@@ -115,6 +115,32 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Season Phase Label */}
+      {(() => {
+        // Approximate NBA season phases based on month
+        const m = month; // 0-indexed
+        const y = year;
+        let phase = "Offseason";
+        if (m === 9) phase = "Preseason"; // October
+        else if (m >= 10 || (m >= 0 && m <= 1)) phase = "Regular Season"; // Nov-Feb
+        else if (m === 2) phase = "All-Star Break / Regular Season"; // March
+        else if (m === 3) phase = "Regular Season"; // April (end of regular season)
+        else if (m === 4) phase = "Playoffs"; // May
+        else if (m === 5) phase = "NBA Finals"; // June
+        else if (m >= 6 && m <= 8) phase = "Offseason"; // Jul-Sep
+        const phaseColor = phase.includes("Playoff") || phase.includes("Finals") ? "text-accent bg-accent/10" :
+          phase.includes("Regular") || phase.includes("All-Star") ? "text-success bg-success/10" :
+          phase.includes("Preseason") ? "text-yellow-400 bg-yellow-400/10" :
+          "text-text-secondary bg-bg-hover";
+        return (
+          <div className="mb-4">
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${phaseColor}`}>
+              {phase}
+            </span>
+          </div>
+        );
+      })()}
+
       {/* Month Summary */}
       {!loading && days.length > 0 && (
         <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary">

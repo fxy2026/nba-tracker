@@ -210,6 +210,30 @@ export default async function HomePage({ searchParams }: PageProps) {
             <a href="/search" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">搜索球员</a>
             <a href="/injuries" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">伤病报告</a>
           </div>
+          {/* No games today? Try these — suggested links as cards */}
+          {isToday && (
+            <div className="mt-6 w-full max-w-lg">
+              <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">No games today? Try these</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Link href={`/?date=${(() => { const d = new Date(); d.setDate(d.getDate() - 1); return formatDate(d); })()}`} className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                  <span className="text-sm font-medium text-text-primary">Browse Recent Games</span>
+                  <span className="text-[10px] text-text-secondary">Yesterday&apos;s results</span>
+                </Link>
+                <Link href="/standings" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                  <span className="text-sm font-medium text-text-primary">Check Standings</span>
+                  <span className="text-[10px] text-text-secondary">Conference rankings</span>
+                </Link>
+                <Link href="/search" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                  <span className="text-sm font-medium text-text-primary">Player Search</span>
+                  <span className="text-[10px] text-text-secondary">Find any NBA player</span>
+                </Link>
+                <Link href="/injuries" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                  <span className="text-sm font-medium text-text-primary">Injury Report</span>
+                  <span className="text-[10px] text-text-secondary">Latest injury updates</span>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -191,6 +191,18 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Franchise Info Card */}
+        <div className="flex items-center gap-3 mt-4 px-4 py-3 bg-bg-secondary rounded-lg">
+          <span className="w-5 h-5 rounded-full border-2 border-border" style={{ backgroundColor: team.primaryColor }} title="Team color" />
+          <span className="text-xs text-text-secondary">
+            {team.conference}ern Conference
+          </span>
+          <span className="text-xs text-text-secondary">&middot;</span>
+          <span className="text-xs text-text-secondary">
+            {team.division} Division
+          </span>
+        </div>
+
         {/* Record */}
         <div className="grid grid-cols-3 gap-3 mt-6">
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
@@ -442,6 +454,38 @@ export default async function TeamPage({ params }: PageProps) {
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Trophy size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">Upcoming Games</h2>
+            {upcomingGames.length > 0 && (() => {
+              // Compute average opponent win% for schedule difficulty
+              const oppRecords: Record<string, { w: number; l: number }> = {};
+              for (const gd of schedule) {
+                for (const g of gd.games) {
+                  if (g.gameStatus !== 3) continue;
+                  const ht = g.homeTeam.teamTricode;
+                  const at = g.awayTeam.teamTricode;
+                  if (!oppRecords[ht]) oppRecords[ht] = { w: 0, l: 0 };
+                  if (!oppRecords[at]) oppRecords[at] = { w: 0, l: 0 };
+                  if (g.homeTeam.score > g.awayTeam.score) { oppRecords[ht].w++; oppRecords[at].l++; }
+                  else { oppRecords[at].w++; oppRecords[ht].l++; }
+                }
+              }
+              let totalWinPct = 0, count = 0;
+              for (const ug of upcomingGames.slice(0, 8)) {
+                const rec = oppRecords[ug.opponent];
+                if (rec && rec.w + rec.l > 0) {
+                  totalWinPct += rec.w / (rec.w + rec.l);
+                  count++;
+                }
+              }
+              if (count === 0) return null;
+              const avgWinPct = totalWinPct / count;
+              const diffLabel = avgWinPct > 0.55 ? "Tough Schedule" : avgWinPct < 0.45 ? "Easy Schedule" : "Average";
+              const diffColor = avgWinPct > 0.55 ? "text-danger bg-danger/10" : avgWinPct < 0.45 ? "text-success bg-success/10" : "text-text-secondary bg-bg-hover";
+              return (
+                <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-medium ${diffColor}`}>
+                  {diffLabel} ({(avgWinPct * 100).toFixed(0)}% opp W%)
+                </span>
+              );
+            })()}
           </div>
           <div className="divide-y divide-border/50">
             {upcomingGames.slice(0, 8).map((g) => (

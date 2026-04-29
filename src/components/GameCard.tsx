@@ -123,10 +123,15 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
 
         {/* Point differential */}
         {isFinal && (
-          <div className="mt-2 pt-2 border-t border-border/30 flex items-center justify-center">
+          <div className="mt-2 pt-2 border-t border-border/30 flex flex-col items-center gap-1">
             <span className="text-[10px] text-text-secondary">
               {awayWon ? game.awayTeam.teamTricode : game.homeTeam.teamTricode} +{Math.abs(game.homeTeam.score - game.awayTeam.score)}
             </span>
+            {isPlayoffs && game.seriesText && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">
+                {game.seriesText}
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -143,6 +143,7 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
               <th className="text-center py-2.5 px-2">L</th>
               <th className="text-center py-2.5 px-2">PCT</th>
               <th className="text-center py-2.5 px-2">GB</th>
+              <th className="text-center py-2.5 px-1">Proj</th>
             </tr>
           </thead>
           <tbody>
@@ -180,6 +181,12 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                       return gamesLeft > 0 ? (
                         <span className="block text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}g left)</span>
                       ) : null;
+                    })()}
+                  </td>
+                  <td className="text-center py-2 px-1 text-[10px] text-text-secondary/70 tabular-nums">
+                    {(() => {
+                      const projected = Math.round(winPct * 82);
+                      return <span title="Projected final wins">&rarr; {projected}w</span>;
                     })()}
                   </td>
                 </tr>

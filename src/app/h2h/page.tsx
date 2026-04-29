@@ -208,6 +208,31 @@ export default async function H2HPage({ searchParams }: PageProps) {
             );
           })()}
 
+          {/* Last Meeting Highlight */}
+          {games.length > 0 && (() => {
+            const lastGame = games[0]; // games are sorted desc by date
+            const homeWon = lastGame.homeScore > lastGame.awayScore;
+            const winner = homeWon ? lastGame.homeTricode : lastGame.awayTricode;
+            return (
+              <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6">
+                <h3 className="text-xs font-medium text-accent uppercase mb-2">Last Meeting</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TeamLogo teamId={lastGame.awayId} tricode={lastGame.awayTricode} size={28} />
+                    <span className={`text-sm font-bold ${!homeWon ? "text-accent" : "text-text-secondary"}`}>{lastGame.awayTricode} {lastGame.awayScore}</span>
+                    <span className="text-text-secondary text-xs">@</span>
+                    <span className={`text-sm font-bold ${homeWon ? "text-accent" : "text-text-secondary"}`}>{lastGame.homeScore} {lastGame.homeTricode}</span>
+                    <TeamLogo teamId={lastGame.homeId} tricode={lastGame.homeTricode} size={28} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-text-secondary">{lastGame.date}</p>
+                    <p className="text-[10px] text-accent font-medium">{winner} won by {Math.abs(lastGame.homeScore - lastGame.awayScore)}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Game List */}
           {games.length > 0 && (
             <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

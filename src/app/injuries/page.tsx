@@ -97,7 +97,9 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
           </div>
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Injury Report</h1>
-            <p className="text-xs text-text-secondary">Data from ESPN &middot; Updated every 30 minutes</p>
+            <p className="text-xs text-text-secondary">
+              Data from ESPN &middot; Last updated: {new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} (Beijing)
+            </p>
           </div>
         </div>
         {totalInjured > 0 && (

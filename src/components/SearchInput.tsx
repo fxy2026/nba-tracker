@@ -45,6 +45,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
   const [showDropdown, setShowDropdown] = useState(false);
   const [focused, setFocused] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -61,6 +62,27 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Reset selected index when results change
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [results]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showDropdown || results.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
+    } else if (e.key === "Enter" && selectedIndex >= 0 && selectedIndex < results.length) {
+      e.preventDefault();
+      const selected = results[selectedIndex];
+      setShowDropdown(false);
+      window.location.href = `/player/${selected.personId}`;
+    }
+  };
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -107,6 +129,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search players by name..."
@@ -150,12 +173,12 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50">
             <span className="text-xs text-text-secondary font-medium">{results.length} player{results.length !== 1 ? "s" : ""} found</span>
           </div>
-          {results.map((p) => (
+          {results.map((p, idx) => (
             <Link
               key={p.personId}
               href={`/player/${p.personId}`}
               onClick={() => setShowDropdown(false)}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-bg-hover transition-colors border-b border-border/50 last:border-0"
+              className={`flex items-center gap-3 px-4 py-3 transition-colors border-b border-border/50 last:border-0 ${idx === selectedIndex ? "bg-accent/10" : "hover:bg-bg-hover"}`}
             >
               <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0">
                 <Image

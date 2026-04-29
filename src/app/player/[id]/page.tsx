@@ -250,7 +250,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <ExternalLinkCard
               title="Player Profile"
               subtitle="Full career stats on NBA.com"
-              href={`https://www.nba.com/player/${personId}`}
+              href={player.slug ? `https://www.nba.com/player/${personId}/${player.slug}` : `https://www.nba.com/player/${personId}`}
             />
             <ExternalLinkCard
               title="Salary & Contract"
