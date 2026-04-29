@@ -278,6 +278,25 @@ function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam:
         <span className="w-1 h-4 bg-accent rounded-full" />
         Game Summary
       </h3>
+      {/* Game Hero */}
+      {(() => {
+        const allPlayed = [...homeTeam.players, ...awayTeam.players].filter(p => p.played === "1");
+        if (allPlayed.length === 0) return null;
+        const hero = allPlayed.reduce((best, p) => {
+          const score = p.statistics.points + p.statistics.reboundsTotal * 1.2 + p.statistics.assists * 1.5;
+          const bestScore = best.statistics.points + best.statistics.reboundsTotal * 1.2 + best.statistics.assists * 1.5;
+          return score > bestScore ? p : best;
+        });
+        return (
+          <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-2.5 mb-3 flex items-center gap-2">
+            <span className="text-accent text-sm">&#9733;</span>
+            <span className="text-sm">
+              <span className="font-bold text-accent">{hero.nameI}</span>
+              <span className="text-text-secondary ml-2">{hero.statistics.points} PTS · {hero.statistics.reboundsTotal} REB · {hero.statistics.assists} AST</span>
+            </span>
+          </div>
+        );
+      })()}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         {/* Away team summary */}
         <div>

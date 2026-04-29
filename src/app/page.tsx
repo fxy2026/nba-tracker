@@ -58,7 +58,12 @@ export default async function HomePage({ searchParams }: PageProps) {
     ]),
   ]);
 
-  const games = isToday ? liveGames.map(mapLiveGame) : scheduledGames;
+  const unsortedGames = isToday ? liveGames.map(mapLiveGame) : scheduledGames;
+  // Sort: live games first, then scheduled, then final
+  const games = [...unsortedGames].sort((a, b) => {
+    const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
+    return order(a.gameStatus) - order(b.gameStatus);
+  });
   const replaySet = new Set(replayGameIds);
 
   const hasLiveGames = isToday && games.some((g) => g.gameStatus === 2);

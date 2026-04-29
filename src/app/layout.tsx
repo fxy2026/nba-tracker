@@ -46,6 +46,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  metadataBase: new URL("https://nba.xpy.me"),
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export const viewport: Viewport = {

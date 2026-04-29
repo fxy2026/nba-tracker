@@ -176,6 +176,14 @@ nav.sticky {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Print styles */
+@media print {
+  nav, footer, .safe-area-bottom, .back-to-top { display: none !important; }
+  body { padding: 0 !important; }
+  .game-card { break-inside: avoid; }
+  * { box-shadow: none !important; }
+}
+
 /* PWA standalone mode adjustments */
 @media (display-mode: standalone) {
   .safe-area-top {
