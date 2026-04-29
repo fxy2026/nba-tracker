@@ -19,6 +19,21 @@ const champions = [
   { year: 2017, champion: "Golden State Warriors", fmvp: "Kevin Durant", runnerUp: "Cleveland Cavaliers", series: "4-1" },
   { year: 2016, champion: "Cleveland Cavaliers", fmvp: "LeBron James", runnerUp: "Golden State Warriors", series: "4-3" },
   { year: 2015, champion: "Golden State Warriors", fmvp: "Andre Iguodala", runnerUp: "Cleveland Cavaliers", series: "4-2" },
+  { year: 2014, champion: "San Antonio Spurs", fmvp: "Kawhi Leonard", runnerUp: "Miami Heat", series: "4-1" },
+  { year: 2013, champion: "Miami Heat", fmvp: "LeBron James", runnerUp: "San Antonio Spurs", series: "4-3" },
+  { year: 2012, champion: "Miami Heat", fmvp: "LeBron James", runnerUp: "Oklahoma City Thunder", series: "4-1" },
+  { year: 2011, champion: "Dallas Mavericks", fmvp: "Dirk Nowitzki", runnerUp: "Miami Heat", series: "4-2" },
+  { year: 2010, champion: "Los Angeles Lakers", fmvp: "Kobe Bryant", runnerUp: "Boston Celtics", series: "4-3" },
+  { year: 2009, champion: "Los Angeles Lakers", fmvp: "Kobe Bryant", runnerUp: "Orlando Magic", series: "4-1" },
+  { year: 2008, champion: "Boston Celtics", fmvp: "Paul Pierce", runnerUp: "Los Angeles Lakers", series: "4-2" },
+  { year: 2007, champion: "San Antonio Spurs", fmvp: "Tony Parker", runnerUp: "Cleveland Cavaliers", series: "4-0" },
+  { year: 2006, champion: "Miami Heat", fmvp: "Dwyane Wade", runnerUp: "Dallas Mavericks", series: "4-2" },
+  { year: 2005, champion: "San Antonio Spurs", fmvp: "Tim Duncan", runnerUp: "Detroit Pistons", series: "4-3" },
+  { year: 2004, champion: "Detroit Pistons", fmvp: "Chauncey Billups", runnerUp: "Los Angeles Lakers", series: "4-1" },
+  { year: 2003, champion: "San Antonio Spurs", fmvp: "Tim Duncan", runnerUp: "New Jersey Nets", series: "4-2" },
+  { year: 2002, champion: "Los Angeles Lakers", fmvp: "Shaquille O'Neal", runnerUp: "New Jersey Nets", series: "4-0" },
+  { year: 2001, champion: "Los Angeles Lakers", fmvp: "Shaquille O'Neal", runnerUp: "Philadelphia 76ers", series: "4-1" },
+  { year: 2000, champion: "Los Angeles Lakers", fmvp: "Shaquille O'Neal", runnerUp: "Indiana Pacers", series: "4-2" },
 ];
 
 export default function HistoryPage() {
@@ -26,7 +41,7 @@ export default function HistoryPage() {
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center gap-2 mb-6">
         <Trophy size={20} className="text-accent" />
-        <h1 className="text-xl font-bold">NBA Champions (2015-2025)</h1>
+        <h1 className="text-xl font-bold">NBA Champions (2000-2025)</h1>
       </div>
 
       <div className="bg-bg-card border border-border rounded-xl overflow-hidden">

@@ -14,6 +14,7 @@ import { Play, ExternalLink } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import RadarChart from "@/components/RadarChart";
 import ScoringFlow from "@/components/ScoringFlow";
+import QuarterBars from "@/components/QuarterBars";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 
@@ -464,7 +465,15 @@ export default async function GamePage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Scoring Flow — cumulative score over periods */}
+      {/* Quarter Bars + Scoring Flow */}
+      {isFinal && boxScore.homeTeam.periods?.length > 0 && (
+        <QuarterBars
+          homePeriods={boxScore.homeTeam.periods}
+          awayPeriods={boxScore.awayTeam.periods}
+          homeTricode={boxScore.homeTeam.teamTricode}
+          awayTricode={boxScore.awayTeam.teamTricode}
+        />
+      )}
       {isFinal && boxScore.homeTeam.periods?.length > 0 && (
         <ScoringFlow
           homePeriods={boxScore.homeTeam.periods}

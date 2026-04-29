@@ -35,6 +35,19 @@ export default async function SearchPage({ searchParams }: PageProps) {
       </h1>
       <SearchInput initialQuery={q || ""} />
 
+      {/* Position shortcuts */}
+      <div className="flex items-center justify-center gap-2 mt-4">
+        {["Guard", "Forward", "Center"].map((pos) => (
+          <a
+            key={pos}
+            href={`/search?q=${pos}`}
+            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
+          >
+            {pos}
+          </a>
+        ))}
+      </div>
+
       {!q && (
         <div className="mt-8">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">

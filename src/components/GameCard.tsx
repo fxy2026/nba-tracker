@@ -19,6 +19,16 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
   const isPlayoffs = game.gameId.startsWith("004");
   const isScheduled = game.gameStatus === 1;
 
+  // Determine playoff round from game ID
+  let playoffRound = "";
+  if (isPlayoffs && game.gameId.length >= 8) {
+    const roundDigit = game.gameId.charAt(7);
+    if (roundDigit === "1") playoffRound = "R1";
+    else if (roundDigit === "2") playoffRound = "Semis";
+    else if (roundDigit === "3") playoffRound = "Conf Finals";
+    else if (roundDigit === "4") playoffRound = "Finals";
+  }
+
   return (
     <Link href={`/game/${game.gameId}`} className="block group">
       <div className={`game-card bg-bg-card rounded-xl border hover:border-accent/50 transition-colors p-4 ${isLive ? "border-success/40 border-l-2 border-l-success" : "border-border"}`}>
@@ -27,7 +37,7 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
           <div className="flex items-center gap-1.5">
             {isPlayoffs && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
-                Playoffs
+                {playoffRound || "Playoffs"}
               </span>
             )}
             {game.seriesText && (

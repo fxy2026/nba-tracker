@@ -80,36 +80,44 @@ export default function TransactionsPage() {
       )}
 
       {!loading && sortedDates.length > 0 && (
-        <div className="space-y-6">
-          {sortedDates.map((dateKey) => (
-            <div key={dateKey}>
-              <h2 className="text-sm font-semibold text-text-secondary mb-2">{dateKey}</h2>
-              <div className="space-y-2">
-                {grouped.get(dateKey)!.map((t, idx) => (
-                  <div
-                    key={`${dateKey}-${idx}`}
-                    className="bg-bg-card rounded-xl border border-border p-3"
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getTypeColor(t.type)}`}>
-                        {t.type}
-                      </span>
-                      <span className="text-sm font-medium text-text-primary">{t.team}</span>
-                      {t.teamAbbr && (
-                        <span className="text-xs text-text-secondary">({t.teamAbbr})</span>
+        <div className="relative">
+          {/* Timeline line */}
+          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
+
+          <div className="space-y-8">
+            {sortedDates.map((dateKey) => (
+              <div key={dateKey} className="relative pl-10">
+                {/* Timeline dot */}
+                <div className="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-accent border-2 border-bg-primary z-10" />
+
+                <h2 className="text-sm font-semibold text-text-secondary mb-2">{dateKey}</h2>
+                <div className="space-y-2">
+                  {grouped.get(dateKey)!.map((t, idx) => (
+                    <div
+                      key={`${dateKey}-${idx}`}
+                      className="bg-bg-card rounded-xl border border-border p-3"
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getTypeColor(t.type)}`}>
+                          {t.type}
+                        </span>
+                        <span className="text-sm font-medium text-text-primary">{t.team}</span>
+                        {t.teamAbbr && (
+                          <span className="text-xs text-text-secondary">({t.teamAbbr})</span>
+                        )}
+                      </div>
+                      {t.player && (
+                        <p className="text-sm text-accent font-medium">{t.player}</p>
+                      )}
+                      {t.description && (
+                        <p className="text-xs text-text-secondary mt-1">{t.description}</p>
                       )}
                     </div>
-                    {t.player && (
-                      <p className="text-sm text-accent font-medium">{t.player}</p>
-                    )}
-                    {t.description && (
-                      <p className="text-xs text-text-secondary mt-1">{t.description}</p>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
