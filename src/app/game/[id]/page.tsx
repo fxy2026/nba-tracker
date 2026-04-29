@@ -228,7 +228,7 @@ async function ReplaySection({ gameId }: { gameId: string }) {
   );
 }
 
-function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam }) {
+function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam; shots: ShotAction[] }) {
   // Find highest scorer from each team
   const getTopScorer = (team: BoxScoreTeam) => {
     const played = team.players.filter((p) => p.played === "1");
@@ -272,6 +272,45 @@ function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam:
   const homeLargestLead = getLargestLead(homeTeam, awayTeam);
   const awayLargestLead = getLargestLead(awayTeam, homeTeam);
 
+  // Feature 1: Biggest scoring run from shots data
+  const biggestRun = (() => {
+    if (shots.length === 0) return null;
+    const madeShots = shots.filter(s => s.shotResult === "Made").sort((a, b) => {
+      if (a.period !== b.period) return a.period - b.period;
+      // clock is descending within a period (12:00 -> 0:00), so reverse compare
+      return (b.clock || "").localeCompare(a.clock || "");
+    });
+    let bestRun = { team: "", points: 0, period: 0 };
+    let currentTeam = "";
+    let currentPoints = 0;
+    let currentPeriod = 0;
+    for (const shot of madeShots) {
+      const teamKey = shot.teamTricode;
+      const is3 = shot.subType?.toLowerCase().includes("3pt") || shot.shotDistance > 22;
+      const pts = is3 ? 3 : 2;
+      if (teamKey === currentTeam) {
+        currentPoints += pts;
+      } else {
+        if (currentPoints > bestRun.points) {
+          bestRun = { team: currentTeam, points: currentPoints, period: currentPeriod };
+        }
+        currentTeam = teamKey;
+        currentPoints = pts;
+        currentPeriod = shot.period;
+      }
+    }
+    if (currentPoints > bestRun.points) {
+      bestRun = { team: currentTeam, points: currentPoints, period: currentPeriod };
+    }
+    if (bestRun.points < 4) return null;
+    const qLabel = bestRun.period <= 4 ? `Q${bestRun.period}` : `OT${bestRun.period - 4}`;
+    return { teamTricode: bestRun.team, points: bestRun.points, qLabel };
+  })();
+
+  // Feature 7: Team foul comparison
+  const homeFouls = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
+  const awayFouls = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
+
   return (
     <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
@@ -297,6 +336,22 @@ function GameSummary({ homeTeam, awayTeam }: { homeTeam: BoxScoreTeam; awayTeam:
           </div>
         );
       })()}
+      {/* Biggest Run & Foul Comparison */}
+      <div className="flex flex-wrap gap-3 mb-3">
+        {biggestRun && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
+            <span className="text-text-secondary">Biggest Run:</span>
+            <span className="font-bold text-accent">{biggestRun.teamTricode} {biggestRun.points}-0</span>
+            <span className="text-text-secondary">in {biggestRun.qLabel}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
+          <span className="text-text-secondary">Fouls:</span>
+          <span className={`font-bold ${awayFouls > homeFouls ? "text-danger" : "text-text-primary"}`}>{awayTeam.teamTricode} {awayFouls}</span>
+          <span className="text-text-secondary">-</span>
+          <span className={`font-bold ${homeFouls > awayFouls ? "text-danger" : "text-text-primary"}`}>{homeFouls} {homeTeam.teamTricode}</span>
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         {/* Away team summary */}
         <div>
@@ -557,7 +612,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {/* Game Summary — right after scoreboard for final games */}
       {isFinal && (
-        <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
+        <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} />
       )}
 
       {/* Replay links — streamed */}

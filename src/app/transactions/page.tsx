@@ -72,6 +72,35 @@ export default function TransactionsPage() {
         </div>
       )}
 
+      {/* Feature 12: Transaction category counts */}
+      {!loading && transactions.length > 0 && (() => {
+        let trades = 0, signings = 0, waivers = 0, others = 0;
+        for (const t of transactions) {
+          const lower = t.type.toLowerCase();
+          if (lower.includes("trade")) trades++;
+          else if (lower.includes("sign")) signings++;
+          else if (lower.includes("waiv")) waivers++;
+          else others++;
+        }
+        return (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {trades > 0 && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">{trades} trade{trades !== 1 ? "s" : ""}</span>
+            )}
+            {signings > 0 && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-success/15 text-success font-medium">{signings} signing{signings !== 1 ? "s" : ""}</span>
+            )}
+            {waivers > 0 && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-danger/15 text-danger font-medium">{waivers} waiver{waivers !== 1 ? "s" : ""}</span>
+            )}
+            {others > 0 && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-bg-hover text-text-secondary font-medium">{others} other{others !== 1 ? "s" : ""}</span>
+            )}
+            <span className="text-[10px] text-text-secondary ml-1">{transactions.length} total</span>
+          </div>
+        );
+      })()}
+
       {!loading && transactions.length === 0 && (
         <div className="text-center py-12 text-text-secondary">
           <p className="text-lg">No recent transactions available</p>

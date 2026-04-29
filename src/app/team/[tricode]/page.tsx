@@ -448,6 +448,25 @@ export default async function TeamPage({ params }: PageProps) {
                 </div>
               ))}
             </div>
+            {/* Feature 11: Win percentage sparkline */}
+            {months.length >= 2 && (() => {
+              const pcts = months.map(([, rec]) => rec.w / (rec.w + rec.l || 1));
+              const w = 200, h = 40, pad = 4;
+              const xStep = (w - pad * 2) / (pcts.length - 1);
+              const points = pcts.map((p, i) => `${pad + i * xStep},${h - pad - p * (h - pad * 2)}`).join(" ");
+              return (
+                <div className="mt-3">
+                  <p className="text-[10px] text-text-secondary mb-1">Win% Trend</p>
+                  <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-[240px]" preserveAspectRatio="none">
+                    <line x1={pad} y1={h / 2} x2={w - pad} y2={h / 2} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3" />
+                    <polyline points={points} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                    {pcts.map((p, i) => (
+                      <circle key={i} cx={pad + i * xStep} cy={h - pad - p * (h - pad * 2)} r="2.5" fill="var(--accent)" />
+                    ))}
+                  </svg>
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
@@ -490,6 +509,58 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
         </div>
       )}
+
+      {/* Feature 2: Roster Position Breakdown */}
+      {roster.length > 0 && (() => {
+        const posCount: Record<string, number> = { Guard: 0, Forward: 0, Center: 0 };
+        for (const p of roster) {
+          const pos = (p.position || "").toUpperCase();
+          if (pos.includes("G")) posCount["Guard"]++;
+          else if (pos.includes("F")) posCount["Forward"]++;
+          else if (pos.includes("C")) posCount["Center"]++;
+        }
+        const total = posCount.Guard + posCount.Forward + posCount.Center;
+        if (total === 0) return null;
+        const colors = { Guard: "var(--accent)", Forward: "var(--success)", Center: "var(--danger)" };
+        const size = 80;
+        const cx = size / 2, cy = size / 2, r = 30;
+        let currentAngle = -Math.PI / 2;
+        const slices: { key: string; path: string; color: string }[] = [];
+        for (const [label, count] of Object.entries(posCount)) {
+          if (count === 0) continue;
+          const angle = (count / total) * 2 * Math.PI;
+          const x1 = cx + r * Math.cos(currentAngle);
+          const y1 = cy + r * Math.sin(currentAngle);
+          const x2 = cx + r * Math.cos(currentAngle + angle);
+          const y2 = cy + r * Math.sin(currentAngle + angle);
+          const largeArc = angle > Math.PI ? 1 : 0;
+          slices.push({
+            key: label,
+            path: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`,
+            color: colors[label as keyof typeof colors],
+          });
+          currentAngle += angle;
+        }
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Position Breakdown</h3>
+            <div className="flex items-center gap-6">
+              <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                {slices.map(s => <path key={s.key} d={s.path} fill={s.color} opacity={0.8} />)}
+              </svg>
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(posCount).filter(([,c]) => c > 0).map(([label, count]) => (
+                  <div key={label} className="flex items-center gap-1.5 text-xs">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: colors[label as keyof typeof colors] }} />
+                    <span className="text-text-primary font-medium">{label}</span>
+                    <span className="text-text-secondary">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Roster */}
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">

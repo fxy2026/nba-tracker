@@ -210,6 +210,34 @@ export default async function PlayerPage({ params }: PageProps) {
             <StatBox label="From" value={player.fromYear || "-"} />
             <StatBox label="To" value={player.toYear || "-"} />
           </div>
+          {/* Feature 3: Scoring Profile mini-bar */}
+          {player.pts > 0 && (() => {
+            const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
+            if (isNaN(ppg) || ppg <= 0) return null;
+            // Approximate scoring breakdown based on position heuristics
+            const pos = (player.position || "").toUpperCase();
+            let fg2Pct = 0.5, fg3Pct = 0.25, ftPct = 0.25;
+            if (pos.includes("C")) { fg2Pct = 0.65; fg3Pct = 0.10; ftPct = 0.25; }
+            else if (pos.includes("G")) { fg2Pct = 0.35; fg3Pct = 0.40; ftPct = 0.25; }
+            const fg2 = (ppg * fg2Pct).toFixed(1);
+            const fg3 = (ppg * fg3Pct).toFixed(1);
+            const ft = (ppg * ftPct).toFixed(1);
+            return (
+              <div className="mt-3 bg-bg-secondary rounded-lg p-3">
+                <p className="text-[10px] text-text-secondary uppercase mb-2">Scoring Profile (est.)</p>
+                <div className="flex h-4 rounded-full overflow-hidden">
+                  <div className="bg-accent" style={{ width: `${fg2Pct * 100}%` }} title={`2PT: ~${fg2}`} />
+                  <div className="bg-success" style={{ width: `${fg3Pct * 100}%` }} title={`3PT: ~${fg3}`} />
+                  <div className="bg-yellow-400" style={{ width: `${ftPct * 100}%` }} title={`FT: ~${ft}`} />
+                </div>
+                <div className="flex justify-between mt-1.5 text-[10px] text-text-secondary">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-accent" />2PT ~{fg2}</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" />3PT ~{fg3}</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" />FT ~{ft}</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* External Links */}

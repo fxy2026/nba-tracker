@@ -146,6 +146,10 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
 
       {showDropdown && results.length > 0 && (
         <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
+          {/* Feature 10: Result count */}
+          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50">
+            <span className="text-xs text-text-secondary font-medium">{results.length} player{results.length !== 1 ? "s" : ""} found</span>
+          </div>
           {results.map((p) => (
             <Link
               key={p.personId}

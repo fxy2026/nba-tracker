@@ -12,6 +12,7 @@ import TodayStars from "@/components/TodayStars";
 import SeasonProgress from "@/components/SeasonProgress";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 import StandingsMini from "@/components/StandingsMini";
+import ScoreTicker from "@/components/ScoreTicker";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -70,6 +71,21 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Feature 5: Live game score ticker */}
+      {hasLiveGames && (
+        <ScoreTicker
+          games={games
+            .filter((g) => g.gameStatus === 2)
+            .map((g) => ({
+              gameId: g.gameId,
+              awayTricode: g.awayTeam.teamTricode,
+              homeTricode: g.homeTeam.teamTricode,
+              awayScore: g.awayTeam.score,
+              homeScore: g.homeTeam.score,
+              gameStatusText: g.gameStatusText,
+            }))}
+        />
+      )}
       <DateNav selectedDate={selectedDate} />
       {isToday && (() => {
         const yesterday = new Date();

@@ -138,6 +138,37 @@ export default async function H2HPage({ searchParams }: PageProps) {
             })()}
           </div>
 
+          {/* Feature 8: Scoring Distribution */}
+          {games.length > 0 && (() => {
+            const allScores = games.map(g => g.homeScore + g.awayScore);
+            const avgTotal = (allScores.reduce((s, v) => s + v, 0) / allScores.length).toFixed(1);
+            const highest = Math.max(...allScores);
+            const lowest = Math.min(...allScores);
+            const highGame = games.find(g => g.homeScore + g.awayScore === highest);
+            const lowGame = games.find(g => g.homeScore + g.awayScore === lowest);
+            return (
+              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Scoring Distribution</h3>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-bg-secondary rounded-lg p-3">
+                    <p className="text-[10px] text-text-secondary uppercase">Avg Total</p>
+                    <p className="text-lg font-bold text-accent">{avgTotal}</p>
+                  </div>
+                  <div className="bg-bg-secondary rounded-lg p-3">
+                    <p className="text-[10px] text-text-secondary uppercase">Highest</p>
+                    <p className="text-lg font-bold text-success">{highest}</p>
+                    {highGame && <p className="text-[9px] text-text-secondary">{highGame.awayTricode} {highGame.awayScore}-{highGame.homeScore} {highGame.homeTricode}</p>}
+                  </div>
+                  <div className="bg-bg-secondary rounded-lg p-3">
+                    <p className="text-[10px] text-text-secondary uppercase">Lowest</p>
+                    <p className="text-lg font-bold text-danger">{lowest}</p>
+                    {lowGame && <p className="text-[9px] text-text-secondary">{lowGame.awayTricode} {lowGame.awayScore}-{lowGame.homeScore} {lowGame.homeTricode}</p>}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Home/Away Split */}
           {games.length > 0 && (() => {
             let t1HomeWins = 0, t1HomeLosses = 0, t1AwayWins = 0, t1AwayLosses = 0;

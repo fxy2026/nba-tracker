@@ -128,7 +128,7 @@ export default function CalendarPage() {
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border">
           {DAYS_OF_WEEK.map((d) => (
-            <div key={d} className="text-center py-2.5 text-xs font-medium text-text-secondary">
+            <div key={d} className={`text-center py-2.5 text-xs font-medium ${d === "Sun" || d === "Sat" ? "text-accent/70" : "text-text-secondary"}`}>
               {d}
             </div>
           ))}
@@ -148,12 +148,14 @@ export default function CalendarPage() {
             {cells.map((cell, i) => {
               const isToday = cell.date === today;
               const hasGames = cell.calDay && cell.calDay.gameCount > 0;
+              const dayOfWeek = i % 7;
+              const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               return (
                 <div
                   key={i}
                   className={`border-b border-r border-border/50 p-2 min-h-[80px] transition-colors ${
                     cell.day ? "cursor-pointer hover:bg-bg-hover" : ""
-                  } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-green-500/15" : cell.calDay!.gameCount >= 4 ? "bg-green-500/10" : "bg-green-500/5") : ""}`}
+                  } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-green-500/15" : cell.calDay!.gameCount >= 4 ? "bg-green-500/10" : "bg-green-500/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
                   onClick={() => {
                     if (cell.date) router.push(`/?date=${cell.date}`);
                   }}

@@ -253,6 +253,29 @@ export default async function StandingsPage() {
         ))}
       </div>
 
+      {/* Feature 4: East vs West Comparison */}
+      {eastTeams.length > 0 && westTeams.length > 0 && (() => {
+        const eastWins = eastTeams.reduce((s, t) => s + t.wins, 0);
+        const westWins = westTeams.reduce((s, t) => s + t.wins, 0);
+        const total = eastWins + westWins || 1;
+        const eastPct = (eastWins / total) * 100;
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mb-8">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">East vs West</h3>
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-sm font-bold text-accent">East {eastWins}W</span>
+              <div className="flex-1 h-3 bg-bg-hover rounded-full overflow-hidden">
+                <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${eastPct}%` }} />
+              </div>
+              <span className="text-sm font-bold text-success">West {westWins}W</span>
+            </div>
+            <p className="text-[10px] text-text-secondary text-center">
+              {eastWins > westWins ? `East leads by ${eastWins - westWins} wins` : westWins > eastWins ? `West leads by ${westWins - eastWins} wins` : "Tied"}
+            </p>
+          </div>
+        );
+      })()}
+
       {/* Full Conference Rankings */}
       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <span className="w-1.5 h-5 bg-accent rounded-full" />
