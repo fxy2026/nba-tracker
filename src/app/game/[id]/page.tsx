@@ -383,6 +383,8 @@ export default async function GamePage({ params }: PageProps) {
 
   const isFinal = boxScore.gameStatus === 3;
   const homeWon = boxScore.homeTeam.score > boxScore.awayTeam.score;
+  const scoreDiff = Math.abs(boxScore.homeTeam.score - boxScore.awayTeam.score);
+  const isCloseGame = isFinal && scoreDiff <= 5;
   const isPlayoffs = boxScore.gameId.startsWith("004");
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
@@ -414,6 +416,9 @@ export default async function GamePage({ params }: PageProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             {isPlayoffs && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">Playoffs</span>}
+            {isCloseGame && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">Thriller</span>
+            )}
             {boxScore.homeTeam.periods?.length > 4 && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
                 {boxScore.homeTeam.periods.length - 4}OT

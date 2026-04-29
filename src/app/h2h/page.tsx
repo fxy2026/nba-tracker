@@ -97,6 +97,22 @@ export default async function H2HPage({ searchParams }: PageProps) {
             {games.length === 0 && (
               <p className="text-center text-text-secondary text-sm mt-4">No completed games between these teams this season</p>
             )}
+            {games.length > 0 && (() => {
+              const t1Total = games.reduce((s, g) => {
+                if (g.homeTricode === t1) return s + g.homeScore;
+                return s + g.awayScore;
+              }, 0);
+              const t2Total = games.reduce((s, g) => {
+                if (g.homeTricode === t2) return s + g.homeScore;
+                return s + g.awayScore;
+              }, 0);
+              return (
+                <div className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-6 text-xs text-text-secondary">
+                  <span>Avg Score: {t1} {(t1Total / games.length).toFixed(1)} - {(t2Total / games.length).toFixed(1)} {t2}</span>
+                  <span>{games.length} games played</span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Game List */}
