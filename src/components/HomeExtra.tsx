@@ -9,10 +9,14 @@ export default function HomeExtra() {
   const [data, setData] = useState<{ playoffs: ScheduleGame[]; recent: ScheduleGame[] } | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/extra")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (!cancelled && d) setData(d); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled && !data) setData({ playoffs: [], recent: [] }); });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!data) {

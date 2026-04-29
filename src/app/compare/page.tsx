@@ -116,7 +116,7 @@ export default function ComparePage() {
           <div className="grid grid-cols-3 p-6 border-b border-border">
             <div className="flex flex-col items-center gap-3">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
-                <Image src={headshotUrl(player1.personId)} alt={player1.lastName} width={80} height={80} className="w-full h-full object-cover object-top" />
+                <Image src={headshotUrl(player1.personId)} alt={`${player1.firstName} ${player1.lastName}`} width={80} height={80} className="w-full h-full object-cover object-top" />
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player1.firstName} {player1.lastName}</p>
@@ -129,7 +129,7 @@ export default function ComparePage() {
             </div>
             <div className="flex flex-col items-center gap-3">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
-                <Image src={headshotUrl(player2.personId)} alt={player2.lastName} width={80} height={80} className="w-full h-full object-cover object-top" />
+                <Image src={headshotUrl(player2.personId)} alt={`${player2.firstName} ${player2.lastName}`} width={80} height={80} className="w-full h-full object-cover object-top" />
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player2.firstName} {player2.lastName}</p>

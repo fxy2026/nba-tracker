@@ -1,7 +1,8 @@
 // Helper functions for localStorage-based favorites
 export function getFavoriteTeams(): string[] {
   if (typeof window === 'undefined') return [];
-  return JSON.parse(localStorage.getItem('fav_teams') || '[]');
+  try { return JSON.parse(localStorage.getItem('fav_teams') || '[]'); }
+  catch { return []; }
 }
 
 export function toggleFavoriteTeam(tricode: string): string[] {
@@ -15,7 +16,8 @@ export function toggleFavoriteTeam(tricode: string): string[] {
 
 export function getFavoritePlayers(): number[] {
   if (typeof window === 'undefined') return [];
-  return JSON.parse(localStorage.getItem('fav_players') || '[]');
+  try { return JSON.parse(localStorage.getItem('fav_players') || '[]'); }
+  catch { return []; }
 }
 
 export function toggleFavoritePlayer(id: number): number[] {
