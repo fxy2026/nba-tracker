@@ -229,6 +229,38 @@ export default async function TeamPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Offense vs Defense */}
+      {gamesPlayed > 0 && (
+        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Offense vs Defense</h3>
+          <div className="flex items-end gap-1 h-20">
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs text-accent font-bold">{ppg}</span>
+              <div className="w-full bg-accent/20 rounded-t" style={{ height: `${(parseFloat(ppg) / 150) * 100}%` }}>
+                <div className="w-full h-full bg-accent rounded-t" />
+              </div>
+              <span className="text-[10px] text-text-secondary">OFF</span>
+            </div>
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs text-danger font-bold">{oppPpg}</span>
+              <div className="w-full bg-danger/20 rounded-t" style={{ height: `${(parseFloat(oppPpg) / 150) * 100}%` }}>
+                <div className="w-full h-full bg-danger rounded-t" />
+              </div>
+              <span className="text-[10px] text-text-secondary">DEF</span>
+            </div>
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className={`text-xs font-bold ${parseFloat(ppg) > parseFloat(oppPpg) ? "text-success" : "text-danger"}`}>
+                {(parseFloat(ppg) - parseFloat(oppPpg) > 0 ? "+" : "")}{(parseFloat(ppg) - parseFloat(oppPpg)).toFixed(1)}
+              </span>
+              <div className="w-full bg-bg-hover rounded-t" style={{ height: `${(Math.abs(parseFloat(ppg) - parseFloat(oppPpg)) / 20) * 100}%` }}>
+                <div className={`w-full h-full rounded-t ${parseFloat(ppg) > parseFloat(oppPpg) ? "bg-success" : "bg-danger"}`} />
+              </div>
+              <span className="text-[10px] text-text-secondary">NET</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Last 10 Games W/L Streak */}
       {recentGames.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">

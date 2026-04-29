@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DateNavProps {
@@ -12,12 +13,23 @@ export default function DateNav({ selectedDate }: DateNavProps) {
 
   const currentDate = new Date(selectedDate + "T12:00:00");
 
-  const goToDate = (offset: number) => {
+  const goToDate = useCallback((offset: number) => {
     const d = new Date(currentDate);
     d.setDate(d.getDate() + offset);
     const dateStr = d.toISOString().split("T")[0];
     router.push(`/?date=${dateStr}`);
-  };
+  }, [currentDate, router]);
+
+  // Keyboard navigation: left/right arrows
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); goToDate(-1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); goToDate(1); }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goToDate]);
 
   // Generate 7 days centered around selected date
   const days: { date: string; label: string; weekday: string }[] = [];

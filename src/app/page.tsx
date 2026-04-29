@@ -70,6 +70,13 @@ export default async function HomePage({ searchParams }: PageProps) {
       <StandingsMini />
       <LiveScoreRefresher hasLiveGames={hasLiveGames} />
 
+      {/* Last updated timestamp */}
+      {isToday && games.length > 0 && (
+        <p className="text-[10px] text-text-secondary text-right mt-4">
+          Updated: {new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit" })} (Beijing)
+        </p>
+      )}
+
       {games.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
           {games.map((game) => (

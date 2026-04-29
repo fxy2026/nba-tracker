@@ -115,8 +115,11 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
 
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50">
+      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50 flex items-center justify-between">
         <h3 className="text-sm font-semibold">{title}</h3>
+        {leader && (
+          <span className="text-[10px] text-accent">Best: {leader.tricode} ({leader.wins}-{leader.losses})</span>
+        )}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

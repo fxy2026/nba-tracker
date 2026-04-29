@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const name = `${player.firstName} ${player.lastName}`;
   return {
     title: `${name} — ${player.teamCity} ${player.teamName}`,
-    description: `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG，${player.position}，${player.teamCity} ${player.teamName}。`,
+    description: `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`,
     openGraph: {
       title: name,
       description: `${player.pts} PPG · ${player.reb} RPG · ${player.ast} APG`,
@@ -41,6 +41,14 @@ export default async function PlayerPage({ params }: PageProps) {
 
   const player = await getPlayerInfo(personId);
   if (!player) notFound();
+
+  // Get all players for position ranking
+  const { getPlayerIndex } = await import("@/lib/api");
+  const allPlayers = await getPlayerIndex().catch(() => []);
+  const positionPlayers = player.position
+    ? allPlayers.filter((p) => p.position === player.position && p.pts > 0).sort((a, b) => b.pts - a.pts)
+    : [];
+  const posRank = positionPlayers.findIndex((p) => p.personId === personId) + 1;
 
   const headshotUrl = getPlayerHeadshotUrl(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
@@ -80,6 +88,11 @@ export default async function PlayerPage({ params }: PageProps) {
                   {player.teamCity} {player.teamName}
                 </Link>
                 <span className="text-accent font-medium text-sm">#{player.jersey} &middot; {player.position}</span>
+                {posRank > 0 && posRank <= 30 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent">
+                    #{posRank} {player.position} in PPG
+                  </span>
+                )}
               </div>
             </div>
           </div>

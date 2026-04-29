@@ -68,10 +68,20 @@ function getStatusBg(status: string | undefined): string {
   return "bg-text-secondary/10";
 }
 
-export default async function InjuriesPage() {
-  const teams = await getInjuries();
+export default async function InjuriesPage({ searchParams }: { searchParams: Promise<{ team?: string }> }) {
+  const params = await searchParams;
+  const filterTeam = params.team?.toLowerCase();
+  const allTeams = await getInjuries();
 
-  const totalInjured = teams.reduce((sum, t) => sum + (t.injuries?.length || 0), 0);
+  const teams = filterTeam
+    ? allTeams.filter((t) => t.displayName?.toLowerCase().includes(filterTeam))
+    : allTeams;
+
+  const totalInjured = allTeams.reduce((sum, t) => sum + (t.injuries?.length || 0), 0);
+
+  const teamNames = allTeams
+    .filter((t) => t.injuries && t.injuries.length > 0)
+    .map((t) => t.displayName || "");
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -80,7 +90,7 @@ export default async function InjuriesPage() {
         Back to home
       </Link>
 
-      <div className="flex items-center justify-between mt-4 mb-6">
+      <div className="flex items-center justify-between mt-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
             <AlertTriangle size={20} className="text-danger" />
@@ -91,8 +101,27 @@ export default async function InjuriesPage() {
           </div>
         </div>
         {totalInjured > 0 && (
-          <span className="text-sm text-text-secondary">{totalInjured} players &middot; {teams.length} teams</span>
+          <span className="text-sm text-text-secondary">{totalInjured} players &middot; {allTeams.length} teams</span>
         )}
+      </div>
+
+      {/* Team Filter */}
+      <div className="flex flex-wrap gap-1.5 mb-6">
+        <Link
+          href="/injuries"
+          className={`text-xs px-2.5 py-1 rounded-full transition-colors ${!filterTeam ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"}`}
+        >
+          All Teams
+        </Link>
+        {teamNames.map((name) => (
+          <Link
+            key={name}
+            href={`/injuries?team=${encodeURIComponent(name.toLowerCase())}`}
+            className={`text-xs px-2.5 py-1 rounded-full transition-colors ${filterTeam && name.toLowerCase().includes(filterTeam) ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"}`}
+          >
+            {name}
+          </Link>
+        ))}
       </div>
 
       {teams.length === 0 ? (

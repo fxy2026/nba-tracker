@@ -10,6 +10,11 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
   const periods = Math.max(homeTeam.periods.length, awayTeam.periods.length);
   if (periods === 0) return null;
 
+  // Compute halftime scores
+  const homeHalf = homeTeam.periods.slice(0, 2).reduce((s, p) => s + p.score, 0);
+  const awayHalf = awayTeam.periods.slice(0, 2).reduce((s, p) => s + p.score, 0);
+  const showHalftime = periods >= 4;
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -70,6 +75,12 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
           </tr>
         </tbody>
       </table>
+      {/* Halftime score */}
+      {showHalftime && (
+        <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-text-secondary">
+          <span>Halftime: {awayTeam.teamTricode} {awayHalf} - {homeHalf} {homeTeam.teamTricode}</span>
+        </div>
+      )}
     </div>
   );
 }

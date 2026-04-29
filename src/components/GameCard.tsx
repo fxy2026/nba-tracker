@@ -105,6 +105,15 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
             </span>
           </div>
         </div>
+
+        {/* Point differential */}
+        {isFinal && (
+          <div className="mt-2 pt-2 border-t border-border/30 flex items-center justify-center">
+            <span className="text-[10px] text-text-secondary">
+              {awayWon ? game.awayTeam.teamTricode : game.homeTeam.teamTricode} +{Math.abs(game.homeTeam.score - game.awayTeam.score)}
+            </span>
+          </div>
+        )}
       </div>
     </Link>
   );
