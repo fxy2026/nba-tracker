@@ -25,10 +25,10 @@ export default function StandingsMini() {
         const teams: TeamRecord[] = json.data || [];
         const eastTeams = teams
           .filter((t) => TEAM_META[t.tricode]?.conference === "East")
-          .slice(0, 4);
+          .slice(0, 6);
         const westTeams = teams
           .filter((t) => TEAM_META[t.tricode]?.conference === "West")
-          .slice(0, 4);
+          .slice(0, 6);
         setEast(eastTeams);
         setWest(westTeams);
       })

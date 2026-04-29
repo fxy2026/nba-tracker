@@ -414,6 +414,11 @@ export default async function GamePage({ params }: PageProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             {isPlayoffs && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">Playoffs</span>}
+            {boxScore.homeTeam.periods?.length > 4 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
+                {boxScore.homeTeam.periods.length - 4}OT
+              </span>
+            )}
             <span className="text-xs text-text-secondary">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
             {beijingTime && <span className="text-xs text-text-secondary">&middot; 北京时间 {beijingTime}</span>}
           </div>

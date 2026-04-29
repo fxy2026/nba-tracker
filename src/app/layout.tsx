@@ -66,6 +66,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
+        {/* Skip to main content for accessibility */}
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-lg">
+          Skip to content
+        </a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -82,13 +86,17 @@ export default function RootLayout({
           }}
         />
         <Navbar />
-        <main className="flex-1">
+        <main id="main-content" className="flex-1">
           <ViewTransition>{children}</ViewTransition>
         </main>
         <footer className="border-t border-border py-6 text-center text-xs text-text-secondary hidden sm:block">
-          <span>NBA Tracker &middot; Made by </span>
+          <span>NBA Tracker &middot; Made with &#10084; by </span>
           <a href="https://www.xpy.me" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover transition-colors">FXY</a>
           <span> &middot; Data from NBA.com &middot; Not affiliated with NBA</span>
+          <br />
+          <span className="text-text-secondary/50 text-[10px]">
+            Open source on <a href="https://github.com/fxy2026/nba-tracker" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">GitHub</a>
+          </span>
         </footer>
         <MobileNav />
         <BackToTop />
