@@ -167,6 +167,29 @@ export default function ComparePage() {
             })}
           </div>
 
+          {/* Winner Summary */}
+          <div className="px-6 py-3 bg-bg-secondary/50 border-t border-border">
+            {(() => {
+              let p1Wins = 0, p2Wins = 0;
+              for (const { key } of COMPARE_STATS) {
+                const v1 = player1[key as keyof PlayerData] as number;
+                const v2 = player2[key as keyof PlayerData] as number;
+                if (v1 > v2) p1Wins++;
+                else if (v2 > v1) p2Wins++;
+              }
+              const winner = p1Wins > p2Wins ? player1 : p2Wins > p1Wins ? player2 : null;
+              return (
+                <p className="text-center text-sm">
+                  {winner ? (
+                    <><span className="text-accent font-bold">{winner.firstName} {winner.lastName}</span> <span className="text-text-secondary">leads {p1Wins > p2Wins ? p1Wins : p2Wins}-{p1Wins > p2Wins ? p2Wins : p1Wins} in categories</span></>
+                  ) : (
+                    <span className="text-text-secondary">Tied across all categories</span>
+                  )}
+                </p>
+              );
+            })()}
+          </div>
+
           {/* Visual Bar Chart */}
           <div className="px-6 pb-6">
             <svg viewBox="0 0 300 140" className="w-full max-w-md mx-auto">

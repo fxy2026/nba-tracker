@@ -71,11 +71,19 @@ export default function FavoritesPage() {
 
       {!hasAny && !loading && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
-          <Heart size={48} className="mx-auto text-text-secondary mb-4" />
-          <p className="text-lg text-text-secondary">No favorites yet</p>
-          <p className="text-sm text-text-secondary mt-2">
+          <Heart size={48} className="mx-auto text-text-secondary/30 mb-4" />
+          <p className="text-lg font-medium text-text-primary">No favorites yet</p>
+          <p className="text-sm text-text-secondary mt-2 mb-6">
             Add teams and players to your favorites by tapping the heart icon on their pages.
           </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/search" className="px-4 py-2 bg-accent text-white rounded-lg text-sm hover:bg-accent-hover transition-colors">
+              Find Players
+            </Link>
+            <Link href="/stats" className="px-4 py-2 bg-bg-card border border-border rounded-lg text-sm text-text-primary hover:bg-bg-hover transition-colors">
+              Browse Teams
+            </Link>
+          </div>
         </div>
       )}
 
