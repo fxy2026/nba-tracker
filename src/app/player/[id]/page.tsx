@@ -162,9 +162,9 @@ export default async function PlayerPage({ params }: PageProps) {
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">Career Averages</h2>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-            <StatBox label="PPG" value={player.pts} highlight />
-            <StatBox label="RPG" value={player.reb} />
-            <StatBox label="APG" value={player.ast} />
+            <CareerStatBox label="PPG" value={player.pts} highlight allPlayers={allPlayers} personId={personId} statKey="pts" />
+            <CareerStatBox label="RPG" value={player.reb} allPlayers={allPlayers} personId={personId} statKey="reb" />
+            <CareerStatBox label="APG" value={player.ast} allPlayers={allPlayers} personId={personId} statKey="ast" />
             <StatBox label="From" value={player.fromYear || "-"} />
             <StatBox label="To" value={player.toYear || "-"} />
           </div>
@@ -265,6 +265,35 @@ function StatBox({ label, value, highlight }: { label: string; value: string | n
     <div className="bg-bg-secondary rounded-lg p-3 text-center">
       <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
       <p className={`text-xl font-bold mt-1 ${highlight ? "text-accent" : "text-text-primary"}`}>{value}</p>
+    </div>
+  );
+}
+
+function CareerStatBox({ label, value, highlight, allPlayers, personId, statKey }: {
+  label: string; value: string | number; highlight?: boolean;
+  allPlayers: { personId: number; pts: number; reb: number; ast: number }[];
+  personId: number; statKey: "pts" | "reb" | "ast";
+}) {
+  // Compute the position average across all players with >0 pts to determine if above average
+  const activePlayers = allPlayers.filter((p) => p.pts > 0);
+  const avg = activePlayers.length > 0 ? activePlayers.reduce((s, p) => s + p[statKey], 0) / activePlayers.length : 0;
+  const numVal = typeof value === "number" ? value : parseFloat(String(value));
+  const aboveAvg = !isNaN(numVal) && numVal > avg && avg > 0;
+  // Check if player is in the top 20 for this stat
+  const sorted = [...activePlayers].sort((a, b) => b[statKey] - a[statKey]);
+  const rank = sorted.findIndex((p) => p.personId === personId) + 1;
+  const isElite = rank > 0 && rank <= 20;
+
+  return (
+    <div className="bg-bg-secondary rounded-lg p-3 text-center relative">
+      <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
+      <p className={`text-xl font-bold mt-1 ${highlight ? "text-accent" : "text-text-primary"}`}>
+        {value}
+        {aboveAvg && <span className="text-success text-xs ml-1" title="Above league average">&#9650;</span>}
+      </p>
+      {isElite && (
+        <span className="text-[9px] text-accent mt-0.5 block" title={`#${rank} in NBA`}>Top {rank}</span>
+      )}
     </div>
   );
 }

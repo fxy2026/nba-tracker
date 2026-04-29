@@ -87,8 +87,9 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold tabular-nums ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold tabular-nums flex items-center gap-1 ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {game.gameStatus > 1 ? game.awayTeam.score : "-"}
+              {awayWon && <span className="text-success text-xs">&#10003;</span>}
             </span>
           </div>
 
@@ -110,8 +111,9 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold tabular-nums ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold tabular-nums flex items-center gap-1 ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {game.gameStatus > 1 ? game.homeTeam.score : "-"}
+              {homeWon && <span className="text-success text-xs">&#10003;</span>}
             </span>
           </div>
         </div>

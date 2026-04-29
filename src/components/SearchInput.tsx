@@ -20,13 +20,37 @@ interface SearchResult {
   ast: number;
 }
 
+const SEARCH_HISTORY_KEY = "nba-search-history";
+const MAX_HISTORY = 5;
+
+function getSearchHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSearchHistory(query: string) {
+  try {
+    const history = getSearchHistory().filter((q) => q !== query);
+    history.unshift(query);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+  } catch { /* ignore */ }
+}
+
 export default function SearchInput({ initialQuery = "" }: { initialQuery?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setSearchHistory(getSearchHistory());
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -61,6 +85,10 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           const json = await res.json();
           setResults(json.data || []);
           setShowDropdown(true);
+          if ((json.data || []).length > 0) {
+            saveSearchHistory(query.trim());
+            setSearchHistory(getSearchHistory());
+          }
         }
       } catch { /* timeout or network error */ }
       setLoading(false);
@@ -79,7 +107,8 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setShowDropdown(true)}
+          onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
+          onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search players by name..."
           className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
           autoFocus
@@ -97,6 +126,21 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       {loading && (
         <div className="absolute right-12 top-1/2 -translate-y-1/2">
           <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Recent search history */}
+      {focused && !query && searchHistory.length > 0 && !showDropdown && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {searchHistory.map((q) => (
+            <button
+              key={q}
+              onMouseDown={(e) => { e.preventDefault(); setQuery(q); }}
+              className="text-xs px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
+            >
+              {q}
+            </button>
+          ))}
         </div>
       )}
 

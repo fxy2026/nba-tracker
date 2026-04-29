@@ -127,6 +127,25 @@ export default async function TeamPage({ params }: PageProps) {
   }
   const streakDisplay = streakCount > 0 ? `${streakType}${streakCount}` : "-";
 
+  // Compute longest win streak and loss streak
+  let longestWinStreak = 0, longestLossStreak = 0;
+  {
+    let currentW = 0, currentL = 0;
+    // recentGames is sorted desc by date, reverse to go chronological
+    const chronological = [...recentGames].reverse();
+    for (const g of chronological) {
+      if (g.won) {
+        currentW++;
+        currentL = 0;
+        if (currentW > longestWinStreak) longestWinStreak = currentW;
+      } else {
+        currentL++;
+        currentW = 0;
+        if (currentL > longestLossStreak) longestLossStreak = currentL;
+      }
+    }
+  }
+
   // Compute head-to-head rivalries
   const h2hMap: Record<string, { opponent: string; opponentId: number; wins: number; losses: number }> = {};
   for (const g of recentGames) {
@@ -194,7 +213,7 @@ export default async function TeamPage({ params }: PageProps) {
 
         {/* Season Stats */}
         {gamesPlayed > 0 && (
-          <div className="grid grid-cols-5 gap-2 mt-4">
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 mt-4">
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
               <p className="text-[10px] text-text-secondary uppercase">PPG</p>
               <p className="text-lg font-bold text-accent mt-0.5">{ppg}</p>
@@ -224,6 +243,15 @@ export default async function TeamPage({ params }: PageProps) {
               <p className={`text-lg font-bold mt-0.5 ${streakType === "W" ? "text-success" : "text-danger"}`}>
                 {streakDisplay}
               </p>
+            </div>
+            {/* Season Highs */}
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Best Streak</p>
+              <p className="text-lg font-bold text-success mt-0.5">W{longestWinStreak}</p>
+            </div>
+            <div className="bg-bg-secondary rounded-lg p-3 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Worst Streak</p>
+              <p className="text-lg font-bold text-danger mt-0.5">L{longestLossStreak}</p>
             </div>
           </div>
         )}

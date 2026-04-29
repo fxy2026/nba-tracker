@@ -148,6 +148,12 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                   {t.injuries.map((inj, idx) => (
                     <div key={inj.id || idx} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="flex items-center gap-3 min-w-[180px]">
+                        <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                          inj.status?.toLowerCase().includes("out") ? "bg-danger" :
+                          inj.status?.toLowerCase().includes("doubtful") ? "bg-orange-400" :
+                          inj.status?.toLowerCase().includes("day-to-day") || inj.status?.toLowerCase().includes("questionable") ? "bg-yellow-400" :
+                          "bg-text-secondary/50"
+                        }`} />
                         <span className="font-medium text-sm text-text-primary">
                           {inj.athlete?.displayName || "Unknown"}
                         </span>

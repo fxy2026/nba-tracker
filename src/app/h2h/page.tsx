@@ -94,6 +94,29 @@ export default async function H2HPage({ searchParams }: PageProps) {
                 <span className={`text-3xl font-bold ${t2Wins >= t1Wins ? "text-accent" : "text-text-secondary"}`}>{t2Wins}</span>
               </div>
             </div>
+            {/* Win percentage donut */}
+            {games.length > 0 && (() => {
+              const total = t1Wins + t2Wins;
+              const t1Pct = total > 0 ? t1Wins / total : 0.5;
+              const circumference = 2 * Math.PI * 30;
+              const t1Dash = t1Pct * circumference;
+              const t2Dash = (1 - t1Pct) * circumference;
+              return (
+                <div className="flex justify-center mt-4">
+                  <svg width={80} height={80} viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="30" fill="none" stroke="var(--bg-hover)" strokeWidth="8" />
+                    <circle cx="40" cy="40" r="30" fill="none" stroke="var(--accent)" strokeWidth="8"
+                      strokeDasharray={`${t1Dash} ${t2Dash}`}
+                      strokeDashoffset={circumference / 4}
+                      strokeLinecap="round"
+                    />
+                    <text x="40" y="40" textAnchor="middle" dominantBaseline="central" fill="var(--text-primary)" fontSize="11" fontWeight="bold">
+                      {(t1Pct * 100).toFixed(0)}%
+                    </text>
+                  </svg>
+                </div>
+              );
+            })()}
             {games.length === 0 && (
               <p className="text-center text-text-secondary text-sm mt-4">No completed games between these teams this season</p>
             )}

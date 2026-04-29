@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { GitCompareArrows } from "lucide-react";
+import { GitCompareArrows, ArrowLeftRight } from "lucide-react";
 
 interface PlayerData {
   personId: number;
@@ -63,7 +63,7 @@ export default function ComparePage() {
       </h1>
 
       {/* Player selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 mb-8 items-start">
         {/* Player 1 */}
         <div className="relative">
           <input
@@ -84,6 +84,42 @@ export default function ComparePage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Swap button (mobile: between inputs as a row) */}
+        <div className="flex md:hidden items-center justify-center">
+          <button
+            onClick={() => {
+              const tempP = player1;
+              const tempQ = query1;
+              setPlayer1(player2);
+              setQuery1(query2);
+              setPlayer2(tempP);
+              setQuery2(tempQ);
+            }}
+            className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover hover:border-accent/50 transition-colors text-text-secondary hover:text-accent"
+            title="Swap players"
+          >
+            <ArrowLeftRight size={18} />
+          </button>
+        </div>
+
+        {/* Swap button (desktop) */}
+        <div className="hidden md:flex items-center justify-center pt-3">
+          <button
+            onClick={() => {
+              const tempP = player1;
+              const tempQ = query1;
+              setPlayer1(player2);
+              setQuery1(query2);
+              setPlayer2(tempP);
+              setQuery2(tempQ);
+            }}
+            className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover hover:border-accent/50 transition-colors text-text-secondary hover:text-accent"
+            title="Swap players"
+          >
+            <ArrowLeftRight size={18} />
+          </button>
         </div>
 
         {/* Player 2 */}

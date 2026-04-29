@@ -100,7 +100,19 @@ function DivisionCard({ division, teams, conferenceRanks }: {
               <span className="text-center text-sm font-medium tabular-nums">{team.wins}</span>
               <span className="text-center text-sm text-text-secondary tabular-nums">{team.losses}</span>
               <span className="text-center text-sm tabular-nums">{winPct.toFixed(3).slice(1)}</span>
-              <span className="text-center text-xs text-text-secondary tabular-nums">{gb}</span>
+              <div className="text-center">
+                <span className="text-xs text-text-secondary tabular-nums">{gb}</span>
+                {idx > 0 && (() => {
+                  const gbNum = ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2;
+                  const maxGb = sorted.length > 1 ? ((leaderWins - leaderLosses) - (sorted[sorted.length - 1].wins - sorted[sorted.length - 1].losses)) / 2 : 1;
+                  const pct = maxGb > 0 ? Math.min((gbNum / maxGb) * 100, 100) : 0;
+                  return (
+                    <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-0.5">
+                      <div className="h-full bg-danger/40 rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                  );
+                })()}
+              </div>
             </Link>
           );
         })}

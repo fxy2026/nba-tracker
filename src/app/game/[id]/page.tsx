@@ -438,6 +438,9 @@ export default async function GamePage({ params }: PageProps) {
             {isCloseGame && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">Thriller</span>
             )}
+            {isFinal && scoreDiff >= 20 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">Blowout</span>
+            )}
             {boxScore.homeTeam.periods?.length > 4 && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
                 {boxScore.homeTeam.periods.length - 4}OT

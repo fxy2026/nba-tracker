@@ -98,10 +98,49 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       ) : null}
       {games.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {games.map((game) => (
-            <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
-          ))}
+        <div className="space-y-6">
+          {/* Live Now */}
+          {games.filter(g => g.gameStatus === 2).length > 0 && (
+            <>
+              <h2 className="text-sm font-semibold text-success flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
+                Live Now
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {games.filter(g => g.gameStatus === 2).map((game) => (
+                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Upcoming */}
+          {games.filter(g => g.gameStatus === 1).length > 0 && (
+            <>
+              <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/50" />
+                Upcoming
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {games.filter(g => g.gameStatus === 1).map((game) => (
+                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Final */}
+          {games.filter(g => g.gameStatus === 3).length > 0 && (
+            <>
+              <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/30" />
+                Final
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {games.filter(g => g.gameStatus === 3).map((game) => (
+                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-text-secondary">

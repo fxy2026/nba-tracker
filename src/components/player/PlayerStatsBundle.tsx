@@ -73,8 +73,25 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
       {/* Recent Games */}
       {games && games.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <h3 className="text-sm font-semibold">Recent Games (2024-25)</h3>
+            {(() => {
+              const last10 = [...games].slice(0, 10).reverse();
+              if (last10.length < 2) return null;
+              const maxPts = Math.max(...last10.map(g => g.PTS), 1);
+              const w = 50, h = 16;
+              const step = w / (last10.length - 1);
+              const pts = last10.map((g, i) => ({
+                x: i * step,
+                y: h - (g.PTS / maxPts) * (h - 2) - 1,
+              }));
+              const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+              return (
+                <svg width={w} height={h} className="shrink-0">
+                  <polyline points={pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              );
+            })()}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
