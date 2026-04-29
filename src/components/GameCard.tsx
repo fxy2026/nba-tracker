@@ -3,6 +3,7 @@ import { Play } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import { getGameStatusDisplay } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
+import GameCountdown from "./GameCountdown";
 
 interface GameCardProps {
   game: ScheduleGame;
@@ -16,6 +17,7 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
   const homeWon = isFinal && game.homeTeam.score > game.awayTeam.score;
   const awayWon = isFinal && game.awayTeam.score > game.homeTeam.score;
   const isPlayoffs = game.gameId.startsWith("004");
+  const isScheduled = game.gameStatus === 1;
 
   return (
     <Link href={`/game/${game.gameId}`} className="block group">
@@ -30,6 +32,9 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
             )}
             {game.seriesText && (
               <span className="text-xs text-text-secondary">{game.seriesText}</span>
+            )}
+            {isScheduled && game.gameDateTimeUTC && (
+              <GameCountdown gameTimeUTC={game.gameDateTimeUTC} />
             )}
           </div>
           <div className="flex items-center gap-1.5">

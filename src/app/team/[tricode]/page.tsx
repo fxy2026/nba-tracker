@@ -229,6 +229,20 @@ export default async function TeamPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Last 10 Games W/L Streak */}
+      {recentGames.length > 0 && (
+        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Last {Math.min(recentGames.length, 10)} Games</h3>
+          <div className="flex items-center gap-1">
+            {recentGames.slice(0, 10).reverse().map((g, i) => (
+              <div key={i} className={`flex-1 h-8 rounded flex items-center justify-center text-xs font-bold text-white ${g.won ? "bg-success" : "bg-danger"}`}>
+                {g.won ? "W" : "L"}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Recent Games */}
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

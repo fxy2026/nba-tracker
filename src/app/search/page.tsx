@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
+import { Search, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
+import PlayerHeadshot from "@/components/PlayerHeadshot";
 
 export const metadata: Metadata = {
   title: "搜索球员",
   description: "搜索 NBA 球员，查看详细数据和职业生涯信息。",
 };
+
+const POPULAR_PLAYERS = [
+  { id: 2544, name: "LeBron James" },
+  { id: 201142, name: "Kevin Durant" },
+  { id: 201939, name: "Stephen Curry" },
+  { id: 203507, name: "Giannis Antetokounmpo" },
+  { id: 203954, name: "Joel Embiid" },
+  { id: 1629029, name: "Luka Doncic" },
+  { id: 1628983, name: "Shai Gilgeous-Alexander" },
+  { id: 203999, name: "Nikola Jokic" },
+];
 
 interface PageProps {
   searchParams: Promise<{ q?: string }>;
@@ -21,6 +34,28 @@ export default async function SearchPage({ searchParams }: PageProps) {
         Player Search
       </h1>
       <SearchInput initialQuery={q || ""} />
+
+      {!q && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <TrendingUp size={14} className="text-accent" />
+            Popular Players
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {POPULAR_PLAYERS.map((p) => (
+              <Link
+                key={p.id}
+                href={`/player/${p.id}`}
+                className="flex items-center gap-2 bg-bg-card border border-border rounded-xl px-3 py-2.5 hover:border-accent/50 transition-colors group"
+              >
+                <PlayerHeadshot personId={p.id} name={p.name} size={28} />
+                <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="text-center text-xs text-text-secondary mt-6">
         Search by player name to view detailed stats and profiles
       </p>

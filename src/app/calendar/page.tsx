@@ -157,8 +157,13 @@ export default function CalendarPage() {
                               <div key={g.gameId} className="text-[9px] text-text-secondary truncate">
                                 {g.awayTricode} @ {g.homeTricode}
                                 {g.gameStatus === 3 && (
-                                  <span className="ml-1 text-text-secondary/70">
+                                  <span className={`ml-1 font-medium ${g.awayScore > g.homeScore ? "text-text-secondary" : "text-text-secondary"}`}>
                                     {g.awayScore}-{g.homeScore}
+                                  </span>
+                                )}
+                                {g.gameStatus === 3 && (
+                                  <span className={`ml-0.5 font-bold ${g.homeScore > g.awayScore ? "text-success" : "text-danger"}`}>
+                                    {g.homeScore > g.awayScore ? "W" : "L"}
                                   </span>
                                 )}
                               </div>

@@ -18,6 +18,8 @@ const moreLinks = [
   { href: "/transactions", label: "Transactions" },
   { href: "/clutch", label: "Playoff Leaders" },
   { href: "/compare", label: "Compare" },
+  { href: "/h2h", label: "H2H" },
+  { href: "/search", label: "Search" },
   { href: "/history", label: "History" },
   { href: "/schedule", label: "Schedule" },
 ];

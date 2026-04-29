@@ -9,6 +9,7 @@ import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
 import TodayStars from "@/components/TodayStars";
+import SeasonProgress from "@/components/SeasonProgress";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 import StandingsMini from "@/components/StandingsMini";
 
@@ -65,6 +66,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <DateNav selectedDate={selectedDate} />
+      <SeasonProgress />
       <StandingsMini />
       <LiveScoreRefresher hasLiveGames={hasLiveGames} />
 

@@ -13,6 +13,7 @@ import KeyMoments from "@/components/KeyMoments";
 import { Play, ExternalLink } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import RadarChart from "@/components/RadarChart";
+import ScoringFlow from "@/components/ScoringFlow";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 
@@ -448,6 +449,16 @@ export default async function GamePage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* Scoring Flow — cumulative score over periods */}
+      {isFinal && boxScore.homeTeam.periods?.length > 0 && (
+        <ScoringFlow
+          homePeriods={boxScore.homeTeam.periods}
+          awayPeriods={boxScore.awayTeam.periods}
+          homeTricode={boxScore.homeTeam.teamTricode}
+          awayTricode={boxScore.awayTeam.teamTricode}
+        />
+      )}
 
       {/* Game Summary — right after scoreboard for final games */}
       {isFinal && (

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
+import BackToTop from "@/components/BackToTop";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -90,6 +91,7 @@ export default function RootLayout({
           <span> &middot; Data from NBA.com &middot; Not affiliated with NBA</span>
         </footer>
         <MobileNav />
+        <BackToTop />
       </body>
     </html>
   );

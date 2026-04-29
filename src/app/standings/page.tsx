@@ -109,6 +109,58 @@ function DivisionCard({ division, teams, conferenceRanks }: {
   );
 }
 
+function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] }) {
+  const leader = teams[0];
+  const leaderDiff = leader ? leader.wins - leader.losses : 0;
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50">
+        <h3 className="text-sm font-semibold">{title}</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-text-secondary text-xs">
+              <th className="text-center py-2.5 px-2 w-8">#</th>
+              <th className="text-left py-2.5 px-3">Team</th>
+              <th className="text-center py-2.5 px-2">W</th>
+              <th className="text-center py-2.5 px-2">L</th>
+              <th className="text-center py-2.5 px-2">PCT</th>
+              <th className="text-center py-2.5 px-2">GB</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((team, i) => {
+              const winPct = team.wins / (team.wins + team.losses || 1);
+              const gb = i === 0 ? "-" : ((leaderDiff - (team.wins - team.losses)) / 2).toFixed(1);
+              const isPlayoff = i < 6;
+              const isPlayIn = i >= 6 && i < 10;
+              return (
+                <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-yellow-500/30" : ""}`}>
+                  <td className="text-center py-2 px-2 text-text-secondary text-xs">{i + 1}</td>
+                  <td className="py-2 px-3">
+                    <Link href={`/team/${team.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                      <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={20} height={20} unoptimized />
+                      <span className="font-medium text-text-primary">{team.tricode}</span>
+                      {isPlayoff && <span className="text-[8px] px-1 py-0.5 rounded bg-accent/10 text-accent">P</span>}
+                      {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">PI</span>}
+                    </Link>
+                  </td>
+                  <td className="text-center py-2 px-2 font-medium tabular-nums">{team.wins}</td>
+                  <td className="text-center py-2 px-2 text-text-secondary tabular-nums">{team.losses}</td>
+                  <td className="text-center py-2 px-2 tabular-nums">{winPct.toFixed(3).slice(1)}</td>
+                  <td className="text-center py-2 px-2 text-text-secondary text-xs tabular-nums">{gb}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default async function StandingsPage() {
   const standings = await getStandings();
 
@@ -160,7 +212,7 @@ export default async function StandingsPage() {
         <span className="w-1.5 h-5 bg-accent rounded-full" />
         Western Conference
       </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
         {WEST_DIVISIONS.map((div) => (
           <DivisionCard
             key={div}
@@ -169,6 +221,16 @@ export default async function StandingsPage() {
             conferenceRanks={conferenceRanks}
           />
         ))}
+      </div>
+
+      {/* Full Conference Rankings */}
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span className="w-1.5 h-5 bg-accent rounded-full" />
+        Full League Rankings
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ConferenceTable title="Eastern Conference" teams={eastTeams} />
+        <ConferenceTable title="Western Conference" teams={westTeams} />
       </div>
     </div>
   );

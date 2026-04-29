@@ -19,9 +19,9 @@ interface PlayerData {
 }
 
 const COMPARE_STATS = [
-  { key: "pts", label: "PPG", color: "text-accent" },
-  { key: "reb", label: "RPG", color: "text-success" },
-  { key: "ast", label: "APG", color: "text-blue-400" },
+  { key: "pts", label: "PPG", color: "text-accent", barColor: "var(--accent)" },
+  { key: "reb", label: "RPG", color: "text-success", barColor: "var(--success)" },
+  { key: "ast", label: "APG", color: "text-blue-400", barColor: "#60a5fa" },
 ] as const;
 
 export default function ComparePage() {
@@ -165,6 +165,34 @@ export default function ComparePage() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Visual Bar Chart */}
+          <div className="px-6 pb-6">
+            <svg viewBox="0 0 300 140" className="w-full max-w-md mx-auto">
+              {COMPARE_STATS.map(({ key, label, barColor }, i) => {
+                const v1 = player1[key as keyof PlayerData] as number;
+                const v2 = player2[key as keyof PlayerData] as number;
+                const max = Math.max(v1, v2, 0.1);
+                const barW = 30;
+                const gap = 100;
+                const baseX = 50 + i * gap;
+                const maxH = 90;
+                return (
+                  <g key={key}>
+                    <rect x={baseX - barW / 2 - 2} y={20 + maxH - (v1 / max) * maxH} width={barW} height={(v1 / max) * maxH}
+                      rx={4} fill={barColor} opacity={0.7} />
+                    <rect x={baseX + barW / 2 + 2} y={20 + maxH - (v2 / max) * maxH} width={barW} height={(v2 / max) * maxH}
+                      rx={4} fill={barColor} opacity={0.35} />
+                    <text x={baseX - 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9} fontWeight={600}>{v1}</text>
+                    <text x={baseX + barW + 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9}>{v2}</text>
+                    <text x={baseX + barW / 4} y={125} textAnchor="middle" fill="var(--text-secondary)" fontSize={10} fontWeight={500}>{label}</text>
+                  </g>
+                );
+              })}
+              <text x={10} y={135} fill="var(--text-secondary)" fontSize={8}>&#9632; {player1.lastName}</text>
+              <text x={200} y={135} fill="var(--text-secondary)" fontSize={8} opacity={0.5}>&#9632; {player2.lastName}</text>
+            </svg>
           </div>
         </div>
       )}
