@@ -10,13 +10,13 @@ export default function HomeExtra() {
 
   useEffect(() => {
     let cancelled = false;
+    let gotData = false;
     fetch("/api/extra")
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (!cancelled && d) setData(d); })
+      .then((d) => { if (!cancelled && d) { setData(d); gotData = true; } })
       .catch(() => {})
-      .finally(() => { if (!cancelled && !data) setData({ playoffs: [], recent: [] }); });
+      .finally(() => { if (!cancelled && !gotData) setData({ playoffs: [], recent: [] }); });
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!data) {
