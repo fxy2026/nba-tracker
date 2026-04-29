@@ -93,6 +93,11 @@ nav.sticky {
   contain: layout style paint;
   content-visibility: auto;
   contain-intrinsic-size: auto 180px;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 /* Schedule section containment */

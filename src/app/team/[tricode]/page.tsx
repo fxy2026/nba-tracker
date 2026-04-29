@@ -341,6 +341,36 @@ export default async function TeamPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Monthly Record */}
+      {recentGames.length > 0 && (() => {
+        const byMonth = new Map<string, { w: number; l: number }>();
+        for (const g of recentGames) {
+          const month = g.date.slice(0, 7); // "2025-04"
+          const rec = byMonth.get(month) || { w: 0, l: 0 };
+          if (g.won) rec.w++; else rec.l++;
+          byMonth.set(month, rec);
+        }
+        const months = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+        if (months.length < 2) return null;
+        return (
+          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Monthly Record</h3>
+            <div className="flex flex-wrap gap-2">
+              {months.map(([month, rec]) => (
+                <div key={month} className="bg-bg-secondary rounded-lg px-3 py-2 text-center">
+                  <p className="text-[10px] text-text-secondary">{new Date(month + "-01").toLocaleDateString("en-US", { month: "short" })}</p>
+                  <p className="text-sm font-bold">
+                    <span className="text-success">{rec.w}</span>
+                    <span className="text-text-secondary mx-0.5">-</span>
+                    <span className="text-danger">{rec.l}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Head-to-Head */}
       {rivalries.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
