@@ -257,6 +257,43 @@ export default async function TeamPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* vs Division Record */}
+      {recentGames.length > 0 && (() => {
+        const divisionTeams = new Set(
+          Object.values(TEAM_META)
+            .filter((t) => t.division === team.division && t.tricode !== team.tricode)
+            .map((t) => t.tricode)
+        );
+        let divW = 0, divL = 0, nonDivW = 0, nonDivL = 0;
+        for (const g of recentGames) {
+          if (divisionTeams.has(g.opponent)) {
+            if (g.won) divW++; else divL++;
+          } else {
+            if (g.won) nonDivW++; else nonDivL++;
+          }
+        }
+        return (
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">vs Division</p>
+              <p className="text-xl font-bold mt-1">
+                <span className="text-success">{divW}</span>
+                <span className="text-text-secondary mx-1">-</span>
+                <span className="text-danger">{divL}</span>
+              </p>
+            </div>
+            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">vs Non-Division</p>
+              <p className="text-xl font-bold mt-1">
+                <span className="text-success">{nonDivW}</span>
+                <span className="text-text-secondary mx-1">-</span>
+                <span className="text-danger">{nonDivL}</span>
+              </p>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Recent Opponents */}
       {recentGames.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
@@ -561,6 +598,22 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
         );
       })()}
+
+      {/* Top Scorers */}
+      {roster.length >= 3 && (
+        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Top Scorers</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {roster.slice(0, 3).map((p) => (
+              <Link key={p.personId} href={`/player/${p.personId}`} className="flex flex-col items-center gap-2 bg-bg-secondary rounded-lg p-3 hover:bg-bg-hover transition-colors">
+                <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={48} />
+                <span className="text-sm font-medium text-text-primary text-center">{p.firstName} {p.lastName}</span>
+                <span className="text-lg font-bold text-accent">{p.pts} <span className="text-xs text-text-secondary font-normal">PPG</span></span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Roster */}
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">

@@ -92,6 +92,17 @@ export default function ClutchPage() {
         </div>
       </div>
 
+      {/* Clutch explanation */}
+      <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+        <h2 className="text-sm font-semibold text-text-primary mb-2">What are Playoff Performers?</h2>
+        <p className="text-xs text-text-secondary leading-relaxed">
+          Playoff performance stats measure how players perform on the biggest stage. Efficiency (EFF) combines points,
+          rebounds, assists, steals, and blocks to give an overall impact score. Scoring leaders show the top point producers,
+          while Playmaking and Steals highlight facilitators and defensive disruptors. Use the tabs below to explore different
+          dimensions of playoff excellence.
+        </p>
+      </div>
+
       {/* Category tabs */}
       <div className="flex flex-wrap gap-1 mb-4">
         {categories.map((c) => (

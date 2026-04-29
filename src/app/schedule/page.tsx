@@ -65,6 +65,18 @@ export default async function SchedulePage({ searchParams }: PageProps) {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-4">Recent Schedule</h1>
 
+      {/* Date jump */}
+      <div className="mb-4 flex items-center gap-3">
+        <label htmlFor="date-jump" className="text-xs text-text-secondary font-medium">Jump to date:</label>
+        <input
+          type="date"
+          id="date-jump"
+          defaultValue={new Date().toISOString().slice(0, 10)}
+          className="bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-accent"
+        />
+        <script dangerouslySetInnerHTML={{ __html: `document.getElementById('date-jump').addEventListener('change',function(e){window.location.href='/?date='+e.target.value;})` }} />
+      </div>
+
       {/* Team filter */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <span className="text-xs text-text-secondary font-medium">Filter by team:</span>

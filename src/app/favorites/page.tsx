@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Users, User } from "lucide-react";
+import { Heart, Users, User, Copy, Check } from "lucide-react";
 import { getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
 
@@ -19,6 +19,7 @@ export default function FavoritesPage() {
   const [favPlayers, setFavPlayers] = useState<number[]>([]);
   const [playerDetails, setPlayerDetails] = useState<Map<number, PlayerInfo>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -67,6 +68,36 @@ export default function FavoritesPage() {
       <div className="flex items-center gap-3 mb-6">
         <Heart size={24} className="text-red-500" fill="currentColor" />
         <h1 className="text-2xl font-bold">Favorites</h1>
+        {hasAny && (
+          <button
+            onClick={() => {
+              const lines: string[] = ["My NBA Favorites", ""];
+              if (favTeams.length > 0) {
+                lines.push("Teams:");
+                for (const tc of favTeams) {
+                  const t = TEAM_META[tc];
+                  lines.push(t ? `  - ${t.city} ${t.name}` : `  - ${tc}`);
+                }
+                lines.push("");
+              }
+              if (favPlayers.length > 0) {
+                lines.push("Players:");
+                for (const pid of favPlayers) {
+                  const p = playerDetails.get(pid);
+                  lines.push(p ? `  - ${p.firstName} ${p.lastName} (${p.teamAbbr})` : `  - Player #${pid}`);
+                }
+              }
+              navigator.clipboard.writeText(lines.join("\n")).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              });
+            }}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-xs text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
+          >
+            {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+            {copied ? "Copied!" : "Export"}
+          </button>
+        )}
       </div>
 
       {!hasAny && !loading && (

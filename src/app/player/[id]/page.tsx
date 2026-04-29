@@ -302,6 +302,31 @@ export default async function PlayerPage({ params }: PageProps) {
           );
         })()}
 
+        {/* Similar Players */}
+        {player.pts > 0 && (() => {
+          const similar = allPlayers
+            .filter((p) => p.personId !== personId && p.pts > 0 && Math.abs(p.pts - player.pts) <= 2)
+            .sort((a, b) => Math.abs(a.pts - player.pts) - Math.abs(b.pts - player.pts))
+            .slice(0, 3);
+          if (similar.length === 0) return null;
+          return (
+            <div className="p-6 border-t border-border">
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">Similar Players</h2>
+              <div className="flex flex-wrap gap-2">
+                {similar.map((s) => (
+                  <Link key={s.personId} href={`/player/${s.personId}`}
+                    className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors text-sm">
+                    <span className="font-medium text-text-primary">{s.firstName} {s.lastName}</span>
+                    <span className="text-xs text-accent">{s.pts} PPG</span>
+                    <span className="text-xs text-text-secondary">{s.reb} RPG</span>
+                    <span className="text-xs text-text-secondary">{s.ast} APG</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Team Link */}
         {player.teamAbbr && (
           <div className="p-6 border-t border-border">

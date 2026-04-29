@@ -155,9 +155,10 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                 <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-yellow-500/30" : ""}`}>
                   <td className="text-center py-2 px-2 text-text-secondary text-xs">{i + 1}</td>
                   <td className="py-2 px-3">
-                    <Link href={`/team/${team.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                    <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors ${i >= 10 && winPct < 0.3 ? "opacity-50" : ""}`}>
                       <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={20} height={20} unoptimized />
                       <span className="font-medium text-text-primary">{team.tricode}</span>
+                      {i === 0 && <span title="Conference leader">&#128081;</span>}
                       {isPlayoff && <span className="text-[8px] px-1 py-0.5 rounded bg-accent/10 text-accent">P</span>}
                       {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">PI</span>}
                     </Link>

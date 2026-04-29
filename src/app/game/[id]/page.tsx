@@ -345,6 +345,23 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
             <span className="text-text-secondary">in {biggestRun.qLabel}</span>
           </div>
         )}
+        {/* AST/TO Ratio */}
+        {(() => {
+          const awayAST = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.assists, 0);
+          const awayTO = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.turnovers, 0);
+          const homeAST = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.assists, 0);
+          const homeTO = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.turnovers, 0);
+          const awayRatio = awayTO > 0 ? (awayAST / awayTO).toFixed(2) : "-";
+          const homeRatio = homeTO > 0 ? (homeAST / homeTO).toFixed(2) : "-";
+          return (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
+              <span className="text-text-secondary">AST/TO:</span>
+              <span className="font-bold text-text-primary">{awayTeam.teamTricode} {awayRatio}</span>
+              <span className="text-text-secondary">-</span>
+              <span className="font-bold text-text-primary">{homeRatio} {homeTeam.teamTricode}</span>
+            </div>
+          );
+        })()}
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
           <span className="text-text-secondary">Fouls:</span>
           <span className={`font-bold ${awayFouls > homeFouls ? "text-danger" : "text-text-primary"}`}>{awayTeam.teamTricode} {awayFouls}</span>
@@ -650,6 +667,50 @@ export default async function GamePage({ params }: PageProps) {
                   { label: "BLK", home: hStats.blocks ?? 0, away: aStats.blocks ?? 0, max: 15 },
                 ]}
               />
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Shooting Efficiency */}
+      {isFinal && boxScore.homeTeam.statistics && boxScore.awayTeam.statistics && (() => {
+        const hStats = boxScore.homeTeam.statistics as Record<string, number>;
+        const aStats = boxScore.awayTeam.statistics as Record<string, number>;
+        const metrics = [
+          { label: "FG%", home: (hStats.fieldGoalsPercentage ?? 0) * 100, away: (aStats.fieldGoalsPercentage ?? 0) * 100 },
+          { label: "3P%", home: (hStats.threePointersPercentage ?? 0) * 100, away: (aStats.threePointersPercentage ?? 0) * 100 },
+          { label: "FT%", home: (hStats.freeThrowsPercentage ?? 0) * 100, away: (aStats.freeThrowsPercentage ?? 0) * 100 },
+        ];
+        return (
+          <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-accent rounded-full" />
+              Shooting Efficiency
+            </h3>
+            <div className="space-y-4">
+              {metrics.map((m) => (
+                <div key={m.label}>
+                  <div className="flex items-center justify-between text-xs text-text-secondary mb-1">
+                    <span>{boxScore.awayTeam.teamTricode} {m.away.toFixed(1)}%</span>
+                    <span className="font-medium text-text-primary">{m.label}</span>
+                    <span>{m.home.toFixed(1)}% {boxScore.homeTeam.teamTricode}</span>
+                  </div>
+                  <div className="flex gap-1 h-4">
+                    <div className="flex-1 flex justify-end">
+                      <div
+                        className={`h-full rounded-l-full ${m.away >= m.home ? "bg-accent" : "bg-bg-hover"}`}
+                        style={{ width: `${Math.min(m.away, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div
+                        className={`h-full rounded-r-full ${m.home >= m.away ? "bg-accent" : "bg-bg-hover"}`}
+                        style={{ width: `${Math.min(m.home, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );

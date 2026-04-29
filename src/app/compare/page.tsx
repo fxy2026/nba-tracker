@@ -145,6 +145,26 @@ export default function ComparePage() {
         </div>
       </div>
 
+      {/* Popular Matchups */}
+      <div className="mb-6">
+        <p className="text-xs text-text-secondary font-medium mb-2">Popular Matchups</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: "LeBron vs Curry", q1: "LeBron", q2: "Curry" },
+            { label: "Jokic vs Embiid", q1: "Jokic", q2: "Embiid" },
+            { label: "Luka vs SGA", q1: "Luka", q2: "Gilgeous" },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); setPlayer1(null); setPlayer2(null); }}
+              className="px-3 py-1.5 bg-bg-card border border-border rounded-lg text-xs text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Comparison display */}
       {player1 && player2 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">

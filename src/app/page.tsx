@@ -5,6 +5,7 @@ import {
   type ScheduleGame,
 } from "@/lib/api";
 import { getAllReplayGameIds } from "@/lib/supabase";
+import Link from "next/link";
 import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
@@ -109,6 +110,30 @@ export default async function HomePage({ searchParams }: PageProps) {
           Updated: {new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit" })} (Beijing)
         </p>
       )}
+
+      {/* Game of the Day */}
+      {(() => {
+        const finishedGames = games.filter((g) => g.gameStatus === 3);
+        if (finishedGames.length === 0) return null;
+        const closest = finishedGames.reduce((best, g) => {
+          const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
+          const bestDiff = Math.abs(best.homeTeam.score - best.awayTeam.score);
+          return diff < bestDiff ? g : best;
+        });
+        const diff = Math.abs(closest.homeTeam.score - closest.awayTeam.score);
+        if (diff > 20) return null; // skip blowouts
+        return (
+          <Link href={`/game/${closest.gameId}`} className="block mt-6 mb-2 px-4 py-2.5 bg-accent/10 border border-accent/20 rounded-xl hover:bg-accent/15 transition-colors">
+            <p className="text-sm text-center">
+              <span className="text-accent font-bold">Game of the Day: </span>
+              <span className="text-text-primary font-medium">
+                {closest.awayTeam.teamTricode} {closest.awayTeam.score} - {closest.homeTeam.score} {closest.homeTeam.teamTricode}
+              </span>
+              <span className="text-text-secondary ml-1">(margin: {diff})</span>
+            </p>
+          </Link>
+        );
+      })()}
 
       {games.length > 0 ? (
         <div className="flex items-center gap-2 mt-6 mb-3">

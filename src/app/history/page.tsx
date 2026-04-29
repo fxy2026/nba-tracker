@@ -71,6 +71,35 @@ export default function HistoryPage() {
         </div>
       </div>
 
+      {/* Championships by Franchise */}
+      <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
+        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <Trophy size={16} className="text-accent" />
+          Championships by Franchise
+        </h2>
+        <div className="space-y-2">
+          {(() => {
+            const counts: Record<string, number> = {};
+            for (const row of champions) {
+              if (row.champion === "TBD") continue;
+              counts[row.champion] = (counts[row.champion] || 0) + 1;
+            }
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            const max = sorted[0]?.[1] || 1;
+            return sorted.map(([team, count]) => (
+              <div key={team} className="flex items-center gap-3">
+                <span className="text-xs text-text-primary font-medium w-44 shrink-0 truncate">{team}</span>
+                <div className="flex-1 h-5 bg-bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-accent/70 rounded-full flex items-center justify-end pr-2" style={{ width: `${(count / max) * 100}%` }}>
+                    <span className="text-[10px] text-white font-bold">{count}</span>
+                  </div>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+
       <div className="mt-4 text-center">
         <Link href="/" className="text-xs text-text-secondary hover:text-accent transition-colors">
           &larr; Back to Home
