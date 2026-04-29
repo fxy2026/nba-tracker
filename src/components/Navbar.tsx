@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -54,6 +54,7 @@ export default function Navbar() {
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/injuries", label: "Injuries", icon: AlertTriangle },
     { href: "/clutch", label: "Clutch", icon: Target },
+    { href: "/h2h", label: "H2H", icon: Swords },
     { href: "/history", label: "History", icon: History },
   ];
 

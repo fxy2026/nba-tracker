@@ -19,7 +19,7 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
 
   return (
     <Link href={`/game/${game.gameId}`} className="block group">
-      <div className="game-card bg-bg-card rounded-xl border border-border hover:border-accent/50 transition-colors p-4">
+      <div className={`game-card bg-bg-card rounded-xl border hover:border-accent/50 transition-colors p-4 ${isLive ? "border-success/40 border-l-2 border-l-success" : "border-border"}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
@@ -40,14 +40,15 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
               </span>
             )}
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
                 isFinal
                   ? "bg-text-secondary/10 text-text-secondary"
                   : isLive
-                  ? "bg-success/15 text-success animate-pulse"
+                  ? "bg-success/15 text-success"
                   : "text-text-secondary"
               }`}
             >
+              {isLive && <span className="inline-block w-1.5 h-1.5 rounded-full bg-success live-pulse" />}
               {status}
             </span>
           </div>

@@ -65,6 +65,21 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "NBA Tracker",
+              description: "NBA 实时比分、Box Score、投篮图、球员数据、伤病报告、交易动态",
+              applicationCategory: "SportsApplication",
+              operatingSystem: "Any",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              author: { "@type": "Person", name: "FXY", url: "https://www.xpy.me" },
+            }),
+          }}
+        />
         <Navbar />
         <main className="flex-1">
           <ViewTransition>{children}</ViewTransition>

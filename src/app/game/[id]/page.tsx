@@ -12,6 +12,7 @@ import PlayByPlay from "@/components/PlayByPlay";
 import KeyMoments from "@/components/KeyMoments";
 import { Play, ExternalLink } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
+import RadarChart from "@/components/RadarChart";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 
@@ -464,6 +465,34 @@ export default async function GamePage({ params }: PageProps) {
           <TeamCompare homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
         </div>
       )}
+
+      {/* Radar Chart */}
+      {isFinal && boxScore.homeTeam.statistics && boxScore.awayTeam.statistics && (() => {
+        const hStats = boxScore.homeTeam.statistics as Record<string, number>;
+        const aStats = boxScore.awayTeam.statistics as Record<string, number>;
+        return (
+          <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-accent rounded-full" />
+              Stats Radar
+            </h3>
+            <div className="flex justify-center">
+              <RadarChart
+                homeLabel={boxScore.homeTeam.teamTricode}
+                awayLabel={boxScore.awayTeam.teamTricode}
+                stats={[
+                  { label: "FG%", home: (hStats.fieldGoalsPercentage ?? 0) * 100, away: (aStats.fieldGoalsPercentage ?? 0) * 100, max: 70 },
+                  { label: "3P%", home: (hStats.threePointersPercentage ?? 0) * 100, away: (aStats.threePointersPercentage ?? 0) * 100, max: 60 },
+                  { label: "REB", home: hStats.reboundsTotal ?? 0, away: aStats.reboundsTotal ?? 0, max: 70 },
+                  { label: "AST", home: hStats.assists ?? 0, away: aStats.assists ?? 0, max: 40 },
+                  { label: "STL", home: hStats.steals ?? 0, away: aStats.steals ?? 0, max: 20 },
+                  { label: "BLK", home: hStats.blocks ?? 0, away: aStats.blocks ?? 0, max: 15 },
+                ]}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Key Moments — between TeamCompare and Shot Chart */}
       {isFinal && (

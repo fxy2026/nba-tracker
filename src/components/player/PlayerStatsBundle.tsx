@@ -65,6 +65,11 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
 
   return (
     <div className="space-y-6">
+      {/* Scoring Trend Chart */}
+      {games && games.length >= 3 && (
+        <GameTrendChart games={games} />
+      )}
+
       {/* Recent Games */}
       {games && games.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
@@ -116,6 +121,67 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
       {seasons && seasons.length > 0 && (
         <CareerStatsTable seasons={seasons} />
       )}
+    </div>
+  );
+}
+
+function GameTrendChart({ games }: { games: GameLogRow[] }) {
+  // Show last 20 games in chronological order (oldest first)
+  const data = [...games].reverse().slice(-20);
+  const maxPts = Math.max(...data.map((g) => g.PTS), 10);
+  const avgPts = data.reduce((s, g) => s + g.PTS, 0) / data.length;
+
+  const w = 600, h = 160, pad = { top: 20, right: 10, bottom: 24, left: 32 };
+  const plotW = w - pad.left - pad.right;
+  const plotH = h - pad.top - pad.bottom;
+
+  const xStep = plotW / Math.max(data.length - 1, 1);
+  const points = data.map((g, i) => ({
+    x: pad.left + i * xStep,
+    y: pad.top + plotH - (g.PTS / maxPts) * plotH,
+    pts: g.PTS,
+    date: g.GAME_DATE,
+  }));
+
+  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const areaPath = linePath + ` L${points[points.length - 1].x},${pad.top + plotH} L${points[0].x},${pad.top + plotH} Z`;
+  const avgY = pad.top + plotH - (avgPts / maxPts) * plotH;
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border p-4">
+      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+        <span className="w-1 h-4 bg-accent rounded-full" />
+        Scoring Trend (Last {data.length} Games)
+      </h3>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+        {/* Y-axis labels */}
+        {[0, Math.round(maxPts / 2), maxPts].map((v) => {
+          const y = pad.top + plotH - (v / maxPts) * plotH;
+          return (
+            <g key={v}>
+              <line x1={pad.left} y1={y} x2={w - pad.right} y2={y} stroke="var(--border)" strokeWidth={0.5} />
+              <text x={pad.left - 4} y={y} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={9}>{v}</text>
+            </g>
+          );
+        })}
+        {/* Average line */}
+        <line x1={pad.left} y1={avgY} x2={w - pad.right} y2={avgY} stroke="var(--accent)" strokeWidth={0.8} strokeDasharray="4 3" opacity={0.6} />
+        <text x={w - pad.right + 2} y={avgY} dominantBaseline="central" fill="var(--accent)" fontSize={8} opacity={0.8}>avg {avgPts.toFixed(1)}</text>
+        {/* Area fill */}
+        <path d={areaPath} fill="var(--accent)" fillOpacity={0.08} />
+        {/* Line */}
+        <path d={linePath} fill="none" stroke="var(--accent)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {/* Dots */}
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={3} fill="var(--accent)" stroke="var(--bg-card)" strokeWidth={1.5} />
+        ))}
+        {/* X-axis labels (every 5 games) */}
+        {points.filter((_, i) => i % 5 === 0 || i === points.length - 1).map((p, i) => (
+          <text key={i} x={p.x} y={h - 4} textAnchor="middle" fill="var(--text-secondary)" fontSize={8}>
+            {p.date ? new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}
+          </text>
+        ))}
+      </svg>
     </div>
   );
 }

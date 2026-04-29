@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw, Home } from "lucide-react";
+import Link from "next/link";
 
 export default function ErrorPage({
   error,
@@ -23,13 +24,22 @@ export default function ErrorPage({
       <p className="text-text-secondary mb-6 max-w-md">
         页面加载时出现问题，请稍后重试。
       </p>
-      <button
-        onClick={() => unstable_retry()}
-        className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
-      >
-        <RotateCcw size={16} />
-        重试
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => unstable_retry()}
+          className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
+        >
+          <RotateCcw size={16} />
+          重试
+        </button>
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-5 py-2.5 bg-bg-card border border-border text-text-primary rounded-lg hover:bg-bg-hover transition-colors font-medium"
+        >
+          <Home size={16} />
+          首页
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,112 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import PlayerHeadshot from "./PlayerHeadshot";
+import { Star } from "lucide-react";
+
+interface StarPlayer {
+  personId: number;
+  name: string;
+  teamTricode: string;
+  pts: number;
+  reb: number;
+  ast: number;
+  gameId: string;
+}
+
+export default function TodayStars() {
+  const [stars, setStars] = useState<StarPlayer[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/games");
+        if (!res.ok) return;
+        const data = await res.json();
+        const games = data.games || [];
+        // Only look at final games
+        const finalGames = games.filter((g: { gameStatus: number }) => g.gameStatus === 3);
+        if (finalGames.length === 0) return;
+
+        // Fetch up to 4 box scores in parallel
+        const boxPromises = finalGames.slice(0, 4).map(async (g: { gameId: string }) => {
+          try {
+            const r = await fetch(`https://cdn.nba.com/static/json/liveData/boxscore/boxscore_${g.gameId}.json`);
+            if (!r.ok) return null;
+            const d = await r.json();
+            return d.game;
+          } catch { return null; }
+        });
+
+        const boxes = await Promise.all(boxPromises);
+        const allStars: StarPlayer[] = [];
+
+        for (const box of boxes) {
+          if (!box) continue;
+          const allPlayers = [...(box.homeTeam?.players || []), ...(box.awayTeam?.players || [])];
+          // Find highest scorer in this game
+          let best = null;
+          let bestPts = 0;
+          for (const p of allPlayers) {
+            if (p.played !== "1") continue;
+            const pts = p.statistics?.points || 0;
+            if (pts > bestPts) {
+              bestPts = pts;
+              best = p;
+            }
+          }
+          if (best) {
+            const team = box.homeTeam.players.includes(best) ? box.homeTeam : box.awayTeam;
+            allStars.push({
+              personId: best.personId,
+              name: best.nameI || best.name,
+              teamTricode: team.teamTricode,
+              pts: best.statistics.points,
+              reb: best.statistics.reboundsTotal,
+              ast: best.statistics.assists,
+              gameId: box.gameId,
+            });
+          }
+        }
+
+        if (!cancelled && allStars.length > 0) {
+          // Sort by points desc, take top 4
+          allStars.sort((a, b) => b.pts - a.pts);
+          setStars(allStars.slice(0, 4));
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (stars.length === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
+        <Star size={14} className="text-accent" />
+        Today&apos;s Stars
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stars.map((s) => (
+          <Link key={s.personId} href={`/game/${s.gameId}`} className="bg-bg-card rounded-xl border border-border p-3 hover:border-accent/50 transition-colors group">
+            <div className="flex items-center gap-2 mb-2">
+              <PlayerHeadshot personId={s.personId} name={s.name} size={36} />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate group-hover:text-accent transition-colors">{s.name}</p>
+                <p className="text-[10px] text-text-secondary">{s.teamTricode}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-accent font-bold">{s.pts} PTS</span>
+              <span className="text-text-secondary">{s.reb} REB</span>
+              <span className="text-text-secondary">{s.ast} AST</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

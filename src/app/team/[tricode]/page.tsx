@@ -154,8 +154,11 @@ export default async function TeamPage({ params }: PageProps) {
         Back to standings
       </Link>
 
+      {/* Team color accent */}
+      <div className="team-accent-bar mt-4 mb-6" style={{ background: team.primaryColor }} />
+
       {/* Team Header */}
-      <div className="bg-bg-card rounded-xl border border-border mt-4 p-6">
+      <div className="bg-bg-card rounded-xl border border-border p-6">
         <div className="flex items-center gap-5">
           <TeamLogo teamId={team.teamId} tricode={team.tricode} size={72} />
           <div>

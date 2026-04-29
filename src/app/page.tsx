@@ -8,6 +8,7 @@ import { getAllReplayGameIds } from "@/lib/supabase";
 import GameCard from "@/components/GameCard";
 import DateNav from "@/components/DateNav";
 import HomeExtra from "@/components/HomeExtra";
+import TodayStars from "@/components/TodayStars";
 import LiveScoreRefresher from "@/components/LiveScoreRefresher";
 import StandingsMini from "@/components/StandingsMini";
 
@@ -79,6 +80,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           <p className="text-sm mt-1">试试选择其他日期</p>
         </div>
       )}
+
+      {/* Today's top performers */}
+      {isToday && <TodayStars />}
 
       {/* Lazy-loaded playoff bracket + recent results — only client fetch on page */}
       <HomeExtra />

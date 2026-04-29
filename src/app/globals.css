@@ -147,3 +147,31 @@ nav.sticky {
     padding-top: env(safe-area-inset-top, 0px);
   }
 }
+
+/* Skeleton shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Live game pulse dot */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.8); }
+}
+.live-pulse {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+/* Team color accent bar */
+.team-accent-bar {
+  height: 3px;
+  border-radius: 9999px;
+  mask: linear-gradient(90deg, black, transparent);
+  -webkit-mask: linear-gradient(90deg, black, transparent);
+}
