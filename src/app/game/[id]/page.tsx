@@ -68,6 +68,11 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
     const ast = s.assists;
     const isDoubleDouble = [pts, reb, ast, s.steals, s.blocks].filter(v => v >= 10).length >= 2;
     const isTripleDouble = [pts, reb, ast, s.steals, s.blocks].filter(v => v >= 10).length >= 3;
+    // Simple efficiency: (PTS + REB + AST + STL + BLK - TOV - missed FG) / minutes
+    const minsNum = parseFloat(mins.replace(":", ".")) || 0;
+    const eff = minsNum > 10 ? (pts + reb + ast + s.steals + s.blocks - s.turnovers - (s.fieldGoalsAttempted - s.fieldGoalsMade)) / minsNum : 0;
+    const isEfficient = eff > 1.2;
+    const isInefficient = minsNum > 15 && eff < 0.3;
 
     return (
       <tr key={p.personId} className="border-b border-border/30 hover:bg-bg-hover/50">
@@ -80,6 +85,8 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
                 {isTripleDouble && <span className="text-[9px] px-1 py-0.5 rounded bg-accent/20 text-accent font-bold">3D</span>}
                 {isDoubleDouble && !isTripleDouble && <span className="text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">DD</span>}
                 {pts >= 30 && <span className="text-[9px] px-1 py-0.5 rounded bg-success/10 text-success">30+</span>}
+                {isEfficient && <span className="text-[9px] px-1 py-0.5 rounded bg-success/10 text-success">EFF</span>}
+                {isInefficient && <span className="text-[9px] px-1 py-0.5 rounded bg-danger/10 text-danger">LOW</span>}
               </p>
               <p className="text-xs text-text-secondary">{p.position || "-"}</p>
             </div>
@@ -391,7 +398,14 @@ export default async function GamePage({ params }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <Link href={`/?date=${backDate}`} className="text-sm text-text-secondary hover:text-accent transition-colors">&larr; Back to games</Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-text-secondary">
+        <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+        <span>/</span>
+        <Link href={`/?date=${backDate}`} className="hover:text-accent transition-colors">{backDate}</Link>
+        <span>/</span>
+        <span className="text-text-primary">{boxScore.awayTeam.teamTricode} vs {boxScore.homeTeam.teamTricode}</span>
+      </nav>
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
       {/* Scoreboard — renders immediately */}

@@ -15,6 +15,14 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
   const awayHalf = awayTeam.periods.slice(0, 2).reduce((s, p) => s + p.score, 0);
   const showHalftime = periods >= 4;
 
+  // Find best quarter (highest combined score)
+  let bestQuarterIdx = -1;
+  let bestQuarterTotal = 0;
+  for (let i = 0; i < homeTeam.periods.length; i++) {
+    const total = (homeTeam.periods[i]?.score || 0) + (awayTeam.periods[i]?.score || 0);
+    if (total > bestQuarterTotal) { bestQuarterTotal = total; bestQuarterIdx = i; }
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -22,7 +30,7 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
           <tr className="border-b border-border text-text-secondary text-xs">
             <th className="text-left py-2.5 px-3 font-medium min-w-[140px]">Team</th>
             {homeTeam.periods.map((p, i) => (
-              <th key={i} className="text-center py-2.5 px-2 font-medium w-12">
+              <th key={i} className={`text-center py-2.5 px-2 font-medium w-12 ${i === bestQuarterIdx ? "text-accent" : ""}`}>
                 {p.periodType === "OVERTIME" ? `OT${p.period - 4}` : `Q${p.period}`}
               </th>
             ))}

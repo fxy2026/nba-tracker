@@ -152,7 +152,14 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                   </td>
                   <td className="text-center py-2 px-2 font-medium tabular-nums">{team.wins}</td>
                   <td className="text-center py-2 px-2 text-text-secondary tabular-nums">{team.losses}</td>
-                  <td className="text-center py-2 px-2 tabular-nums">{winPct.toFixed(3).slice(1)}</td>
+                  <td className="py-2 px-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs tabular-nums w-8 text-right">{winPct.toFixed(3).slice(1)}</span>
+                      <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
+                        <div className="h-full bg-accent rounded-full" style={{ width: `${winPct * 100}%` }} />
+                      </div>
+                    </div>
+                  </td>
                   <td className="text-center py-2 px-2 text-text-secondary text-xs tabular-nums">{gb}</td>
                 </tr>
               );

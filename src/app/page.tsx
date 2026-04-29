@@ -84,9 +84,20 @@ export default async function HomePage({ searchParams }: PageProps) {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
-          <p className="text-lg">{selectedDate} 没有比赛</p>
-          <p className="text-sm mt-1">试试选择其他日期</p>
+        <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
+          <svg viewBox="0 0 80 80" className="w-16 h-16 mb-4 opacity-20">
+            <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" strokeWidth="2" />
+            <line x1="40" y1="10" x2="40" y2="70" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M10,40 Q40,15 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M10,40 Q40,65 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+          <p className="text-lg font-medium text-text-primary">{selectedDate} 没有比赛</p>
+          <p className="text-sm mt-1 mb-4">试试选择其他日期，或浏览以下内容</p>
+          <div className="flex items-center gap-3 text-xs">
+            <a href="/standings" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">排名</a>
+            <a href="/search" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">搜索球员</a>
+            <a href="/injuries" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">伤病报告</a>
+          </div>
         </div>
       )}
 

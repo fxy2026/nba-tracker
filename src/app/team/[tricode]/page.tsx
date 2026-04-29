@@ -229,6 +229,23 @@ export default async function TeamPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Recent Opponents */}
+      {recentGames.length > 0 && (
+        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Recent Opponents</h3>
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {recentGames.slice(0, 8).map((g, i) => (
+              <Link key={i} href={`/team/${g.opponent}`} className="flex flex-col items-center gap-1 shrink-0">
+                <TeamLogo teamId={g.opponentId} tricode={g.opponent} size={28} />
+                <span className={`text-[9px] font-bold ${g.won ? "text-success" : "text-danger"}`}>
+                  {g.won ? "W" : "L"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Offense vs Defense */}
       {gamesPlayed > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">

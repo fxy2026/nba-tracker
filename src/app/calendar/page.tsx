@@ -107,6 +107,14 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Month Summary */}
+      {!loading && days.length > 0 && (
+        <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary">
+          <span>{days.reduce((s, d) => s + d.gameCount, 0)} games this month</span>
+          <span>{days.filter((d) => d.gameCount > 0).length} game days</span>
+        </div>
+      )}
+
       {/* Calendar Grid */}
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
         {/* Day headers */}

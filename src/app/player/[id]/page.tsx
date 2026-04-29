@@ -5,6 +5,7 @@ import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
+import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
@@ -207,6 +208,29 @@ export default async function PlayerPage({ params }: PageProps) {
           <PlayerNews playerName={fullName} />
           <PlayerStatsBundle playerId={personId} />
         </div>
+
+        {/* Teammates */}
+        {player.teamAbbr && (() => {
+          const teammates = allPlayers
+            .filter((p) => p.teamAbbr === player.teamAbbr && p.personId !== personId && p.pts > 0)
+            .sort((a, b) => b.pts - a.pts)
+            .slice(0, 6);
+          if (teammates.length === 0) return null;
+          return (
+            <div className="p-6 border-t border-border">
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">Teammates</h2>
+              <div className="flex flex-wrap gap-2">
+                {teammates.map((t) => (
+                  <Link key={t.personId} href={`/player/${t.personId}`} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors text-sm">
+                    <PlayerHeadshot personId={t.personId} name={`${t.firstName} ${t.lastName}`} size={20} />
+                    <span className="text-text-primary">{t.firstName.charAt(0)}. {t.lastName}</span>
+                    <span className="text-[10px] text-accent">{t.pts}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Team Link */}
         {player.teamAbbr && (
