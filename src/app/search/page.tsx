@@ -35,8 +35,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
       </h1>
       <SearchInput initialQuery={q || ""} />
 
-      {/* Position shortcuts */}
-      <div className="flex items-center justify-center gap-2 mt-4">
+      {/* Quick filters */}
+      <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
         {["Guard", "Forward", "Center"].map((pos) => (
           <a
             key={pos}
@@ -44,6 +44,16 @@ export default async function SearchPage({ searchParams }: PageProps) {
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
           >
             {pos}
+          </a>
+        ))}
+        <span className="text-border mx-1">|</span>
+        {["Lakers", "Celtics", "Warriors", "Nuggets"].map((team) => (
+          <a
+            key={team}
+            href={`/search?q=${team}`}
+            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
+          >
+            {team}
           </a>
         ))}
       </div>
