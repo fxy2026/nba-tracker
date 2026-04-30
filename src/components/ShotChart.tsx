@@ -218,6 +218,35 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
           </span>
         </div>
       </div>
+
+      {/* Shot Zone Breakdown */}
+      {filtered.length > 0 && (() => {
+        const zones = [
+          { name: "Restricted Area", test: (s: ShotAction) => s.shotDistance <= 4 },
+          { name: "Paint (non-RA)", test: (s: ShotAction) => s.shotDistance > 4 && s.shotDistance <= 14 && !(s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22) },
+          { name: "Mid-Range", test: (s: ShotAction) => s.shotDistance > 14 && s.shotDistance <= 22 && !s.subType?.toLowerCase().includes("3pt") },
+          { name: "3-Point", test: (s: ShotAction) => s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22 },
+        ];
+        const zoneStats = zones.map(({ name, test }) => {
+          const zoneShots = filtered.filter(test);
+          const made = zoneShots.filter((s) => s.shotResult === "Made").length;
+          return { name, made, total: zoneShots.length, pct: zoneShots.length > 0 ? (made / zoneShots.length) * 100 : 0 };
+        }).filter((z) => z.total > 0);
+        if (zoneStats.length === 0) return null;
+        return (
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {zoneStats.map((z) => (
+              <div key={z.name} className="bg-bg-secondary rounded-lg p-2 text-center">
+                <p className="text-[10px] text-text-secondary uppercase">{z.name}</p>
+                <p className="text-sm font-bold mt-0.5">
+                  <span className={z.pct >= 50 ? "text-success" : z.pct >= 35 ? "text-accent" : "text-danger"}>{z.pct.toFixed(1)}%</span>
+                </p>
+                <p className="text-[10px] text-text-secondary">{z.made}/{z.total}</p>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
