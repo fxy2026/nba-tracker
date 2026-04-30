@@ -80,7 +80,12 @@ export default function RecentHighlights({ games }: Props) {
                 <span className="text-xs text-text-secondary">
                   {homeWon ? game.homeTeam.teamTricode : game.awayTeam.teamTricode} win by {diff}
                 </span>
-                <ChevronRight size={12} className="text-text-secondary group-hover:text-accent transition-colors" />
+                <div className="flex items-center gap-1.5">
+                  {game.seriesText && (
+                    <span className="text-[9px] text-text-secondary">{game.seriesText}</span>
+                  )}
+                  <ChevronRight size={12} className="text-text-secondary group-hover:text-accent transition-colors" />
+                </div>
               </div>
             </Link>
           );

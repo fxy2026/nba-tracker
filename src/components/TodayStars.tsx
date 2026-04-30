@@ -104,6 +104,13 @@ export default function TodayStars() {
               <span className="text-text-secondary">{s.reb} REB</span>
               <span className="text-text-secondary">{s.ast} AST</span>
             </div>
+            {(() => {
+              const doubles = [s.pts, s.reb, s.ast].filter((v) => v >= 10).length;
+              if (doubles >= 3) return <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold mt-1 inline-block">Triple-Double!</span>;
+              if (doubles >= 2) return <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">Double-Double</span>;
+              if (s.pts >= 30) return <span className="text-[9px] px-1.5 py-0.5 rounded bg-danger/15 text-danger font-bold mt-1 inline-block">30+ PTS</span>;
+              return null;
+            })()}
           </Link>
         ))}
       </div>

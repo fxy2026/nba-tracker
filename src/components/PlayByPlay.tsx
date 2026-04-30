@@ -83,6 +83,9 @@ export default function PlayByPlay({ actions }: Props) {
               }`}
             >
               {p <= 4 ? `Q${p}` : `OT${p - 4}`}
+              <span className="text-[8px] opacity-60 ml-0.5">
+                ({actions.filter((a) => a.period === p && a.description).length})
+              </span>
             </button>
           ))}
         </div>

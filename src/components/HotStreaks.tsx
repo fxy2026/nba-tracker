@@ -17,7 +17,7 @@ export default function HotStreaks() {
 
   useEffect(() => {
     fetch(
-      "/api/stats?endpoint=leagueleaders&LeagueID=00&PerMode=PerGame&Scope=S&Season=2024-25&SeasonType=Playoffs&StatCategory=PTS"
+      "/api/stats?endpoint=leagueleaders&LeagueID=00&PerMode=PerGame&Scope=S&Season=2025-26&SeasonType=Playoffs&StatCategory=PTS"
     )
       .then((r) => r.json())
       .then((data) => {
@@ -59,7 +59,7 @@ export default function HotStreaks() {
     <div className="mt-8">
       <h2 className="text-sm font-semibold text-text-secondary mb-3 flex items-center gap-1.5">
         <Flame size={14} className="text-accent" />
-        Playoff Hot Streaks
+        Playoff Scoring Leaders
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {players.map((p) => (
@@ -79,7 +79,10 @@ export default function HotStreaks() {
               <span className="text-sm font-medium text-text-primary leading-tight">{p.PLAYER}</span>
               <span className="text-xs text-text-secondary">{p.TEAM}</span>
             </div>
-            <span className="text-sm font-bold text-accent ml-2">{p.PTS.toFixed(1)}</span>
+            <div className="flex flex-col items-end ml-2">
+              <span className="text-sm font-bold text-accent">{p.PTS.toFixed(1)}</span>
+              <span className="text-[9px] text-text-secondary">PPG</span>
+            </div>
             <Flame size={12} className="text-orange-400" />
           </div>
         ))}
