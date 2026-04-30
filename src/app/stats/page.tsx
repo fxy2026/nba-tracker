@@ -29,10 +29,15 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-5 flex items-center gap-2">
-        <Crown size={24} className="text-accent" />
-        Stats & Rankings
-      </h1>
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Crown size={24} className="text-accent" />
+          Stats & Rankings
+        </h1>
+        <span className="text-[10px] text-text-secondary px-2.5 py-1 rounded-full bg-bg-card border border-border">
+          2025-26 Season
+        </span>
+      </div>
       <div className="flex gap-1 mb-6 bg-bg-card rounded-xl p-1 border border-border w-fit">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
