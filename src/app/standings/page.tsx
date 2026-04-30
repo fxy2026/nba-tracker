@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { TEAM_META } from "@/lib/teams";
+import ExportStandings from "@/components/ExportStandings";
 
 export const metadata: Metadata = {
   title: "排名",
@@ -268,8 +269,13 @@ export default async function StandingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-2">Division Standings</h1>
-      <p className="text-sm text-text-secondary mb-2">Top 6 in each conference highlighted for playoff eligibility</p>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-2xl font-bold">Division Standings</h1>
+          <p className="text-sm text-text-secondary">Top 6 in each conference highlighted for playoff eligibility</p>
+        </div>
+        <ExportStandings east={eastTeams} west={westTeams} />
+      </div>
       {/* Conference comparison */}
       {eastTeams.length > 0 && westTeams.length > 0 && (() => {
         const eastAvgW = eastTeams.reduce((s, t) => s + t.wins, 0) / eastTeams.length;
