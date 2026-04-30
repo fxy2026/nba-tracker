@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const STATS_API = "/api/stats";
-const CURRENT_SEASON = "2024-25";
+const CURRENT_SEASON = "2025-26";
 
 interface LeaderRow {
   PLAYER_ID: number;
@@ -132,9 +132,15 @@ export default function PlayerLeaders() {
                 </tr>
               </thead>
               <tbody>
-                {rows.slice(0, 50).map((r, i) => (
+                {rows.slice(0, 50).map((r, i) => {
+                  const topVal = rows.length > 0 ? (rows[0][cat as keyof LeaderRow] as number) : 1;
+                  const curVal = r[cat as keyof LeaderRow] as number;
+                  const barPct = topVal > 0 ? (curVal / topVal) * 100 : 0;
+                  return (
                   <tr key={r.PLAYER_ID} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 3 ? "bg-accent/5" : ""}`}>
-                    <td className="py-2.5 px-3 text-text-secondary font-medium">{r.RANK}</td>
+                    <td className="py-2.5 px-3 font-medium">
+                      {i === 0 ? <span className="text-yellow-400">&#9733;</span> : i === 1 ? <span className="text-gray-400">&#9733;</span> : i === 2 ? <span className="text-amber-600">&#9733;</span> : <span className="text-text-secondary">{r.RANK}</span>}
+                    </td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bg-secondary shrink-0">
@@ -147,14 +153,22 @@ export default function PlayerLeaders() {
                     </td>
                     <td className="py-2.5 px-2 text-text-secondary">{r.TEAM}</td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.GP}</td>
-                    <td className="py-2.5 px-2 text-center font-bold text-accent">{fmtVal(r, cat)}</td>
+                    <td className="py-2.5 px-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-accent tabular-nums min-w-[45px] text-center">{fmtVal(r, cat)}</span>
+                        <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[80px]">
+                          <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
+                        </div>
+                      </div>
+                    </td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.PTS.toFixed(1)}</td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.REB.toFixed(1)}</td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.AST.toFixed(1)}</td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.STL.toFixed(1)}</td>
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.BLK.toFixed(1)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

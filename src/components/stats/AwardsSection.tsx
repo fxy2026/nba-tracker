@@ -30,6 +30,23 @@ export default function AwardsSection() {
         </div>
       </div>
 
+      {/* Multi-time winners */}
+      {(() => {
+        const counts: Record<string, number> = {};
+        for (const e of entries) counts[e.player] = (counts[e.player] || 0) + 1;
+        const multi = Object.entries(counts).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]);
+        if (multi.length === 0) return null;
+        return (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {multi.map(([name, count]) => (
+              <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
+                {name}: {count}x
+              </span>
+            ))}
+          </div>
+        );
+      })()}
+
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
