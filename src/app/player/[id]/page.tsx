@@ -55,56 +55,27 @@ export default async function PlayerPage({ params }: PageProps) {
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
-  // Server-side fetch of career stats + game log (avoids client-side NBA API blocks)
-  // Uses 3s timeout so page never hangs — falls back to client fetch if slow
-  const STATS_BASE = "https://stats.nba.com/stats";
-  const STATS_HEADERS: HeadersInit = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-    Referer: "https://www.nba.com/",
-    Origin: "https://www.nba.com",
-    Accept: "application/json",
-  };
-  const fetchWithTimeout = async (url: string, revalidate: number): Promise<Response | null> => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch(url, { headers: STATS_HEADERS, next: { revalidate }, signal: controller.signal });
-      clearTimeout(timeout);
-      return res;
-    } catch { return null; }
-  };
+  // Server-side fetch: try internal /api/player which handles NBA Stats + ESPN fallback
+  // Uses 5s timeout so page never hangs
   let serverCareerSeasons: Record<string, unknown>[] | null = null;
   let serverRecentGames: Record<string, unknown>[] | null = null;
   try {
-    const [careerRes, gameLogRes] = await Promise.all([
-      fetchWithTimeout(`${STATS_BASE}/playercareerstats?PlayerID=${personId}&PerMode=PerGame`, 3600),
-      fetchWithTimeout(`${STATS_BASE}/playergamelog?PlayerID=${personId}&Season=2025-26&SeasonType=Regular+Season`, 300),
-    ]);
-    if (careerRes?.ok) {
-      const data = await careerRes.json();
-      const rs = data.resultSets?.find((r: { name: string }) => r.name === "SeasonTotalsRegularSeason");
-      if (rs) {
-        const h: string[] = rs.headers;
-        serverCareerSeasons = rs.rowSet.map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          h.forEach((k, i) => { obj[k] = row[i]; });
-          return obj;
-        });
-      }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+      || "http://localhost:3000";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${baseUrl}/api/player?id=${personId}`, {
+      signal: controller.signal,
+      next: { revalidate: 600 },
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      serverCareerSeasons = data.careerSeasons || null;
+      serverRecentGames = data.recentGames || null;
     }
-    if (gameLogRes?.ok) {
-      const data = await gameLogRes.json();
-      const rs = data.resultSets?.[0];
-      if (rs) {
-        const h: string[] = rs.headers;
-        serverRecentGames = rs.rowSet.slice(0, 10).map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          h.forEach((k, i) => { obj[k] = row[i]; });
-          return obj;
-        });
-      }
-    }
-  } catch { /* server fetch failed, components will fallback to client fetch */ }
+  } catch { /* timeout or error — components will show client-side fallback */ }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
