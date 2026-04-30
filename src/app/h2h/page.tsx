@@ -168,6 +168,40 @@ export default async function H2HPage({ searchParams }: PageProps) {
             );
           })()}
 
+          {/* Biggest Win for Each Team */}
+          {games.length > 0 && (() => {
+            let t1Best = { diff: 0, game: null as typeof games[0] | null };
+            let t2Best = { diff: 0, game: null as typeof games[0] | null };
+            for (const g of games) {
+              const diff = Math.abs(g.homeScore - g.awayScore);
+              const winnerTricode = g.homeScore > g.awayScore ? g.homeTricode : g.awayTricode;
+              if (winnerTricode === t1 && diff > t1Best.diff) t1Best = { diff, game: g };
+              if (winnerTricode === t2 && diff > t2Best.diff) t2Best = { diff, game: g };
+            }
+            if (!t1Best.game && !t2Best.game) return null;
+            return (
+              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Biggest Wins</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {t1Best.game && (
+                    <div className="bg-bg-secondary rounded-lg p-3 text-center">
+                      <p className="text-xs text-text-secondary">{t1}</p>
+                      <p className="text-2xl font-bold text-accent">+{t1Best.diff}</p>
+                      <p className="text-[10px] text-text-secondary">{t1Best.game.awayTricode} {t1Best.game.awayScore}-{t1Best.game.homeScore} {t1Best.game.homeTricode}</p>
+                    </div>
+                  )}
+                  {t2Best.game && (
+                    <div className="bg-bg-secondary rounded-lg p-3 text-center">
+                      <p className="text-xs text-text-secondary">{t2}</p>
+                      <p className="text-2xl font-bold text-accent">+{t2Best.diff}</p>
+                      <p className="text-[10px] text-text-secondary">{t2Best.game.awayTricode} {t2Best.game.awayScore}-{t2Best.game.homeScore} {t2Best.game.homeTricode}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Feature 8: Scoring Distribution */}
           {games.length > 0 && (() => {
             const allScores = games.map(g => g.homeScore + g.awayScore);

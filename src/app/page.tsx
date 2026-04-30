@@ -259,6 +259,39 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       )}
 
+      {/* Game insights for the day */}
+      {games.length > 0 && games.some((g) => g.gameStatus === 3) && (() => {
+        const finished = games.filter((g) => g.gameStatus === 3);
+        const avgScore = finished.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / finished.length;
+        const blowouts = finished.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) >= 20);
+        const thrillers = finished.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) <= 5);
+        const homeWins = finished.filter((g) => g.homeTeam.score > g.awayTeam.score).length;
+        const awayWins = finished.length - homeWins;
+        return (
+          <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Day Insights</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+              <div>
+                <p className="text-lg font-bold text-accent">{avgScore.toFixed(0)}</p>
+                <p className="text-text-secondary">Avg Total Pts</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-text-primary">{homeWins}-{awayWins}</p>
+                <p className="text-text-secondary">Home-Away</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-yellow-500">{thrillers.length}</p>
+                <p className="text-text-secondary">Thrillers (&le;5)</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-danger">{blowouts.length}</p>
+                <p className="text-text-secondary">Blowouts (&ge;20)</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Today's top performers */}
       {isToday && <TodayStars />}
 
