@@ -288,16 +288,17 @@ export interface PlayerInfo {
 
 // Get player index (all active players with basic info) — cached permanently until server restart
 let playerIndexCache: PlayerInfo[] | null = null;
-let playerIndexFetching = false;
+let playerIndexInflight: Promise<PlayerInfo[]> | null = null;
 
 export async function getPlayerIndex(): Promise<PlayerInfo[]> {
   if (playerIndexCache) return playerIndexCache;
-  if (playerIndexFetching) {
-    // Avoid parallel fetches — wait briefly then return whatever we have
-    await new Promise((r) => setTimeout(r, 100));
-    return playerIndexCache || [];
-  }
-  playerIndexFetching = true;
+  // Deduplicate: if a fetch is already in-flight, all callers share the same promise
+  if (playerIndexInflight) return playerIndexInflight;
+  playerIndexInflight = fetchPlayerIndex();
+  return playerIndexInflight;
+}
+
+async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
   try {
     const res = await fetch(
       `${CDN_BASE}/staticData/playerIndex.json`,
@@ -334,7 +335,7 @@ export async function getPlayerIndex(): Promise<PlayerInfo[]> {
     playerIndexCache = players;
     return players;
   } finally {
-    playerIndexFetching = false;
+    playerIndexInflight = null;
   }
 }
 
