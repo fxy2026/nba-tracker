@@ -192,10 +192,14 @@ nav.sticky {
 
 /* Print styles */
 @media print {
-  nav, footer, .safe-area-bottom, .back-to-top { display: none !important; }
-  body { padding: 0 !important; }
-  .game-card { break-inside: avoid; }
-  * { box-shadow: none !important; }
+  nav, footer, .safe-area-bottom, .back-to-top, button, .mobile-nav { display: none !important; }
+  body { padding: 0 !important; background: white !important; color: black !important; }
+  .game-card { break-inside: avoid; border-color: #ccc !important; }
+  * { box-shadow: none !important; animation: none !important; }
+  .bg-bg-card, .bg-bg-secondary { background: white !important; }
+  .text-accent { color: #4f46e5 !important; }
+  table { font-size: 11px !important; }
+  a[href]::after { content: none !important; }
 }
 
 /* PWA standalone mode adjustments */
