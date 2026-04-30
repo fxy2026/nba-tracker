@@ -108,7 +108,7 @@ export default function PlayerLeaders() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-12 bg-bg-card rounded-lg animate-pulse" />
+            <div key={i} className="h-12 bg-bg-card rounded-lg skeleton-shimmer" />
           ))}
         </div>
       ) : error ? (

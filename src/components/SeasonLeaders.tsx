@@ -53,10 +53,10 @@ export default function SeasonLeaders() {
   if (loading) {
     return (
       <div className="mt-8">
-        <div className="h-5 w-40 bg-bg-card rounded mb-3 animate-pulse" />
+        <div className="h-5 w-40 bg-bg-card rounded mb-3 skeleton-shimmer" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 bg-bg-card rounded-xl animate-pulse" />
+            <div key={i} className="h-48 bg-bg-card rounded-xl skeleton-shimmer" />
           ))}
         </div>
       </div>

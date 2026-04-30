@@ -58,7 +58,7 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
 
   if (loading) {
     return (
-      <div className="h-20 bg-bg-secondary rounded-lg animate-pulse" />
+      <div className="h-20 bg-bg-secondary rounded-lg skeleton-shimmer" />
     );
   }
 

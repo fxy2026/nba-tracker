@@ -57,10 +57,14 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-bg-secondary rounded-lg animate-pulse" />
+          <div key={i} className="h-10 bg-bg-secondary rounded-lg skeleton-shimmer" />
         ))}
       </div>
     );
+  }
+
+  if (!seasons?.length && !games?.length) {
+    return null; // No data available — hide section entirely
   }
 
   return (

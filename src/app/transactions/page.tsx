@@ -71,9 +71,9 @@ export default function TransactionsPage() {
       {loading && (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-5 w-40 bg-bg-card rounded mb-2" />
-              <div className="h-16 bg-bg-card rounded-xl" />
+            <div key={i}>
+              <div className="h-5 w-40 skeleton-shimmer rounded mb-2" />
+              <div className="h-16 skeleton-shimmer rounded-xl" />
             </div>
           ))}
         </div>

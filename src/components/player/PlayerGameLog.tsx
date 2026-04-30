@@ -56,7 +56,7 @@ export default function PlayerGameLog({ playerId }: { playerId: number }) {
     return (
       <div className="space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-9 bg-bg-card rounded animate-pulse" />
+          <div key={i} className="h-9 bg-bg-card rounded skeleton-shimmer" />
         ))}
       </div>
     );

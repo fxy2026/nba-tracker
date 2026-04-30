@@ -43,10 +43,10 @@ export default function HotStreaks() {
   if (loading) {
     return (
       <div className="mt-8">
-        <div className="h-5 w-40 bg-bg-card rounded mb-3 animate-pulse" />
+        <div className="h-5 w-40 bg-bg-card rounded mb-3 skeleton-shimmer" />
         <div className="flex gap-3 overflow-x-auto pb-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 w-48 bg-bg-card rounded-xl animate-pulse flex-shrink-0" />
+            <div key={i} className="h-16 w-48 bg-bg-card rounded-xl skeleton-shimmer flex-shrink-0" />
           ))}
         </div>
       </div>

@@ -46,7 +46,7 @@ export default function TeamStandings() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-11 bg-bg-card rounded-lg animate-pulse" />
+            <div key={i} className="h-11 bg-bg-card rounded-lg skeleton-shimmer" />
           ))}
         </div>
       ) : (

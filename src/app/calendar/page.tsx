@@ -178,7 +178,7 @@ export default function CalendarPage() {
         {loading ? (
           <div className="grid grid-cols-7">
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="border-b border-r border-border/50 p-2 h-20 animate-pulse">
+              <div key={i} className="border-b border-r border-border/50 p-2 h-20 skeleton-shimmer">
                 <div className="h-4 w-4 rounded bg-bg-hover" />
               </div>
             ))}

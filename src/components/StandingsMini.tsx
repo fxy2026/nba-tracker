@@ -38,7 +38,7 @@ export default function StandingsMini() {
 
   if (loading) {
     return (
-      <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 animate-pulse h-28" />
+      <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 skeleton-shimmer h-28" />
     );
   }
 

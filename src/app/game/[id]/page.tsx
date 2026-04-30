@@ -478,7 +478,7 @@ async function KeyMomentsSection({ gameId }: { gameId: string }) {
 }
 
 function SectionSkeleton() {
-  return <div className="h-48 bg-bg-card rounded-xl border border-border animate-pulse" />;
+  return <div className="h-48 bg-bg-card rounded-xl border border-border skeleton-shimmer" />;
 }
 
 export default async function GamePage({ params }: PageProps) {

@@ -23,11 +23,11 @@ export default function HomeExtra() {
     return (
       <div className="mt-10 space-y-6">
         {[1, 2].map((i) => (
-          <div key={i} className="animate-pulse">
-            <div className="h-5 w-32 bg-bg-card rounded mb-4" />
+          <div key={i}>
+            <div className="h-5 w-32 skeleton-shimmer rounded mb-4" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[1, 2, 3, 4].map((j) => (
-                <div key={j} className="h-24 bg-bg-card rounded-xl" />
+                <div key={j} className="h-24 skeleton-shimmer rounded-xl" />
               ))}
             </div>
           </div>
