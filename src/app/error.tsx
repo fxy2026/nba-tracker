@@ -24,17 +24,20 @@ export default function ErrorPage({
       <p className="text-text-secondary mb-6 max-w-md">
         页面加载时出现问题，请稍后重试。
       </p>
+      {error.digest && (
+        <p className="text-[10px] text-text-secondary/50 mb-4 font-mono">Error ID: {error.digest}</p>
+      )}
       <div className="flex items-center gap-3">
         <button
           onClick={() => unstable_retry()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors touch-target"
         >
           <RotateCcw size={16} />
           重试
         </button>
         <Link
           href="/"
-          className="flex items-center gap-2 px-5 py-2.5 bg-bg-card border border-border text-text-primary rounded-lg hover:bg-bg-hover transition-colors font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 bg-bg-card border border-border text-text-primary rounded-lg hover:bg-bg-hover transition-colors font-medium touch-target"
         >
           <Home size={16} />
           首页

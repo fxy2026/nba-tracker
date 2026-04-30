@@ -61,7 +61,7 @@ export default function DateNav({ selectedDate }: DateNavProps) {
         <ChevronLeft size={20} />
       </Link>
 
-      <div className="flex gap-1 overflow-x-auto">
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide scroll-snap-x">
         {days.map((day) => {
           const isSelected = day.date === selectedDate;
           const isToday = day.date === today;

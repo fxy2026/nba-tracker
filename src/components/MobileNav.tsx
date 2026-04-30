@@ -15,7 +15,7 @@ const mainLinks = [
 const moreLinks = [
   { href: "/standings", label: "Standings" },
   { href: "/injuries", label: "Injuries" },
-  { href: "/transactions", label: "Transactions" },
+  { href: "/transactions", label: "Trades" },
   { href: "/clutch", label: "Playoff Leaders" },
   { href: "/compare", label: "Compare" },
   { href: "/h2h", label: "H2H" },
