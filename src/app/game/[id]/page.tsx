@@ -271,6 +271,15 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
 
   const homeTopScorer = getTopScorer(homeTeam);
   const awayTopScorer = getTopScorer(awayTeam);
+
+  // Find top assist man from each team
+  const getTopAssist = (team: BoxScoreTeam) => {
+    const played = team.players.filter((p) => p.played === "1");
+    if (played.length === 0) return null;
+    return played.reduce((best, p) => p.statistics.assists > best.statistics.assists ? p : best);
+  };
+  const homeTopAssist = getTopAssist(homeTeam);
+  const awayTopAssist = getTopAssist(awayTeam);
   const homeSpecial = getSpecialPerformances(homeTeam);
   const awaySpecial = getSpecialPerformances(awayTeam);
   const homeLargestLead = getLargestLead(homeTeam, awayTeam);
@@ -407,6 +416,11 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
               ))}
             </div>
           )}
+          {awayTopAssist && awayTopAssist.personId !== awayTopScorer?.personId && awayTopAssist.statistics.assists >= 5 && (
+            <p className="text-text-secondary text-xs mt-0.5">
+              Dimes: <span className="text-text-primary font-medium">{awayTopAssist.nameI}</span> {awayTopAssist.statistics.assists} AST
+            </p>
+          )}
           {awayLargestLead > 0 && (
             <p className="text-xs text-text-secondary mt-1">Largest lead: {awayLargestLead} pts</p>
           )}
@@ -420,6 +434,11 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
               <span className="text-text-secondary ml-1">
                 {homeTopScorer.statistics.points} PTS, {homeTopScorer.statistics.reboundsTotal} REB, {homeTopScorer.statistics.assists} AST
               </span>
+            </p>
+          )}
+          {homeTopAssist && homeTopAssist.personId !== homeTopScorer?.personId && homeTopAssist.statistics.assists >= 5 && (
+            <p className="text-text-secondary text-xs mt-0.5">
+              Dimes: <span className="text-text-primary font-medium">{homeTopAssist.nameI}</span> {homeTopAssist.statistics.assists} AST
             </p>
           )}
           {homeSpecial.length > 0 && (
