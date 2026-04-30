@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DateNavProps {
   selectedDate: string;
+  onDateChange?: (date: string) => void;
 }
 
 function offsetDate(base: string, offset: number): string {
@@ -15,26 +15,30 @@ function offsetDate(base: string, offset: number): string {
   return d.toISOString().split("T")[0];
 }
 
-export default function DateNav({ selectedDate }: DateNavProps) {
+export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   const router = useRouter();
+
+  const navigate = useCallback((date: string) => {
+    if (onDateChange) {
+      onDateChange(date);
+    }
+    // Update URL without full page reload — shallow push
+    router.push(`/?date=${date}`, { scroll: false });
+  }, [onDateChange, router]);
 
   // Keyboard navigation: left/right arrows
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); router.push(`/?date=${offsetDate(selectedDate, -1)}`); }
-      if (e.key === "ArrowRight") { e.preventDefault(); router.push(`/?date=${offsetDate(selectedDate, 1)}`); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); navigate(offsetDate(selectedDate, -1)); }
+      if (e.key === "ArrowRight") { e.preventDefault(); navigate(offsetDate(selectedDate, 1)); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [selectedDate, router]);
+  }, [selectedDate, navigate]);
 
   // Mobile swipe navigation
   const touchStart = useRef<number | null>(null);
-  const handleSwipe = useCallback((dir: number) => {
-    router.push(`/?date=${offsetDate(selectedDate, dir)}`);
-  }, [selectedDate, router]);
-
   useEffect(() => {
     const el = document.getElementById("main-content");
     if (!el) return;
@@ -43,14 +47,14 @@ export default function DateNav({ selectedDate }: DateNavProps) {
       if (touchStart.current === null) return;
       const diff = e.changedTouches[0].clientX - touchStart.current;
       touchStart.current = null;
-      if (Math.abs(diff) > 80) handleSwipe(diff > 0 ? -1 : 1);
+      if (Math.abs(diff) > 80) navigate(offsetDate(selectedDate, diff > 0 ? -1 : 1));
     };
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     el.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => { el.removeEventListener("touchstart", onTouchStart); el.removeEventListener("touchend", onTouchEnd); };
-  }, [handleSwipe]);
+  }, [selectedDate, navigate]);
 
-  // Memoize the 7-day array — only recomputes when selectedDate changes
+  // Memoize the 7-day array
   const days = useMemo(() => {
     const result: { date: string; label: string; weekday: string }[] = [];
     for (let i = -3; i <= 3; i++) {
@@ -78,22 +82,22 @@ export default function DateNav({ selectedDate }: DateNavProps) {
 
   return (
     <div className="flex items-center justify-center gap-1" role="navigation" aria-label="Date navigation">
-      <Link
-        href={`/?date=${prevDate}`}
+      <button
+        onClick={() => navigate(prevDate)}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
         aria-label="Previous day"
       >
         <ChevronLeft size={20} />
-      </Link>
+      </button>
 
       <div className="flex gap-1 overflow-x-auto scrollbar-hide scroll-snap-x">
         {days.map((day) => {
           const isSelected = day.date === selectedDate;
           const isToday = day.date === today;
           return (
-            <Link
+            <button
               key={day.date}
-              href={`/?date=${day.date}`}
+              onClick={() => navigate(day.date)}
               aria-current={isSelected ? "date" : undefined}
               className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors min-w-[56px] ${
                 isSelected
@@ -105,26 +109,26 @@ export default function DateNav({ selectedDate }: DateNavProps) {
             >
               <span>{day.weekday}</span>
               <span className="text-sm mt-0.5">{day.label}</span>
-            </Link>
+            </button>
           );
         })}
       </div>
 
-      <Link
-        href={`/?date=${nextDate}`}
+      <button
+        onClick={() => navigate(nextDate)}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
         aria-label="Next day"
       >
         <ChevronRight size={20} />
-      </Link>
+      </button>
 
       {selectedDate !== today && (
-        <Link
-          href={`/?date=${today}`}
+        <button
+          onClick={() => navigate(today)}
           className="ml-2 px-3 py-1.5 text-xs bg-bg-card border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-accent/50 transition-colors"
         >
           今天
-        </Link>
+        </button>
       )}
     </div>
   );

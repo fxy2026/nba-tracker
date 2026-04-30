@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addReplayLink, deleteReplayLink, getReplayLinks } from "@/lib/supabase";
+import { addReplayLink, deleteReplayLink, getReplayLinks, getAllReplayGameIds } from "@/lib/supabase";
 
 function checkAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("x-admin-password");
@@ -9,6 +9,14 @@ function checkAuth(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  const action = request.nextUrl.searchParams.get("action");
+  if (action === "ids") {
+    const ids = await getAllReplayGameIds().catch(() => []);
+    return NextResponse.json({ ids }, {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
+    });
+  }
+
   const gameId = request.nextUrl.searchParams.get("game_id");
   if (!gameId) {
     return NextResponse.json({ error: "game_id required" }, { status: 400 });
