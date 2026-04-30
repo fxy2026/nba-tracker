@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import Image from "next/image";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   size?: number;
 }
 
-export default function PlayerHeadshot({ personId, name, size = 28 }: Props) {
+export default memo(function PlayerHeadshot({ personId, name, size = 28 }: Props) {
   const [error, setError] = useState(false);
 
   if (error) {
@@ -35,4 +35,4 @@ export default function PlayerHeadshot({ personId, name, size = 28 }: Props) {
       />
     </div>
   );
-}
+});

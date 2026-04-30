@@ -47,7 +47,7 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
       }`}
       title={isFav ? "Remove from favorites" : "Add to favorites"}
     >
-      <Heart size={20} fill={isFav ? "currentColor" : "none"} />
+      <Heart size={20} fill={isFav ? "currentColor" : "none"} className={isFav ? "animate-count" : ""} />
     </button>
   );
 }
