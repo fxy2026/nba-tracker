@@ -227,6 +227,26 @@ export default async function HomePage({ searchParams }: PageProps) {
           </svg>
           <p className="text-lg font-medium text-text-primary">{selectedDate} 没有比赛</p>
           <p className="text-sm mt-1 mb-4">试试选择其他日期，或浏览以下内容</p>
+          {/* NBA Fun Fact */}
+          {(() => {
+            const facts = [
+              "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",
+              "The NBA three-point line was introduced in the 1979-80 season.",
+              "Kareem Abdul-Jabbar holds the all-time regular season scoring record with 38,387 points (surpassed by LeBron in 2023).",
+              "The longest NBA game lasted 6 overtimes — Indianapolis vs Rochester in 1951.",
+              "The NBA has had 30 teams since the 2004-05 season.",
+              "Michael Jordan has 6 NBA Finals MVP awards — the most in history.",
+              "The shot clock was introduced in 1954 to speed up the game.",
+              "Tim Duncan was drafted #1 overall in 1997 and won 5 championships with the Spurs.",
+            ];
+            const idx = new Date(selectedDate).getDate() % facts.length;
+            return (
+              <div className="bg-bg-card border border-border rounded-xl p-4 mb-4 max-w-md text-center">
+                <p className="text-[10px] text-text-secondary uppercase font-medium mb-1">NBA Fun Fact</p>
+                <p className="text-xs text-text-primary">{facts[idx]}</p>
+              </div>
+            );
+          })()}
           <div className="flex items-center gap-3 text-xs">
             <a href="/standings" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">排名</a>
             <a href="/search" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">搜索球员</a>
