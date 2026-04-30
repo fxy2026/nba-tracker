@@ -2,60 +2,82 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Heart, MoreHorizontal } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock } from "lucide-react";
 import { useState } from "react";
 
 const mainLinks = [
   { href: "/", label: "Today", icon: Trophy },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/favorites", label: "Favorites", icon: Heart },
+  { href: "/search", label: "Search", icon: Search },
 ];
 
-const moreLinks = [
-  { href: "/standings", label: "Standings" },
-  { href: "/injuries", label: "Injuries" },
-  { href: "/transactions", label: "Trades" },
-  { href: "/clutch", label: "Playoff Leaders" },
-  { href: "/compare", label: "Compare" },
-  { href: "/h2h", label: "H2H" },
-  { href: "/search", label: "Search" },
-  { href: "/history", label: "History" },
-  { href: "/schedule", label: "Schedule" },
+const moreGroups = [
+  {
+    title: "Explore",
+    items: [
+      { href: "/standings", label: "Standings", icon: ListOrdered },
+      { href: "/schedule", label: "Schedule", icon: Clock },
+      { href: "/injuries", label: "Injuries", icon: AlertTriangle },
+      { href: "/transactions", label: "Trades", icon: ArrowLeftRight },
+    ],
+  },
+  {
+    title: "Analysis",
+    items: [
+      { href: "/compare", label: "Compare", icon: GitCompareArrows },
+      { href: "/h2h", label: "Head to Head", icon: Swords },
+      { href: "/clutch", label: "Playoff Leaders", icon: Target },
+    ],
+  },
+  {
+    title: "More",
+    items: [
+      { href: "/favorites", label: "Favorites", icon: Heart },
+      { href: "/history", label: "Champions", icon: History },
+    ],
+  },
 ];
+
+const allMoreLinks = moreGroups.flatMap((g) => g.items);
 
 export default function MobileNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const isMoreActive = moreLinks.some(({ href }) => pathname === href);
+  const isMoreActive = allMoreLinks.some(({ href }) => pathname === href);
 
   return (
     <>
       {/* More menu overlay */}
       {moreOpen && (
-        <div className="sm:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMoreOpen(false)}>
+        <div className="sm:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-14 left-0 right-0 bg-bg-card border-t border-border rounded-t-2xl p-4 safe-area-bottom"
+            className="absolute bottom-14 left-0 right-0 bg-bg-card border-t border-border rounded-t-2xl p-4 pb-2 safe-area-bottom animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-8 h-1 bg-border rounded-full mx-auto mb-4" />
-            <div className="grid grid-cols-3 gap-2">
-              {moreLinks.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMoreOpen(false)}
-                  className={`relative px-3 py-2.5 rounded-lg text-center text-xs font-medium transition-colors ${
-                    pathname === href ? "bg-accent/15 text-accent" : "bg-bg-hover text-text-secondary"
-                  }`}
-                >
-                  {label}
-                  {pathname === href && (
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent" />
-                  )}
-                </Link>
-              ))}
-            </div>
+            {/* Handle bar */}
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+
+            {moreGroups.map((group) => (
+              <div key={group.title} className="mb-3">
+                <p className="text-[10px] text-text-secondary uppercase font-semibold tracking-wider mb-1.5 px-1">{group.title}</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {group.items.map(({ href, label, icon: Icon }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setMoreOpen(false)}
+                      className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-center transition-colors ${
+                        pathname === href ? "bg-accent/15 text-accent" : "bg-bg-hover/60 text-text-secondary active:bg-bg-hover"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      <span className="text-[10px] font-medium leading-tight">{label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -69,23 +91,23 @@ export default function MobileNav() {
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
+                className={`flex flex-col items-center gap-0.5 min-w-[48px] py-1 rounded-lg transition-colors ${
                   active ? "text-accent" : "text-text-secondary"
                 }`}
               >
-                <Icon size={20} />
-                <span className="text-[9px] font-medium">{label}</span>
+                <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+                <span className={`text-[9px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
               </Link>
             );
           })}
           <button
             onClick={() => setMoreOpen(!moreOpen)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-0.5 min-w-[48px] py-1 rounded-lg transition-colors ${
               moreOpen || isMoreActive ? "text-accent" : "text-text-secondary"
             }`}
           >
-            <MoreHorizontal size={20} />
-            <span className="text-[9px] font-medium">More</span>
+            <MoreHorizontal size={20} strokeWidth={moreOpen || isMoreActive ? 2.5 : 2} />
+            <span className={`text-[9px] ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>More</span>
           </button>
         </div>
       </nav>
