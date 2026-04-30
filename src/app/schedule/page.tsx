@@ -63,7 +63,33 @@ export default async function SchedulePage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-4">Recent Schedule</h1>
+      <h1 className="text-2xl font-bold mb-2">Recent Schedule</h1>
+      {/* Quick stats */}
+      {recentDates.length > 0 && (() => {
+        const totalGames = recentDates.reduce((s, d) => s + d.games.length, 0);
+        const finishedGames = recentDates.reduce((s, d) => s + d.games.filter(g => g.gameStatus === 3).length, 0);
+        const upcomingGames = totalGames - finishedGames;
+        return (
+          <div className="flex items-center gap-3 mb-4 text-xs">
+            <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
+              {recentDates.length} days
+            </span>
+            <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
+              {totalGames} games
+            </span>
+            {finishedGames > 0 && (
+              <span className="px-2.5 py-1 rounded-full bg-success/15 text-success font-medium">
+                {finishedGames} completed
+              </span>
+            )}
+            {upcomingGames > 0 && (
+              <span className="px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
+                {upcomingGames} upcoming
+              </span>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Date jump */}
       <div className="mb-4 flex items-center gap-3">

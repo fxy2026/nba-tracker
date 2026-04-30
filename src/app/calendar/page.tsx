@@ -144,12 +144,21 @@ export default function CalendarPage() {
       })()}
 
       {/* Month Summary */}
-      {!loading && days.length > 0 && (
-        <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary">
-          <span>{days.reduce((s, d) => s + d.gameCount, 0)} games this month</span>
-          <span>{days.filter((d) => d.gameCount > 0).length} game days</span>
-        </div>
-      )}
+      {!loading && days.length > 0 && (() => {
+        const totalGames = days.reduce((s, d) => s + d.gameCount, 0);
+        const gameDays = days.filter((d) => d.gameCount > 0).length;
+        const busiestDay = days.reduce((best, d) => d.gameCount > best.gameCount ? d : best, days[0]);
+        return (
+          <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary flex-wrap">
+            <span><span className="font-bold text-accent">{totalGames}</span> games this month</span>
+            <span><span className="font-bold text-text-primary">{gameDays}</span> game days</span>
+            {busiestDay.gameCount > 0 && (
+              <span>Busiest: <span className="font-bold text-text-primary">{busiestDay.date}</span> ({busiestDay.gameCount} games)</span>
+            )}
+            <span>Avg: <span className="font-bold text-text-primary">{gameDays > 0 ? (totalGames / gameDays).toFixed(1) : 0}</span> games/day</span>
+          </div>
+        );
+      })()}
 
       {/* Calendar Grid */}
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
