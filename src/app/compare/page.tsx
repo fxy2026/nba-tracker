@@ -354,6 +354,34 @@ export default function ComparePage() {
         </div>
       )}
 
+      {/* Overall Production Score */}
+      {player1 && player2 && (() => {
+        // Simple production score: PTS + 1.2*REB + 1.5*AST
+        const score1 = player1.pts + 1.2 * player1.reb + 1.5 * player1.ast;
+        const score2 = player2.pts + 1.2 * player2.reb + 1.5 * player2.ast;
+        const max = Math.max(score1, score2, 0.1);
+        return (
+          <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">Overall Production Score</h3>
+            <p className="text-[9px] text-text-secondary text-center mb-3">PTS + 1.2×REB + 1.5×AST</p>
+            <div className="flex items-center gap-4">
+              <div className="flex-1 text-right">
+                <span className={`text-lg font-bold ${score1 >= score2 ? "text-accent" : "text-text-secondary"}`}>{score1.toFixed(1)}</span>
+                <p className="text-[10px] text-text-secondary">{player1.lastName}</p>
+              </div>
+              <div className="w-32 h-3 bg-bg-hover rounded-full overflow-hidden flex">
+                <div className="h-full bg-accent rounded-l-full" style={{ width: `${(score1 / (score1 + score2)) * 100}%` }} />
+                <div className="h-full bg-success rounded-r-full" style={{ width: `${(score2 / (score1 + score2)) * 100}%` }} />
+              </div>
+              <div className="flex-1">
+                <span className={`text-lg font-bold ${score2 >= score1 ? "text-success" : "text-text-secondary"}`}>{score2.toFixed(1)}</span>
+                <p className="text-[10px] text-text-secondary">{player2.lastName}</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {!player1 && !player2 && (
         <div className="text-center py-16 text-text-secondary">
           <GitCompareArrows size={48} className="mx-auto mb-4 opacity-30" />
