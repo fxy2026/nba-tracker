@@ -100,6 +100,18 @@ export default function FavoritesPage() {
         )}
       </div>
 
+      {/* Quick stats */}
+      {hasAny && !loading && (
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
+            {favTeams.length} team{favTeams.length !== 1 ? "s" : ""}
+          </span>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/15 text-red-500 font-medium">
+            {favPlayers.length} player{favPlayers.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {!hasAny && !loading && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
           <Heart size={48} className="mx-auto text-text-secondary/30 mb-4" />

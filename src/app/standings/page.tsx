@@ -36,10 +36,11 @@ async function getStandings(): Promise<TeamRecord[]> {
   }
 }
 
-function DivisionCard({ division, teams, conferenceRanks }: {
+function DivisionCard({ division, teams, conferenceRanks, streaks }: {
   division: string;
   teams: TeamRecord[];
   conferenceRanks: Map<string, number>;
+  streaks: Map<string, string>;
 }) {
   // Sort by win pct within the division
   const sorted = [...teams].sort((a, b) => {
@@ -95,6 +96,15 @@ function DivisionCard({ division, teams, conferenceRanks }: {
                   <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
                   {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">Playoff</span>}
                   {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">Play-In</span>}
+                  {streaks.get(team.tricode) && (() => {
+                    const streak = streaks.get(team.tricode)!;
+                    const isWin = streak.startsWith("W");
+                    return (
+                      <span className={`ml-1 text-[9px] px-1 py-0.5 rounded font-medium ${isWin ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+                        {streak}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
               <span className="text-center text-sm font-medium tabular-nums">{team.wins}</span>
@@ -199,8 +209,44 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
   );
 }
 
+async function getTeamStreaks(): Promise<Map<string, string>> {
+  const { getFullSchedule } = await import("@/lib/api");
+  const schedule = await getFullSchedule().catch(() => []);
+  // Build recent results per team (most recent first)
+  const teamGames: Record<string, boolean[]> = {};
+  const gameDates: { date: string; homeTricode: string; awayTricode: string; homeWon: boolean }[] = [];
+  for (const gd of schedule) {
+    for (const g of gd.games) {
+      if (g.gameStatus !== 3) continue;
+      const dateStr = gd.gameDate.split(" ")[0];
+      const [month, day, year] = dateStr.split("/");
+      const isoDate = `${year}-${month}-${day}`;
+      gameDates.push({ date: isoDate, homeTricode: g.homeTeam.teamTricode, awayTricode: g.awayTeam.teamTricode, homeWon: g.homeTeam.score > g.awayTeam.score });
+    }
+  }
+  gameDates.sort((a, b) => b.date.localeCompare(a.date));
+  for (const g of gameDates) {
+    if (!teamGames[g.homeTricode]) teamGames[g.homeTricode] = [];
+    if (!teamGames[g.awayTricode]) teamGames[g.awayTricode] = [];
+    teamGames[g.homeTricode].push(g.homeWon);
+    teamGames[g.awayTricode].push(!g.homeWon);
+  }
+  const streaks = new Map<string, string>();
+  for (const [tri, results] of Object.entries(teamGames)) {
+    if (results.length === 0) continue;
+    const first = results[0];
+    let count = 0;
+    for (const r of results) {
+      if (r === first) count++;
+      else break;
+    }
+    streaks.set(tri, `${first ? "W" : "L"}${count}`);
+  }
+  return streaks;
+}
+
 export default async function StandingsPage() {
-  const standings = await getStandings();
+  const [standings, streaks] = await Promise.all([getStandings(), getTeamStreaks()]);
 
   // Compute conference ranks
   const eastTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "East");
@@ -241,6 +287,7 @@ export default async function StandingsPage() {
             division={div}
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
+            streaks={streaks}
           />
         ))}
       </div>
@@ -257,6 +304,7 @@ export default async function StandingsPage() {
             division={div}
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
+            streaks={streaks}
           />
         ))}
       </div>

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 const champions = [
+  { year: 2026, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },
   { year: 2025, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },
   { year: 2024, champion: "Boston Celtics", fmvp: "Jaylen Brown", runnerUp: "Dallas Mavericks", series: "4-1" },
   { year: 2023, champion: "Denver Nuggets", fmvp: "Nikola Jokic", runnerUp: "Miami Heat", series: "4-1" },
@@ -37,12 +38,63 @@ const champions = [
 ];
 
 export default function HistoryPage() {
+  // Detect sweeps and game-7s
+  const sweeps = champions.filter((r) => r.series === "4-0");
+  const game7s = champions.filter((r) => r.series === "4-3");
+
+  // Detect repeat champions
+  const repeats: string[] = [];
+  for (let i = 1; i < champions.length; i++) {
+    if (champions[i].champion !== "TBD" && champions[i].champion === champions[i - 1].champion && !repeats.includes(champions[i].champion)) {
+      repeats.push(champions[i].champion);
+    }
+  }
+
+  // Most FMVP awards
+  const fmvpCounts: Record<string, number> = {};
+  for (const r of champions) {
+    if (r.fmvp !== "TBD") fmvpCounts[r.fmvp] = (fmvpCounts[r.fmvp] || 0) + 1;
+  }
+  const topFmvps = Object.entries(fmvpCounts).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]);
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center gap-2 mb-6">
         <Trophy size={20} className="text-accent" />
-        <h1 className="text-xl font-bold">NBA Champions (2000-2025)</h1>
+        <h1 className="text-xl font-bold">NBA Champions (2000-2026)</h1>
       </div>
+
+      {/* Quick Facts */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-accent">{sweeps.length}</p>
+          <p className="text-[10px] text-text-secondary uppercase">Sweeps (4-0)</p>
+        </div>
+        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-accent">{game7s.length}</p>
+          <p className="text-[10px] text-text-secondary uppercase">Game 7s</p>
+        </div>
+        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-accent">{repeats.length}</p>
+          <p className="text-[10px] text-text-secondary uppercase">Repeat Champs</p>
+        </div>
+        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-accent">{topFmvps.length > 0 ? topFmvps[0][1] : 0}</p>
+          <p className="text-[10px] text-text-secondary uppercase">Most FMVPs</p>
+          {topFmvps.length > 0 && <p className="text-[10px] text-accent mt-0.5">{topFmvps[0][0]}</p>}
+        </div>
+      </div>
+
+      {/* Multi-FMVP winners */}
+      {topFmvps.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {topFmvps.map(([name, count]) => (
+            <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
+              {name}: {count}x FMVP
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="bg-bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
@@ -57,15 +109,32 @@ export default function HistoryPage() {
               </tr>
             </thead>
             <tbody>
-              {champions.map((row) => (
-                <tr key={row.year} className="border-b border-border/30 hover:bg-bg-hover/50 transition-colors">
-                  <td className="py-3 px-4 font-bold text-accent">{row.year}</td>
-                  <td className="py-3 px-4 font-medium text-text-primary">{row.champion}</td>
-                  <td className="py-3 px-4 text-text-secondary">{row.fmvp}</td>
-                  <td className="py-3 px-4 text-text-secondary">{row.runnerUp}</td>
-                  <td className="py-3 px-4 text-text-secondary">{row.series}</td>
-                </tr>
-              ))}
+              {champions.map((row, i) => {
+                const isSweep = row.series === "4-0";
+                const isGame7 = row.series === "4-3";
+                const isRepeat = i > 0 && row.champion !== "TBD" && row.champion === champions[i - 1].champion;
+                return (
+                  <tr key={row.year} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${row.champion === "TBD" ? "opacity-50" : ""}`}>
+                    <td className="py-3 px-4 font-bold text-accent">{row.year}</td>
+                    <td className="py-3 px-4 font-medium text-text-primary">
+                      {row.champion}
+                      {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold">REPEAT</span>}
+                    </td>
+                    <td className="py-3 px-4 text-text-secondary">
+                      {row.fmvp}
+                      {fmvpCounts[row.fmvp] >= 2 && row.fmvp !== "TBD" && <span className="ml-1 text-accent text-[10px]">({fmvpCounts[row.fmvp]}x)</span>}
+                    </td>
+                    <td className="py-3 px-4 text-text-secondary">{row.runnerUp}</td>
+                    <td className="py-3 px-4">
+                      <span className={`${isSweep ? "text-accent font-bold" : isGame7 ? "text-yellow-500 font-medium" : "text-text-secondary"}`}>
+                        {row.series}
+                      </span>
+                      {isSweep && <span className="ml-1 text-[9px] text-accent">SWEEP</span>}
+                      {isGame7 && <span className="ml-1 text-[9px] text-yellow-500">G7</span>}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -99,6 +168,31 @@ export default function HistoryPage() {
           })()}
         </div>
       </div>
+
+      {/* Dynasties Section */}
+      {repeats.length > 0 && (
+        <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Trophy size={16} className="text-yellow-500" />
+            Dynasty Watch (Repeat Champions)
+          </h2>
+          <div className="space-y-2">
+            {repeats.map((team) => {
+              const years = champions.filter((r) => r.champion === team).map((r) => r.year);
+              return (
+                <div key={team} className="flex items-center justify-between px-3 py-2 bg-bg-secondary rounded-lg">
+                  <span className="text-sm font-medium text-text-primary">{team}</span>
+                  <div className="flex items-center gap-1.5">
+                    {years.map((y) => (
+                      <span key={y} className="text-[10px] px-1.5 py-0.5 bg-accent/15 text-accent rounded font-medium">{y}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 text-center">
         <Link href="/" className="text-xs text-text-secondary hover:text-accent transition-colors">

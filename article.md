@@ -703,6 +703,10 @@ export function formatDate(date: Date): string {
 
 线上地址：**nba.xpy.me**
 
+项目完全开源，代码在 GitHub：**github.com/fxy2026/nba-tracker**
+
+如果觉得有意思，欢迎去 GitHub 点个 Star。也支持 Vercel 一键部署，fork 之后你可以拥有自己的 NBA 数据站。
+
 季后赛还在打，欢迎用起来。
 
 ---

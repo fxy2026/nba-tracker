@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper, Trophy } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
@@ -265,6 +265,45 @@ export default async function PlayerPage({ params }: PageProps) {
                      "Valuable role in the rotation"}
                   </p>
                 </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Career Milestones */}
+        {player.pts > 0 && seasons > 0 && (() => {
+          const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
+          if (isNaN(ppg) || ppg <= 0) return null;
+          // Estimate career total points: PPG * ~70 GP per season * seasons played
+          const gpEstimate = 70;
+          const estTotalPts = Math.round(ppg * gpEstimate * seasons);
+          const milestones: string[] = [];
+          if (estTotalPts >= 25000) milestones.push("25,000+ career points (est.)");
+          else if (estTotalPts >= 20000) milestones.push("20,000+ career points (est.)");
+          else if (estTotalPts >= 15000) milestones.push("15,000+ career points (est.)");
+          else if (estTotalPts >= 10000) milestones.push("10,000+ career points (est.)");
+          else if (estTotalPts >= 5000) milestones.push("5,000+ career points (est.)");
+          if (ppg >= 20 && seasons >= 10) milestones.push("Decade-long 20+ PPG scorer");
+          if (ppg >= 25) milestones.push("Elite scorer (25+ PPG)");
+          if (seasons >= 15) milestones.push("15+ year veteran");
+          if (milestones.length === 0) return null;
+          return (
+            <div className="p-6 border-t border-border">
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
+                <Trophy size={14} />
+                Career Milestones
+              </h2>
+              <div className="bg-bg-secondary rounded-xl p-4 space-y-2">
+                <p className="text-xs text-text-secondary">
+                  Estimated career total: <span className="font-bold text-accent">{estTotalPts.toLocaleString()}</span> points
+                  <span className="text-text-secondary/70 ml-1">({ppg} PPG x ~{gpEstimate} GP x {seasons} seasons)</span>
+                </p>
+                {milestones.map((m, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-accent text-sm">&#9733;</span>
+                    <span className="text-sm text-text-primary font-medium">{m}</span>
+                  </div>
+                ))}
               </div>
             </div>
           );

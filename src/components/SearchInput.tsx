@@ -198,9 +198,14 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
                   {p.teamCity} {p.teamName} &middot; #{p.jersey} {p.position}
                 </p>
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-xs text-accent font-medium">{p.pts} PPG</p>
-                <p className="text-xs text-text-secondary">{p.reb} RPG &middot; {p.ast} APG</p>
+              <div className="text-right shrink-0 flex items-center gap-1.5">
+                {p.pts > 25 && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold">Star</span>
+                )}
+                <div>
+                  <p className="text-xs text-accent font-medium">{p.pts} PPG</p>
+                  <p className="text-xs text-text-secondary">{p.reb} RPG &middot; {p.ast} APG</p>
+                </div>
               </div>
             </Link>
           ))}

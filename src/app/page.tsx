@@ -41,8 +41,8 @@ function mapLiveGame(g: {
   };
 }
 
-// Revalidate homepage every 30s when dynamic
-export const revalidate = 30;
+// Dynamic page — reads searchParams for date navigation
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -139,6 +139,16 @@ export default async function HomePage({ searchParams }: PageProps) {
         <div className="mt-6 mb-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-text-primary">{games.length} Games</span>
+            {games.length >= 10 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
+                Packed Slate
+              </span>
+            )}
+            {games.length > 0 && games.length <= 3 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
+                Light Day
+              </span>
+            )}
             {games.filter(g => g.gameStatus === 2).length > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
                 {games.filter(g => g.gameStatus === 2).length} Live

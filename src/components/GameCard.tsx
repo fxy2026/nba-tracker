@@ -83,6 +83,9 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
               {isLive && game.gameStatusText.toLowerCase().includes("half") && (
                 <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-yellow-500/15 text-yellow-500 rounded">HT</span>
               )}
+              {isLive && Math.abs(game.homeTeam.score - game.awayTeam.score) <= 5 && game.homeTeam.score + game.awayTeam.score > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-danger/15 text-danger rounded">Close!</span>
+              )}
             </span>
           </div>
         </div>

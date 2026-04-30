@@ -50,28 +50,36 @@ export default function StandingsMini() {
         {/* East */}
         <div>
           <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">East</p>
-          {east.map((t, i) => (
-            <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
-              <span className="text-text-secondary w-3 text-right">{i + 1}</span>
-              <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
-                {t.tricode}
-              </Link>
-              <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
-            </div>
-          ))}
+          {east.map((t, i) => {
+            const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
+            return (
+              <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
+                <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
+                <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+                  {t.tricode}
+                </Link>
+                <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
+                <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
+              </div>
+            );
+          })}
         </div>
         {/* West */}
         <div>
           <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">West</p>
-          {west.map((t, i) => (
-            <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
-              <span className="text-text-secondary w-3 text-right">{i + 1}</span>
-              <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
-                {t.tricode}
-              </Link>
-              <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
-            </div>
-          ))}
+          {west.map((t, i) => {
+            const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
+            return (
+              <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
+                <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
+                <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+                  {t.tricode}
+                </Link>
+                <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
+                <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
+              </div>
+            );
+          })}
         </div>
       </div>
       <Link href="/stats" className="block text-center text-[10px] text-accent hover:underline mt-2">

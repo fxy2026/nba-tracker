@@ -166,6 +166,29 @@ export default async function TeamPage({ params }: PageProps) {
 
   const winPct = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : "0.0";
 
+  // Compute conference ranking by sorting all conference teams by win%
+  const conferenceTeams = Object.values(TEAM_META).filter((t) => t.conference === team.conference);
+  // Build a map of tricode -> {wins, losses} for all teams
+  const teamRecordMap: Record<string, { w: number; l: number }> = {};
+  for (const gd of schedule) {
+    for (const g of gd.games) {
+      if (g.gameStatus !== 3) continue;
+      const ht = g.homeTeam.teamTricode;
+      const at = g.awayTeam.teamTricode;
+      if (!teamRecordMap[ht]) teamRecordMap[ht] = { w: 0, l: 0 };
+      if (!teamRecordMap[at]) teamRecordMap[at] = { w: 0, l: 0 };
+      if (g.homeTeam.score > g.awayTeam.score) { teamRecordMap[ht].w++; teamRecordMap[at].l++; }
+      else { teamRecordMap[at].w++; teamRecordMap[ht].l++; }
+    }
+  }
+  const conferenceRanking = conferenceTeams
+    .map((t) => {
+      const rec = teamRecordMap[t.tricode] || { w: 0, l: 0 };
+      return { tricode: t.tricode, winPct: rec.w + rec.l > 0 ? rec.w / (rec.w + rec.l) : 0 };
+    })
+    .sort((a, b) => b.winPct - a.winPct);
+  const confRank = conferenceRanking.findIndex((t) => t.tricode === team.tricode) + 1;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <Link href="/stats" className="text-sm text-text-secondary hover:text-accent transition-colors">
@@ -185,8 +208,13 @@ export default async function TeamPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold">{team.city} <span className="text-accent">{team.name}</span></h1>
               <FavoriteButton type="team" id={team.tricode} />
             </div>
-            <p className="text-text-secondary text-sm mt-1">
+            <p className="text-text-secondary text-sm mt-1 flex items-center gap-2">
               {team.conference}ern Conference &middot; {team.division} Division
+              {confRank > 0 && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${confRank <= 6 ? "bg-accent/15 text-accent" : confRank <= 10 ? "bg-yellow-500/15 text-yellow-500" : "bg-bg-hover text-text-secondary"}`}>
+                  #{confRank} in {team.conference}
+                </span>
+              )}
             </p>
           </div>
         </div>

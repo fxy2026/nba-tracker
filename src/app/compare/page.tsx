@@ -255,6 +255,23 @@ export default function ComparePage() {
                 </p>
               );
             })()}
+            {/* Per-category advantage */}
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {COMPARE_STATS.map(({ key, label }) => {
+                const v1 = player1[key as keyof PlayerData] as number;
+                const v2 = player2[key as keyof PlayerData] as number;
+                const advantage = v1 > v2 ? player1 : v2 > v1 ? player2 : null;
+                return (
+                  <span key={key} className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                    advantage === player1 ? "bg-accent/15 text-accent" :
+                    advantage === player2 ? "bg-success/15 text-success" :
+                    "bg-bg-hover text-text-secondary"
+                  }`}>
+                    {label}: {advantage ? `${advantage.lastName}` : "Tied"}
+                  </span>
+                );
+              })}
+            </div>
           </div>
 
           {/* Radar Chart */}

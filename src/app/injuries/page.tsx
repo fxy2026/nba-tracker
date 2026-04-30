@@ -152,6 +152,32 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
         );
       })()}
 
+      {/* Most Affected Teams */}
+      {allTeams.length > 0 && (() => {
+        const sorted = [...allTeams]
+          .filter((t) => t.injuries && t.injuries.length > 0)
+          .sort((a, b) => (b.injuries?.length || 0) - (a.injuries?.length || 0))
+          .slice(0, 5);
+        if (sorted.length === 0) return null;
+        const maxInj = sorted[0].injuries?.length || 1;
+        return (
+          <div className="bg-bg-card border border-border rounded-xl p-4 mb-4">
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Most Affected Teams</h3>
+            <div className="space-y-1.5">
+              {sorted.map((t) => (
+                <div key={t.id || t.displayName} className="flex items-center gap-2">
+                  <span className="text-xs text-text-primary font-medium w-36 truncate">{t.displayName}</span>
+                  <div className="flex-1 h-3 bg-bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-danger/60 rounded-full" style={{ width: `${((t.injuries?.length || 0) / maxInj) * 100}%` }} />
+                  </div>
+                  <span className="text-xs font-bold text-danger tabular-nums w-6 text-right">{t.injuries?.length}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Team Filter */}
       <div className="flex flex-wrap gap-1.5 mb-6">
         <Link

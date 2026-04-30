@@ -136,7 +136,15 @@ export default function ClutchPage() {
         </div>
       )}
 
-      {!loading && players.length > 0 && (
+      {!loading && players.length > 0 && (() => {
+        // Compute max value for the selected category to use for bar widths
+        const getStatVal = (p: PlayerRow) => {
+          const v = p[category as keyof PlayerRow] as number;
+          return v ?? 0;
+        };
+        const topVal = Math.max(...players.map(getStatVal), 0.1);
+
+        return (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -153,7 +161,10 @@ export default function ClutchPage() {
                 </tr>
               </thead>
               <tbody>
-                {players.map((p, i) => (
+                {players.map((p, i) => {
+                  const statVal = getStatVal(p);
+                  const barPct = topVal > 0 ? (statVal / topVal) * 100 : 0;
+                  return (
                   <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent/5" : ""}`}>
                     <td className="text-center py-2.5 px-2 text-xs font-medium">
                       {i === 0 ? <span className="text-yellow-400">&#9733;</span> : i === 1 ? <span className="text-gray-400">&#9733;</span> : i === 2 ? <span className="text-amber-600">&#9733;</span> : <span className="text-text-secondary">{i + 1}</span>}
@@ -177,17 +188,26 @@ export default function ClutchPage() {
                       <Link href={`/team/${p.TEAM}`} className="text-text-secondary hover:text-accent transition-colors">{p.TEAM}</Link>
                     </td>
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.GP}</td>
-                    <td className="text-center py-2.5 px-2 font-bold text-accent">{fmtVal(p)}</td>
+                    <td className="py-2.5 px-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-accent tabular-nums min-w-[40px] text-center">{fmtVal(p)}</span>
+                        <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
+                          <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
+                        </div>
+                      </div>
+                    </td>
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.PTS?.toFixed(1)}</td>
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.AST?.toFixed(1)}</td>
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.STL?.toFixed(1)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

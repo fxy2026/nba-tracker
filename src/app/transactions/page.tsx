@@ -145,9 +145,13 @@ export default function TransactionsPage() {
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getTypeColor(t.type)}`}>
                           {t.type}
                         </span>
-                        <span className="text-sm font-medium text-text-primary">{t.team}</span>
+                        {t.teamAbbr ? (
+                          <Link href={`/team/${t.teamAbbr}`} className="text-sm font-medium text-text-primary hover:text-accent transition-colors">{t.team}</Link>
+                        ) : (
+                          <span className="text-sm font-medium text-text-primary">{t.team}</span>
+                        )}
                         {t.teamAbbr && (
-                          <span className="text-xs text-text-secondary">({t.teamAbbr})</span>
+                          <Link href={`/team/${t.teamAbbr}`} className="text-xs text-text-secondary hover:text-accent transition-colors">({t.teamAbbr})</Link>
                         )}
                       </div>
                       {t.player && (

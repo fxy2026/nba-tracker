@@ -109,6 +109,10 @@ export default async function SchedulePage({ searchParams }: PageProps) {
             <div key={dateStr} className="schedule-section">
               <h2 className="text-sm font-medium text-text-secondary mb-3 sticky top-16 bg-bg-primary py-2 z-10">
                 {displayDate}
+                {" "}
+                <span className="text-xs text-accent font-medium">
+                  {new Date(dateStr).toLocaleDateString("en-US", { weekday: "long" })}
+                </span>
                 <span className="ml-2 text-xs text-text-secondary/60">
                   ({games.length} games)
                 </span>

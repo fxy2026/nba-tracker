@@ -138,6 +138,36 @@ export default async function H2HPage({ searchParams }: PageProps) {
             })()}
           </div>
 
+          {/* Blowout Wins (>15 pts) */}
+          {games.length > 0 && (() => {
+            let t1Blowouts = 0, t2Blowouts = 0;
+            for (const g of games) {
+              const diff = Math.abs(g.homeScore - g.awayScore);
+              if (diff <= 15) continue;
+              const homeWon = g.homeScore > g.awayScore;
+              const winnerTricode = homeWon ? g.homeTricode : g.awayTricode;
+              if (winnerTricode === t1) t1Blowouts++;
+              else t2Blowouts++;
+            }
+            if (t1Blowouts + t2Blowouts === 0) return null;
+            return (
+              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Blowout Wins (&gt;15 pts)</h3>
+                <div className="flex items-center justify-center gap-6">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-accent">{t1Blowouts}</p>
+                    <p className="text-xs text-text-secondary">{t1}</p>
+                  </div>
+                  <span className="text-text-secondary">-</span>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-accent">{t2Blowouts}</p>
+                    <p className="text-xs text-text-secondary">{t2}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Feature 8: Scoring Distribution */}
           {games.length > 0 && (() => {
             const allScores = games.map(g => g.homeScore + g.awayScore);

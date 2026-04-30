@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { TEAM_META } from "@/lib/teams";
 
 interface CalendarGame {
   gameId: string;
@@ -208,8 +210,15 @@ export default function CalendarPage() {
                           })()}
                           <div className="mt-1 space-y-0.5">
                             {cell.calDay!.games.slice(0, 2).map((g) => (
-                              <div key={g.gameId} className="text-[9px] text-text-secondary truncate">
-                                {g.awayTricode} @ {g.homeTricode}
+                              <div key={g.gameId} className="text-[9px] text-text-secondary truncate flex items-center gap-0.5">
+                                {TEAM_META[g.awayTricode] && (
+                                  <Image src={`https://cdn.nba.com/logos/nba/${TEAM_META[g.awayTricode].teamId}/global/L/logo.svg`} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
+                                )}
+                                {g.awayTricode} @{" "}
+                                {TEAM_META[g.homeTricode] && (
+                                  <Image src={`https://cdn.nba.com/logos/nba/${TEAM_META[g.homeTricode].teamId}/global/L/logo.svg`} alt={g.homeTricode} width={10} height={10} unoptimized className="inline-block" />
+                                )}
+                                {g.homeTricode}
                                 {g.gameStatus === 3 && (
                                   <span className={`ml-1 font-medium ${g.awayScore > g.homeScore ? "text-text-secondary" : "text-text-secondary"}`}>
                                     {g.awayScore}-{g.homeScore}

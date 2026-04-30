@@ -1,40 +1,38 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DateNavProps {
   selectedDate: string;
 }
 
+function offsetDate(base: string, offset: number): string {
+  const d = new Date(base + "T12:00:00");
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split("T")[0];
+}
+
 export default function DateNav({ selectedDate }: DateNavProps) {
   const router = useRouter();
-
-  const currentDate = new Date(selectedDate + "T12:00:00");
-
-  const goToDate = useCallback((offset: number) => {
-    const d = new Date(currentDate);
-    d.setDate(d.getDate() + offset);
-    const dateStr = d.toISOString().split("T")[0];
-    router.push(`/?date=${dateStr}`);
-  }, [currentDate, router]);
 
   // Keyboard navigation: left/right arrows
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); goToDate(-1); }
-      if (e.key === "ArrowRight") { e.preventDefault(); goToDate(1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); router.push(`/?date=${offsetDate(selectedDate, -1)}`); }
+      if (e.key === "ArrowRight") { e.preventDefault(); router.push(`/?date=${offsetDate(selectedDate, 1)}`); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [goToDate]);
+  }, [selectedDate, router]);
 
   // Generate 7 days centered around selected date
   const days: { date: string; label: string; weekday: string }[] = [];
   for (let i = -3; i <= 3; i++) {
-    const d = new Date(currentDate);
+    const d = new Date(selectedDate + "T12:00:00");
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().split("T")[0];
     days.push({
@@ -51,23 +49,26 @@ export default function DateNav({ selectedDate }: DateNavProps) {
     day: "2-digit",
   }).format(new Date());
 
+  const prevDate = offsetDate(selectedDate, -1);
+  const nextDate = offsetDate(selectedDate, 1);
+
   return (
     <div className="flex items-center justify-center gap-1">
-      <button
-        onClick={() => goToDate(-1)}
+      <Link
+        href={`/?date=${prevDate}`}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
       >
         <ChevronLeft size={20} />
-      </button>
+      </Link>
 
       <div className="flex gap-1 overflow-x-auto">
         {days.map((day) => {
           const isSelected = day.date === selectedDate;
           const isToday = day.date === today;
           return (
-            <button
+            <Link
               key={day.date}
-              onClick={() => router.push(`/?date=${day.date}`)}
+              href={`/?date=${day.date}`}
               className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors min-w-[56px] ${
                 isSelected
                   ? "bg-accent text-white"
@@ -78,25 +79,25 @@ export default function DateNav({ selectedDate }: DateNavProps) {
             >
               <span>{day.weekday}</span>
               <span className="text-sm mt-0.5">{day.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>
 
-      <button
-        onClick={() => goToDate(1)}
+      <Link
+        href={`/?date=${nextDate}`}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
       >
         <ChevronRight size={20} />
-      </button>
+      </Link>
 
       {selectedDate !== today && (
-        <button
-          onClick={() => router.push(`/?date=${today}`)}
+        <Link
+          href={`/?date=${today}`}
           className="ml-2 px-3 py-1.5 text-xs bg-bg-card border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-accent/50 transition-colors"
         >
           今天
-        </button>
+        </Link>
       )}
     </div>
   );

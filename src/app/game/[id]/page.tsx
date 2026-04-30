@@ -579,6 +579,27 @@ export default async function GamePage({ params }: PageProps) {
         {boxScore.homeTeam.periods?.length > 0 && (
           <div className="mt-2 border-t border-border pt-3">
             <QuarterScores homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
+            {/* Lead Changes count */}
+            {isFinal && (() => {
+              let leadChanges = 0;
+              let homeCum = 0;
+              let awayCum = 0;
+              let prevLeader: "home" | "away" | "tie" = "tie";
+              for (let i = 0; i < boxScore.homeTeam.periods.length; i++) {
+                homeCum += boxScore.homeTeam.periods[i]?.score || 0;
+                awayCum += boxScore.awayTeam.periods[i]?.score || 0;
+                const leader = homeCum > awayCum ? "home" : awayCum > homeCum ? "away" : "tie";
+                if (leader !== "tie" && leader !== prevLeader && prevLeader !== "tie") {
+                  leadChanges++;
+                }
+                if (leader !== "tie") prevLeader = leader;
+              }
+              return (
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
+                  <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 font-medium">Lead Changes: {leadChanges}</span>
+                </div>
+              );
+            })()}
             {/* Quarter MVP - best player in highest-scoring quarter */}
             {isFinal && shots.length > 0 && (() => {
               // Calculate per-quarter scoring from made shots
