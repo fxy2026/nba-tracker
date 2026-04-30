@@ -70,7 +70,7 @@ export default function TeamStandings() {
                   const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
                   const logoUrl = `https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`;
                   return (
-                    <tr key={t.tricode} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 8 ? "bg-accent/5" : ""}`}>
+                    <tr key={t.tricode} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-yellow-500/5" : ""}`}>
                       <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
                       <td className="py-2.5 px-2">
                         <Link href={`/team/${t.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
@@ -82,9 +82,23 @@ export default function TeamStandings() {
                       </td>
                       <td className="py-2.5 px-2 text-center text-success font-medium">{t.wins}</td>
                       <td className="py-2.5 px-2 text-center text-danger font-medium">{t.losses}</td>
-                      <td className="py-2.5 px-2 text-center font-medium text-accent">{(pct * 100).toFixed(1)}%</td>
-                      <td className="py-2.5 px-2 text-center text-text-secondary">{gb}</td>
+                      <td className="py-2.5 px-2 text-center">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-accent tabular-nums min-w-[40px]">{(pct * 100).toFixed(1)}%</span>
+                          <div className="w-12 h-1.5 bg-bg-hover rounded-full overflow-hidden">
+                            <div className="h-full bg-accent/60 rounded-full" style={{ width: `${pct * 100}%` }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 text-center text-text-secondary tabular-nums">{gb}</td>
                     </tr>
+                    {/* Playoff / Play-In separator lines */}
+                    {i === 5 && conf !== "all" && (
+                      <tr><td colSpan={6} className="py-0"><div className="h-px bg-accent/30" /><p className="text-[9px] text-accent text-center py-0.5">Playoff line</p></td></tr>
+                    )}
+                    {i === 9 && conf !== "all" && (
+                      <tr><td colSpan={6} className="py-0"><div className="h-px bg-yellow-500/30" /><p className="text-[9px] text-yellow-500 text-center py-0.5">Play-In line</p></td></tr>
+                    )}
                   );
                 })}
               </tbody>
