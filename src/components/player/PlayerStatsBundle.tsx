@@ -35,23 +35,33 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
   const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
   const [games, setGames] = useState<GameLogRow[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(false);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     (async () => {
       try {
-        const res = await fetch(`/api/player?id=${playerId}`);
-        if (!res.ok) { setLoading(false); return; }
+        const res = await fetch(`/api/player?id=${playerId}`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) { if (!cancelled) { setError(true); setLoading(false); } return; }
         const data = await res.json();
         if (!cancelled) {
           setSeasons(data.careerSeasons || []);
           setGames(data.recentGames || []);
         }
-      } catch { /* ignore */ }
+      } catch {
+        if (!cancelled) setError(true);
+      }
       if (!cancelled) setLoading(false);
     })();
-    return () => { cancelled = true; };
-  }, [playerId]);
+    return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
+  }, [playerId, retryKey]);
 
   if (loading) {
     return (
@@ -63,8 +73,17 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-xs">
+        <span className="text-text-secondary">Stats failed to load</span>
+        <button onClick={() => setRetryKey((k) => k + 1)} className="text-accent hover:underline ml-auto">Retry</button>
+      </div>
+    );
+  }
+
   if (!seasons?.length && !games?.length) {
-    return null; // No data available — hide section entirely
+    return null;
   }
 
   return (

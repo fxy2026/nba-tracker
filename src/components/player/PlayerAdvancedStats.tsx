@@ -12,14 +12,20 @@ interface AdvancedData {
 export default function PlayerAdvancedStats({ playerId }: { playerId: number }) {
   const [stats, setStats] = useState<AdvancedData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(false);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     (async () => {
       try {
-        // Fetch from playercareerstats which includes FGA, FTA, FG_PCT, FG3_PCT, FT_PCT
-        const res = await fetch(`/api/player?id=${playerId}`);
-        if (!res.ok) { setLoading(false); return; }
+        const res = await fetch(`/api/player?id=${playerId}`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) { if (!cancelled) { setLoading(false); } return; }
         const data = await res.json();
         const seasons = data.careerSeasons;
         if (!seasons || seasons.length === 0) { setLoading(false); return; }
@@ -50,15 +56,26 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
         if (!cancelled) {
           setStats({ TS_PCT: tsPct, EFG_PCT: efgPct, USG_PCT: null });
         }
-      } catch { /* ignore */ }
+      } catch {
+        if (!cancelled) setError(true);
+      }
       if (!cancelled) setLoading(false);
     })();
-    return () => { cancelled = true; };
-  }, [playerId]);
+    return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
+  }, [playerId, retryKey]);
 
   if (loading) {
     return (
       <div className="h-20 bg-bg-secondary rounded-lg skeleton-shimmer" />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-xs">
+        <span className="text-text-secondary">Advanced stats failed to load</span>
+        <button onClick={() => setRetryKey((k) => k + 1)} className="text-accent hover:underline ml-auto">Retry</button>
+      </div>
     );
   }
 
