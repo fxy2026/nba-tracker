@@ -92,16 +92,37 @@ export default function ClutchPage() {
         </div>
       </div>
 
-      {/* Clutch explanation */}
-      <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-        <h2 className="text-sm font-semibold text-text-primary mb-2">What are Playoff Performers?</h2>
-        <p className="text-xs text-text-secondary leading-relaxed">
-          Playoff performance stats measure how players perform on the biggest stage. Efficiency (EFF) combines points,
-          rebounds, assists, steals, and blocks to give an overall impact score. Scoring leaders show the top point producers,
-          while Playmaking and Steals highlight facilitators and defensive disruptors. Use the tabs below to explore different
-          dimensions of playoff excellence.
-        </p>
-      </div>
+      {/* Quick Stats Overview */}
+      {!loading && players.length > 0 && (() => {
+        const topScorer = [...players].sort((a, b) => (b.PTS || 0) - (a.PTS || 0))[0];
+        const topAssist = [...players].sort((a, b) => (b.AST || 0) - (a.AST || 0))[0];
+        const mostGP = [...players].sort((a, b) => (b.GP || 0) - (a.GP || 0))[0];
+        return (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {topScorer && (
+              <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+                <p className="text-[10px] text-text-secondary uppercase">Top Scorer</p>
+                <p className="text-sm font-bold text-accent mt-1">{topScorer.PLAYER?.split(" ").pop()}</p>
+                <p className="text-xs text-text-secondary">{topScorer.PTS?.toFixed(1)} PPG</p>
+              </div>
+            )}
+            {topAssist && (
+              <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+                <p className="text-[10px] text-text-secondary uppercase">Top Playmaker</p>
+                <p className="text-sm font-bold text-accent mt-1">{topAssist.PLAYER?.split(" ").pop()}</p>
+                <p className="text-xs text-text-secondary">{topAssist.AST?.toFixed(1)} APG</p>
+              </div>
+            )}
+            {mostGP && (
+              <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+                <p className="text-[10px] text-text-secondary uppercase">Most Games</p>
+                <p className="text-sm font-bold text-accent mt-1">{mostGP.PLAYER?.split(" ").pop()}</p>
+                <p className="text-xs text-text-secondary">{mostGP.GP} GP</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-1 mb-4">
