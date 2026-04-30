@@ -160,9 +160,9 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
             <td className="text-center py-2.5 px-1 text-sm font-bold">{totals.pts}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.reb}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.ast}</td>
-            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.fgm}-{totals.fga}</td>
-            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.tpm}-{totals.tpa}</td>
-            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.ftm}-{totals.fta}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.fgm}-{totals.fga} <span className="text-[9px] text-accent">{totals.fga > 0 ? ((totals.fgm / totals.fga) * 100).toFixed(0) + "%" : ""}</span></td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.tpm}-{totals.tpa} <span className="text-[9px] text-accent">{totals.tpa > 0 ? ((totals.tpm / totals.tpa) * 100).toFixed(0) + "%" : ""}</span></td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">{totals.ftm}-{totals.fta} <span className="text-[9px] text-accent">{totals.fta > 0 ? ((totals.ftm / totals.fta) * 100).toFixed(0) + "%" : ""}</span></td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.stl}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.blk}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.tov}</td>
