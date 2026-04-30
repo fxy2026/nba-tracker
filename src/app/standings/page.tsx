@@ -270,6 +270,37 @@ export default async function StandingsPage() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-2">Division Standings</h1>
       <p className="text-sm text-text-secondary mb-2">Top 6 in each conference highlighted for playoff eligibility</p>
+      {/* Conference comparison */}
+      {eastTeams.length > 0 && westTeams.length > 0 && (() => {
+        const eastAvgW = eastTeams.reduce((s, t) => s + t.wins, 0) / eastTeams.length;
+        const westAvgW = westTeams.reduce((s, t) => s + t.wins, 0) / westTeams.length;
+        const eastBest = eastTeams[0];
+        const westBest = westTeams[0];
+        return (
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-text-secondary uppercase">East Avg W</p>
+                <p className="text-lg font-bold text-accent">{eastAvgW.toFixed(1)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-text-secondary">Best</p>
+                <p className="text-xs font-medium text-text-primary">{eastBest.tricode} ({eastBest.wins}-{eastBest.losses})</p>
+              </div>
+            </div>
+            <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-text-secondary uppercase">West Avg W</p>
+                <p className="text-lg font-bold text-accent">{westAvgW.toFixed(1)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-text-secondary">Best</p>
+                <p className="text-xs font-medium text-text-primary">{westBest.tricode} ({westBest.wins}-{westBest.losses})</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       <div className="flex items-center gap-4 text-xs text-text-secondary mb-6">
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent rounded" /> Playoff (1-6)</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-yellow-500 rounded" /> Play-In (7-10)</span>
