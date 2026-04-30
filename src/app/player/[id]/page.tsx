@@ -200,6 +200,29 @@ export default async function PlayerPage({ params }: PageProps) {
           );
         })()}
 
+        {/* Player Archetype */}
+        {player.pts > 0 && (() => {
+          const pts = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts)) || 0;
+          const reb = typeof player.reb === "number" ? player.reb : parseFloat(String(player.reb)) || 0;
+          const ast = typeof player.ast === "number" ? player.ast : parseFloat(String(player.ast)) || 0;
+          const tags: { label: string; color: string }[] = [];
+          if (pts >= 25) tags.push({ label: "Elite Scorer", color: "bg-accent/15 text-accent" });
+          else if (pts >= 20) tags.push({ label: "Scorer", color: "bg-accent/10 text-accent" });
+          if (ast >= 8) tags.push({ label: "Floor General", color: "bg-blue-500/15 text-blue-400" });
+          else if (ast >= 5) tags.push({ label: "Playmaker", color: "bg-blue-500/10 text-blue-400" });
+          if (reb >= 10) tags.push({ label: "Glass Cleaner", color: "bg-success/15 text-success" });
+          else if (reb >= 7) tags.push({ label: "Rebounder", color: "bg-success/10 text-success" });
+          if (pts >= 15 && reb >= 5 && ast >= 5) tags.push({ label: "All-Around", color: "bg-yellow-500/15 text-yellow-500" });
+          if (tags.length === 0) return null;
+          return (
+            <div className="px-6 pt-4 flex flex-wrap gap-2">
+              {tags.map((t) => (
+                <span key={t.label} className={`text-xs px-2.5 py-1 rounded-full font-medium ${t.color}`}>{t.label}</span>
+              ))}
+            </div>
+          );
+        })()}
+
         {/* Career Stats */}
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">Career Averages</h2>
