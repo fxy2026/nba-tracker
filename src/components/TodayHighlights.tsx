@@ -26,7 +26,7 @@ export default function TodayHighlights() {
           LeagueID: "00",
           PerMode: "PerGame",
           Scope: "S",
-          Season: "2024-25",
+          Season: "2025-26",
           SeasonType: "Playoffs",
           StatCategory: "PTS",
         }).toString();

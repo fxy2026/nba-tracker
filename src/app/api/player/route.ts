@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       headers: HEADERS,
       next: { revalidate: 3600 },
     }).catch(() => null),
-    fetch(`${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=2024-25&SeasonType=Regular+Season`, {
+    fetch(`${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=2025-26&SeasonType=Regular+Season`, {
       headers: HEADERS,
       next: { revalidate: 300 },
     }).catch(() => null),

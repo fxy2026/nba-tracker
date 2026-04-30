@@ -19,7 +19,7 @@ export default function SeasonLeaders() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const base = "/api/stats?endpoint=leagueleaders&LeagueID=00&PerMode=PerGame&Scope=S&Season=2024-25&SeasonType=Playoffs";
+    const base = "/api/stats?endpoint=leagueleaders&LeagueID=00&PerMode=PerGame&Scope=S&Season=2025-26&SeasonType=Playoffs";
     const cats = [
       { param: "PTS", label: "Scoring" },
       { param: "REB", label: "Rebounds" },

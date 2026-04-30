@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
 
 export async function GET() {
-  const schedule = await getFullSchedule();
+  let schedule;
+  try {
+    schedule = await getFullSchedule();
+  } catch {
+    return NextResponse.json({ recent: [], playoffs: [] }, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" },
+    });
+  }
 
   // Recent finished games (past 3 days in ET)
   const recentFinished: ScheduleGame[] = [];

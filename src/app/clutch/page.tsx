@@ -35,7 +35,7 @@ export default function ClutchPage() {
         const params = new URLSearchParams({
           endpoint: "leagueleaders",
           LeagueID: "00",
-          Season: "2024-25",
+          Season: "2025-26",
           SeasonType: "Playoffs",
           PerMode: "PerGame",
           Scope: "S",
@@ -87,7 +87,7 @@ export default function ClutchPage() {
         <div>
           <h1 className="text-2xl font-bold">Playoff Performers</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            2024-25 Playoffs — Top players by category
+            2025-26 Playoffs — Top players by category
           </p>
         </div>
       </div>

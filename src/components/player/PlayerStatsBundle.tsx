@@ -74,7 +74,7 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
       {games && games.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <h3 className="text-sm font-semibold">Recent Games (2024-25)</h3>
+            <h3 className="text-sm font-semibold">Recent Games (2025-26)</h3>
             {(() => {
               const last10 = [...games].slice(0, 10).reverse();
               if (last10.length < 2) return null;
