@@ -59,7 +59,14 @@ export default function TransactionsPage() {
         Back to home
       </Link>
 
-      <h1 className="text-2xl font-bold mt-4 mb-6">NBA Transactions</h1>
+      <div className="flex items-center justify-between mt-4 mb-6">
+        <h1 className="text-2xl font-bold">NBA Transactions</h1>
+        {!loading && transactions.length > 0 && (
+          <span className="text-xs text-text-secondary px-2.5 py-1 rounded-full bg-bg-card border border-border">
+            {transactions.length} recent
+          </span>
+        )}
+      </div>
 
       {loading && (
         <div className="space-y-4">
