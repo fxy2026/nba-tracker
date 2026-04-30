@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -58,17 +58,36 @@ export default function Navbar() {
     }
   }, [teamsOpen]);
 
-  const links = [
+  // Primary nav — always visible
+  const primaryLinks = [
     { href: "/", label: "Today", icon: Trophy },
     { href: "/calendar", label: "Calendar", icon: Calendar },
     { href: "/stats", label: "Stats", icon: BarChart3 },
-    { href: "/compare", label: "Compare", icon: GitCompareArrows },
-    { href: "/injuries", label: "Injuries", icon: AlertTriangle },
-    { href: "/clutch", label: "Clutch", icon: Target },
-    { href: "/h2h", label: "H2H", icon: Swords },
-    { href: "/transactions", label: "Trades", icon: ArrowLeftRight },
-    { href: "/history", label: "History", icon: History },
+    { href: "/standings", label: "Standings", icon: BarChart3 },
   ];
+
+  // Secondary nav — inside "More" dropdown
+  const moreLinks = [
+    { href: "/compare", label: "Compare Players", icon: GitCompareArrows },
+    { href: "/h2h", label: "Head to Head", icon: Swords },
+    { href: "/clutch", label: "Playoff Leaders", icon: Target },
+    { href: "/injuries", label: "Injury Report", icon: AlertTriangle },
+    { href: "/transactions", label: "Trades", icon: ArrowLeftRight },
+    { href: "/history", label: "Champions", icon: History },
+    { href: "/search", label: "Player Search", icon: Search },
+    { href: "/favorites", label: "Favorites", icon: Trophy },
+  ];
+
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const isMoreActive = moreLinks.some(({ href }) => pathname === href);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    }
+    if (moreOpen) { document.addEventListener("mousedown", handleClick); return () => document.removeEventListener("mousedown", handleClick); }
+  }, [moreOpen]);
 
   return (
     <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top" role="navigation" aria-label="Main navigation">
@@ -86,24 +105,42 @@ export default function Navbar() {
 
         {/* Desktop nav links — hidden on mobile */}
         <div className="hidden sm:flex items-center gap-1">
-          {links.map(({ href, label, icon: Icon }) => {
+          {primaryLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Link
-                key={href}
-                href={href}
-                prefetch={true}
+              <Link key={href} href={href} prefetch={true}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-accent/15 text-accent"
-                    : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                }`}
-              >
+                  active ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+                }`}>
                 <Icon size={16} />
                 <span className="hidden lg:inline">{label}</span>
               </Link>
             );
           })}
+
+          {/* More Dropdown */}
+          <div className="relative" ref={moreRef}>
+            <button onClick={() => setMoreOpen(!moreOpen)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                moreOpen || isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+              }`}>
+              <MoreHorizontal size={16} />
+              <span className="hidden lg:inline">More</span>
+            </button>
+            {moreOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 bg-bg-card border border-border rounded-xl shadow-2xl p-1.5 z-50">
+                {moreLinks.map(({ href, label, icon: Icon }) => (
+                  <Link key={href} href={href} onClick={() => setMoreOpen(false)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      pathname === href ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+                    }`}>
+                    <Icon size={14} />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Teams Dropdown */}
           <div className="relative" ref={teamsRef}>
