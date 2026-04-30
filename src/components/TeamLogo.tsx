@@ -35,6 +35,7 @@ export default memo(function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoPr
       height={size}
       className="object-contain"
       unoptimized
+      loading="lazy"
       onError={() => setError(true)}
     />
   );
