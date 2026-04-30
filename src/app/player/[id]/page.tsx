@@ -56,6 +56,7 @@ export default async function PlayerPage({ params }: PageProps) {
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
   // Server-side fetch of career stats + game log (avoids client-side NBA API blocks)
+  // Uses 3s timeout so page never hangs — falls back to client fetch if slow
   const STATS_BASE = "https://stats.nba.com/stats";
   const STATS_HEADERS: HeadersInit = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
@@ -63,16 +64,21 @@ export default async function PlayerPage({ params }: PageProps) {
     Origin: "https://www.nba.com",
     Accept: "application/json",
   };
+  const fetchWithTimeout = async (url: string, revalidate: number): Promise<Response | null> => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(url, { headers: STATS_HEADERS, next: { revalidate }, signal: controller.signal });
+      clearTimeout(timeout);
+      return res;
+    } catch { return null; }
+  };
   let serverCareerSeasons: Record<string, unknown>[] | null = null;
   let serverRecentGames: Record<string, unknown>[] | null = null;
   try {
     const [careerRes, gameLogRes] = await Promise.all([
-      fetch(`${STATS_BASE}/playercareerstats?PlayerID=${personId}&PerMode=PerGame`, {
-        headers: STATS_HEADERS, next: { revalidate: 3600 },
-      }).catch(() => null),
-      fetch(`${STATS_BASE}/playergamelog?PlayerID=${personId}&Season=2025-26&SeasonType=Regular+Season`, {
-        headers: STATS_HEADERS, next: { revalidate: 300 },
-      }).catch(() => null),
+      fetchWithTimeout(`${STATS_BASE}/playercareerstats?PlayerID=${personId}&PerMode=PerGame`, 3600),
+      fetchWithTimeout(`${STATS_BASE}/playergamelog?PlayerID=${personId}&Season=2025-26&SeasonType=Regular+Season`, 300),
     ]);
     if (careerRes?.ok) {
       const data = await careerRes.json();
