@@ -48,15 +48,28 @@ export default function AdminPage() {
     setTimeout(() => setToast(""), 2500);
   }
 
+  const [loginLoading, setLoginLoading] = useState(false);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    if (res.ok) { setAuthenticated(true); setAuthError(""); }
-    else { setAuthError("Password incorrect"); }
+    if (!password.trim()) { setAuthError("Please enter password"); return; }
+    setLoginLoading(true);
+    setAuthError("");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) { setAuthenticated(true); setAuthError(""); }
+      else {
+        const data = await res.json().catch(() => ({}));
+        setAuthError(data.error || "Password incorrect");
+      }
+    } catch (err) {
+      setAuthError("Network error — check connection");
+    }
+    setLoginLoading(false);
   }
 
   const searchGames = useCallback(async (date?: string) => {
@@ -148,7 +161,9 @@ export default function AdminPage() {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter admin password"
             className="w-full bg-bg-primary border border-border rounded-lg px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent mb-4" />
-          <button type="submit" className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-3 rounded-lg transition-colors">Login</button>
+          <button type="submit" disabled={loginLoading} className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50">
+            {loginLoading ? "Logging in..." : "Login"}
+          </button>
         </form>
       </div>
     );
