@@ -55,27 +55,8 @@ export default async function PlayerPage({ params }: PageProps) {
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
-  // Server-side fetch: try internal /api/player which handles NBA Stats + ESPN fallback
-  // Uses 5s timeout so page never hangs
-  let serverCareerSeasons: Record<string, unknown>[] | null = null;
-  let serverRecentGames: Record<string, unknown>[] | null = null;
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      || "http://localhost:3000";
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${baseUrl}/api/player?id=${personId}`, {
-      signal: controller.signal,
-      next: { revalidate: 600 },
-    });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const data = await res.json();
-      serverCareerSeasons = data.careerSeasons || null;
-      serverRecentGames = data.recentGames || null;
-    }
-  } catch { /* timeout or error — components will show client-side fallback */ }
+  // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
+  // Client components will attempt fetch and show graceful fallback if blocked.
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -401,8 +382,8 @@ export default async function PlayerPage({ params }: PageProps) {
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
           {/* Stats bundle first — most important for basketball fans */}
-          <PlayerStatsBundle playerId={personId} initialSeasons={serverCareerSeasons} initialGames={serverRecentGames} />
-          <PlayerAdvancedStats playerId={personId} initialSeasons={serverCareerSeasons} />
+          <PlayerStatsBundle playerId={personId} playerName={fullName} />
+          <PlayerAdvancedStats playerId={personId} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerNews playerName={fullName} />

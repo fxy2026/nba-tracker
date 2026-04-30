@@ -30,29 +30,24 @@ interface GameLogRow {
   PLUS_MINUS: number;
 }
 
-// Accepts optional server-side data to avoid client fetch entirely
 interface Props {
   playerId: number;
-  initialSeasons?: Record<string, unknown>[] | null;
-  initialGames?: Record<string, unknown>[] | null;
+  playerName?: string;
 }
 
-export default function PlayerStatsBundle({ playerId, initialSeasons, initialGames }: Props) {
-  const hasInitial = !!(initialSeasons?.length || initialGames?.length);
-  const [seasons, setSeasons] = useState<SeasonRow[] | null>(hasInitial ? (initialSeasons as unknown as SeasonRow[]) : null);
-  const [games, setGames] = useState<GameLogRow[] | null>(hasInitial ? (initialGames as unknown as GameLogRow[]) : null);
-  const [loading, setLoading] = useState(!hasInitial);
+export default function PlayerStatsBundle({ playerId, playerName }: Props) {
+  const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
+  const [games, setGames] = useState<GameLogRow[] | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
-  // Only fetch client-side if no server data was provided
   useEffect(() => {
-    if (hasInitial) return;
     let cancelled = false;
     setLoading(true);
     setError(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     (async () => {
       try {
@@ -70,7 +65,7 @@ export default function PlayerStatsBundle({ playerId, initialSeasons, initialGam
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
-  }, [playerId, retryKey, hasInitial]);
+  }, [playerId, retryKey]);
 
   if (loading) {
     return (
@@ -83,10 +78,23 @@ export default function PlayerStatsBundle({ playerId, initialSeasons, initialGam
   }
 
   if (error) {
+    const encodedName = encodeURIComponent(playerName || "");
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-danger/10 border border-danger/20 rounded-lg text-xs">
-        <span className="text-text-secondary">Stats failed to load</span>
-        <button onClick={() => setRetryKey((k) => k + 1)} className="text-accent hover:underline ml-auto">Retry</button>
+      <div className="bg-bg-secondary rounded-xl p-4 text-center space-y-3">
+        <p className="text-sm text-text-secondary">Detailed stats temporarily unavailable</p>
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
+            View on NBA.com &rarr;
+          </a>
+          <a href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodedName}`} target="_blank" rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
+            Basketball Reference &rarr;
+          </a>
+          <button onClick={() => setRetryKey((k) => k + 1)} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors">
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
