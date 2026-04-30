@@ -143,9 +143,17 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
         {/* Point differential */}
         {isFinal && (
           <div className="mt-2 pt-2 border-t border-border/30 flex flex-col items-center gap-1">
-            <span className="text-[10px] text-text-secondary">
-              {awayWon ? game.awayTeam.teamTricode : game.homeTeam.teamTricode} +{Math.abs(game.homeTeam.score - game.awayTeam.score)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-text-secondary">
+                {awayWon ? game.awayTeam.teamTricode : game.homeTeam.teamTricode} +{Math.abs(game.homeTeam.score - game.awayTeam.score)}
+              </span>
+              {game.homeTeam.score + game.awayTeam.score >= 240 && (
+                <span className="text-[9px] px-1 py-0.5 rounded bg-accent/15 text-accent font-medium">High Score</span>
+              )}
+              {Math.abs(game.homeTeam.score - game.awayTeam.score) <= 3 && (
+                <span className="text-[9px] px-1 py-0.5 rounded bg-danger/15 text-danger font-medium">Nail-biter</span>
+              )}
+            </div>
             {isPlayoffs && game.seriesText && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">
                 {game.seriesText}
