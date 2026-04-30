@@ -120,7 +120,10 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
                     </td>
                     <td className={`text-center py-2 px-2 font-bold ${g.WL === "W" ? "text-success" : "text-danger"}`}>{g.WL}</td>
                     <td className="text-center py-2 px-2 text-text-secondary">{g.MIN}</td>
-                    <td className="text-center py-2 px-2 font-bold text-accent">{g.PTS}</td>
+                    <td className="text-center py-2 px-2 font-bold text-accent">
+                      {g.PTS}
+                      {g.PTS >= 40 && <span className="ml-0.5 text-[8px] text-yellow-400">&#9733;</span>}
+                    </td>
                     <td className="text-center py-2 px-2">{g.REB}</td>
                     <td className="text-center py-2 px-2">{g.AST}</td>
                     <td className={`text-center py-2 px-2 ${g.PLUS_MINUS > 0 ? "text-success" : g.PLUS_MINUS < 0 ? "text-danger" : "text-text-secondary"}`}>
@@ -166,10 +169,17 @@ function GameTrendChart({ games }: { games: GameLogRow[] }) {
 
   return (
     <div className="bg-bg-card rounded-xl border border-border p-4">
-      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-        <span className="w-1 h-4 bg-accent rounded-full" />
-        Scoring Trend (Last {data.length} Games)
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent rounded-full" />
+          Scoring Trend (Last {data.length} Games)
+        </h3>
+        <div className="flex items-center gap-3 text-[10px]">
+          <span className="text-text-secondary">Avg: <span className="text-accent font-bold">{avgPts.toFixed(1)}</span></span>
+          <span className="text-text-secondary">High: <span className="text-success font-bold">{Math.max(...data.map(g => g.PTS))}</span></span>
+          <span className="text-text-secondary">Low: <span className="text-danger font-bold">{Math.min(...data.map(g => g.PTS))}</span></span>
+        </div>
+      </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
         {/* Y-axis labels */}
         {[0, Math.round(maxPts / 2), maxPts].map((v) => {
