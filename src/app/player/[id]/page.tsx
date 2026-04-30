@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper, Trophy } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
@@ -94,6 +94,18 @@ export default async function PlayerPage({ params }: PageProps) {
                     #{posRank} {player.position} in PPG
                   </span>
                 )}
+                <Link
+                  href={`/compare?q1=${encodeURIComponent(player.lastName)}`}
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-bg-hover text-text-secondary hover:text-accent hover:border-accent/50 transition-colors flex items-center gap-1"
+                >
+                  <GitCompareArrows size={10} /> Compare
+                </Link>
+              </div>
+              {/* Quick stat pills */}
+              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                {player.pts > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent font-bold">{player.pts} PPG</span>}
+                {player.reb > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success font-bold">{player.reb} RPG</span>}
+                {player.ast > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-bold">{player.ast} APG</span>}
               </div>
             </div>
           </div>
@@ -213,6 +225,8 @@ export default async function PlayerPage({ params }: PageProps) {
           if (reb >= 10) tags.push({ label: "Glass Cleaner", color: "bg-success/15 text-success" });
           else if (reb >= 7) tags.push({ label: "Rebounder", color: "bg-success/10 text-success" });
           if (pts >= 15 && reb >= 5 && ast >= 5) tags.push({ label: "All-Around", color: "bg-yellow-500/15 text-yellow-500" });
+          if (seasons >= 15) tags.push({ label: "Veteran", color: "bg-orange-500/10 text-orange-400" });
+          if (seasons <= 2 && pts >= 10) tags.push({ label: "Rising Star", color: "bg-pink-500/10 text-pink-400" });
           if (tags.length === 0) return null;
           return (
             <div className="px-6 pt-4 flex flex-wrap gap-2">
@@ -364,11 +378,12 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
-          <PlayerAdvancedStats playerId={personId} />
-          <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
-          <PlayerMeasurements draftYear={player.draftYear} />
-          <PlayerNews playerName={fullName} />
+          {/* Stats bundle first — most important for basketball fans */}
           <PlayerStatsBundle playerId={personId} />
+          <PlayerAdvancedStats playerId={personId} />
+          <PlayerMeasurements draftYear={player.draftYear} />
+          <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
+          <PlayerNews playerName={fullName} />
         </div>
 
         {/* Teammates */}
@@ -396,22 +411,37 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Similar Players */}
         {player.pts > 0 && (() => {
+          // Multi-stat similarity: weighted distance across PTS, REB, AST
           const similar = allPlayers
-            .filter((p) => p.personId !== personId && p.pts > 0 && Math.abs(p.pts - player.pts) <= 2)
-            .sort((a, b) => Math.abs(a.pts - player.pts) - Math.abs(b.pts - player.pts))
-            .slice(0, 3);
+            .filter((p) => p.personId !== personId && p.pts > 0 && p.position === player.position)
+            .map((p) => ({
+              ...p,
+              distance: Math.sqrt(
+                Math.pow(p.pts - player.pts, 2) +
+                Math.pow((p.reb - player.reb) * 1.5, 2) +
+                Math.pow((p.ast - player.ast) * 1.5, 2)
+              ),
+            }))
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, 5);
           if (similar.length === 0) return null;
           return (
             <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">Similar Players</h2>
-              <div className="flex flex-wrap gap-2">
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-2">
+                <TrendingUp size={14} />
+                Similar Players (same position)
+              </h2>
+              <div className="space-y-2">
                 {similar.map((s) => (
                   <Link key={s.personId} href={`/player/${s.personId}`}
-                    className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors text-sm">
-                    <span className="font-medium text-text-primary">{s.firstName} {s.lastName}</span>
-                    <span className="text-xs text-accent">{s.pts} PPG</span>
-                    <span className="text-xs text-text-secondary">{s.reb} RPG</span>
-                    <span className="text-xs text-text-secondary">{s.ast} APG</span>
+                    className="flex items-center gap-3 px-3 py-2.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors group">
+                    <PlayerHeadshot personId={s.personId} name={`${s.firstName} ${s.lastName}`} size={28} />
+                    <span className="font-medium text-text-primary group-hover:text-accent transition-colors text-sm flex-1">{s.firstName} {s.lastName}</span>
+                    <span className="text-[10px] text-text-secondary">{s.teamAbbr}</span>
+                    <span className="text-xs text-accent font-bold">{s.pts}</span>
+                    <span className="text-xs text-text-secondary">{s.reb}</span>
+                    <span className="text-xs text-text-secondary">{s.ast}</span>
+                    <span className="text-[9px] text-text-secondary/50 tabular-nums w-10 text-right">Δ{s.distance.toFixed(1)}</span>
                   </Link>
                 ))}
               </div>
@@ -471,6 +501,9 @@ function CareerStatBox({ label, value, highlight, allPlayers, personId, statKey 
   const rank = sorted.findIndex((p) => p.personId === personId) + 1;
   const isElite = rank > 0 && rank <= 20;
 
+  // Percentile: what % of players this player is better than
+  const percentile = sorted.length > 0 ? Math.round(((sorted.length - rank) / sorted.length) * 100) : 0;
+
   return (
     <div className="bg-bg-secondary rounded-lg p-3 text-center relative">
       <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
@@ -478,8 +511,15 @@ function CareerStatBox({ label, value, highlight, allPlayers, personId, statKey 
         {value}
         {aboveAvg && <span className="text-success text-xs ml-1" title="Above league average">&#9650;</span>}
       </p>
-      {isElite && (
-        <span className="text-[9px] text-accent mt-0.5 block" title={`#${rank} in NBA`}>Top {rank}</span>
+      {rank > 0 && (
+        <div className="mt-1.5">
+          <div className="h-1 bg-bg-hover rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${percentile >= 90 ? "bg-accent" : percentile >= 70 ? "bg-success" : percentile >= 40 ? "bg-yellow-400" : "bg-text-secondary/30"}`} style={{ width: `${percentile}%` }} />
+          </div>
+          <span className="text-[8px] text-text-secondary mt-0.5 block">
+            {isElite ? `#${rank} in NBA` : `Top ${100 - percentile}%`}
+          </span>
+        </div>
       )}
     </div>
   );
