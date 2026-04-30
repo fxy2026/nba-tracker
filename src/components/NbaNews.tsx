@@ -52,6 +52,7 @@ export default function NbaNews() {
       <div className="flex items-center gap-2 mb-3">
         <Newspaper size={14} className="text-accent" />
         <h2 className="text-sm font-medium text-text-secondary">NBA Headlines</h2>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{news.length}</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {news.map((item, i) => (

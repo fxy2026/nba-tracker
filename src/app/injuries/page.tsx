@@ -122,11 +122,12 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
 
       {/* Feature 6: Injury status summary */}
       {totalInjured > 0 && (() => {
-        let outCount = 0, dtdCount = 0, questionableCount = 0;
+        let outCount = 0, dtdCount = 0, questionableCount = 0, doubtfulCount = 0;
         for (const t of allTeams) {
           for (const inj of (t.injuries || [])) {
             const s = (inj.status || "").toLowerCase();
             if (s.includes("out")) outCount++;
+            else if (s.includes("doubtful")) doubtfulCount++;
             else if (s.includes("day-to-day")) dtdCount++;
             else if (s.includes("questionable")) questionableCount++;
           }
@@ -137,6 +138,11 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
               <span className="w-2 h-2 rounded-full bg-danger" />
               <span className="font-bold text-danger">{outCount}</span>
               <span className="text-text-secondary text-xs">Out</span>
+            </span>
+            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-orange-400/10 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-orange-400" />
+              <span className="font-bold text-orange-400">{doubtfulCount}</span>
+              <span className="text-text-secondary text-xs">Doubtful</span>
             </span>
             <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/10 rounded-lg">
               <span className="w-2 h-2 rounded-full bg-yellow-400" />
