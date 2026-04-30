@@ -484,12 +484,24 @@ function SectionSkeleton() {
 export default async function GamePage({ params }: PageProps) {
   const { id } = await params;
 
-  // Fetch boxScore + shots + playerIndex in parallel
-  const [boxScore, shots, playerIndex] = await Promise.all([
+  // Fetch boxScore + shots + playerIndex + full PBP in parallel
+  const [boxScore, shots, playerIndex, pbpActions] = await Promise.all([
     getBoxScore(id),
     getPlayByPlay(id).catch(() => []),
     getPlayerIndex().catch(() => []),
+    fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json`, {
+      headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" },
+      next: { revalidate: 60 },
+    }).then(r => r.ok ? r.json() : null).then(d => d?.game?.actions || []).catch(() => []),
   ]);
+  // Extract score events from PBP for ScoringFlow
+  const scoreEvents = (pbpActions as { period: number; clock: string; scoreHome: string; scoreAway: string }[])
+    .filter((a: { scoreHome: string; scoreAway: string }) => a.scoreHome != null && a.scoreAway != null)
+    .map((a: { period: number; clock: string; scoreHome: string; scoreAway: string }) => ({
+      period: a.period, clock: a.clock,
+      scoreHome: parseInt(a.scoreHome) || 0,
+      scoreAway: parseInt(a.scoreAway) || 0,
+    }));
 
   const playerInfoMap = new Map<number, PlayerInfo>();
   for (const pi of playerIndex) {
@@ -691,6 +703,7 @@ export default async function GamePage({ params }: PageProps) {
           awayPeriods={boxScore.awayTeam.periods}
           homeTricode={boxScore.homeTeam.teamTricode}
           awayTricode={boxScore.awayTeam.teamTricode}
+          scoreEvents={scoreEvents}
         />
       )}
 
