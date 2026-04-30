@@ -144,7 +144,7 @@ export default function PlayerLeaders() {
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bg-secondary shrink-0">
-                          <Image src={headshotUrl(r.PLAYER_ID)} alt="" width={32} height={32}
+                          <Image src={headshotUrl(r.PLAYER_ID)} alt={r.PLAYER} width={32} height={32}
                             className="w-full h-full object-cover object-top"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                         </div>

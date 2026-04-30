@@ -65,7 +65,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
             {item.image && (
               <div className="w-16 h-12 rounded-lg overflow-hidden bg-bg-secondary shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                <img src={item.image} alt={item.headline} loading="lazy" width={64} height={48} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="flex-1 min-w-0">

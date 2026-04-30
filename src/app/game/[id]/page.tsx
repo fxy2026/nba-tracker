@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
-import WinProbability from "@/components/WinProbability";
-import ShotChart from "@/components/ShotChart";
-import PlayerShotChart from "@/components/PlayerShotChart";
 import TeamCompare from "@/components/TeamCompare";
-import PlayByPlay from "@/components/PlayByPlay";
 import KeyMoments from "@/components/KeyMoments";
 import { Play, ExternalLink } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
-import RadarChart from "@/components/RadarChart";
-import ScoringFlow from "@/components/ScoringFlow";
 import QuarterBars from "@/components/QuarterBars";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
+
+const ChartPlaceholder = () => <div className="h-64 bg-bg-card rounded-xl skeleton-shimmer" />;
+const WinProbability = dynamic(() => import("@/components/WinProbability"), { loading: ChartPlaceholder });
+const ShotChart = dynamic(() => import("@/components/ShotChart"), { loading: ChartPlaceholder });
+const PlayerShotChart = dynamic(() => import("@/components/PlayerShotChart"), { loading: ChartPlaceholder });
+const PlayByPlay = dynamic(() => import("@/components/PlayByPlay"), { loading: ChartPlaceholder });
+const RadarChart = dynamic(() => import("@/components/RadarChart"), { loading: ChartPlaceholder });
+const ScoringFlow = dynamic(() => import("@/components/ScoringFlow"), { loading: ChartPlaceholder });
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -207,7 +210,8 @@ async function PlayByPlaySection({ gameId }: { gameId: string }) {
     return null;
   }
   if (actions.length === 0) return null;
-  return <PlayByPlay actions={actions as unknown as Parameters<typeof PlayByPlay>[0]["actions"]} />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <PlayByPlay actions={actions as any} />;
 }
 
 async function ReplaySection({ gameId }: { gameId: string }) {

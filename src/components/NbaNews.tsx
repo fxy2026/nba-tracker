@@ -66,7 +66,7 @@ export default function NbaNews() {
             {item.image && (
               <div className="w-20 h-14 rounded-lg overflow-hidden bg-bg-secondary shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                <img src={item.image} alt={item.headline} loading="lazy" width={80} height={56} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="flex-1 min-w-0">
