@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "NBA 球队对战记录，赛季交锋历史。",
 };
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{ t1?: string; t2?: string }>;
@@ -94,6 +94,15 @@ export default async function H2HPage({ searchParams }: PageProps) {
                 <span className={`text-3xl font-bold ${t2Wins >= t1Wins ? "text-accent" : "text-text-secondary"}`}>{t2Wins}</span>
               </div>
             </div>
+            {/* Season record context */}
+            {games.length > 0 && (
+              <p className="text-xs text-text-secondary text-center mt-2">
+                {games.length} game{games.length !== 1 ? "s" : ""} this season
+                {games.length >= 3 && t1Wins > t2Wins && ` — ${TEAM_META[t1]?.name} dominates`}
+                {games.length >= 3 && t2Wins > t1Wins && ` — ${TEAM_META[t2]?.name} dominates`}
+                {t1Wins === t2Wins && games.length >= 2 && " — series tied"}
+              </p>
+            )}
             {/* Win percentage donut */}
             {games.length > 0 && (() => {
               const total = t1Wins + t2Wins;
