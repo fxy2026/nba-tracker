@@ -348,11 +348,9 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
                 key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}-${i}`}
                 className={`border-b border-border/30 hover:bg-bg-hover/50 ${i === bestIdx ? "bg-accent/5" : ""}`}
               >
-                <td className={`py-2 px-3 font-medium sticky left-0 ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
-                  <span className="flex items-center gap-1">
-                    {i === bestIdx && <span className="text-accent" title="Best PPG season">&#9733;</span>}
-                    {s.SEASON_ID}
-                  </span>
+                <td className={`py-2 px-3 font-medium sticky left-0 whitespace-nowrap ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
+                  {s.SEASON_ID}
+                  {i === bestIdx && <span className="ml-1 text-yellow-400 text-[10px]" title="Best PPG season">★</span>}
                 </td>
                 <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>
