@@ -55,6 +55,51 @@ export default async function PlayerPage({ params }: PageProps) {
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
+  // Server-side fetch of career stats + game log (avoids client-side NBA API blocks)
+  const STATS_BASE = "https://stats.nba.com/stats";
+  const STATS_HEADERS: HeadersInit = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    Referer: "https://www.nba.com/",
+    Origin: "https://www.nba.com",
+    Accept: "application/json",
+  };
+  let serverCareerSeasons: Record<string, unknown>[] | null = null;
+  let serverRecentGames: Record<string, unknown>[] | null = null;
+  try {
+    const [careerRes, gameLogRes] = await Promise.all([
+      fetch(`${STATS_BASE}/playercareerstats?PlayerID=${personId}&PerMode=PerGame`, {
+        headers: STATS_HEADERS, next: { revalidate: 3600 },
+      }).catch(() => null),
+      fetch(`${STATS_BASE}/playergamelog?PlayerID=${personId}&Season=2025-26&SeasonType=Regular+Season`, {
+        headers: STATS_HEADERS, next: { revalidate: 300 },
+      }).catch(() => null),
+    ]);
+    if (careerRes?.ok) {
+      const data = await careerRes.json();
+      const rs = data.resultSets?.find((r: { name: string }) => r.name === "SeasonTotalsRegularSeason");
+      if (rs) {
+        const h: string[] = rs.headers;
+        serverCareerSeasons = rs.rowSet.map((row: unknown[]) => {
+          const obj: Record<string, unknown> = {};
+          h.forEach((k, i) => { obj[k] = row[i]; });
+          return obj;
+        });
+      }
+    }
+    if (gameLogRes?.ok) {
+      const data = await gameLogRes.json();
+      const rs = data.resultSets?.[0];
+      if (rs) {
+        const h: string[] = rs.headers;
+        serverRecentGames = rs.rowSet.slice(0, 10).map((row: unknown[]) => {
+          const obj: Record<string, unknown> = {};
+          h.forEach((k, i) => { obj[k] = row[i]; });
+          return obj;
+        });
+      }
+    }
+  } catch { /* server fetch failed, components will fallback to client fetch */ }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors">
@@ -379,8 +424,8 @@ export default async function PlayerPage({ params }: PageProps) {
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
           {/* Stats bundle first — most important for basketball fans */}
-          <PlayerStatsBundle playerId={personId} />
-          <PlayerAdvancedStats playerId={personId} />
+          <PlayerStatsBundle playerId={personId} initialSeasons={serverCareerSeasons} initialGames={serverRecentGames} />
+          <PlayerAdvancedStats playerId={personId} initialSeasons={serverCareerSeasons} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerNews playerName={fullName} />

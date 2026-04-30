@@ -9,13 +9,42 @@ interface AdvancedData {
   USG_PCT: number | null;
 }
 
-export default function PlayerAdvancedStats({ playerId }: { playerId: number }) {
-  const [stats, setStats] = useState<AdvancedData | null>(null);
-  const [loading, setLoading] = useState(true);
+function computeAdvanced(seasons: Record<string, unknown>[]): AdvancedData | null {
+  if (!seasons || seasons.length === 0) return null;
+  const latest = seasons[seasons.length - 1] as Record<string, number>;
+  const pts = latest.PTS;
+  const fga = latest.FGA;
+  const fta = latest.FTA;
+  const fgPct = latest.FG_PCT;
+  const fg3Pct = latest.FG3_PCT;
+  const fg3a = latest.FG3A;
+  let tsPct: number | null = null;
+  if (fga != null && fta != null && pts != null && (fga + 0.44 * fta) > 0) {
+    tsPct = pts / (2 * (fga + 0.44 * fta));
+  }
+  let efgPct: number | null = null;
+  if (fgPct != null && fg3Pct != null && fga != null && fg3a != null && fga > 0) {
+    const fgm = fgPct * fga;
+    const fg3m = fg3Pct * fg3a;
+    efgPct = (fgm + 0.5 * fg3m) / fga;
+  }
+  return { TS_PCT: tsPct, EFG_PCT: efgPct, USG_PCT: null };
+}
+
+interface Props {
+  playerId: number;
+  initialSeasons?: Record<string, unknown>[] | null;
+}
+
+export default function PlayerAdvancedStats({ playerId, initialSeasons }: Props) {
+  const hasInitial = !!(initialSeasons?.length);
+  const [stats, setStats] = useState<AdvancedData | null>(hasInitial ? computeAdvanced(initialSeasons!) : null);
+  const [loading, setLoading] = useState(!hasInitial);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
+    if (hasInitial) return;
     let cancelled = false;
     setLoading(true);
     setError(false);
@@ -27,34 +56,9 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
         clearTimeout(timeout);
         if (!res.ok) { if (!cancelled) { setLoading(false); } return; }
         const data = await res.json();
-        const seasons = data.careerSeasons;
-        if (!seasons || seasons.length === 0) { setLoading(false); return; }
-
-        // Get most recent season for advanced calculations
-        const latest = seasons[seasons.length - 1];
-        const pts = latest.PTS;
-        const fga = latest.FGA;
-        const fta = latest.FTA;
-        const fgPct = latest.FG_PCT;
-        const fg3Pct = latest.FG3_PCT;
-        const fg3a = latest.FG3A;
-
-        // True Shooting %: PTS / (2 * (FGA + 0.44 * FTA))
-        let tsPct: number | null = null;
-        if (fga != null && fta != null && pts != null && (fga + 0.44 * fta) > 0) {
-          tsPct = pts / (2 * (fga + 0.44 * fta));
-        }
-
-        // Effective FG%: (FGM + 0.5 * FG3M) / FGA — approximate from per-game
-        let efgPct: number | null = null;
-        if (fgPct != null && fg3Pct != null && fga != null && fg3a != null && fga > 0) {
-          const fgm = fgPct * fga;
-          const fg3m = fg3Pct * fg3a;
-          efgPct = (fgm + 0.5 * fg3m) / fga;
-        }
-
+        const computed = computeAdvanced(data.careerSeasons || []);
         if (!cancelled) {
-          setStats({ TS_PCT: tsPct, EFG_PCT: efgPct, USG_PCT: null });
+          setStats(computed);
         }
       } catch {
         if (!cancelled) setError(true);
@@ -62,7 +66,7 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
-  }, [playerId, retryKey]);
+  }, [playerId, retryKey, hasInitial]);
 
   if (loading) {
     return (

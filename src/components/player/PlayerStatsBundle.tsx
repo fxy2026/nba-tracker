@@ -30,15 +30,24 @@ interface GameLogRow {
   PLUS_MINUS: number;
 }
 
-// Single component that fetches both career stats + game log in ONE API call
-export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
-  const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
-  const [games, setGames] = useState<GameLogRow[] | null>(null);
-  const [loading, setLoading] = useState(true);
+// Accepts optional server-side data to avoid client fetch entirely
+interface Props {
+  playerId: number;
+  initialSeasons?: Record<string, unknown>[] | null;
+  initialGames?: Record<string, unknown>[] | null;
+}
+
+export default function PlayerStatsBundle({ playerId, initialSeasons, initialGames }: Props) {
+  const hasInitial = !!(initialSeasons?.length || initialGames?.length);
+  const [seasons, setSeasons] = useState<SeasonRow[] | null>(hasInitial ? (initialSeasons as unknown as SeasonRow[]) : null);
+  const [games, setGames] = useState<GameLogRow[] | null>(hasInitial ? (initialGames as unknown as GameLogRow[]) : null);
+  const [loading, setLoading] = useState(!hasInitial);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
+  // Only fetch client-side if no server data was provided
   useEffect(() => {
+    if (hasInitial) return;
     let cancelled = false;
     setLoading(true);
     setError(false);
@@ -61,7 +70,7 @@ export default function PlayerStatsBundle({ playerId }: { playerId: number }) {
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
-  }, [playerId, retryKey]);
+  }, [playerId, retryKey, hasInitial]);
 
   if (loading) {
     return (
