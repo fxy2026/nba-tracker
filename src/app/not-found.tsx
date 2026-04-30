@@ -13,8 +13,11 @@ export default function NotFound() {
       </svg>
       <div className="text-7xl font-bold text-accent/30 mb-4">404</div>
       <h2 className="text-2xl font-bold mb-2">Air Ball! Page Not Found</h2>
-      <p className="text-text-secondary mb-8 max-w-md">
+      <p className="text-text-secondary mb-2 max-w-md">
         This shot missed the mark. The page you&apos;re looking for doesn&apos;t exist or has been moved.
+      </p>
+      <p className="text-text-secondary/60 text-sm mb-8">
+        页面未找到 — 请检查链接是否正确
       </p>
       <div className="flex items-center gap-3 flex-wrap justify-center">
         <Link
