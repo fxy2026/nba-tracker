@@ -262,3 +262,27 @@ nav.sticky {
 .animate-count {
   animation: count-up 0.3s ease-out;
 }
+
+/* Fade in animation for lazy-loaded content */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Stat highlight pulse */
+@keyframes stat-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.stat-highlight {
+  animation: stat-pulse 2s ease-in-out infinite;
+}
+
+/* Selection colors */
+::selection {
+  background: var(--accent);
+  color: white;
+}
