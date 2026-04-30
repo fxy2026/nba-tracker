@@ -20,6 +20,9 @@
   "shortcuts": [
     { "name": "Today's Games", "url": "/", "description": "View today's NBA games" },
     { "name": "Standings", "url": "/standings", "description": "NBA standings" },
-    { "name": "Search Players", "url": "/search", "description": "Search NBA players" }
+    { "name": "Search Players", "url": "/search", "description": "Search NBA players" },
+    { "name": "Calendar", "url": "/calendar", "description": "Season calendar" },
+    { "name": "Injuries", "url": "/injuries", "description": "Injury report" },
+    { "name": "Favorites", "url": "/favorites", "description": "Your favorites" }
   ]
 }
