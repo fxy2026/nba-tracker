@@ -88,12 +88,9 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (query.trim().length < 2) {
-      // Use a 0ms timeout to avoid synchronous setState in effect
-      debounceRef.current = setTimeout(() => {
-        setResults([]);
-        setShowDropdown(false);
-      }, 0);
-      return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+      setResults([]);
+      setShowDropdown(false);
+      return;
     }
 
     debounceRef.current = setTimeout(async () => {
@@ -133,6 +130,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search players by name..."
+          aria-label="Search NBA players"
           className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
           autoFocus
         />
@@ -170,7 +168,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       {showDropdown && results.length > 0 && (
         <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
           {/* Feature 10: Result count */}
-          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50">
+          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50" aria-live="polite">
             <span className="text-xs text-text-secondary font-medium">{results.length} player{results.length !== 1 ? "s" : ""} found</span>
           </div>
           {results.map((p, idx) => (

@@ -30,8 +30,10 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
     else if (roundDigit === "4") playoffRound = "Finals";
   }
 
+  const ariaLabel = `${game.awayTeam.teamTricode} ${game.gameStatus > 1 ? game.awayTeam.score : ""} vs ${game.homeTeam.teamTricode} ${game.gameStatus > 1 ? game.homeTeam.score : ""} — ${status}`;
+
   return (
-    <Link href={`/game/${game.gameId}`} className="block group">
+    <Link href={`/game/${game.gameId}`} className="block group" aria-label={ariaLabel}>
       <div className={`game-card bg-bg-card rounded-xl border hover:border-accent/50 transition-colors p-4 ${isLive ? "border-success/40 border-l-2 border-l-success" : "border-border"}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-3">

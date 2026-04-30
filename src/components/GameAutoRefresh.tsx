@@ -1,22 +1,42 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 
+const INTERVAL = 15;
+
 export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+  const [countdown, setCountdown] = useState(INTERVAL);
+
   useEffect(() => {
     if (!isLive) return;
-    const interval = setInterval(() => router.refresh(), 15000);
-    return () => clearInterval(interval);
-  }, [isLive, router]);
+    let remaining = INTERVAL;
+
+    const tick = setInterval(() => {
+      remaining--;
+      setCountdown(remaining);
+      if (remaining <= 0) {
+        if (typeof navigator === "undefined" || navigator.onLine !== false) {
+          routerRef.current.refresh();
+        }
+        remaining = INTERVAL;
+        setCountdown(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(tick);
+  }, [isLive]);
 
   if (!isLive) return null;
   return (
     <div className="flex items-center gap-2 text-xs text-success mb-3 mt-2">
       <Radio size={12} className="animate-pulse" />
-      <span>LIVE — auto-refreshing every 15s</span>
+      <span>LIVE — auto-refreshing</span>
+      <span className="text-text-secondary tabular-nums">({countdown}s)</span>
     </div>
   );
 }

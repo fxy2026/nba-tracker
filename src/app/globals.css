@@ -154,6 +154,11 @@ nav.sticky {
   contain-intrinsic-size: auto 800px;
 }
 
+/* Content visibility for lazy sections */
+.content-visibility-auto {
+  content-visibility: auto;
+}
+
 /* Smooth view transitions */
 ::view-transition-old(root) {
   animation-duration: 0.15s;

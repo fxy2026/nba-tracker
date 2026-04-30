@@ -13,33 +13,48 @@ interface TeamRecord {
   losses: number;
 }
 
+function ConferenceColumn({ title, teams }: { title: string; teams: TeamRecord[] }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">{title}</p>
+      {teams.map((t, i) => {
+        const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
+        return (
+          <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
+            <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
+            <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+              {t.tricode}
+            </Link>
+            <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
+            <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function StandingsMini() {
   const [east, setEast] = useState<TeamRecord[]>([]);
   const [west, setWest] = useState<TeamRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/standings")
+    const controller = new AbortController();
+    fetch("/api/standings", { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => {
         const teams: TeamRecord[] = json.data || [];
-        const eastTeams = teams
-          .filter((t) => TEAM_META[t.tricode]?.conference === "East")
-          .slice(0, 6);
-        const westTeams = teams
-          .filter((t) => TEAM_META[t.tricode]?.conference === "West")
-          .slice(0, 6);
-        setEast(eastTeams);
-        setWest(westTeams);
+        setEast(teams.filter((t) => TEAM_META[t.tricode]?.conference === "East").slice(0, 6));
+        setWest(teams.filter((t) => TEAM_META[t.tricode]?.conference === "West").slice(0, 6));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
 
   if (loading) {
-    return (
-      <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 skeleton-shimmer h-28" />
-    );
+    return <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 skeleton-shimmer h-28" />;
   }
 
   if (east.length === 0 && west.length === 0) return null;
@@ -47,40 +62,8 @@ export default function StandingsMini() {
   return (
     <div className="bg-bg-card rounded-xl border border-border p-3 mt-4">
       <div className="grid grid-cols-2 gap-4">
-        {/* East */}
-        <div>
-          <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">East</p>
-          {east.map((t, i) => {
-            const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
-            return (
-              <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
-                <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
-                <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
-                  {t.tricode}
-                </Link>
-                <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
-                <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
-              </div>
-            );
-          })}
-        </div>
-        {/* West */}
-        <div>
-          <p className="text-[10px] uppercase text-text-secondary font-semibold mb-1">West</p>
-          {west.map((t, i) => {
-            const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
-            return (
-              <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
-                <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
-                <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
-                  {t.tricode}
-                </Link>
-                <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
-                <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
-              </div>
-            );
-          })}
-        </div>
+        <ConferenceColumn title="East" teams={east} />
+        <ConferenceColumn title="West" teams={west} />
       </div>
       <Link href="/stats" className="block text-center text-[10px] text-accent hover:underline mt-2">
         Full Standings &rarr;

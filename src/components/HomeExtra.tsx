@@ -7,17 +7,21 @@ import RecentHighlights from "./RecentHighlights";
 
 export default function HomeExtra() {
   const [data, setData] = useState<{ playoffs: ScheduleGame[]; recent: ScheduleGame[] } | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    let gotData = false;
-    fetch("/api/extra")
+    const controller = new AbortController();
+    fetch("/api/extra", { signal: controller.signal })
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (!cancelled && d) { setData(d); gotData = true; } })
-      .catch(() => {})
-      .finally(() => { if (!cancelled && !gotData) setData({ playoffs: [], recent: [] }); });
-    return () => { cancelled = true; };
+      .then((d) => { if (!cancelled && d) setData(d); })
+      .catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled && !data) setData((prev) => prev ?? { playoffs: [], recent: [] }); });
+    return () => { cancelled = true; controller.abort(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (error) return null;
 
   if (!data) {
     return (
@@ -36,8 +40,10 @@ export default function HomeExtra() {
     );
   }
 
+  if (data.playoffs.length === 0 && data.recent.length === 0) return null;
+
   return (
-    <div className="mt-10 space-y-10" style={{ contentVisibility: "auto", containIntrinsicSize: "auto 400px" }}>
+    <div className="mt-10 space-y-10 content-visibility-auto" style={{ containIntrinsicSize: "auto 400px" }}>
       {data.playoffs.length > 0 && <PlayoffBracketV2 games={data.playoffs} />}
       {data.recent.length > 0 && <RecentHighlights games={data.recent} />}
     </div>

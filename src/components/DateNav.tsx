@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -50,25 +50,28 @@ export default function DateNav({ selectedDate }: DateNavProps) {
     return () => { el.removeEventListener("touchstart", onTouchStart); el.removeEventListener("touchend", onTouchEnd); };
   }, [handleSwipe]);
 
-  // Generate 7 days centered around selected date
-  const days: { date: string; label: string; weekday: string }[] = [];
-  for (let i = -3; i <= 3; i++) {
-    const d = new Date(selectedDate + "T12:00:00");
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split("T")[0];
-    days.push({
-      date: dateStr,
-      label: d.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" }),
-      weekday: d.toLocaleDateString("zh-CN", { weekday: "short" }),
-    });
-  }
+  // Memoize the 7-day array — only recomputes when selectedDate changes
+  const days = useMemo(() => {
+    const result: { date: string; label: string; weekday: string }[] = [];
+    for (let i = -3; i <= 3; i++) {
+      const d = new Date(selectedDate + "T12:00:00");
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split("T")[0];
+      result.push({
+        date: dateStr,
+        label: d.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" }),
+        weekday: d.toLocaleDateString("zh-CN", { weekday: "short" }),
+      });
+    }
+    return result;
+  }, [selectedDate]);
 
-  const today = new Intl.DateTimeFormat("en-CA", {
+  const today = useMemo(() => new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(new Date()), []);
 
   const prevDate = offsetDate(selectedDate, -1);
   const nextDate = offsetDate(selectedDate, 1);
@@ -91,6 +94,7 @@ export default function DateNav({ selectedDate }: DateNavProps) {
             <Link
               key={day.date}
               href={`/?date=${day.date}`}
+              aria-current={isSelected ? "date" : undefined}
               className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors min-w-[56px] ${
                 isSelected
                   ? "bg-accent text-white"

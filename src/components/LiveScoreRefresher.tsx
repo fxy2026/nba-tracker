@@ -1,33 +1,37 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 
+const REFRESH_INTERVAL = 30;
+
 export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boolean }) {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(30);
-
-  const doRefresh = useCallback(() => {
-    router.refresh();
-    setCountdown(30);
-  }, [router]);
+  const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
     if (!hasLiveGames) return;
 
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          doRefresh();
-          return 30;
-        }
-        return prev - 1;
-      });
+    // Add ±3s jitter to avoid thundering herd
+    const jitter = Math.floor(Math.random() * 6) - 3;
+    const interval = REFRESH_INTERVAL + jitter;
+    let remaining = interval;
+
+    const tick = setInterval(() => {
+      remaining--;
+      setCountdown(remaining);
+      if (remaining <= 0) {
+        routerRef.current.refresh();
+        remaining = interval;
+        setCountdown(remaining);
+      }
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [hasLiveGames, doRefresh]);
+    return () => clearInterval(tick);
+  }, [hasLiveGames]);
 
   if (!hasLiveGames) return null;
 
@@ -36,7 +40,10 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
       <Radio size={12} className="animate-pulse" />
       <span>Live — auto-refreshing</span>
       <button
-        onClick={doRefresh}
+        onClick={() => {
+          routerRef.current.refresh();
+          setCountdown(REFRESH_INTERVAL);
+        }}
         className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"
       >
         refresh now
