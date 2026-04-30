@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { TEAM_META } from "@/lib/teams";
 
-export const metadata: Metadata = {
-  title: "伤病报告",
-  description: "NBA 全联盟伤病名单，实时更新球员伤停状态。",
-};
-
-export const revalidate = 1800;
+export const revalidate = 300;
 
 interface Athlete {
   displayName: string;

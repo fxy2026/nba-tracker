@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { BoxScoreTeam } from "@/lib/api";
 
 interface Props {
@@ -18,7 +19,7 @@ const STATS = [
   { key: "fastBreakPoints", label: "Fast Break", fmt: (v: number) => String(v) },
 ] as const;
 
-export default function TeamCompare({ homeTeam, awayTeam }: Props) {
+export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
   const hStats = homeTeam.statistics as Record<string, number>;
   const aStats = awayTeam.statistics as Record<string, number>;
 
@@ -94,4 +95,4 @@ export default function TeamCompare({ homeTeam, awayTeam }: Props) {
       })()}
     </div>
   );
-}
+});

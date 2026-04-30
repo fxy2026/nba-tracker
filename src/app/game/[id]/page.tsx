@@ -39,6 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+export const revalidate = 60;
+
 function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[]; shots: ShotAction[]; playerInfoMap: Map<number, PlayerInfo> }) {
   const starters = players.filter((p) => p.starter === "1");
   const bench = players.filter((p) => p.starter !== "1" && p.played === "1");

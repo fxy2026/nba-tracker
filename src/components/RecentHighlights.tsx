@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import type { ScheduleGame } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
@@ -7,7 +8,7 @@ interface Props {
   games: ScheduleGame[];
 }
 
-export default function RecentHighlights({ games }: Props) {
+export default memo(function RecentHighlights({ games }: Props) {
   return (
     <section>
       <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -93,4 +94,4 @@ export default function RecentHighlights({ games }: Props) {
       </div>
     </section>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 
 function formatClock(raw: string): string {
   if (!raw) return "";
@@ -31,7 +31,7 @@ interface Props {
   actions: PlayAction[];
 }
 
-export default function PlayByPlay({ actions }: Props) {
+export default memo(function PlayByPlay({ actions }: Props) {
   const periods = useMemo(() => {
     const ps = [...new Set(actions.map((a) => a.period))].sort((a, b) => a - b);
     return ps;
@@ -124,4 +124,4 @@ export default function PlayByPlay({ actions }: Props) {
       </div>
     </div>
   );
-}
+});

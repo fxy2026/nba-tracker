@@ -1,3 +1,4 @@
+import { memo } from "react";
 interface PeriodData {
   period: number;
   homeScore: number;
@@ -8,7 +9,7 @@ interface Props {
   periods: PeriodData[];
 }
 
-export default function WinProbability({ periods }: Props) {
+export default memo(function WinProbability({ periods }: Props) {
   if (periods.length === 0) return null;
 
   // Compute cumulative differentials after each period
@@ -76,4 +77,4 @@ export default function WinProbability({ periods }: Props) {
       </div>
     </div>
   );
-}
+});

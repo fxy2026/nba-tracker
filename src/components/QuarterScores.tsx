@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 
@@ -6,7 +7,7 @@ interface Props {
   awayTeam: { teamId: number; teamTricode: string; teamCity: string; teamName: string; score: number; periods: PeriodScore[] };
 }
 
-export default function QuarterScores({ homeTeam, awayTeam }: Props) {
+export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
   const periods = Math.max(homeTeam.periods.length, awayTeam.periods.length);
   if (periods === 0) return null;
 
@@ -102,4 +103,4 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
       )}
     </div>
   );
-}
+});

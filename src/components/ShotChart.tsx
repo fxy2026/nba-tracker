@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import type { ShotAction } from "@/lib/api";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
   players: { personId: number; nameI: string; teamTricode: string }[];
 }
 
-export default function ShotChart({ shots, homeTricode, awayTricode, players }: Props) {
+export default memo(function ShotChart({ shots, homeTricode, awayTricode, players }: Props) {
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
@@ -249,4 +249,4 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
       })()}
     </div>
   );
-}
+});

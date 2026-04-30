@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 
 interface PlayAction {
   actionNumber: number;
@@ -58,7 +58,7 @@ function clockToSeconds(clock: string, period: number): number {
   return previousPeriods + elapsedInPeriod;
 }
 
-export default function KeyMoments({ actions }: Props) {
+export default memo(function KeyMoments({ actions }: Props) {
   const moments = useMemo(() => {
     if (actions.length === 0) return [];
 
@@ -210,4 +210,4 @@ export default function KeyMoments({ actions }: Props) {
       </div>
     </div>
   );
-}
+});

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { ScheduleGame } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 
@@ -11,7 +12,7 @@ interface Series {
   games: number;
 }
 
-export default function PlayoffsBracket({ games }: Props) {
+export default memo(function PlayoffsBracket({ games }: Props) {
   // Group by series (same two teams)
   const seriesMap = new Map<string, Series>();
 
@@ -148,4 +149,4 @@ export default function PlayoffsBracket({ games }: Props) {
       </div>
     </section>
   );
-}
+});
