@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -70,7 +70,8 @@ export default function TeamStandings() {
                   const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
                   const logoUrl = `https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`;
                   return (
-                    <tr key={t.tricode} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-yellow-500/5" : ""}`}>
+                    <React.Fragment key={t.tricode}>
+                    <tr className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-yellow-500/5" : ""}`}>
                       <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
                       <td className="py-2.5 px-2">
                         <Link href={`/team/${t.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
@@ -92,13 +93,13 @@ export default function TeamStandings() {
                       </td>
                       <td className="py-2.5 px-2 text-center text-text-secondary tabular-nums">{gb}</td>
                     </tr>
-                    {/* Playoff / Play-In separator lines */}
                     {i === 5 && conf !== "all" && (
                       <tr><td colSpan={6} className="py-0"><div className="h-px bg-accent/30" /><p className="text-[9px] text-accent text-center py-0.5">Playoff line</p></td></tr>
                     )}
                     {i === 9 && conf !== "all" && (
                       <tr><td colSpan={6} className="py-0"><div className="h-px bg-yellow-500/30" /><p className="text-[9px] text-yellow-500 text-center py-0.5">Play-In line</p></td></tr>
                     )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
