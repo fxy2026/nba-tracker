@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Lock, Plus, Trash2, Search, Play } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Lock, Plus, Trash2, Search, Play, ExternalLink, Calendar, BarChart3, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ScheduleGame {
   gameId: string;
@@ -19,10 +19,15 @@ interface ReplayLink {
   source: string;
 }
 
+type Tab = "replays" | "dashboard";
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [tab, setTab] = useState<Tab>("replays");
+
+  // Replay management
   const [searchDate, setSearchDate] = useState(new Date().toISOString().split("T")[0]);
   const [games, setGames] = useState<ScheduleGame[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,9 +39,13 @@ export default function AdminPage() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState("");
 
+  // Dashboard
+  const [apiHealth, setApiHealth] = useState<Record<string, boolean>>({});
+  const [checkingHealth, setCheckingHealth] = useState(false);
+
   function showToast(msg: string) {
     setToast(msg);
-    setTimeout(() => setToast(""), 2000);
+    setTimeout(() => setToast(""), 2500);
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -46,25 +55,19 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
-    if (res.ok) {
-      setAuthenticated(true);
-      setAuthError("");
-    } else {
-      setAuthError("Password incorrect");
-    }
+    if (res.ok) { setAuthenticated(true); setAuthError(""); }
+    else { setAuthError("Password incorrect"); }
   }
 
-  async function searchGames() {
+  const searchGames = useCallback(async (date?: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/games?date=${searchDate}`);
+      const res = await fetch(`/api/games?date=${date || searchDate}`);
       const data = await res.json();
       setGames(data.data || []);
-    } catch {
-      setGames([]);
-    }
+    } catch { setGames([]); }
     setLoading(false);
-  }
+  }, [searchDate]);
 
   async function loadReplayLinks(gameId: string) {
     const res = await fetch(`/api/replay?game_id=${gameId}`);
@@ -79,52 +82,58 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/replay", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-password": password,
-        },
-        body: JSON.stringify({
-          game_id: selectedGame.gameId,
-          title: newTitle,
-          url: newUrl,
-          source: newSource,
-        }),
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify({ game_id: selectedGame.gameId, title: newTitle, url: newUrl, source: newSource }),
       });
-      if (res.ok) {
-        showToast("Link added!");
-        setNewTitle("");
-        setNewUrl("");
-        setNewSource("cloud");
-        loadReplayLinks(selectedGame.gameId);
-      } else {
-        showToast("Failed to add link");
-      }
-    } catch {
-      showToast("Network error");
-    }
+      if (res.ok) { showToast("Link added!"); setNewTitle(""); setNewUrl(""); setNewSource("cloud"); loadReplayLinks(selectedGame.gameId); }
+      else { showToast("Failed to add link"); }
+    } catch { showToast("Network error"); }
     setSubmitting(false);
   }
 
   async function removeLink(id: string) {
     if (!selectedGame || !confirm("Delete this link?")) return;
     try {
-      await fetch(`/api/replay?id=${id}`, {
-        method: "DELETE",
-        headers: { "x-admin-password": password },
-      });
+      await fetch(`/api/replay?id=${id}`, { method: "DELETE", headers: { "x-admin-password": password } });
       showToast("Link removed");
       loadReplayLinks(selectedGame.gameId);
-    } catch {
-      showToast("Failed to delete");
-    }
+    } catch { showToast("Failed to delete"); }
+  }
+
+  function offsetDate(days: number) {
+    const d = new Date(searchDate); d.setDate(d.getDate() + days);
+    const ds = d.toISOString().split("T")[0];
+    setSearchDate(ds); searchGames(ds);
+  }
+
+  async function checkAPIHealth() {
+    setCheckingHealth(true);
+    const endpoints = [
+      { name: "Standings", url: "/api/standings" },
+      { name: "Search", url: "/api/search?q=test" },
+      { name: "News", url: "/api/news" },
+      { name: "Injuries", url: "/api/injuries" },
+      { name: "Transactions", url: "/api/transactions" },
+      { name: "Games", url: "/api/games?date=2026-04-29" },
+    ];
+    const results: Record<string, boolean> = {};
+    await Promise.all(endpoints.map(async (ep) => {
+      try {
+        const c = new AbortController(); setTimeout(() => c.abort(), 5000);
+        const res = await fetch(ep.url, { signal: c.signal });
+        results[ep.name] = res.ok;
+      } catch { results[ep.name] = false; }
+    }));
+    setApiHealth(results);
+    setCheckingHealth(false);
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fetch games on auth
-    if (authenticated) searchGames();
+    if (authenticated) { searchGames(); checkAPIHealth(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 
+  // ===== Login Screen =====
   if (!authenticated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -136,151 +145,210 @@ export default function AdminPage() {
           </div>
           <h1 className="text-xl font-bold text-center mb-6">Admin Login</h1>
           {authError && <p className="text-danger text-sm text-center mb-4">{authError}</p>}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter admin password"
-            className="w-full bg-bg-primary border border-border rounded-lg px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent mb-4"
-          />
-          <button type="submit" className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-3 rounded-lg transition-colors">
-            Login
-          </button>
+            className="w-full bg-bg-primary border border-border rounded-lg px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent mb-4" />
+          <button type="submit" className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-3 rounded-lg transition-colors">Login</button>
         </form>
       </div>
     );
   }
 
+  // ===== Admin Panel =====
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Admin - Replay Links</h1>
-      {toast && (
-        <div className="fixed top-20 right-4 z-50 px-4 py-2 bg-accent text-white text-sm rounded-lg shadow-lg animate-fade-in">
-          {toast}
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      {toast && <div className="fixed top-20 right-4 z-50 px-4 py-2 bg-accent text-white text-sm rounded-lg shadow-lg animate-fade-in">{toast}</div>}
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Lock size={20} className="text-accent" />Admin Panel</h1>
+        <div className="flex gap-1 bg-bg-card rounded-lg border border-border p-0.5">
+          {([{ key: "replays" as Tab, label: "Replay Links", icon: Play }, { key: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 }]).map(({ key, label, icon: Icon }) => (
+            <button key={key} onClick={() => setTab(key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === key ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}`}>
+              <Icon size={14} />{label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Dashboard ===== */}
+      {tab === "dashboard" && (
+        <div className="space-y-6">
+          <div className="bg-bg-card rounded-xl border border-border p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold">API Health Check</h2>
+              <button onClick={checkAPIHealth} disabled={checkingHealth}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-bg-hover rounded-lg hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors disabled:opacity-50">
+                <RefreshCw size={12} className={checkingHealth ? "animate-spin" : ""} />{checkingHealth ? "Checking..." : "Refresh"}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {Object.entries(apiHealth).map(([name, ok]) => (
+                <div key={name} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${ok ? "bg-success/10" : "bg-danger/10"}`}>
+                  <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-danger"}`} />
+                  <span className="text-text-primary">{name}</span>
+                  <span className={`text-xs ml-auto ${ok ? "text-success" : "text-danger"}`}>{ok ? "OK" : "DOWN"}</span>
+                </div>
+              ))}
+              {Object.keys(apiHealth).length === 0 && <p className="text-xs text-text-secondary col-span-3 text-center py-4">Click Refresh to check</p>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Data Sources</p>
+              <p className="text-sm font-bold text-text-primary mt-1">NBA CDN + ESPN</p>
+              <p className="text-[10px] text-text-secondary mt-1">Schedule, scores, injuries, news</p>
+            </div>
+            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Replay Storage</p>
+              <p className="text-sm font-bold text-text-primary mt-1">Supabase</p>
+              <p className="text-[10px] text-text-secondary mt-1">PostgreSQL + REST API</p>
+            </div>
+            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <p className="text-[10px] text-text-secondary uppercase">Hosting</p>
+              <p className="text-sm font-bold text-text-primary mt-1">Vercel</p>
+              <p className="text-[10px] text-text-secondary mt-1">nba.xpy.me</p>
+            </div>
+          </div>
+
+          <div className="bg-bg-card rounded-xl border border-border p-4">
+            <h2 className="text-sm font-semibold mb-3">Quick Links</h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Vercel", href: "https://vercel.com/dashboard" },
+                { label: "Supabase", href: "https://supabase.com/dashboard" },
+                { label: "GitHub", href: "https://github.com/fxy2026/nba-tracker" },
+                { label: "Live Site", href: "https://nba.xpy.me" },
+                { label: "NBA.com", href: "https://www.nba.com" },
+                { label: "ESPN", href: "https://www.espn.com/nba/" },
+              ].map((link) => (
+                <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-bg-hover rounded-lg hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors">
+                  <ExternalLink size={12} />{link.label}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={searchDate}
-            onChange={(e) => setSearchDate(e.target.value)}
-            className="bg-bg-primary border border-border rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent"
-          />
-          <button
-            onClick={searchGames}
-            className="flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Search size={16} />
-            Search
-          </button>
-        </div>
-      </div>
+      {/* ===== Replay Links ===== */}
+      {tab === "replays" && (
+        <>
+          <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={() => offsetDate(-1)} className="p-2 rounded-lg bg-bg-hover hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors"><ChevronLeft size={16} /></button>
+              <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)}
+                className="bg-bg-primary border border-border rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent" />
+              <button onClick={() => offsetDate(1)} className="p-2 rounded-lg bg-bg-hover hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors"><ChevronRight size={16} /></button>
+              <button onClick={() => searchGames()} className="flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"><Search size={16} />Search</button>
+              <div className="ml-auto flex gap-1">
+                {[-1, 0, 1].map((offset) => {
+                  const d = new Date(); d.setDate(d.getDate() + offset);
+                  const ds = d.toISOString().split("T")[0];
+                  return (
+                    <button key={offset} onClick={() => { setSearchDate(ds); searchGames(ds); }}
+                      className={`px-2.5 py-1.5 text-[10px] rounded-lg transition-colors ${searchDate === ds ? "bg-accent text-white" : "bg-bg-hover text-text-secondary hover:text-accent"}`}>
+                      {offset === -1 ? "Yesterday" : offset === 0 ? "Today" : "Tomorrow"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-sm font-medium text-text-secondary mb-3">Games ({games.length})</h2>
-          {loading ? (
-            <div className="text-text-secondary text-center py-8">Loading...</div>
-          ) : (
-            <div className="space-y-2">
-              {games.map((game) => (
-                <button
-                  key={game.gameId}
-                  onClick={() => { setSelectedGame(game); loadReplayLinks(game.gameId); }}
-                  className={`w-full text-left bg-bg-card rounded-xl border p-3 transition-colors ${
-                    selectedGame?.gameId === game.gameId ? "border-accent" : "border-border hover:border-accent/50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span className="font-medium">{game.awayTeam.teamTricode}</span>
-                      <span className="text-text-secondary mx-2">
-                        {game.awayTeam.score} - {game.homeTeam.score}
-                      </span>
-                      <span className="font-medium">{game.homeTeam.teamTricode}</span>
-                    </div>
-                    <span className="text-xs text-text-secondary">{(game.gameStatusText || "").trim() || (game.gameStatus === 3 ? "Final" : "Scheduled")}</span>
-                  </div>
-                  <p className="text-xs text-text-secondary mt-1">
-                    {game.awayTeam.teamCity} {game.awayTeam.teamName} @ {game.homeTeam.teamCity} {game.homeTeam.teamName}
-                  </p>
-                </button>
-              ))}
-              {games.length === 0 && !loading && (
-                <p className="text-sm text-text-secondary text-center py-4">No games on this date</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Games List */}
+            <div>
+              <h2 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-2">
+                <Calendar size={14} />Games ({games.length})<span className="text-[10px] ml-1">{searchDate}</span>
+              </h2>
+              {loading ? (
+                <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 skeleton-shimmer rounded-xl" />)}</div>
+              ) : (
+                <div className="space-y-2">
+                  {games.map((game) => {
+                    const isFinal = game.gameStatus === 3;
+                    return (
+                      <button key={game.gameId} onClick={() => { setSelectedGame(game); loadReplayLinks(game.gameId); }}
+                        className={`w-full text-left bg-bg-card rounded-xl border p-3 transition-colors ${selectedGame?.gameId === game.gameId ? "border-accent ring-1 ring-accent/30" : "border-border hover:border-accent/50"}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm">
+                            <span className="font-medium">{game.awayTeam.teamTricode}</span>
+                            <span className="text-text-secondary mx-2">{isFinal ? `${game.awayTeam.score} - ${game.homeTeam.score}` : "vs"}</span>
+                            <span className="font-medium">{game.homeTeam.teamTricode}</span>
+                          </div>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${isFinal ? "bg-success/10 text-success" : game.gameStatus === 2 ? "bg-accent/10 text-accent" : "bg-bg-hover text-text-secondary"}`}>
+                            {isFinal ? "Final" : game.gameStatus === 2 ? "Live" : "Scheduled"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-text-secondary mt-1">{game.awayTeam.teamCity} @ {game.homeTeam.teamCity} <span className="text-text-secondary/50 ml-1">ID: {game.gameId}</span></p>
+                      </button>
+                    );
+                  })}
+                  {games.length === 0 && !loading && <p className="text-sm text-text-secondary text-center py-8">No games on {searchDate}</p>}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        <div>
-          {selectedGame ? (
-            <>
-              <h2 className="text-sm font-medium text-text-secondary mb-3">
-                Replay Links — {selectedGame.awayTeam.teamTricode} vs {selectedGame.homeTeam.teamTricode}
-              </h2>
-              <div className="space-y-2 mb-4">
-                {replayLinks.map((link) => (
-                  <div key={link.id} className="bg-bg-card rounded-lg border border-border p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Play size={14} className="text-accent shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{link.title}</p>
-                        <p className="text-xs text-text-secondary truncate">{link.url}</p>
+            {/* Replay Panel */}
+            <div>
+              {selectedGame ? (
+                <>
+                  <h2 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-2">
+                    <Play size={14} className="text-accent" />
+                    Replay Links — {selectedGame.awayTeam.teamTricode} vs {selectedGame.homeTeam.teamTricode}
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent">{replayLinks.length}</span>
+                  </h2>
+                  <div className="space-y-2 mb-4">
+                    {replayLinks.map((link) => (
+                      <div key={link.id} className="bg-bg-card rounded-lg border border-border p-3 flex items-center justify-between group">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Play size={14} className="text-accent shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{link.title}</p>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-text-secondary hover:text-accent truncate block transition-colors">{link.url}</a>
+                          </div>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-red-500/10 text-red-400" : link.source === "bilibili" ? "bg-blue-400/10 text-blue-400" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="p-1 text-text-secondary hover:text-accent transition-colors shrink-0 opacity-0 group-hover:opacity-100"><ExternalLink size={12} /></a>
+                        </div>
+                        <button onClick={() => removeLink(link.id)} className="p-1.5 text-text-secondary hover:text-danger transition-colors shrink-0 ml-1"><Trash2 size={14} /></button>
                       </div>
-                      <span className="text-xs bg-bg-hover px-1.5 py-0.5 rounded shrink-0">{link.source}</span>
-                    </div>
-                    <button onClick={() => removeLink(link.id)} className="p-1.5 text-text-secondary hover:text-danger transition-colors shrink-0 ml-2">
-                      <Trash2 size={14} />
-                    </button>
+                    ))}
+                    {replayLinks.length === 0 && (
+                      <div className="text-center py-6 text-text-secondary"><Play size={24} className="mx-auto mb-2 opacity-20" /><p className="text-sm">No replay links</p></div>
+                    )}
                   </div>
-                ))}
-                {replayLinks.length === 0 && <p className="text-sm text-text-secondary text-center py-4">No replay links yet</p>}
-              </div>
-
-              <form onSubmit={addLink} className="bg-bg-card rounded-xl border border-border p-4 space-y-3">
-                <h3 className="text-sm font-medium flex items-center gap-1.5">
-                  <Plus size={14} />
-                  Add Replay Link
-                </h3>
-                <input
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Title (e.g. Full Game Replay)"
-                  className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
-                  required
-                />
-                <input
-                  value={newUrl}
-                  onChange={(e) => setNewUrl(e.target.value)}
-                  placeholder="URL (e.g. https://...)"
-                  className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
-                  required
-                />
-                <select
-                  value={newSource}
-                  onChange={(e) => setNewSource(e.target.value)}
-                  className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
-                >
-                  <option value="cloud">Cloud Drive</option>
-                  <option value="youtube">YouTube</option>
-                  <option value="bilibili">Bilibili</option>
-                  <option value="other">Other</option>
-                </select>
-                <button type="submit" className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-2 rounded-lg text-sm transition-colors">
-                  Add Link
-                </button>
-              </form>
-            </>
-          ) : (
-            <div className="flex items-center justify-center py-16 text-text-secondary text-sm">
-              Select a game to manage replay links
+                  <form onSubmit={addLink} className="bg-bg-card rounded-xl border border-border p-4 space-y-3">
+                    <h3 className="text-sm font-medium flex items-center gap-1.5"><Plus size={14} className="text-accent" />Add Replay Link</h3>
+                    <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Title (e.g. Full Game HD)"
+                      className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent" required />
+                    <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="URL" type="url"
+                      className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent" required />
+                    <select value={newSource} onChange={(e) => setNewSource(e.target.value)}
+                      className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent">
+                      <option value="cloud">Cloud Drive</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="bilibili">Bilibili</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <button type="submit" disabled={submitting}
+                      className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-2 rounded-lg text-sm transition-colors disabled:opacity-50">
+                      {submitting ? "Adding..." : "Add Link"}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
+                  <Play size={32} className="mb-3 opacity-20" /><p className="text-sm font-medium">Select a game</p><p className="text-[10px]">Choose from the left to manage replay links</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
