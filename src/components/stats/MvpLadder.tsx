@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,7 +28,7 @@ export default function MvpLadder() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       try {
         const qs = new URLSearchParams({
@@ -40,7 +40,7 @@ export default function MvpLadder() {
           SeasonType: "Regular Season",
           StatCategory: "EFF",
         });
-        const res = await fetch(`/api/stats?${qs}`);
+        const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
         const rs = data.resultSet;
@@ -51,11 +51,11 @@ export default function MvpLadder() {
           headers.forEach((h, i) => { obj[h] = row[i]; });
           return obj;
         }) as unknown as LeaderRow[];
-        if (!cancelled) setPlayers(parsed);
+        if (!controller.signal.aborted) setPlayers(parsed);
       } catch { /* ignore */ }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, []);
 
   if (loading) {
@@ -68,11 +68,10 @@ export default function MvpLadder() {
     );
   }
 
-  // Sort by MVP score
-  const ranked = [...players]
-    .filter((p) => p.GP >= 40) // minimum games played
-    .sort((a, b) => mvpScore(b) - mvpScore(a))
-    .slice(0, 15);
+  const ranked = useMemo(() =>
+    [...players].filter((p) => p.GP >= 40).sort((a, b) => mvpScore(b) - mvpScore(a)).slice(0, 15),
+    [players]
+  );
 
   if (ranked.length === 0) return <p className="text-center text-text-secondary py-12">No data available</p>;
 

@@ -46,7 +46,7 @@ export default function PlayerLeaders() {
   const [error, setError] = useState("");
   const [seasonType, setSeasonType] = useState("Regular Season");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError("");
     try {
@@ -59,7 +59,7 @@ export default function PlayerLeaders() {
         SeasonType: seasonType,
         StatCategory: cat,
       }).toString();
-      const res = await fetch(`${STATS_API}?${qs}`);
+      const res = await fetch(`${STATS_API}?${qs}`, { signal });
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       const rs = data.resultSet;
@@ -72,14 +72,18 @@ export default function PlayerLeaders() {
       }) as unknown as LeaderRow[];
       setRows(parsed);
     } catch (e) {
+      if (signal?.aborted) return;
       setError(String(e));
       setRows([]);
     }
     setLoading(false);
   }, [cat, seasonType]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
 
   const fmtVal = (r: LeaderRow, key: string) => {
     const v = r[key as keyof LeaderRow] as number;

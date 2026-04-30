@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -14,21 +14,28 @@ export default function TeamStandings() {
   const [conf, setConf] = useState<"all" | "east" | "west">("all");
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/standings");
+        const res = await fetch("/api/standings", { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");
         const json = await res.json();
-        if (!cancelled) setTeams(json.data || []);
-      } catch { if (!cancelled) setTeams([]); }
-      if (!cancelled) setLoading(false);
+        if (!controller.signal.aborted) setTeams(json.data || []);
+      } catch { if (!controller.signal.aborted) setTeams([]); }
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, []);
 
-  const filtered = conf === "all" ? teams : teams.filter((t) => conf === "east" ? EAST.includes(t.tricode) : !EAST.includes(t.tricode));
+  const filtered = useMemo(() =>
+    conf === "all" ? teams : teams.filter((t) => conf === "east" ? EAST.includes(t.tricode) : !EAST.includes(t.tricode)),
+    [teams, conf]
+  );
+  const topPct = useMemo(() =>
+    filtered[0] ? filtered[0].wins / (filtered[0].wins + filtered[0].losses || 1) : 0,
+    [filtered]
+  );
 
   return (
     <div>
@@ -66,7 +73,6 @@ export default function TeamStandings() {
               <tbody>
                 {filtered.map((t, i) => {
                   const pct = t.wins + t.losses > 0 ? t.wins / (t.wins + t.losses) : 0;
-                  const topPct = filtered[0] ? filtered[0].wins / (filtered[0].wins + filtered[0].losses || 1) : 0;
                   const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
                   const logoUrl = `https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`;
                   return (

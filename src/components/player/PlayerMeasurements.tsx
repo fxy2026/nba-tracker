@@ -18,7 +18,7 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
 
   useEffect(() => {
     if (!draftYear) return;
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       try {
         const qs = new URLSearchParams({
@@ -26,11 +26,11 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
           LeagueID: "00",
           SeasonYear: String(draftYear),
         });
-        const res = await fetch(`/api/stats?${qs}`);
+        const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
         if (!res.ok) { setLoading(false); return; }
         const json = await res.json();
         const rs = json.resultSets?.[0];
-        if (!rs || !rs.rowSet?.length) { if (!cancelled) setLoading(false); return; }
+        if (!rs || !rs.rowSet?.length) { if (!controller.signal.aborted) setLoading(false); return; }
 
         // We get all players from that draft year — for now show as "available" indicator
         // In a real app we'd match by player name, but the API doesn't include player ID consistently
@@ -44,7 +44,7 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
         // Store first row as sample (ideally we'd match by player ID)
         if (rs.rowSet.length > 0) {
           const row = rs.rowSet[0];
-          if (!cancelled) {
+          if (!controller.signal.aborted) {
             setData({
               wingspan: row[wingspanIdx] ? `${row[wingspanIdx]}"` : "-",
               standingReach: row[standingReachIdx] ? `${row[standingReachIdx]}"` : "-",
@@ -56,9 +56,9 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
           }
         }
       } catch { /* ignore */ }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [draftYear]);
 
   if (loading) return null;

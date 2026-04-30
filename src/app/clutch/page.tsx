@@ -26,12 +26,11 @@ export default function ClutchPage() {
   const [category, setCategory] = useState("EFF");
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       setLoading(true);
       setError(false);
       try {
-        // Use leagueleaders which is reliable — show efficiency leaders as "clutch performers"
         const params = new URLSearchParams({
           endpoint: "leagueleaders",
           LeagueID: "00",
@@ -41,7 +40,7 @@ export default function ClutchPage() {
           Scope: "S",
           StatCategory: category,
         });
-        const res = await fetch(`/api/stats?${params}`);
+        const res = await fetch(`/api/stats?${params}`, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
         const rs = data.resultSet;
@@ -52,13 +51,13 @@ export default function ClutchPage() {
           headers.forEach((h, i) => { obj[h] = row[i]; });
           return obj;
         }) as unknown as PlayerRow[];
-        if (!cancelled) setPlayers(parsed);
+        if (!controller.signal.aborted) setPlayers(parsed);
       } catch {
-        if (!cancelled) setError(true);
+        if (!controller.signal.aborted) setError(true);
       }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [category]);
 
   const overviewStats = useMemo(() => {

@@ -20,14 +20,15 @@ function TabSkeleton() {
   );
 }
 
+const TABS = [
+  { key: "players" as Tab, label: "Player Leaders", icon: Users },
+  { key: "teams" as Tab, label: "Team Standings", icon: BarChart3 },
+  { key: "awards" as Tab, label: "Awards", icon: Trophy },
+  { key: "mvp" as Tab, label: "MVP Ladder", icon: Medal },
+] as const;
+
 export default function StatsPage() {
   const [tab, setTab] = useState<Tab>("players");
-  const tabs = [
-    { key: "players" as Tab, label: "Player Leaders", icon: Users },
-    { key: "teams" as Tab, label: "Team Standings", icon: BarChart3 },
-    { key: "awards" as Tab, label: "Awards", icon: Trophy },
-    { key: "mvp" as Tab, label: "MVP Ladder", icon: Medal },
-  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -41,7 +42,7 @@ export default function StatsPage() {
         </span>
       </div>
       <div className="flex gap-1 mb-6 bg-bg-card rounded-xl p-1 border border-border w-fit">
-        {tabs.map(({ key, label, icon: Icon }) => (
+        {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}

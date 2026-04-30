@@ -14,18 +14,17 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       try {
-        // Use BallDontLie API via our proxy
-        const res = await fetch(`/api/salary?player=${encodeURIComponent(playerName)}&team=${encodeURIComponent(teamAbbr)}`);
+        const res = await fetch(`/api/salary?player=${encodeURIComponent(playerName)}&team=${encodeURIComponent(teamAbbr)}`, { signal: controller.signal });
         if (!res.ok) { setLoading(false); return; }
         const json = await res.json();
-        if (!cancelled && json.data) setContracts(json.data);
+        if (!controller.signal.aborted && json.data) setContracts(json.data);
       } catch { /* ignore */ }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [playerName, teamAbbr]);
 
   if (loading) return null;
