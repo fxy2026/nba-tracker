@@ -71,7 +71,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top">
+    <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 h-12 sm:h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
@@ -164,6 +164,7 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search players..."
+                  aria-label="Search players"
                   className="w-48 bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
                   onBlur={() => { setTimeout(() => { if (!searchQuery) setSearchOpen(false); }, 150); }}
                 />

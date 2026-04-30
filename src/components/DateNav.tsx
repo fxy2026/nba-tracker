@@ -53,10 +53,11 @@ export default function DateNav({ selectedDate }: DateNavProps) {
   const nextDate = offsetDate(selectedDate, 1);
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-1" role="navigation" aria-label="Date navigation">
       <Link
         href={`/?date=${prevDate}`}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+        aria-label="Previous day"
       >
         <ChevronLeft size={20} />
       </Link>
@@ -87,6 +88,7 @@ export default function DateNav({ selectedDate }: DateNavProps) {
       <Link
         href={`/?date=${nextDate}`}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+        aria-label="Next day"
       >
         <ChevronRight size={20} />
       </Link>

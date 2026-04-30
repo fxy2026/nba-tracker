@@ -100,6 +100,10 @@ export default function RootLayout({
           <br />
           <span className="text-text-secondary/50 text-[10px]">
             Open source on <a href="https://github.com/fxy2026/nba-tracker" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">GitHub</a>
+            {" "}&middot;{" "}
+            Shortcuts: <kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">←→</kbd> dates
+            {" "}<kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">⌘K</kbd> search
+            {" "}<kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">T</kbd> top
           </span>
         </footer>
         <MobileNav />
