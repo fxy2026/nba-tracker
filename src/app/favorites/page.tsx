@@ -153,6 +153,9 @@ export default function FavoritesPage() {
                   <Link href={`/team/${tricode}`} className="flex-1 font-medium text-text-primary hover:text-accent transition-colors">
                     {team.city} {team.name}
                   </Link>
+                  <Link href={`/schedule?team=${tricode}`} className="text-[10px] px-2 py-1 rounded bg-bg-hover text-text-secondary hover:text-accent transition-colors">
+                    Schedule
+                  </Link>
                   <button
                     onClick={() => removeTeam(tricode)}
                     className="p-1.5 rounded-lg text-red-500 hover:text-red-400 transition-colors"
