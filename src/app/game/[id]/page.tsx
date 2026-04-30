@@ -196,19 +196,7 @@ function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers }: {
   );
 }
 
-async function PlayByPlaySection({ gameId }: { gameId: string }) {
-  let actions: Record<string, unknown>[] = [];
-  try {
-    const res = await fetch(
-      `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
-      { headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" }, next: { revalidate: 60 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    actions = data.game?.actions || [];
-  } catch {
-    return null;
-  }
+function PlayByPlaySection({ actions }: { actions: Record<string, unknown>[] }) {
   if (actions.length === 0) return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <PlayByPlay actions={actions as any} />;
@@ -464,25 +452,10 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
   );
 }
 
-async function KeyMomentsSection({ gameId }: { gameId: string }) {
-  let actions: Record<string, unknown>[] = [];
-  try {
-    const res = await fetch(
-      `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
-      { headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" }, next: { revalidate: 60 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    actions = data.game?.actions || [];
-  } catch {
-    return null;
-  }
+function KeyMomentsSection({ actions }: { actions: Record<string, unknown>[] }) {
   if (actions.length === 0) return null;
-  return <KeyMoments actions={actions as unknown as Parameters<typeof KeyMoments>[0]["actions"]} />;
-}
-
-function SectionSkeleton() {
-  return <div className="h-48 bg-bg-card rounded-xl border border-border skeleton-shimmer" />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <KeyMoments actions={actions as any} />;
 }
 
 export default async function GamePage({ params }: PageProps) {
@@ -883,12 +856,8 @@ export default async function GamePage({ params }: PageProps) {
         );
       })()}
 
-      {/* Key Moments — between TeamCompare and Shot Chart */}
-      {isFinal && (
-        <Suspense fallback={<SectionSkeleton />}>
-          <KeyMomentsSection gameId={id} />
-        </Suspense>
-      )}
+      {/* Key Moments */}
+      {isFinal && <KeyMomentsSection actions={pbpActions as Record<string, unknown>[]} />}
 
       {/* Shot Chart + Box Score + Play-by-Play */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -918,11 +887,9 @@ export default async function GamePage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Play-by-Play Timeline — streamed */}
+      {/* Play-by-Play Timeline */}
       <div className="mt-6">
-        <Suspense fallback={<SectionSkeleton />}>
-          <PlayByPlaySection gameId={id} />
-        </Suspense>
+        <PlayByPlaySection actions={pbpActions as Record<string, unknown>[]} />
       </div>
     </div>
   );

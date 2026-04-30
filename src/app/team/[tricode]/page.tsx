@@ -118,50 +118,30 @@ export default async function TeamPage({ params }: PageProps) {
   const ppg = gamesPlayed > 0 ? (totalPointsScored / gamesPlayed).toFixed(1) : "0.0";
   const oppPpg = gamesPlayed > 0 ? (totalPointsAllowed / gamesPlayed).toFixed(1) : "0.0";
 
-  // Streak calculation (based on most recent games order which is already desc)
+  // Single pass: current streak + longest streaks + h2h rivalries
   let streakType = "";
   let streakCount = 0;
-  for (const g of recentGames) {
-    const curr = g.won ? "W" : "L";
-    if (streakCount === 0) {
-      streakType = curr;
-      streakCount = 1;
-    } else if (curr === streakType) {
-      streakCount++;
-    } else {
-      break;
+  let longestWinStreak = 0, longestLossStreak = 0;
+  const h2hMap: Record<string, { opponent: string; opponentId: number; wins: number; losses: number }> = {};
+  {
+    // Current streak (from desc order — most recent first)
+    for (const g of recentGames) {
+      const curr = g.won ? "W" : "L";
+      if (streakCount === 0) { streakType = curr; streakCount = 1; }
+      else if (curr === streakType) streakCount++;
+      else break;
+    }
+    // Longest streaks + h2h (chronological — reverse of desc)
+    let currentW = 0, currentL = 0;
+    for (let i = recentGames.length - 1; i >= 0; i--) {
+      const g = recentGames[i];
+      if (g.won) { currentW++; currentL = 0; if (currentW > longestWinStreak) longestWinStreak = currentW; }
+      else { currentL++; currentW = 0; if (currentL > longestLossStreak) longestLossStreak = currentL; }
+      if (!h2hMap[g.opponent]) h2hMap[g.opponent] = { opponent: g.opponent, opponentId: g.opponentId, wins: 0, losses: 0 };
+      if (g.won) h2hMap[g.opponent].wins++; else h2hMap[g.opponent].losses++;
     }
   }
   const streakDisplay = streakCount > 0 ? `${streakType}${streakCount}` : "-";
-
-  // Compute longest win streak and loss streak
-  let longestWinStreak = 0, longestLossStreak = 0;
-  {
-    let currentW = 0, currentL = 0;
-    // recentGames is sorted desc by date, reverse to go chronological
-    const chronological = [...recentGames].reverse();
-    for (const g of chronological) {
-      if (g.won) {
-        currentW++;
-        currentL = 0;
-        if (currentW > longestWinStreak) longestWinStreak = currentW;
-      } else {
-        currentL++;
-        currentW = 0;
-        if (currentL > longestLossStreak) longestLossStreak = currentL;
-      }
-    }
-  }
-
-  // Compute head-to-head rivalries
-  const h2hMap: Record<string, { opponent: string; opponentId: number; wins: number; losses: number }> = {};
-  for (const g of recentGames) {
-    if (!h2hMap[g.opponent]) {
-      h2hMap[g.opponent] = { opponent: g.opponent, opponentId: g.opponentId, wins: 0, losses: 0 };
-    }
-    if (g.won) h2hMap[g.opponent].wins++;
-    else h2hMap[g.opponent].losses++;
-  }
   const rivalries = Object.values(h2hMap)
     .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses))
     .slice(0, 5);

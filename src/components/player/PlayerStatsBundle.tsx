@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import Link from "next/link";
 
 interface SeasonRow {
@@ -189,7 +189,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   );
 }
 
-function GameTrendChart({ games }: { games: GameLogRow[] }) {
+const GameTrendChart = memo(function GameTrendChart({ games }: { games: GameLogRow[] }) {
   // Show last 20 games in chronological order (oldest first)
   const data = [...games].reverse().slice(-20);
   const maxPts = Math.max(...data.map((g) => g.PTS), 10);
@@ -255,7 +255,7 @@ function GameTrendChart({ games }: { games: GameLogRow[] }) {
       </svg>
     </div>
   );
-}
+});
 
 // Compare current to career average
 function CompareArrow({ current, career }: { current: number; career: number }) {
