@@ -8,11 +8,21 @@ const HEADERS: HeadersInit = {
   Accept: "application/json",
 };
 
-// Proxy for stats.nba.com — avoids CORS issues
+// Proxy for stats.nba.com — avoids CORS issues, adds timeout + security
+const ALLOWED_ENDPOINTS = new Set([
+  "leagueleaders", "playercareerstats", "playergamelog",
+  "draftcombineplayeranthro", "commonplayerinfo",
+]);
+
 export async function GET(request: NextRequest) {
   const endpoint = request.nextUrl.searchParams.get("endpoint");
   if (!endpoint) {
     return NextResponse.json({ error: "endpoint required" }, { status: 400 });
+  }
+
+  // Whitelist endpoints to prevent open proxy abuse
+  if (!ALLOWED_ENDPOINTS.has(endpoint)) {
+    return NextResponse.json({ error: "endpoint not allowed" }, { status: 403 });
   }
 
   // Build query string from remaining params
@@ -24,10 +34,14 @@ export async function GET(request: NextRequest) {
   const url = `${STATS_BASE}/${endpoint}?${params.toString()}`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000); // 6s timeout
     const res = await fetch(url, {
       headers: HEADERS,
-      next: { revalidate: 300 }, // cache 5 min
+      next: { revalidate: 300 },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) {
       return NextResponse.json(
         { error: `NBA API returned ${res.status}` },
@@ -39,6 +53,6 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch from NBA API" }, { status: 500 });
+    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }

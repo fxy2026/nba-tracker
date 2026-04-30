@@ -17,7 +17,9 @@ const STANDINGS_TTL = 5 * 60 * 1000; // 5 minutes
 export async function GET() {
   try {
     if (standingsCache && Date.now() - standingsCache.ts < STANDINGS_TTL) {
-      return NextResponse.json({ data: standingsCache.data });
+      return NextResponse.json({ data: standingsCache.data }, {
+        headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+      });
     }
 
     const dates = await getFullSchedule();

@@ -5,12 +5,14 @@ const ESPN_INJURIES =
 
 export async function GET() {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(ESPN_INJURIES, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-      },
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
       next: { revalidate: 1800 },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       return NextResponse.json({ data: [] }, { status: 502 });

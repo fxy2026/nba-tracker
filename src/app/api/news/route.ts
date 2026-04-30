@@ -7,13 +7,15 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim();
 
   try {
-    // Fetch general NBA news from ESPN
+    // Fetch general NBA news from ESPN (5s timeout)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(ESPN_NEWS, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-      },
-      next: { revalidate: 600 }, // Cache 10 min
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+      next: { revalidate: 600 },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) return NextResponse.json({ data: [] });
     const data = await res.json();

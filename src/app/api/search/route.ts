@@ -3,7 +3,7 @@ import { getPlayerIndex } from "@/lib/api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim().toLowerCase();
+  const q = searchParams.get("q")?.trim().toLowerCase().slice(0, 100); // Cap length
 
   if (!q || q.length < 2) {
     return NextResponse.json({ data: [] });

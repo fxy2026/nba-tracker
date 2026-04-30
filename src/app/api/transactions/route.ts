@@ -19,13 +19,17 @@ interface CleanedTransaction {
 
 export async function GET() {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(
       "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions",
       {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
         next: { revalidate: 1800 },
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
 
     if (!res.ok) {
       return NextResponse.json({ transactions: [] }, { status: 502 });

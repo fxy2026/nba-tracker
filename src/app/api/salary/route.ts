@@ -16,14 +16,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // First, search for the player to get their BDL player ID
+    // First, search for the player to get their BDL player ID (5s timeout)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const searchRes = await fetch(
-      `${BDL_BASE}/players?search=${encodeURIComponent(playerName)}&per_page=5`,
+      `${BDL_BASE}/players?search=${encodeURIComponent(playerName.slice(0, 100))}&per_page=5`,
       {
         headers: { Authorization: apiKey },
         next: { revalidate: 86400 },
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
     if (!searchRes.ok) return NextResponse.json({ data: [] });
     const searchData = await searchRes.json();
     const players = searchData.data || [];
