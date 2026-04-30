@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -28,6 +28,27 @@ export default function DateNav({ selectedDate }: DateNavProps) {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [selectedDate, router]);
+
+  // Mobile swipe navigation
+  const touchStart = useRef<number | null>(null);
+  const handleSwipe = useCallback((dir: number) => {
+    router.push(`/?date=${offsetDate(selectedDate, dir)}`);
+  }, [selectedDate, router]);
+
+  useEffect(() => {
+    const el = document.getElementById("main-content");
+    if (!el) return;
+    const onTouchStart = (e: TouchEvent) => { touchStart.current = e.touches[0].clientX; };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (touchStart.current === null) return;
+      const diff = e.changedTouches[0].clientX - touchStart.current;
+      touchStart.current = null;
+      if (Math.abs(diff) > 80) handleSwipe(diff > 0 ? -1 : 1);
+    };
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => { el.removeEventListener("touchstart", onTouchStart); el.removeEventListener("touchend", onTouchEnd); };
+  }, [handleSwipe]);
 
   // Generate 7 days centered around selected date
   const days: { date: string; label: string; weekday: string }[] = [];
