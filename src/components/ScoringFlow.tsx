@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   awayTricode: string;
 }
 
-export default function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode }: Props) {
+export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode }: Props) {
   if (homePeriods.length === 0) return null;
 
   // Build cumulative score data
@@ -72,4 +73,4 @@ export default function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awa
       </svg>
     </div>
   );
-}
+});

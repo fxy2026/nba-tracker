@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   awayTricode: string;
 }
 
-export default function QuarterBars({ homePeriods, awayPeriods, homeTricode, awayTricode }: Props) {
+export default memo(function QuarterBars({ homePeriods, awayPeriods, homeTricode, awayTricode }: Props) {
   if (homePeriods.length === 0) return null;
 
   const maxScore = Math.max(
@@ -57,4 +58,4 @@ export default function QuarterBars({ homePeriods, awayPeriods, homeTricode, awa
       </div>
     </div>
   );
-}
+});

@@ -1,10 +1,12 @@
+import { memo } from "react";
+
 interface RadarChartProps {
   stats: { label: string; home: number; away: number; max: number }[];
   homeLabel: string;
   awayLabel: string;
 }
 
-export default function RadarChart({ stats, homeLabel, awayLabel }: RadarChartProps) {
+export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarChartProps) {
   const cx = 150, cy = 150, r = 110;
   const n = stats.length;
 
@@ -93,4 +95,4 @@ export default function RadarChart({ stats, homeLabel, awayLabel }: RadarChartPr
       </div>
     </div>
   );
-}
+});
