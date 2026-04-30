@@ -70,6 +70,28 @@ export default function TeamCompare({ homeTeam, awayTeam }: Props) {
           );
         })}
       </div>
+      {/* Category advantage summary */}
+      {(() => {
+        let homeWins = 0;
+        let awayWins = 0;
+        for (const { key } of STATS) {
+          const hVal = hStats[key] ?? 0;
+          const aVal = aStats[key] ?? 0;
+          const isTurnover = key === "turnovers";
+          if (isTurnover ? hVal < aVal : hVal > aVal) homeWins++;
+          else if (isTurnover ? aVal < hVal : aVal > hVal) awayWins++;
+        }
+        return (
+          <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
+            <span className={`font-bold ${awayWins > homeWins ? "text-accent" : "text-text-secondary"}`}>
+              {awayTeam.teamTricode}: {awayWins} categories
+            </span>
+            <span className={`font-bold ${homeWins > awayWins ? "text-accent" : "text-text-secondary"}`}>
+              {homeTeam.teamTricode}: {homeWins} categories
+            </span>
+          </div>
+        );
+      })()}
     </div>
   );
 }

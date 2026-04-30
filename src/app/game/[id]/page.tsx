@@ -671,6 +671,56 @@ export default async function GamePage({ params }: PageProps) {
         />
       )}
 
+      {/* Pace & Bench Scoring — quick insights */}
+      {isFinal && (() => {
+        const totalPts = boxScore.homeTeam.score + boxScore.awayTeam.score;
+        const periodsCount = boxScore.homeTeam.periods?.length || 4;
+        const otPeriods = Math.max(periodsCount - 4, 0);
+        const pace = Math.round(totalPts / (48 + otPeriods * 5) * 48); // normalize to 48 min
+
+        const benchPts = (team: BoxScoreTeam) =>
+          team.players.filter((p) => p.starter !== "1" && p.played === "1")
+            .reduce((s, p) => s + p.statistics.points, 0);
+        const homeBench = benchPts(boxScore.homeTeam);
+        const awayBench = benchPts(boxScore.awayTeam);
+
+        const homeFTA = boxScore.homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.freeThrowsAttempted, 0);
+        const awayFTA = boxScore.awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.freeThrowsAttempted, 0);
+
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-accent">{pace}</p>
+              <p className="text-[10px] text-text-secondary uppercase">Est. Pace</p>
+            </div>
+            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-text-primary">{totalPts}</p>
+              <p className="text-[10px] text-text-secondary uppercase">Total Points</p>
+            </div>
+            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+              <p className="text-sm font-bold">
+                <span className="text-text-secondary">{boxScore.awayTeam.teamTricode}</span>{" "}
+                <span className="text-accent">{awayBench}</span>
+                <span className="text-text-secondary mx-1">-</span>
+                <span className="text-accent">{homeBench}</span>{" "}
+                <span className="text-text-secondary">{boxScore.homeTeam.teamTricode}</span>
+              </p>
+              <p className="text-[10px] text-text-secondary uppercase">Bench Points</p>
+            </div>
+            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+              <p className="text-sm font-bold">
+                <span className="text-text-secondary">{boxScore.awayTeam.teamTricode}</span>{" "}
+                <span className={awayFTA > homeFTA ? "text-accent" : "text-text-primary"}>{awayFTA}</span>
+                <span className="text-text-secondary mx-1">-</span>
+                <span className={homeFTA > awayFTA ? "text-accent" : "text-text-primary"}>{homeFTA}</span>{" "}
+                <span className="text-text-secondary">{boxScore.homeTeam.teamTricode}</span>
+              </p>
+              <p className="text-[10px] text-text-secondary uppercase">Free Throw Att.</p>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Game Summary — right after scoreboard for final games */}
       {isFinal && (
         <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} />

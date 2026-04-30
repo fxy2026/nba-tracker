@@ -85,8 +85,19 @@ export default function QuarterScores({ homeTeam, awayTeam }: Props) {
       </table>
       {/* Halftime score */}
       {showHalftime && (
-        <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-text-secondary">
-          <span>Halftime: {awayTeam.teamTricode} {awayHalf} - {homeHalf} {homeTeam.teamTricode}</span>
+        <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-text-secondary">
+          <span>Halftime: {awayTeam.teamTricode} <span className={awayHalf > homeHalf ? "font-bold text-accent" : ""}>{awayHalf}</span> - <span className={homeHalf > awayHalf ? "font-bold text-accent" : ""}>{homeHalf}</span> {homeTeam.teamTricode}</span>
+          {awayHalf !== homeHalf && (
+            <span className="px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary">
+              {awayHalf > homeHalf ? awayTeam.teamTricode : homeTeam.teamTricode} led by {Math.abs(awayHalf - homeHalf)}
+            </span>
+          )}
+        </div>
+      )}
+      {/* Best quarter indicator */}
+      {bestQuarterIdx >= 0 && (
+        <div className="text-center mt-1 text-[10px] text-text-secondary">
+          Highest-scoring: <span className="text-accent font-medium">{bestQuarterIdx < 4 ? `Q${bestQuarterIdx + 1}` : `OT${bestQuarterIdx - 3}`}</span> ({bestQuarterTotal} pts)
         </div>
       )}
     </div>
