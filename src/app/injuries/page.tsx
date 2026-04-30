@@ -261,11 +261,17 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                       <span className="text-xs text-text-secondary flex-1 line-clamp-2">
                         {inj.shortComment || ""}
                       </span>
-                      {inj.date && (
-                        <span className="text-[10px] text-text-secondary shrink-0">
-                          {new Date(inj.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        </span>
-                      )}
+                      {inj.date && (() => {
+                        const injDate = new Date(inj.date);
+                        const daysAgo = Math.floor((Date.now() - injDate.getTime()) / (1000 * 60 * 60 * 24));
+                        return (
+                          <span className="text-[10px] text-text-secondary shrink-0 flex items-center gap-1">
+                            {injDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            {daysAgo <= 2 && <span className="px-1 py-0.5 rounded bg-danger/15 text-danger font-medium">NEW</span>}
+                            {daysAgo > 2 && daysAgo <= 7 && <span className="text-text-secondary/60">({daysAgo}d)</span>}
+                          </span>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
