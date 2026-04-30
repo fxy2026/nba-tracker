@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "NBA 东西部排名、胜率、连胜连败，实时更新。",
 };
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 interface TeamRecord {
   tricode: string;

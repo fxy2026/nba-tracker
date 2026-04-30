@@ -156,7 +156,7 @@ export default function Navbar() {
               <span className="hidden lg:inline">Teams</span>
             </button>
             {teamsOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[360px] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
+              <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[90vw] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
                 <div className="grid grid-cols-5 gap-1.5">
                   {TEAMS.map((t) => (
                     <Link

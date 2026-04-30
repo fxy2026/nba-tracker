@@ -69,14 +69,16 @@ export default async function HomePage({ searchParams }: PageProps) {
   const replaySet = new Set(replayGameIds);
 
   const hasLiveGames = isToday && games.some((g) => g.gameStatus === 2);
+  const liveNow = games.filter((g) => g.gameStatus === 2);
+  const upcoming = games.filter((g) => g.gameStatus === 1);
+  const final = games.filter((g) => g.gameStatus === 3);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Feature 5: Live game score ticker */}
       {hasLiveGames && (
         <ScoreTicker
-          games={games
-            .filter((g) => g.gameStatus === 2)
+          games={liveNow
             .map((g) => ({
               gameId: g.gameId,
               awayTricode: g.awayTeam.teamTricode,
@@ -113,9 +115,8 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       {/* Game of the Day */}
       {(() => {
-        const finishedGames = games.filter((g) => g.gameStatus === 3);
-        if (finishedGames.length === 0) return null;
-        const closest = finishedGames.reduce((best, g) => {
+        if (final.length === 0) return null;
+        const closest = final.reduce((best, g) => {
           const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
           const bestDiff = Math.abs(best.homeTeam.score - best.awayTeam.score);
           return diff < bestDiff ? g : best;
@@ -149,24 +150,22 @@ export default async function HomePage({ searchParams }: PageProps) {
                 Light Day
               </span>
             )}
-            {games.filter(g => g.gameStatus === 2).length > 0 && (
+            {liveNow.length > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-                {games.filter(g => g.gameStatus === 2).length} Live
+                {liveNow.length} Live
               </span>
             )}
-            {games.filter(g => g.gameStatus === 3).length > 0 && (
+            {final.length > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">
-                {games.filter(g => g.gameStatus === 3).length} Final
+                {final.length} Final
               </span>
             )}
           </div>
-          {(() => {
-            const finishedGames = games.filter(g => g.gameStatus === 3);
-            if (finishedGames.length === 0) return null;
-            const totalPts = finishedGames.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0);
+          {final.length > 0 && (() => {
+            const totalPts = final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0);
             return (
               <p className="text-xs text-text-secondary mt-1">
-                Total Points: <span className="font-bold text-accent">{totalPts}</span> across {finishedGames.length} finished game{finishedGames.length !== 1 ? "s" : ""}
+                Total Points: <span className="font-bold text-accent">{totalPts}</span> across {final.length} finished game{final.length !== 1 ? "s" : ""}
               </p>
             );
           })()}
@@ -181,42 +180,42 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           )}
           {/* Live Now */}
-          {games.filter(g => g.gameStatus === 2).length > 0 && (
+          {liveNow.length > 0 && (
             <>
               <h2 className="text-sm font-semibold text-success flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
                 Live Now
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {games.filter(g => g.gameStatus === 2).map((game) => (
+                {liveNow.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
             </>
           )}
           {/* Upcoming */}
-          {games.filter(g => g.gameStatus === 1).length > 0 && (
+          {upcoming.length > 0 && (
             <>
               <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/50" />
                 Upcoming
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {games.filter(g => g.gameStatus === 1).map((game) => (
+                {upcoming.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
             </>
           )}
           {/* Final */}
-          {games.filter(g => g.gameStatus === 3).length > 0 && (
+          {final.length > 0 && (
             <>
               <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/30" />
                 Final
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {games.filter(g => g.gameStatus === 3).map((game) => (
+                {final.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
@@ -286,13 +285,12 @@ export default async function HomePage({ searchParams }: PageProps) {
       )}
 
       {/* Game insights for the day */}
-      {games.length > 0 && games.some((g) => g.gameStatus === 3) && (() => {
-        const finished = games.filter((g) => g.gameStatus === 3);
-        const avgScore = finished.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / finished.length;
-        const blowouts = finished.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) >= 20);
-        const thrillers = finished.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) <= 5);
-        const homeWins = finished.filter((g) => g.homeTeam.score > g.awayTeam.score).length;
-        const awayWins = finished.length - homeWins;
+      {final.length > 0 && (() => {
+        const avgScore = final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / final.length;
+        const blowouts = final.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) >= 20);
+        const thrillers = final.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) <= 5);
+        const homeWins = final.filter((g) => g.homeTeam.score > g.awayTeam.score).length;
+        const awayWins = final.length - homeWins;
         return (
           <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Day Insights</h3>
