@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CURRENT_SEASON } from "@/lib/constants";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
 
@@ -42,21 +43,16 @@ export default function CalendarPage() {
 
   const today = getTodayStr();
 
-  const fetchMonth = useCallback(async (y: number, m: number) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/calendar?month=${getMonthStr(y, m)}`);
-      if (res.ok) {
-        const json = await res.json();
-        setDays(json.data || []);
-      }
-    } catch { /* ignore */ }
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
-    setTimeout(() => fetchMonth(year, month), 0);
-  }, [year, month, fetchMonth]);
+    const controller = new AbortController();
+    setLoading(true);
+    fetch(`/api/calendar?month=${getMonthStr(year, month)}`, { signal: controller.signal })
+      .then((r) => r.ok ? r.json() : null)
+      .then((json) => { if (json && !controller.signal.aborted) setDays(json.data || []); })
+      .catch(() => {})
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [year, month]);
 
   const goToPrevMonth = () => {
     if (month === 0) { setYear(year - 1); setMonth(11); }
@@ -99,7 +95,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Season Calendar</h1>
-          <p className="text-xs text-text-secondary mt-0.5">2025-26 NBA Season</p>
+          <p className="text-xs text-text-secondary mt-0.5">{CURRENT_SEASON} NBA Season</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={goToPrevMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">

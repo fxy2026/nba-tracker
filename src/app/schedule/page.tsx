@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
+import DateJumper from "@/components/DateJumper";
 
 export const metadata: Metadata = {
   title: "赛程",
@@ -92,16 +93,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
       })()}
 
       {/* Date jump */}
-      <div className="mb-4 flex items-center gap-3">
-        <label htmlFor="date-jump" className="text-xs text-text-secondary font-medium">Jump to date:</label>
-        <input
-          type="date"
-          id="date-jump"
-          defaultValue={new Date().toISOString().slice(0, 10)}
-          className="bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-accent"
-        />
-        <script dangerouslySetInnerHTML={{ __html: `document.getElementById('date-jump').addEventListener('change',function(e){window.location.href='/?date='+e.target.value;})` }} />
-      </div>
+      <DateJumper />
 
       {/* Team filter */}
       <div className="mb-6 flex flex-wrap items-center gap-2">

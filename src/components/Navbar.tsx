@@ -121,6 +121,7 @@ export default function Navbar() {
           {/* More Dropdown */}
           <div className="relative" ref={moreRef}>
             <button onClick={() => setMoreOpen(!moreOpen)}
+              aria-label="More navigation options"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 moreOpen || isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}>

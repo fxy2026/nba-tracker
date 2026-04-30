@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { CURRENT_SEASON } from "@/lib/constants";
 
 interface LeaderRow {
   PLAYER_ID: number;
@@ -36,7 +37,7 @@ export default function MvpLadder() {
           LeagueID: "00",
           PerMode: "PerGame",
           Scope: "S",
-          Season: "2025-26",
+          Season: CURRENT_SEASON,
           SeasonType: "Regular Season",
           StatCategory: "EFF",
         });

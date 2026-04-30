@@ -38,6 +38,7 @@ export default memo(function ShareButton({ text }: ShareButtonProps) {
       onClick={handleShare}
       className="p-1.5 rounded-lg text-text-secondary hover:text-accent transition-colors relative"
       title="Share game result"
+      aria-label="Share game result"
     >
       {copied ? (
         <Check size={16} className="text-success" />

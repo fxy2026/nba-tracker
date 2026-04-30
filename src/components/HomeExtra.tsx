@@ -10,15 +10,13 @@ export default function HomeExtra() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
     const controller = new AbortController();
     fetch("/api/extra", { signal: controller.signal })
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (!cancelled && d) setData(d); })
-      .catch(() => { if (!cancelled) setError(true); })
-      .finally(() => { if (!cancelled && !data) setData((prev) => prev ?? { playoffs: [], recent: [] }); });
-    return () => { cancelled = true; controller.abort(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .then((d) => { if (!controller.signal.aborted && d) setData(d); })
+      .catch(() => { if (!controller.signal.aborted) setError(true); })
+      .finally(() => { if (!controller.signal.aborted) setData((prev) => prev ?? { playoffs: [], recent: [] }); });
+    return () => controller.abort();
   }, []);
 
   if (error) return null;

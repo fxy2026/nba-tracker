@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
+import { CURRENT_SEASON } from "@/lib/constants";
 const STATS_API = "/api/stats";
-const CURRENT_SEASON = "2025-26";
 
 interface LeaderRow {
   PLAYER_ID: number;

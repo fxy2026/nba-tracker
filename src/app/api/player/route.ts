@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findESPNId, getESPNCareerStats } from "@/lib/espn";
+import { CURRENT_SEASON } from "@/lib/constants";
 
 const NBA_STATS_BASE = "https://stats.nba.com/stats";
 const NBA_HEADERS: HeadersInit = {
@@ -23,7 +24,7 @@ async function fetchSafe(url: string, headers: HeadersInit, revalidate: number):
 async function fetchFromNBAStats(playerId: string) {
   const [careerRes, gameLogRes] = await Promise.all([
     fetchSafe(`${NBA_STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`, NBA_HEADERS, 3600),
-    fetchSafe(`${NBA_STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=2025-26&SeasonType=Regular+Season`, NBA_HEADERS, 300),
+    fetchSafe(`${NBA_STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${CURRENT_SEASON}&SeasonType=Regular+Season`, NBA_HEADERS, 300),
   ]);
 
   let careerSeasons = null;

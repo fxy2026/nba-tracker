@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { CURRENT_SEASON } from "@/lib/constants";
 import { Target, Loader2 } from "lucide-react";
 
 interface PlayerRow {
@@ -34,7 +35,7 @@ export default function ClutchPage() {
         const params = new URLSearchParams({
           endpoint: "leagueleaders",
           LeagueID: "00",
-          Season: "2025-26",
+          Season: CURRENT_SEASON,
           SeasonType: "Playoffs",
           PerMode: "PerGame",
           Scope: "S",
@@ -94,7 +95,7 @@ export default function ClutchPage() {
         <div>
           <h1 className="text-2xl font-bold">Playoff Performers</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            2025-26 Playoffs — Top players by category
+            {CURRENT_SEASON} Playoffs — Top players by category
           </p>
         </div>
       </div>

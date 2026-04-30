@@ -1,11 +1,10 @@
 import { Calendar } from "lucide-react";
+import { CURRENT_SEASON, SEASON_START, SEASON_END, PLAYOFFS_END } from "@/lib/constants";
 
 export default function SeasonProgress() {
-  // 2025-26 NBA season: Oct 21 2025 - Apr 12 2026 (regular season)
-  // Playoffs: Apr 18 - June 2026
-  const regularStart = new Date("2025-10-21").getTime();
-  const regularEnd = new Date("2026-04-12").getTime();
-  const playoffsEnd = new Date("2026-06-21").getTime();
+  const regularStart = new Date(SEASON_START).getTime();
+  const regularEnd = new Date(SEASON_END).getTime();
+  const playoffsEnd = new Date(PLAYOFFS_END).getTime();
   const now = Date.now();
 
   const isRegularSeason = now >= regularStart && now <= regularEnd;
@@ -44,7 +43,7 @@ export default function SeasonProgress() {
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase text-text-secondary font-semibold flex items-center gap-1">
           <Calendar size={10} />
-          2025-26 Season
+          {CURRENT_SEASON} Season
         </span>
         <div className="flex items-center gap-2">
           {daysLeft > 0 && (

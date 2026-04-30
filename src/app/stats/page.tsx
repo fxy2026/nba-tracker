@@ -2,6 +2,7 @@
 
 import { useState, Suspense, lazy } from "react";
 import { BarChart3, Users, Trophy, Crown, Medal } from "lucide-react";
+import { CURRENT_SEASON } from "@/lib/constants";
 
 const PlayerLeaders = lazy(() => import("@/components/stats/PlayerLeaders"));
 const TeamStandings = lazy(() => import("@/components/stats/TeamStandings"));
@@ -38,7 +39,7 @@ export default function StatsPage() {
           Stats & Rankings
         </h1>
         <span className="text-[10px] text-text-secondary px-2.5 py-1 rounded-full bg-bg-card border border-border">
-          2025-26 Season
+          {CURRENT_SEASON} Season
         </span>
       </div>
       <div className="flex gap-1 mb-6 bg-bg-card rounded-xl p-1 border border-border w-fit">

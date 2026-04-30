@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import { CURRENT_SEASON } from "@/lib/constants";
 
 interface TeamRecord { tricode: string; wins: number; losses: number; }
 
@@ -9,7 +10,7 @@ export default function ExportStandings({ east, west }: { east: TeamRecord[]; we
   const [copied, setCopied] = useState(false);
 
   const handleExport = () => {
-    const lines = ["NBA Standings 2025-26", ""];
+    const lines = [`NBA Standings ${CURRENT_SEASON}`, ""];
     lines.push("Eastern Conference:");
     east.slice(0, 8).forEach((t, i) => lines.push(`  ${i + 1}. ${t.tricode} ${t.wins}-${t.losses}`));
     lines.push("");

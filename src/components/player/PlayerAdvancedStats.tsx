@@ -38,7 +38,6 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
     setLoading(true);
     setError(false);
     const controller = new AbortController();
@@ -50,18 +49,15 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
         if (teamTricode) qs.set("team", teamTricode);
         const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
-        if (!res.ok) { if (!cancelled) { setLoading(false); } return; }
+        if (!res.ok) { if (!controller.signal.aborted) setLoading(false); return; }
         const data = await res.json();
-        const computed = computeAdvanced(data.careerSeasons || []);
-        if (!cancelled) {
-          setStats(computed);
-        }
+        if (!controller.signal.aborted) setStats(computeAdvanced(data.careerSeasons || []));
       } catch {
-        if (!cancelled) setError(true);
+        if (!controller.signal.aborted) setError(true);
       }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
+    return () => { controller.abort(); clearTimeout(timeout); };
   }, [playerId, retryKey]);
 
   if (loading) {

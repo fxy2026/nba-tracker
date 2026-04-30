@@ -18,13 +18,11 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (type === "team") {
-        setIsFav(getFavoriteTeams().includes(id as string));
-      } else {
-        setIsFav(getFavoritePlayers().includes(id as number));
-      }
-    }, 0);
+    if (type === "team") {
+      setIsFav(getFavoriteTeams().includes(id as string));
+    } else {
+      setIsFav(getFavoritePlayers().includes(id as number));
+    }
   }, [type, id]);
 
   const handleToggle = () => {
@@ -46,6 +44,7 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
           : "text-text-secondary hover:text-red-400"
       }`}
       title={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
     >
       <Heart size={20} fill={isFav ? "currentColor" : "none"} className={isFav ? "animate-count" : ""} />
     </button>

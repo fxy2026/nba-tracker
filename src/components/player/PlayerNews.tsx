@@ -16,17 +16,17 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/api/news?q=${encodeURIComponent(playerName)}`);
+        const res = await fetch(`/api/news?q=${encodeURIComponent(playerName)}`, { signal: controller.signal });
         if (!res.ok) { setLoading(false); return; }
         const json = await res.json();
-        if (!cancelled && json.data) setNews(json.data);
+        if (!controller.signal.aborted && json.data) setNews(json.data);
       } catch { /* ignore */ }
-      if (!cancelled) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [playerName]);
 
   if (loading) {
