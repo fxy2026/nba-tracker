@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, Suspense, lazy } from "react";
-import { BarChart3, Users, Trophy, Crown } from "lucide-react";
+import { BarChart3, Users, Trophy, Crown, Medal } from "lucide-react";
 
 const PlayerLeaders = lazy(() => import("@/components/stats/PlayerLeaders"));
 const TeamStandings = lazy(() => import("@/components/stats/TeamStandings"));
 const AwardsSection = lazy(() => import("@/components/stats/AwardsSection"));
+const MvpLadder = lazy(() => import("@/components/stats/MvpLadder"));
 
-type Tab = "players" | "teams" | "awards";
+type Tab = "players" | "teams" | "awards" | "mvp";
 
 function TabSkeleton() {
   return (
@@ -25,6 +26,7 @@ export default function StatsPage() {
     { key: "players" as Tab, label: "Player Leaders", icon: Users },
     { key: "teams" as Tab, label: "Team Standings", icon: BarChart3 },
     { key: "awards" as Tab, label: "Awards", icon: Trophy },
+    { key: "mvp" as Tab, label: "MVP Ladder", icon: Medal },
   ];
 
   return (
@@ -56,6 +58,7 @@ export default function StatsPage() {
         {tab === "players" && <PlayerLeaders />}
         {tab === "teams" && <TeamStandings />}
         {tab === "awards" && <AwardsSection />}
+        {tab === "mvp" && <MvpLadder />}
       </Suspense>
     </div>
   );

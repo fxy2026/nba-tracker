@@ -1,0 +1,136 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+interface LeaderRow {
+  PLAYER_ID: number;
+  PLAYER: string;
+  TEAM: string;
+  GP: number;
+  MIN: number;
+  PTS: number;
+  REB: number;
+  AST: number;
+  STL: number;
+  BLK: number;
+  EFF: number;
+}
+
+function mvpScore(p: LeaderRow): number {
+  // Custom MVP formula: PTS*1.0 + REB*0.7 + AST*1.0 + STL*1.5 + BLK*1.2 + EFF*0.3 + GP*0.1
+  return p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+}
+
+export default function MvpLadder() {
+  const [players, setPlayers] = useState<LeaderRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const qs = new URLSearchParams({
+          endpoint: "leagueleaders",
+          LeagueID: "00",
+          PerMode: "PerGame",
+          Scope: "S",
+          Season: "2025-26",
+          SeasonType: "Regular Season",
+          StatCategory: "EFF",
+        });
+        const res = await fetch(`/api/stats?${qs}`);
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const rs = data.resultSet;
+        if (!rs) throw new Error("No data");
+        const headers: string[] = rs.headers;
+        const parsed = rs.rowSet.slice(0, 50).map((row: unknown[]) => {
+          const obj: Record<string, unknown> = {};
+          headers.forEach((h, i) => { obj[h] = row[i]; });
+          return obj;
+        }) as unknown as LeaderRow[];
+        if (!cancelled) setPlayers(parsed);
+      } catch { /* ignore */ }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="h-16 skeleton-shimmer rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  // Sort by MVP score
+  const ranked = [...players]
+    .filter((p) => p.GP >= 40) // minimum games played
+    .sort((a, b) => mvpScore(b) - mvpScore(a))
+    .slice(0, 15);
+
+  if (ranked.length === 0) return <p className="text-center text-text-secondary py-12">No data available</p>;
+
+  const topScore = mvpScore(ranked[0]);
+
+  return (
+    <div>
+      <p className="text-xs text-text-secondary mb-4">
+        Custom MVP ranking based on PTS, REB, AST, STL, BLK, EFF, and games played.
+        <span className="text-text-secondary/60 ml-1">Min 40 GP required.</span>
+      </p>
+      <div className="space-y-2">
+        {ranked.map((p, i) => {
+          const score = mvpScore(p);
+          const barPct = (score / topScore) * 100;
+          return (
+            <Link
+              key={p.PLAYER_ID}
+              href={`/player/${p.PLAYER_ID}`}
+              className="flex items-center gap-3 bg-bg-card border border-border rounded-xl p-3 hover:border-accent/40 transition-colors group"
+            >
+              <span className={`text-lg font-bold w-8 text-center shrink-0 ${
+                i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-text-secondary"
+              }`}>
+                {i + 1}
+              </span>
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0">
+                <Image
+                  src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
+                  alt={p.PLAYER}
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover object-top"
+                  unoptimized
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.PLAYER}</span>
+                  <span className="text-[10px] text-text-secondary">{p.TEAM}</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[200px]">
+                    <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
+                  </div>
+                  <span className="text-[10px] text-accent font-bold tabular-nums">{score.toFixed(1)}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-text-secondary shrink-0">
+                <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> PPG</span>
+                <span>{p.REB.toFixed(1)} RPG</span>
+                <span>{p.AST.toFixed(1)} APG</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
