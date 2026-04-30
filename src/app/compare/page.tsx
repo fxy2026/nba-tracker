@@ -199,10 +199,17 @@ export default function ComparePage() {
             </div>
           </div>
 
-          {/* Separator between header and stats */}
+          {/* Position comparison + separator */}
           <div className="flex items-center gap-3 px-6 py-2 bg-bg-secondary/30">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-[10px] text-text-secondary uppercase font-medium">Stats Comparison</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-text-secondary uppercase font-medium">Stats Comparison</span>
+              {player1.position && player2.position && (
+                <span className={`text-[9px] px-1.5 py-0.5 rounded ${player1.position === player2.position ? "bg-accent/15 text-accent" : "bg-bg-hover text-text-secondary"}`}>
+                  {player1.position === player2.position ? `Same Position: ${player1.position}` : `${player1.position} vs ${player2.position}`}
+                </span>
+              )}
+            </div>
             <div className="flex-1 h-px bg-border" />
           </div>
 
