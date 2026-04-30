@@ -60,7 +60,11 @@ export default async function TeamPage({ params }: PageProps) {
         const teamScore = isHome ? g.homeTeam.score : g.awayTeam.score;
         const oppScore = isHome ? g.awayTeam.score : g.homeTeam.score;
         const won = teamScore > oppScore;
-        if (won) wins++; else losses++;
+        const isRegularSeason = g.gameId.startsWith("002");
+        // Only count regular season games for W/L record
+        if (isRegularSeason) {
+          if (won) wins++; else losses++;
+        }
 
         const opp = isHome ? g.awayTeam : g.homeTeam;
         recentGames.push({
@@ -173,6 +177,8 @@ export default async function TeamPage({ params }: PageProps) {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
+      // Only count regular season games for standings
+      if (!g.gameId.startsWith("002")) continue;
       const ht = g.homeTeam.teamTricode;
       const at = g.awayTeam.teamTricode;
       if (!teamRecordMap[ht]) teamRecordMap[ht] = { w: 0, l: 0 };
@@ -521,6 +527,7 @@ export default async function TeamPage({ params }: PageProps) {
               for (const gd of schedule) {
                 for (const g of gd.games) {
                   if (g.gameStatus !== 3) continue;
+                  if (!g.gameId.startsWith("002")) continue; // regular season only
                   const ht = g.homeTeam.teamTricode;
                   const at = g.awayTeam.teamTricode;
                   if (!oppRecords[ht]) oppRecords[ht] = { w: 0, l: 0 };

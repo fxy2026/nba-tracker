@@ -26,6 +26,8 @@ export async function GET() {
     for (const gd of dates) {
       for (const g of gd.games) {
         if (g.gameStatus !== 3) continue;
+        // Only count regular season games (gameId starts with "002")
+        if (!g.gameId.startsWith("002")) continue;
         const h = g.homeTeam;
         const a = g.awayTeam;
         if (!teamMap[h.teamTricode])
