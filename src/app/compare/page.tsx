@@ -86,26 +86,8 @@ export default function ComparePage() {
           )}
         </div>
 
-        {/* Swap button (mobile: between inputs as a row) */}
-        <div className="flex md:hidden items-center justify-center">
-          <button
-            onClick={() => {
-              const tempP = player1;
-              const tempQ = query1;
-              setPlayer1(player2);
-              setQuery1(query2);
-              setPlayer2(tempP);
-              setQuery2(tempQ);
-            }}
-            className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover hover:border-accent/50 transition-colors text-text-secondary hover:text-accent"
-            title="Swap players"
-          >
-            <ArrowLeftRight size={18} />
-          </button>
-        </div>
-
-        {/* Swap button (desktop) */}
-        <div className="hidden md:flex items-center justify-center pt-3">
+        {/* Swap button */}
+        <div className="flex items-center justify-center md:pt-3">
           <button
             onClick={() => {
               const tempP = player1;

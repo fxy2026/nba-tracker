@@ -18,13 +18,15 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/transactions")
+    const controller = new AbortController();
+    fetch("/api/transactions", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         setTransactions(data.transactions || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
 
   // Group by date

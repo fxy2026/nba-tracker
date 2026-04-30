@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const [year, monthNum] = month.split("-");
-    const dates = await getFullSchedule();
+    const dates = await Promise.race([
+      getFullSchedule(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+    ]);
 
     // Filter games for the requested month
     // Schedule dates use format "MM/DD/YYYY 00:00:00"

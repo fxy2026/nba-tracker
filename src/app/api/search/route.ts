@@ -10,7 +10,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const players = await getPlayerIndex();
+    const players = await Promise.race([
+      getPlayerIndex(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 6000)),
+    ]);
     const results = players
       .filter((p) => {
         const full = `${p.firstName} ${p.lastName}`.toLowerCase();

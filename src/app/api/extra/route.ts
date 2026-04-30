@@ -4,7 +4,10 @@ import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
 export async function GET() {
   let schedule;
   try {
-    schedule = await getFullSchedule();
+    schedule = await Promise.race([
+      getFullSchedule(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+    ]);
   } catch {
     return NextResponse.json({ recent: [], playoffs: [] }, {
       headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" },

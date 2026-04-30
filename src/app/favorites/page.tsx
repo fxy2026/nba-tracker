@@ -22,33 +22,32 @@ export default function FavoritesPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      const teams = getFavoriteTeams();
-      const players = getFavoritePlayers();
-      setFavTeams(teams);
-      setFavPlayers(players);
+    const controller = new AbortController();
+    const teams = getFavoriteTeams();
+    const players = getFavoritePlayers();
+    setFavTeams(teams);
+    setFavPlayers(players);
 
-      // Fetch player details if any favorites
-      if (players.length > 0) {
-        fetch("/api/search?q=")
-          .then((r) => r.json())
-          .then((data) => {
-            if (Array.isArray(data)) {
-              const map = new Map<number, PlayerInfo>();
-              for (const p of data) {
-                if (players.includes(p.personId)) {
-                  map.set(p.personId, p);
-                }
+    if (players.length > 0) {
+      fetch("/api/search?q=", { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const map = new Map<number, PlayerInfo>();
+            for (const p of data) {
+              if (players.includes(p.personId)) {
+                map.set(p.personId, p);
               }
-              setPlayerDetails(map);
             }
-          })
-          .catch(() => {})
-          .finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    }, 0);
+            setPlayerDetails(map);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+    return () => controller.abort();
   }, []);
 
   const removeTeam = (tricode: string) => {
