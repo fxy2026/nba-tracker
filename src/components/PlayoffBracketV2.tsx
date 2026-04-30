@@ -85,12 +85,31 @@ function SeriesCard({ s }: { s: Series }) {
           {s.team2.wins}
         </span>
       </div>
+      {/* Series Progress Dots */}
+      <div className="flex items-center justify-center gap-0.5 mt-1.5 pt-1 border-t border-border/50">
+        {Array.from({ length: 7 }).map((_, i) => {
+          const isT1 = i < s.team1.wins;
+          const isT2 = i >= 7 - s.team2.wins && i >= s.team1.wins;
+          return (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full ${
+                isT1 ? "bg-accent" : isT2 ? "bg-success" : "bg-bg-hover"
+              }`}
+            />
+          );
+        })}
+      </div>
       {/* Status */}
-      {finished && (
-        <div className="text-[10px] text-center text-accent mt-1 border-t border-border/50 pt-1">
+      {finished ? (
+        <div className="text-[10px] text-center text-accent mt-1">
           {winner?.tricode} wins {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}
         </div>
-      )}
+      ) : s.totalGames > 0 ? (
+        <div className="text-[10px] text-center text-text-secondary mt-0.5">
+          Game {s.totalGames + 1}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -188,10 +207,23 @@ export default function PlayoffBracketV2({ games }: Props) {
 
   return (
     <section>
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-        <span className="w-1 h-5 bg-accent rounded-full" />
-        Playoff Bracket
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <span className="w-1 h-5 bg-accent rounded-full" />
+          Playoff Bracket
+        </h2>
+        <div className="flex items-center gap-2 text-[10px]">
+          <span className="px-2 py-0.5 rounded-full bg-bg-card border border-border text-text-secondary">
+            {allSeries.length} series
+          </span>
+          <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
+            {allSeries.filter(s => s.team1.wins === 4 || s.team2.wins === 4).length} completed
+          </span>
+          <span className="px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+            {allSeries.filter(s => s.team1.wins < 4 && s.team2.wins < 4 && s.totalGames > 0).length} active
+          </span>
+        </div>
+      </div>
 
       {/* Desktop: East | Finals | West */}
       <div className="hidden md:flex gap-4 items-start">
