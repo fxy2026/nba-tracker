@@ -97,7 +97,10 @@ export default function CalendarPage() {
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Season Calendar</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Season Calendar</h1>
+          <p className="text-xs text-text-secondary mt-0.5">2025-26 NBA Season</p>
+        </div>
         <div className="flex items-center gap-3">
           <button onClick={goToPrevMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">
             <ChevronLeft size={18} />
