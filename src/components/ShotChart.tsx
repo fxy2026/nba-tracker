@@ -97,8 +97,21 @@ export default function ShotChart({ shots, homeTricode, awayTricode, players }: 
           </select>
         )}
 
-        <span className="text-xs text-text-secondary ml-auto">
-          {made}/{total} FG ({pct}%)
+        <span className="text-xs text-text-secondary ml-auto flex items-center gap-2">
+          <span>{made}/{total} FG ({pct}%)</span>
+          {(() => {
+            const threes = filtered.filter((s) => s.shotDistance > 22 || s.subType?.toLowerCase().includes("3pt"));
+            const threesMade = threes.filter((s) => s.shotResult === "Made").length;
+            const twos = filtered.filter((s) => !(s.shotDistance > 22 || s.subType?.toLowerCase().includes("3pt")));
+            const twosMade = twos.filter((s) => s.shotResult === "Made").length;
+            if (total === 0) return null;
+            return (
+              <>
+                <span className="text-accent">2PT: {twosMade}/{twos.length}</span>
+                <span className="text-success">3PT: {threesMade}/{threes.length}</span>
+              </>
+            );
+          })()}
         </span>
       </div>
 

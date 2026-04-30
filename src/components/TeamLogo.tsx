@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import Image from "next/image";
 
 interface TeamLogoProps {
@@ -9,7 +9,7 @@ interface TeamLogoProps {
   size?: number;
 }
 
-export default function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoProps) {
+export default memo(function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoProps) {
   const [error, setError] = useState(false);
 
   const url = teamId
@@ -38,4 +38,4 @@ export default function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoProps) 
       onError={() => setError(true)}
     />
   );
-}
+});
