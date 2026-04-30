@@ -217,13 +217,16 @@ export default async function TeamPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold">{team.city} <span className="text-accent">{team.name}</span></h1>
               <FavoriteButton type="team" id={team.tricode} />
             </div>
-            <p className="text-text-secondary text-sm mt-1 flex items-center gap-2">
+            <p className="text-text-secondary text-sm mt-1 flex items-center gap-2 flex-wrap">
               {team.conference}ern Conference &middot; {team.division} Division
               {confRank > 0 && (
                 <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${confRank <= 6 ? "bg-accent/15 text-accent" : confRank <= 10 ? "bg-yellow-500/15 text-yellow-500" : "bg-bg-hover text-text-secondary"}`}>
                   #{confRank} in {team.conference}
                 </span>
               )}
+              <Link href={`/schedule?team=${team.tricode}`} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-hover text-text-secondary hover:text-accent transition-colors">
+                Schedule &rarr;
+              </Link>
             </p>
           </div>
         </div>
