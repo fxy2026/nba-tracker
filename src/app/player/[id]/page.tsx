@@ -13,7 +13,7 @@ import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
 import PlayerAdvancedStats from "@/components/player/PlayerAdvancedStats";
 
 // Revalidate every 5 minutes
-export const revalidate = 300;
+export const revalidate = 600; // 10 min — player data doesn't change fast
 
 interface PageProps {
   params: Promise<{ id: string }>;
