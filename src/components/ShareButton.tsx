@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Share2, Check } from "lucide-react";
 
 interface ShareButtonProps {
   text: string;
 }
 
-export default function ShareButton({ text }: ShareButtonProps) {
+export default memo(function ShareButton({ text }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -51,4 +51,4 @@ export default function ShareButton({ text }: ShareButtonProps) {
       )}
     </button>
   );
-}
+});

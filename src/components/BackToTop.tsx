@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { ChevronUp } from "lucide-react";
 
-export default function BackToTop() {
+export default memo(function BackToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -35,4 +35,4 @@ export default function BackToTop() {
       <ChevronUp size={20} />
     </button>
   );
-}
+});
