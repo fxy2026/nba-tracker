@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import type { ScheduleGame } from "@/lib/api";
 import GameCard from "./GameCard";
@@ -22,8 +22,11 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
   const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
   const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
   const [loading, setLoading] = useState(!initialGames);
+  const [error, setError] = useState(false);
+  const initialFetchDone = useRef(!!initialGames);
 
   const fetchGames = useCallback(async (date: string, signal?: AbortSignal) => {
+    setError(false);
     try {
       const [gamesRes, replayRes] = await Promise.all([
         fetch(`/api/games?date=${date}`, { signal }),
@@ -32,7 +35,6 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       if (signal?.aborted) return;
       const gamesJson = await gamesRes.json();
       const rawGames: ScheduleGame[] = gamesJson.data || [];
-      // Sort: live > upcoming > final
       rawGames.sort((a, b) => {
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
         return order(a.gameStatus) - order(b.gameStatus);
@@ -43,28 +45,55 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         const rJson = await replayRes.json();
         setReplayIds(rJson.ids || []);
       }
-    } catch {
-      // Aborted or failed
+    } catch (e) {
+      if (!signal?.aborted) setError(true);
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    // Skip fetch on initial render if we have SSR data
-    if (initialGames && games === initialGames) return;
-
+    if (initialFetchDone.current) {
+      initialFetchDone.current = false;
+      return;
+    }
     setLoading(true);
     const controller = new AbortController();
     fetchGames(selectedDate, controller.signal);
     return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, fetchGames]);
 
-  const replaySet = new Set(replayIds);
-  const hasLiveGames = isToday && games.some((g) => g.gameStatus === 2);
-  const liveNow = games.filter((g) => g.gameStatus === 2);
-  const upcoming = games.filter((g) => g.gameStatus === 1);
-  const final = games.filter((g) => g.gameStatus === 3);
+  const replaySet = useMemo(() => new Set(replayIds), [replayIds]);
+  const { liveNow, upcoming, final } = useMemo(() => ({
+    liveNow: games.filter((g) => g.gameStatus === 2),
+    upcoming: games.filter((g) => g.gameStatus === 1),
+    final: games.filter((g) => g.gameStatus === 3),
+  }), [games]);
+  const hasLiveGames = isToday && liveNow.length > 0;
+
+  const gameOfTheDay = useMemo(() => {
+    if (final.length === 0) return null;
+    const closest = final.reduce((best, g) => {
+      const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
+      const bestDiff = Math.abs(best.homeTeam.score - best.awayTeam.score);
+      return diff < bestDiff ? g : best;
+    });
+    const margin = Math.abs(closest.homeTeam.score - closest.awayTeam.score);
+    if (margin > 20) return null;
+    return { ...closest, margin };
+  }, [final]);
+
+  const dayInsights = useMemo(() => {
+    if (final.length === 0) return null;
+    const avgScore = (final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / final.length).toFixed(0);
+    let blowouts = 0, thrillers = 0, homeWins = 0;
+    for (const g of final) {
+      const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
+      if (diff >= 20) blowouts++;
+      if (diff <= 5) thrillers++;
+      if (g.homeTeam.score > g.awayTeam.score) homeWins++;
+    }
+    return { avgScore, blowouts, thrillers, homeWins, awayWins: final.length - homeWins };
+  }, [final]);
 
   if (loading) {
     return (
@@ -97,6 +126,20 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     );
   }
 
+  if (error) {
+    return (
+      <div className="mt-6 bg-bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-text-secondary text-sm mb-3">Failed to load games</p>
+        <button
+          onClick={() => { setError(false); setLoading(true); fetchGames(selectedDate); }}
+          className="text-xs px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Live score ticker */}
@@ -123,27 +166,17 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       )}
 
       {/* Game of the Day */}
-      {(() => {
-        if (final.length === 0) return null;
-        const closest = final.reduce((best, g) => {
-          const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
-          const bestDiff = Math.abs(best.homeTeam.score - best.awayTeam.score);
-          return diff < bestDiff ? g : best;
-        });
-        const diff = Math.abs(closest.homeTeam.score - closest.awayTeam.score);
-        if (diff > 20) return null;
-        return (
-          <Link href={`/game/${closest.gameId}`} className="block mt-6 mb-2 px-4 py-2.5 bg-accent/10 border border-accent/20 rounded-xl hover:bg-accent/15 transition-colors">
-            <p className="text-sm text-center">
-              <span className="text-accent font-bold">Game of the Day: </span>
-              <span className="text-text-primary font-medium">
-                {closest.awayTeam.teamTricode} {closest.awayTeam.score} - {closest.homeTeam.score} {closest.homeTeam.teamTricode}
-              </span>
-              <span className="text-text-secondary ml-1">(margin: {diff})</span>
-            </p>
-          </Link>
-        );
-      })()}
+      {gameOfTheDay && (
+        <Link href={`/game/${gameOfTheDay.gameId}`} className="block mt-6 mb-2 px-4 py-2.5 bg-accent/10 border border-accent/20 rounded-xl hover:bg-accent/15 transition-colors">
+          <p className="text-sm text-center">
+            <span className="text-accent font-bold">Game of the Day: </span>
+            <span className="text-text-primary font-medium">
+              {gameOfTheDay.awayTeam.teamTricode} {gameOfTheDay.awayTeam.score} - {gameOfTheDay.homeTeam.score} {gameOfTheDay.homeTeam.teamTricode}
+            </span>
+            <span className="text-text-secondary ml-1">(margin: {gameOfTheDay.margin})</span>
+          </p>
+        </Link>
+      )}
 
       {/* Games count */}
       {games.length > 0 ? (
@@ -283,36 +316,29 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       )}
 
       {/* Day insights */}
-      {final.length > 0 && (() => {
-        const avgScore = final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / final.length;
-        const blowouts = final.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) >= 20);
-        const thrillers = final.filter((g) => Math.abs(g.homeTeam.score - g.awayTeam.score) <= 5);
-        const homeWins = final.filter((g) => g.homeTeam.score > g.awayTeam.score).length;
-        const awayWins = final.length - homeWins;
-        return (
-          <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Day Insights</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-              <div>
-                <p className="text-lg font-bold text-accent">{avgScore.toFixed(0)}</p>
-                <p className="text-text-secondary">Avg Total Pts</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold text-text-primary">{homeWins}-{awayWins}</p>
-                <p className="text-text-secondary">Home-Away</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold text-yellow-500">{thrillers.length}</p>
-                <p className="text-text-secondary">Thrillers (&le;5)</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold text-danger">{blowouts.length}</p>
-                <p className="text-text-secondary">Blowouts (&ge;20)</p>
-              </div>
+      {dayInsights && (
+        <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Day Insights</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+            <div>
+              <p className="text-lg font-bold text-accent">{dayInsights.avgScore}</p>
+              <p className="text-text-secondary">Avg Total Pts</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-text-primary">{dayInsights.homeWins}-{dayInsights.awayWins}</p>
+              <p className="text-text-secondary">Home-Away</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-yellow-500">{dayInsights.thrillers}</p>
+              <p className="text-text-secondary">Thrillers (&le;5)</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-danger">{dayInsights.blowouts}</p>
+              <p className="text-text-secondary">Blowouts (&ge;20)</p>
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {isToday && <TodayStars />}
       <HomeExtra />

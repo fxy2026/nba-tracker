@@ -10,7 +10,8 @@ export function toggleFavoriteTeam(tricode: string): string[] {
   const idx = favs.indexOf(tricode);
   if (idx >= 0) favs.splice(idx, 1);
   else favs.push(tricode);
-  localStorage.setItem('fav_teams', JSON.stringify(favs));
+  try { localStorage.setItem('fav_teams', JSON.stringify(favs)); }
+  catch { /* storage full */ }
   return favs;
 }
 
@@ -25,6 +26,7 @@ export function toggleFavoritePlayer(id: number): number[] {
   const idx = favs.indexOf(id);
   if (idx >= 0) favs.splice(idx, 1);
   else favs.push(id);
-  localStorage.setItem('fav_players', JSON.stringify(favs));
+  try { localStorage.setItem('fav_players', JSON.stringify(favs)); }
+  catch { /* storage full */ }
   return favs;
 }

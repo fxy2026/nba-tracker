@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "./TeamLogo";
@@ -140,7 +141,7 @@ function BracketColumn({ series, title }: { series: Series[]; title: string }) {
   );
 }
 
-export default function PlayoffBracketV2({ games }: Props) {
+export default memo(function PlayoffBracketV2({ games }: Props) {
   // Group by series (same two teams)
   const seriesMap = new Map<string, Series>();
 
@@ -276,4 +277,4 @@ export default function PlayoffBracketV2({ games }: Props) {
       </div>
     </section>
   );
-}
+});
