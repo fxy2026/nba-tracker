@@ -177,11 +177,17 @@ export default function KeyMoments({ actions }: Props) {
 
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
           Key Moments
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{moments.length}</span>
         </h3>
+        <div className="flex items-center gap-2 text-[9px]">
+          {moments.filter(m => m.type === "run").length > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{moments.filter(m => m.type === "run").length} runs</span>}
+          {moments.filter(m => m.type === "clutch").length > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{moments.filter(m => m.type === "clutch").length} clutch</span>}
+          {moments.filter(m => m.type === "lead_change").length > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{moments.filter(m => m.type === "lead_change").length} leads</span>}
+        </div>
       </div>
       <div className="divide-y divide-border/30 max-h-[400px] overflow-y-auto">
         {moments.map((moment, idx) => (
