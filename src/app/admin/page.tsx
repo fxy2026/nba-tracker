@@ -31,6 +31,13 @@ export default function AdminPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newSource, setNewSource] = useState("cloud");
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState("");
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2000);
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -68,32 +75,48 @@ export default function AdminPage() {
   async function addLink(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedGame || !newTitle || !newUrl) return;
-    await fetch("/api/replay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-password": password,
-      },
-      body: JSON.stringify({
-        game_id: selectedGame.gameId,
-        title: newTitle,
-        url: newUrl,
-        source: newSource,
-      }),
-    });
-    setNewTitle("");
-    setNewUrl("");
-    setNewSource("cloud");
-    loadReplayLinks(selectedGame.gameId);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/replay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": password,
+        },
+        body: JSON.stringify({
+          game_id: selectedGame.gameId,
+          title: newTitle,
+          url: newUrl,
+          source: newSource,
+        }),
+      });
+      if (res.ok) {
+        showToast("Link added!");
+        setNewTitle("");
+        setNewUrl("");
+        setNewSource("cloud");
+        loadReplayLinks(selectedGame.gameId);
+      } else {
+        showToast("Failed to add link");
+      }
+    } catch {
+      showToast("Network error");
+    }
+    setSubmitting(false);
   }
 
   async function removeLink(id: string) {
-    if (!selectedGame) return;
-    await fetch(`/api/replay?id=${id}`, {
-      method: "DELETE",
-      headers: { "x-admin-password": password },
-    });
-    loadReplayLinks(selectedGame.gameId);
+    if (!selectedGame || !confirm("Delete this link?")) return;
+    try {
+      await fetch(`/api/replay?id=${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": password },
+      });
+      showToast("Link removed");
+      loadReplayLinks(selectedGame.gameId);
+    } catch {
+      showToast("Failed to delete");
+    }
   }
 
   useEffect(() => {
@@ -131,6 +154,11 @@ export default function AdminPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-6">Admin - Replay Links</h1>
+      {toast && (
+        <div className="fixed top-20 right-4 z-50 px-4 py-2 bg-accent text-white text-sm rounded-lg shadow-lg animate-fade-in">
+          {toast}
+        </div>
+      )}
 
       <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
         <div className="flex items-center gap-3">
