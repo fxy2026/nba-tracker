@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 py-6 skeleton-shimmer">
       <div className="h-4 w-24 bg-bg-card rounded mb-4" />
       {/* Scoreboard skeleton */}
       <div className="bg-bg-card rounded-xl border border-border p-6">
