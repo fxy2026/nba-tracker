@@ -174,6 +174,12 @@ export default async function HomePage({ searchParams }: PageProps) {
       ) : null}
       {games.length > 0 ? (
         <div className="space-y-6">
+          {/* Playoff banner */}
+          {games.some((g) => g.gameId.startsWith("004")) && (
+            <div className="bg-gradient-to-r from-accent/10 to-yellow-500/10 border border-accent/20 rounded-xl px-4 py-2 text-center">
+              <span className="text-xs font-bold text-accent uppercase tracking-wide">Playoff Games Today</span>
+            </div>
+          )}
           {/* Live Now */}
           {games.filter(g => g.gameStatus === 2).length > 0 && (
             <>
