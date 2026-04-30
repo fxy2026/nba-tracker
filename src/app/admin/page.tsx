@@ -42,6 +42,8 @@ export default function AdminPage() {
   // Dashboard
   const [apiHealth, setApiHealth] = useState<Record<string, boolean>>({});
   const [checkingHealth, setCheckingHealth] = useState(false);
+  const [adminStats, setAdminStats] = useState<Record<string, unknown> | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -141,8 +143,17 @@ export default function AdminPage() {
     setCheckingHealth(false);
   }
 
+  async function loadAdminStats() {
+    setLoadingStats(true);
+    try {
+      const res = await fetch("/api/admin/stats", { headers: { "x-admin-password": password } });
+      if (res.ok) setAdminStats(await res.json());
+    } catch { /* ignore */ }
+    setLoadingStats(false);
+  }
+
   useEffect(() => {
-    if (authenticated) { searchGames(); checkAPIHealth(); }
+    if (authenticated) { searchGames(); checkAPIHealth(); loadAdminStats(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 
@@ -190,6 +201,47 @@ export default function AdminPage() {
       {/* ===== Dashboard ===== */}
       {tab === "dashboard" && (
         <div className="space-y-6">
+          {/* Data Overview */}
+          {adminStats ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+                <p className="text-2xl font-bold text-accent">{String(adminStats.replayCount ?? "—")}</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">Replay Links</p>
+              </div>
+              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+                <p className="text-2xl font-bold text-text-primary">{String(adminStats.replayGames ?? "—")}</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">Games with Replay</p>
+              </div>
+              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+                <p className="text-2xl font-bold text-success">{String(adminStats.finishedGames ?? "—")}</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">Finished Games</p>
+              </div>
+              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+                <p className="text-2xl font-bold text-text-primary">{String(adminStats.playerCount ?? "—")}</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">Players Indexed</p>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Recent Replay Links */}
+          {adminStats?.recentLinks && (adminStats.recentLinks as ReplayLink[]).length > 0 ? (
+            <div className="bg-bg-card rounded-xl border border-border p-4">
+              <h2 className="text-sm font-semibold mb-3">Recently Added Replay Links</h2>
+              <div className="space-y-2">
+                {(adminStats.recentLinks as ReplayLink[]).map((link) => (
+                  <div key={link.id} className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-lg text-xs">
+                    <Play size={12} className="text-accent shrink-0" />
+                    <span className="text-text-primary font-medium truncate flex-1">{link.title}</span>
+                    <span className="text-text-secondary shrink-0">{link.game_id}</span>
+                    <span className={`px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-red-500/10 text-red-400" : link.source === "bilibili" ? "bg-blue-400/10 text-blue-400" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline shrink-0"><ExternalLink size={10} /></a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* API Health */}
           <div className="bg-bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">API Health Check</h2>
@@ -210,6 +262,30 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* Environment Config */}
+          {adminStats ? (
+            <div className="bg-bg-card rounded-xl border border-border p-4">
+              <h2 className="text-sm font-semibold mb-3">Environment</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {[
+                  { label: "Supabase", ok: adminStats.hasSupabase as boolean },
+                  { label: "Admin Password", ok: adminStats.hasAdminPw as boolean },
+                  { label: "BallDontLie API", ok: adminStats.hasBdlKey as boolean },
+                ].map(({ label, ok }) => (
+                  <div key={label} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${ok ? "bg-success/10" : "bg-yellow-500/10"}`}>
+                    <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-yellow-500"}`} />
+                    <span className="text-text-primary">{label}</span>
+                    <span className={`ml-auto ${ok ? "text-success" : "text-yellow-500"}`}>{ok ? "Set" : "Missing"}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-text-secondary mt-2">
+                ENV: {String(adminStats.vercelEnv)} · Node: {String(adminStats.nodeEnv)} · Teams: {String(adminStats.activeTeams ?? "—")} · Schedule: {String(adminStats.scheduleDates ?? "—")} days
+              </p>
+            </div>
+          ) : null}
+
+          {/* System Info + Quick Links */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">Data Sources</p>
@@ -246,6 +322,10 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+
+          <button onClick={loadAdminStats} className="w-full text-xs text-text-secondary hover:text-accent py-2 transition-colors">
+            ↻ Refresh Dashboard Data
+          </button>
         </div>
       )}
 
