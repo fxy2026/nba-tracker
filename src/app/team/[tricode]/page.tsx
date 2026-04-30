@@ -43,6 +43,7 @@ export default async function TeamPage({ params }: PageProps) {
   // Compute team record and games
   const today = formatDate(new Date());
   let wins = 0, losses = 0;
+  let playoffWins = 0, playoffLosses = 0;
   const recentGames: { gameId: string; date: string; opponent: string; opponentId: number; score: string; won: boolean; home: boolean }[] = [];
   const upcomingGames: { gameId: string; date: string; opponent: string; opponentId: number; home: boolean }[] = [];
 
@@ -64,6 +65,8 @@ export default async function TeamPage({ params }: PageProps) {
         // Only count regular season games for W/L record
         if (isRegularSeason) {
           if (won) wins++; else losses++;
+        } else if (g.gameId.startsWith("004")) {
+          if (won) playoffWins++; else playoffLosses++;
         }
 
         const opp = isHome ? g.awayTeam : g.homeTeam;
@@ -238,7 +241,7 @@ export default async function TeamPage({ params }: PageProps) {
         </div>
 
         {/* Record */}
-        <div className="grid grid-cols-3 gap-3 mt-6">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-6">
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
             <p className="text-xs text-text-secondary uppercase">Record</p>
             <p className="text-2xl font-bold mt-1">
@@ -250,6 +253,31 @@ export default async function TeamPage({ params }: PageProps) {
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
             <p className="text-xs text-text-secondary uppercase">Win%</p>
             <p className="text-2xl font-bold text-accent mt-1">{winPct}%</p>
+          </div>
+          {(playoffWins + playoffLosses > 0) && (
+            <div className="bg-bg-secondary rounded-lg p-4 text-center">
+              <p className="text-xs text-yellow-500 uppercase">Playoffs</p>
+              <p className="text-2xl font-bold mt-1">
+                <span className="text-success">{playoffWins}</span>
+                <span className="text-text-secondary mx-1">-</span>
+                <span className="text-danger">{playoffLosses}</span>
+              </p>
+            </div>
+          )}
+          <div className="bg-bg-secondary rounded-lg p-4 text-center">
+            <p className="text-xs text-text-secondary uppercase">Last 10</p>
+            {(() => {
+              const last10 = recentGames.slice(0, 10);
+              const w10 = last10.filter((g) => g.won).length;
+              const l10 = last10.length - w10;
+              return (
+                <p className="text-2xl font-bold mt-1">
+                  <span className="text-success">{w10}</span>
+                  <span className="text-text-secondary mx-1">-</span>
+                  <span className="text-danger">{l10}</span>
+                </p>
+              );
+            })()}
           </div>
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
             <p className="text-xs text-text-secondary uppercase">Players</p>
