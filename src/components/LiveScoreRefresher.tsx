@@ -1,33 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 
 export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boolean }) {
   const router = useRouter();
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [countdown, setCountdown] = useState(30);
+
+  const doRefresh = useCallback(() => {
+    router.refresh();
+    setCountdown(30);
+  }, [router]);
 
   useEffect(() => {
     if (!hasLiveGames) return;
 
     const interval = setInterval(() => {
-      router.refresh();
-      setLastRefresh(new Date());
-    }, 30000); // Refresh every 30s
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          doRefresh();
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasLiveGames, router]);
+  }, [hasLiveGames, doRefresh]);
 
   if (!hasLiveGames) return null;
 
   return (
     <div className="flex items-center gap-2 text-xs text-success mb-4">
       <Radio size={12} className="animate-pulse" />
-      <span>Live — auto-refreshing every 30s</span>
-      <span className="text-text-secondary ml-1">
-        (last: {lastRefresh.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })})
-      </span>
+      <span>Live — auto-refreshing</span>
+      <button
+        onClick={doRefresh}
+        className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"
+      >
+        refresh now
+      </button>
+      <span className="text-text-secondary tabular-nums">({countdown}s)</span>
     </div>
   );
 }

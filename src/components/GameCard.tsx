@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
@@ -10,7 +11,7 @@ interface GameCardProps {
   hasReplay?: boolean;
 }
 
-export default function GameCard({ game, hasReplay }: GameCardProps) {
+export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   const status = getGameStatusDisplay(game.gameStatus, game.gameStatusText);
   const isLive = game.gameStatus === 2;
   const isFinal = game.gameStatus === 3;
@@ -155,4 +156,4 @@ export default function GameCard({ game, hasReplay }: GameCardProps) {
       </div>
     </Link>
   );
-}
+});
