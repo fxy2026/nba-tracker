@@ -382,8 +382,8 @@ export default async function PlayerPage({ params }: PageProps) {
         {/* Dynamic data sections (client-fetched) */}
         <div className="p-6 border-t border-border space-y-6">
           {/* Stats bundle first — most important for basketball fans */}
-          <PlayerStatsBundle playerId={personId} playerName={fullName} />
-          <PlayerAdvancedStats playerId={personId} />
+          <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerNews playerName={fullName} />

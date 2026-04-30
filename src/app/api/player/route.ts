@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { findESPNId, getESPNCareerStats } from "@/lib/espn";
 
 const NBA_STATS_BASE = "https://stats.nba.com/stats";
 const NBA_HEADERS: HeadersInit = {
@@ -8,7 +9,6 @@ const NBA_HEADERS: HeadersInit = {
   Accept: "application/json",
 };
 
-// Fetch with 4s abort timeout
 async function fetchSafe(url: string, headers: HeadersInit, revalidate: number): Promise<Response | null> {
   try {
     const controller = new AbortController();
@@ -19,22 +19,7 @@ async function fetchSafe(url: string, headers: HeadersInit, revalidate: number):
   } catch { return null; }
 }
 
-// ========== ESPN Data Source (primary — reliable, no blocking) ==========
-async function fetchFromESPN(playerName: string) {
-  try {
-    // Search for player on ESPN to get ESPN athlete ID
-    const searchRes = await fetchSafe(
-      `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes?limit=5&active=true`,
-      { "User-Agent": "Mozilla/5.0" }, 86400
-    );
-    // ESPN search doesn't support query params well, so we use the stats endpoint with player name matching
-    // Instead, try fetching the athlete profile by searching the NBA roster on ESPN
-    // Fallback: use the NBA stats API
-    return null;
-  } catch { return null; }
-}
-
-// ========== NBA Stats API (fallback — may be blocked on some hosts) ==========
+// Try NBA Stats API (may be blocked on some hosts)
 async function fetchFromNBAStats(playerId: string) {
   const [careerRes, gameLogRes] = await Promise.all([
     fetchSafe(`${NBA_STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`, NBA_HEADERS, 3600),
@@ -77,67 +62,28 @@ async function fetchFromNBAStats(playerId: string) {
   return { careerSeasons, recentGames };
 }
 
-// ========== ESPN Stats by ESPN ID (when we can find it) ==========
-async function fetchESPNStats(espnId: string) {
-  const res = await fetchSafe(
-    `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${espnId}/stats`,
-    { "User-Agent": "Mozilla/5.0", Accept: "application/json" }, 3600
-  );
-  if (!res?.ok) return null;
-  const data = await res.json();
-  const cat = data.categories?.find((c: { name: string }) => c.name === "regularSeason");
-  if (!cat?.statistics?.length) return null;
-
-  // Map ESPN format to our format
-  const labels: string[] = cat.labels || [];
-  const careerSeasons = cat.statistics.map((s: { season: { displayName: string }; stats: string[]; teamSlug?: string }) => {
-    const vals = s.stats;
-    const get = (label: string) => { const idx = labels.indexOf(label); return idx >= 0 ? vals[idx] : null; };
-    const parseFGSplit = (v: string | null) => {
-      if (!v) return { made: 0, att: 0 };
-      const [m, a] = v.split("-").map(Number);
-      return { made: m || 0, att: a || 0 };
-    };
-    const fg = parseFGSplit(get("FG"));
-    const fg3 = parseFGSplit(get("3PT"));
-    const ft = parseFGSplit(get("FT"));
-    return {
-      SEASON_ID: s.season?.displayName || "",
-      TEAM_ABBREVIATION: (s.teamSlug || "").split("-").map((w: string) => w[0]?.toUpperCase()).join("") || "",
-      GP: parseFloat(get("GP") || "0"),
-      MIN: parseFloat(get("MIN") || "0"),
-      PTS: parseFloat(get("PTS") || "0"),
-      REB: parseFloat(get("REB") || "0"),
-      AST: parseFloat(get("AST") || "0"),
-      STL: parseFloat(get("STL") || "0"),
-      BLK: parseFloat(get("BLK") || "0"),
-      FG_PCT: parseFloat(get("FG%") || "0") / 100,
-      FG3_PCT: parseFloat(get("3P%") || "0") / 100,
-      FT_PCT: parseFloat(get("FT%") || "0") / 100,
-      FGA: fg.att,
-      FG3A: fg3.att,
-      FTA: ft.att,
-    };
-  });
-
-  return { careerSeasons, recentGames: null };
-}
-
-// ========== Main Handler ==========
 export async function GET(request: NextRequest) {
   const playerId = request.nextUrl.searchParams.get("id");
-  const espnId = request.nextUrl.searchParams.get("espnId");
+  const playerName = request.nextUrl.searchParams.get("name");
+  const teamTricode = request.nextUrl.searchParams.get("team");
   if (!playerId) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
 
-  // Strategy: Try NBA Stats first (with timeout), fallback to ESPN
+  // 1) Try NBA Stats API first (fast when not blocked)
   let result = await fetchFromNBAStats(playerId);
 
-  // If NBA Stats failed and we have ESPN ID, try ESPN
-  if (!result.careerSeasons && espnId) {
-    const espnResult = await fetchESPNStats(espnId);
-    if (espnResult) result = { ...result, ...espnResult };
+  // 2) If NBA Stats failed, fallback to ESPN
+  if (!result.careerSeasons && playerName && teamTricode) {
+    try {
+      const espnId = await findESPNId(playerName, teamTricode);
+      if (espnId) {
+        const espnResult = await getESPNCareerStats(espnId);
+        if (espnResult.careerSeasons.length > 0) {
+          result = { careerSeasons: espnResult.careerSeasons, recentGames: result.recentGames };
+        }
+      }
+    } catch { /* ESPN also failed */ }
   }
 
   return NextResponse.json(result, {

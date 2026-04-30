@@ -33,9 +33,10 @@ interface GameLogRow {
 interface Props {
   playerId: number;
   playerName?: string;
+  teamTricode?: string;
 }
 
-export default function PlayerStatsBundle({ playerId, playerName }: Props) {
+export default function PlayerStatsBundle({ playerId, playerName, teamTricode }: Props) {
   const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
   const [games, setGames] = useState<GameLogRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +52,10 @@ export default function PlayerStatsBundle({ playerId, playerName }: Props) {
 
     (async () => {
       try {
-        const res = await fetch(`/api/player?id=${playerId}`, { signal: controller.signal });
+        const qs = new URLSearchParams({ id: String(playerId) });
+        if (playerName) qs.set("name", playerName);
+        if (teamTricode) qs.set("team", teamTricode);
+        const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
         if (!res.ok) { if (!cancelled) { setError(true); setLoading(false); } return; }
         const data = await res.json();

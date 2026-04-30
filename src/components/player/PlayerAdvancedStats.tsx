@@ -31,7 +31,7 @@ function computeAdvanced(seasons: Record<string, unknown>[]): AdvancedData | nul
   return { TS_PCT: tsPct, EFG_PCT: efgPct, USG_PCT: null };
 }
 
-export default function PlayerAdvancedStats({ playerId }: { playerId: number }) {
+export default function PlayerAdvancedStats({ playerId, playerName, teamTricode }: { playerId: number; playerName?: string; teamTricode?: string }) {
   const [stats, setStats] = useState<AdvancedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -45,7 +45,10 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
     const timeout = setTimeout(() => controller.abort(), 10000);
     (async () => {
       try {
-        const res = await fetch(`/api/player?id=${playerId}`, { signal: controller.signal });
+        const qs = new URLSearchParams({ id: String(playerId) });
+        if (playerName) qs.set("name", playerName);
+        if (teamTricode) qs.set("team", teamTricode);
+        const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
         if (!res.ok) { if (!cancelled) { setLoading(false); } return; }
         const data = await res.json();
