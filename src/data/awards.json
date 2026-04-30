@@ -1,5 +1,6 @@
 {
   "mvp": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "Shai Gilgeous-Alexander", "team": "OKC" },
     { "season": "2023-24", "player": "Nikola Jokic", "team": "DEN" },
     { "season": "2022-23", "player": "Joel Embiid", "team": "PHI" },
@@ -27,6 +28,7 @@
     { "season": "2000-01", "player": "Allen Iverson", "team": "PHI" }
   ],
   "fmvp": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "TBD", "team": "-" },
     { "season": "2023-24", "player": "Jaylen Brown", "team": "BOS" },
     { "season": "2022-23", "player": "Nikola Jokic", "team": "DEN" },
@@ -44,6 +46,7 @@
     { "season": "2010-11", "player": "Dirk Nowitzki", "team": "DAL" }
   ],
   "dpoy": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "Victor Wembanyama", "team": "SAS" },
     { "season": "2023-24", "player": "Rudy Gobert", "team": "MIN" },
     { "season": "2022-23", "player": "Jaren Jackson Jr.", "team": "MEM" },
@@ -57,6 +60,7 @@
     { "season": "2014-15", "player": "Kawhi Leonard", "team": "SAS" }
   ],
   "roy": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "Zach Edey", "team": "MEM" },
     { "season": "2023-24", "player": "Chet Holmgren", "team": "OKC" },
     { "season": "2022-23", "player": "Paolo Banchero", "team": "ORL" },
@@ -69,6 +73,7 @@
     { "season": "2015-16", "player": "Karl-Anthony Towns", "team": "MIN" }
   ],
   "smoy": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "Payton Pritchard", "team": "BOS" },
     { "season": "2023-24", "player": "Naz Reid", "team": "MIN" },
     { "season": "2022-23", "player": "Malcolm Brogdon", "team": "BOS" },
@@ -79,6 +84,7 @@
     { "season": "2017-18", "player": "Lou Williams", "team": "LAC" }
   ],
   "mip": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
     { "season": "2024-25", "player": "Dyson Daniels", "team": "ATL" },
     { "season": "2023-24", "player": "Tyrese Maxey", "team": "PHI" },
     { "season": "2022-23", "player": "Lauri Markkanen", "team": "UTA" },
@@ -89,6 +95,8 @@
     { "season": "2017-18", "player": "Victor Oladipo", "team": "IND" }
   ],
   "nba1": [
+    { "season": "2025-26", "player": "TBD", "team": "-" },
+    { "season": "2024-25", "player": "SGA / Luka / Giannis / Jayson Tatum / Nikola Jokic", "team": "OKC/DAL/MIL/BOS/DEN" },
     { "season": "2023-24", "player": "Luka Doncic / SGA / Giannis / Jayson Tatum / Nikola Jokic", "team": "DAL/OKC/MIL/BOS/DEN" },
     { "season": "2022-23", "player": "Luka Doncic / SGA / Giannis / Jayson Tatum / Joel Embiid", "team": "DAL/OKC/MIL/BOS/PHI" },
     { "season": "2021-22", "player": "Luka Doncic / Devin Booker / Giannis / Jayson Tatum / Nikola Jokic", "team": "DAL/PHX/MIL/BOS/DEN" },
