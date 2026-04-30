@@ -192,8 +192,7 @@ function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers }: {
 }
 
 async function PlayByPlaySection({ gameId }: { gameId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let actions: any[] = [];
+  let actions: Record<string, unknown>[] = [];
   try {
     const res = await fetch(
       `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
@@ -206,7 +205,7 @@ async function PlayByPlaySection({ gameId }: { gameId: string }) {
     return null;
   }
   if (actions.length === 0) return null;
-  return <PlayByPlay actions={actions} />;
+  return <PlayByPlay actions={actions as unknown as Parameters<typeof PlayByPlay>[0]["actions"]} />;
 }
 
 async function ReplaySection({ gameId }: { gameId: string }) {
@@ -460,8 +459,7 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
 }
 
 async function KeyMomentsSection({ gameId }: { gameId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let actions: any[] = [];
+  let actions: Record<string, unknown>[] = [];
   try {
     const res = await fetch(
       `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`,
@@ -474,7 +472,7 @@ async function KeyMomentsSection({ gameId }: { gameId: string }) {
     return null;
   }
   if (actions.length === 0) return null;
-  return <KeyMoments actions={actions} />;
+  return <KeyMoments actions={actions as unknown as Parameters<typeof KeyMoments>[0]["actions"]} />;
 }
 
 function SectionSkeleton() {
