@@ -31,7 +31,7 @@ export default function PlayerGameLog({ playerId }: { playerId: number }) {
         const qs = new URLSearchParams({
           endpoint: "playergamelog",
           PlayerID: String(playerId),
-          Season: "2024-25",
+          Season: "2025-26",
           SeasonType: "Regular Season",
         });
         const res = await fetch(`/api/stats?${qs}`);
@@ -64,10 +64,19 @@ export default function PlayerGameLog({ playerId }: { playerId: number }) {
 
   if (games.length === 0) return null;
 
+  const wins = games.filter((g) => g.WL === "W").length;
+  const losses = games.length - wins;
+  const avgPts = games.reduce((s, g) => s + (g.PTS || 0), 0) / games.length;
+
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold">Recent Games (2024-25)</h3>
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Recent Games (2025-26)</h3>
+        <div className="flex items-center gap-3 text-[10px]">
+          <span className="text-success font-bold">{wins}W</span>
+          <span className="text-danger font-bold">{losses}L</span>
+          <span className="text-accent font-bold">{avgPts.toFixed(1)} PPG</span>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">

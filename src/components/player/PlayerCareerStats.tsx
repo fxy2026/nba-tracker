@@ -62,10 +62,28 @@ export default function PlayerCareerStats({ playerId }: { playerId: number }) {
 
   if (seasons.length === 0) return null;
 
+  // Career highs
+  const maxPTS = Math.max(...seasons.map((s) => s.PTS || 0));
+  const maxREB = Math.max(...seasons.map((s) => s.REB || 0));
+  const maxAST = Math.max(...seasons.map((s) => s.AST || 0));
+
+  // Career averages
+  const totalGP = seasons.reduce((s, r) => s + (r.GP || 0), 0);
+  const avgPTS = totalGP > 0 ? seasons.reduce((s, r) => s + (r.PTS || 0) * (r.GP || 0), 0) / totalGP : 0;
+  const avgREB = totalGP > 0 ? seasons.reduce((s, r) => s + (r.REB || 0) * (r.GP || 0), 0) / totalGP : 0;
+  const avgAST = totalGP > 0 ? seasons.reduce((s, r) => s + (r.AST || 0) * (r.GP || 0), 0) / totalGP : 0;
+
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold">Season-by-Season Stats</h3>
+        <div className="flex items-center gap-3 text-[10px]">
+          <span className="text-text-secondary">{seasons.length} seasons</span>
+          <span className="text-text-secondary">{totalGP} GP</span>
+          <span className="text-accent font-bold">{avgPTS.toFixed(1)} PPG</span>
+          <span className="text-text-secondary">{avgREB.toFixed(1)} RPG</span>
+          <span className="text-text-secondary">{avgAST.toFixed(1)} APG</span>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -92,9 +110,15 @@ export default function PlayerCareerStats({ playerId }: { playerId: number }) {
                 <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.MIN?.toFixed(1)}</td>
-                <td className="text-center py-2 px-2 font-bold text-accent">{s.PTS?.toFixed(1)}</td>
-                <td className="text-center py-2 px-2">{s.REB?.toFixed(1)}</td>
-                <td className="text-center py-2 px-2">{s.AST?.toFixed(1)}</td>
+                <td className={`text-center py-2 px-2 font-bold ${s.PTS === maxPTS && seasons.length > 1 ? "text-yellow-400" : "text-accent"}`}>
+                  {s.PTS?.toFixed(1)}{s.PTS === maxPTS && seasons.length > 1 && <span className="text-[8px] ml-0.5">&#9733;</span>}
+                </td>
+                <td className={`text-center py-2 px-2 ${s.REB === maxREB && seasons.length > 1 ? "text-yellow-400 font-medium" : ""}`}>
+                  {s.REB?.toFixed(1)}
+                </td>
+                <td className={`text-center py-2 px-2 ${s.AST === maxAST && seasons.length > 1 ? "text-yellow-400 font-medium" : ""}`}>
+                  {s.AST?.toFixed(1)}
+                </td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.STL?.toFixed(1)}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.BLK?.toFixed(1)}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.FG_PCT != null ? (s.FG_PCT * 100).toFixed(1) + "%" : "-"}</td>

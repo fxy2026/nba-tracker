@@ -76,6 +76,8 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">TS%</p>
             <p className="text-xl font-bold mt-1 text-accent">{(stats.TS_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">True Shooting</p>
+            {stats.TS_PCT >= 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">Elite</span>}
+            {stats.TS_PCT >= 0.55 && stats.TS_PCT < 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">Above Avg</span>}
           </div>
         )}
         {stats.EFG_PCT != null && (
@@ -83,6 +85,7 @@ export default function PlayerAdvancedStats({ playerId }: { playerId: number }) 
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">eFG%</p>
             <p className="text-xl font-bold mt-1 text-text-primary">{(stats.EFG_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">Effective FG</p>
+            {stats.EFG_PCT >= 0.55 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">Elite</span>}
           </div>
         )}
         {stats.USG_PCT != null && (
