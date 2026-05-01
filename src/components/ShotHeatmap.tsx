@@ -8,6 +8,8 @@ interface Props {
   playerId: number;
   playerName: string;
   teamTricode: string;
+  fromYear: string;
+  toYear: string;
 }
 
 interface ShotRow {
@@ -265,8 +267,10 @@ function zoneLabel(zone: ShotZone): [number, number] {
 }
 
 // ---- Main component ----
-export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props) {
+export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYear, toYear }: Props) {
   const { t, locale } = useLocale();
+  const currentSeason = `${toYear}-${String(parseInt(toYear) + 1).slice(2)}`;
+  const [season, setSeason] = useState(currentSeason);
   const [seasonType, setSeasonType] = useState<"regular" | "playoffs" | "all">("regular");
   const [shots, setShots] = useState<ShotRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -274,24 +278,77 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
   const [hoveredZone, setHoveredZone] = useState<ShotZone | null>(null);
   const [gamesInfo, setGamesInfo] = useState({ loaded: 0, total: 0 });
 
-  const fetchShots = useCallback(async (st: string) => {
+  // Build season options
+  const seasons = useMemo(() => {
+    const from = parseInt(fromYear);
+    const to = parseInt(toYear);
+    const list: string[] = [];
+    for (let y = to; y >= from; y--) {
+      list.push(`${y}-${String(y + 1).slice(2)}`);
+    }
+    return list;
+  }, [fromYear, toYear]);
+
+  const fetchShots = useCallback(async (s: string, st: string) => {
     setLoading(true);
     setError("");
+    setGamesInfo({ loaded: 0, total: 0 });
     try {
-      const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-      const res = await fetch(`/api/player-shots?${params}`);
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      setShots(data.shots || []);
-      setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
+      // Current season: use CDN play-by-play (always works)
+      if (s === currentSeason) {
+        const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
+        const res = await fetch(`/api/player-shots?${params}`);
+        if (!res.ok) throw new Error("API error");
+        const data = await res.json();
+        setShots(data.shots || []);
+        setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
+        return;
+      }
+
+      // Historical seasons: try stats.nba.com proxy
+      const types = st === "all" ? ["Regular+Season", "Playoffs"] : [st === "regular" ? "Regular+Season" : "Playoffs"];
+      const allShots: ShotRow[] = [];
+      for (const stype of types) {
+        const params = new URLSearchParams({
+          endpoint: "shotchartdetail",
+          PlayerID: String(playerId),
+          Season: s,
+          SeasonType: stype,
+          ContextMeasure: "FGA",
+          LeagueID: "00",
+        });
+        const res = await fetch(`/api/stats?${params}`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const rs = data.resultSets?.[0];
+        if (!rs?.rowSet) continue;
+        const headers: string[] = rs.headers;
+        const xi = headers.indexOf("LOC_X");
+        const yi = headers.indexOf("LOC_Y");
+        const disti = headers.indexOf("SHOT_DISTANCE");
+        const resi = headers.indexOf("SHOT_MADE_FLAG");
+        for (const row of rs.rowSet) {
+          const locX = row[xi] as number;
+          const locY = row[yi] as number;
+          const dist = row[disti] as number;
+          const made = row[resi] as number;
+          const xPct = 5.59 + (locY / 10 / 94) * 100;
+          const yPct = 50 + (locX / 10 / 50) * 100;
+          allShots.push({ x: xPct, y: yPct, shotDistance: dist, shotResult: made === 1 ? "Made" : "Missed" });
+        }
+      }
+      if (allShots.length === 0) {
+        setError(locale === "zh" ? "该赛季数据暂不可用" : "Data not available for this season");
+      }
+      setShots(allShots);
     } catch {
       setError(locale === "zh" ? "加载投篮数据失败" : "Failed to load shot data");
     } finally {
       setLoading(false);
     }
-  }, [playerId, teamTricode, locale]);
+  }, [playerId, teamTricode, currentSeason, locale]);
 
-  useEffect(() => { fetchShots(seasonType); }, [seasonType, fetchShots]);
+  useEffect(() => { fetchShots(season, seasonType); }, [season, seasonType, fetchShots]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
   const statsMap = useMemo(() => {
@@ -319,6 +376,15 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
       </h3>
 
       <div className="flex flex-wrap items-center gap-2 mb-3">
+        <select
+          value={season}
+          onChange={(e) => setSeason(e.target.value)}
+          className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
+        >
+          {seasons.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
         <div className="flex rounded-lg overflow-hidden border border-border">
           {(["regular", "playoffs", "all"] as const).map((st) => (
             <button key={st} onClick={() => setSeasonType(st)}
