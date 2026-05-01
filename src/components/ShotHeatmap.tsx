@@ -129,6 +129,17 @@ function arc3pt(a1: number, a2: number, n = 30): string {
   return pts.join(" L ");
 }
 
+// Find where the wing line (from basket at angle aDeg) intersects the paint left/right edge
+function wingPaintIntersection(aDeg: number): [number, number] {
+  const rad = (aDeg * Math.PI) / 180;
+  const sinA = Math.sin(rad), cosA = Math.cos(rad);
+  const paintEdgeX = aDeg < 0 ? PAINT_L : PAINT_R;
+  const d = (paintEdgeX - BX) / (sinA * SX);
+  return [paintEdgeX, BY - d * cosA * SY];
+}
+const WING_PAINT_L = wingPaintIntersection(-WING_A);
+const WING_PAINT_R = wingPaintIntersection(WING_A);
+
 // ---- Zone paths (10 zones) ----
 // Render order: outer→inner (later = on top = captures hover)
 const RENDER_ORDER: ShotZone[] = [
@@ -152,35 +163,38 @@ function zonePath(zone: ShotZone): string {
     case "Paint":
       return `M ${PAINT_L},${BASELINE} L ${PAINT_L},${FT_Y} L ${PAINT_R},${FT_Y} L ${PAINT_R},${BASELINE} Z`;
 
-    // ---- Mid-Range: bounded by paint edge (inner) and 3PT ARC (outer) ----
+    // ---- Mid-Range: bounded by paint edge (inner), 3PT ARC (outer), wing lines (sides) ----
     case "Mid-Range (Left)":
-      // paint bottom-left → corner-left baseline → corner-left top →
-      // 3PT ARC from corner angle to wing angle → wing line to paint top-left
+      // baseline along paint → up paint edge → wing-paint intersection →
+      // along wing line to 3pt arc → ARC from wing to corner → corner line → baseline
       return [
         `M ${PAINT_L},${BASELINE}`,
         `L ${C3L},${BASELINE}`,
         `L ${C3L},${CORNER_Y}`,
-        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`, // 3pt arc from corner to wing
-        `L ${PAINT_L},${FT_Y}`,
+        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`,
+        `L ${WING_PAINT_L.join(",")}`,          // wing line back to paint edge
+        `L ${PAINT_L},${BASELINE}`,
         "Z",
       ].join(" ");
 
     case "Mid-Range (Right)":
       return [
         `M ${PAINT_R},${BASELINE}`,
-        `L ${PAINT_R},${FT_Y}`,
-        `L ${arc3pt(WING_A, ARC_CORNER_A)}`, // 3pt arc from wing to corner
+        `L ${PAINT_R},${WING_PAINT_R[1]}`,      // up paint edge to wing intersection
+        `L ${arc3pt(WING_A, ARC_CORNER_A)}`,
         `L ${C3R},${CORNER_Y}`,
         `L ${C3R},${BASELINE}`,
         "Z",
       ].join(" ");
 
     case "Mid-Range (Center)":
-      // paint FT left → wing line to 3pt arc → ARC from -WING to +WING → wing line to paint FT right
+      // paint edge (wing intersection) → wing line to 3pt arc → ARC → wing line → paint edge
       return [
-        `M ${PAINT_L},${FT_Y}`,
-        `L ${arc3pt(-WING_A, WING_A)}`, // 3pt arc across center
+        `M ${WING_PAINT_L.join(",")}`,
+        `L ${arc3pt(-WING_A, WING_A)}`,
+        `L ${WING_PAINT_R.join(",")}`,
         `L ${PAINT_R},${FT_Y}`,
+        `L ${PAINT_L},${FT_Y}`,
         "Z",
       ].join(" ");
 
@@ -342,8 +356,8 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
               <CourtLines />
 
               {/* Zone divider lines (wing angles — from paint edge through 3pt arc to court boundary) */}
-              <line x1={PAINT_L} y1={FT_Y} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
-              <line x1={PAINT_R} y1={FT_Y} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={WING_PAINT_L[0]} y1={WING_PAINT_L[1]} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={WING_PAINT_R[0]} y1={WING_PAINT_R[1]} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
