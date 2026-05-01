@@ -81,7 +81,7 @@ function CourtLines() {
       {/* FT circle */}
       <circle cx={BX} cy={FT_Y} r={6 * SX} fill="none" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4,4" />
       {/* Restricted area semicircle */}
-      <path d={`M ${sv(-4, 0).join(",")} A ${4 * SX} ${4 * SY} 0 0 0 ${sv(4, 0).join(",")}`} fill="none" stroke="#3a3a3a" strokeWidth="1" />
+      <path d={`M ${sv(-4, 0).join(",")} A ${4 * SX} ${4 * SY} 0 0 1 ${sv(4, 0).join(",")}`} fill="none" stroke="#3a3a3a" strokeWidth="1" />
       {/* Basket */}
       <circle cx={BX} cy={BY} r={4} fill="none" stroke="#928CEE" strokeWidth="1.5" />
       <line x1={BX - 12} y1={BY + 4} x2={BX + 12} y2={BY + 4} stroke="#555" strokeWidth="2" />
@@ -159,7 +159,7 @@ function zonePath(zone: ShotZone): string {
     case "Restricted Area": {
       const [lx, ly] = sv(-4, 0);
       const [rx, ry] = sv(4, 0);
-      return `M ${lx},${ly} A ${4 * SX} ${4 * SY} 0 0 0 ${rx},${ry} Z`;
+      return `M ${lx},${ly} A ${4 * SX} ${4 * SY} 0 0 1 ${rx},${ry} Z`;
     }
 
     // ---- Paint: rectangle from baseline to FT line ----
