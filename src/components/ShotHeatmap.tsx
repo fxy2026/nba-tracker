@@ -98,14 +98,36 @@ function CourtLines() {
 // Extend from FT area to court edge
 const WING_L = arcPt(-WING_A); // left wing point on 3pt arc
 const WING_R = arcPt(WING_A);  // right wing point on 3pt arc
-// Extend wing lines to court top edge
-const WING_EXT = 45; // extend to this many feet from basket (past 3pt arc to court boundary)
-function wingPt(aDeg: number): [number, number] {
-  const r = (aDeg * Math.PI) / 180;
-  return sv(WING_EXT * Math.sin(r), WING_EXT * Math.cos(r));
+
+// Extend wing lines from 3pt arc to court boundary, clipped to court rect
+function clipWingToCourtTop(aDeg: number): [number, number] {
+  const rad = (aDeg * Math.PI) / 180;
+  const sinA = Math.sin(rad), cosA = Math.cos(rad);
+  // Distance to reach court top (y = HALFCOURT): BY - d*cosA*SY = HALFCOURT
+  const dTop = (BY - HALFCOURT) / (cosA * SY);
+  const xAtTop = BX + dTop * sinA * SX;
+  // Distance to reach sideline: BX + d*sinA*SX = PAD (left) or W-PAD (right)
+  const sideline = aDeg < 0 ? PAD : W - PAD;
+  const dSide = (sideline - BX) / (sinA * SX);
+  // Use whichever is closer
+  if (dSide > 0 && dSide < dTop) {
+    const yAtSide = BY - dSide * cosA * SY;
+    return [sideline, yAtSide];
+  }
+  return [xAtTop, HALFCOURT];
 }
-const WING_L_EXT = wingPt(-WING_A);
-const WING_R_EXT = wingPt(WING_A);
+const WING_L_EXT = clipWingToCourtTop(-WING_A);
+const WING_R_EXT = clipWingToCourtTop(WING_A);
+
+// Arc polyline between two angles at 3pt distance
+function arc3pt(a1: number, a2: number, n = 30): string {
+  const pts: string[] = [];
+  for (let i = 0; i <= n; i++) {
+    const [x, y] = arcPt(a1 + (a2 - a1) * (i / n));
+    pts.push(`${x},${y}`);
+  }
+  return pts.join(" L ");
+}
 
 // ---- Zone paths (10 zones) ----
 // Render order: outer→inner (later = on top = captures hover)
@@ -123,7 +145,6 @@ function zonePath(zone: ShotZone): string {
     case "Restricted Area": {
       const [lx, ly] = sv(-4, 0);
       const [rx, ry] = sv(4, 0);
-      // Semicircle upward from left to right
       return `M ${lx},${ly} A ${4 * SX} ${4 * SY} 0 0 0 ${rx},${ry} Z`;
     }
 
@@ -131,17 +152,16 @@ function zonePath(zone: ShotZone): string {
     case "Paint":
       return `M ${PAINT_L},${BASELINE} L ${PAINT_L},${FT_Y} L ${PAINT_R},${FT_Y} L ${PAINT_R},${BASELINE} Z`;
 
-    // ---- Mid-Range: between paint/RA and 3pt arc ----
-    // Uses straight wing lines as left/right dividers
+    // ---- Mid-Range: bounded by paint edge (inner) and 3PT ARC (outer) ----
     case "Mid-Range (Left)":
-      // From paint-left-top → along wing line to 3pt arc → along arc to corner → down to baseline → along bottom
+      // paint bottom-left → corner-left baseline → corner-left top →
+      // 3PT ARC from corner angle to wing angle → wing line to paint top-left
       return [
-        `M ${PAINT_L},${BASELINE}`,     // paint bottom-left
-        `L ${C3L},${BASELINE}`,          // left sideline at baseline
-        `L ${C3L},${CORNER_Y}`,          // corner top
-        `L ${WING_L.join(",")}`,         // 3pt arc at wing angle
-        `L ${PAINT_L},${FT_Y}`,         // paint top-left
-        `L ${PAINT_L},${BASELINE}`,      // back to start
+        `M ${PAINT_L},${BASELINE}`,
+        `L ${C3L},${BASELINE}`,
+        `L ${C3L},${CORNER_Y}`,
+        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`, // 3pt arc from corner to wing
+        `L ${PAINT_L},${FT_Y}`,
         "Z",
       ].join(" ");
 
@@ -149,56 +169,56 @@ function zonePath(zone: ShotZone): string {
       return [
         `M ${PAINT_R},${BASELINE}`,
         `L ${PAINT_R},${FT_Y}`,
-        `L ${WING_R.join(",")}`,
+        `L ${arc3pt(WING_A, ARC_CORNER_A)}`, // 3pt arc from wing to corner
         `L ${C3R},${CORNER_Y}`,
         `L ${C3R},${BASELINE}`,
         "Z",
       ].join(" ");
 
     case "Mid-Range (Center)":
-      // From paint-FT-left across to paint-FT-right, then up along wing lines to 3pt arc
+      // paint FT left → wing line to 3pt arc → ARC from -WING to +WING → wing line to paint FT right
       return [
         `M ${PAINT_L},${FT_Y}`,
-        `L ${WING_L.join(",")}`,
-        `L ${WING_R.join(",")}`,
+        `L ${arc3pt(-WING_A, WING_A)}`, // 3pt arc across center
         `L ${PAINT_R},${FT_Y}`,
         "Z",
       ].join(" ");
 
-    // ---- Corner 3: rectangles at sidelines below corner break ----
+    // ---- Corner 3 ----
     case "Corner 3 (Left)":
       return `M ${PAD},${BASELINE} L ${PAD},${CORNER_Y} L ${C3L},${CORNER_Y} L ${C3L},${BASELINE} Z`;
 
     case "Corner 3 (Right)":
       return `M ${C3R},${BASELINE} L ${C3R},${CORNER_Y} L ${W - PAD},${CORNER_Y} L ${W - PAD},${BASELINE} Z`;
 
-    // ---- Above Break 3: beyond 3pt arc to court boundary ----
+    // ---- Above Break 3: bounded by 3PT ARC (inner) and court boundary (outer) ----
     case "Above Break 3 (Left)":
       return [
         `M ${PAD},${CORNER_Y}`,
         `L ${C3L},${CORNER_Y}`,
-        `L ${WING_L.join(",")}`,        // 3pt arc at wing angle
-        `L ${WING_L_EXT.join(",")}`,    // extend to court edge
+        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`, // 3pt arc from corner to wing
+        `L ${WING_L_EXT.join(",")}`,            // wing line to court edge
         `L ${PAD},${HALFCOURT}`,
         "Z",
       ].join(" ");
 
     case "Above Break 3 (Center)":
       return [
-        `M ${WING_L.join(",")}`,
-        `L ${WING_R.join(",")}`,
+        `M ${WING_L_EXT.join(",")}`,
+        `L ${arc3pt(-WING_A, WING_A)}`,
         `L ${WING_R_EXT.join(",")}`,
-        `L ${WING_L_EXT.join(",")}`,
+        `L ${WING_R_EXT[0]},${HALFCOURT}`,
+        `L ${WING_L_EXT[0]},${HALFCOURT}`,
         "Z",
       ].join(" ");
 
     case "Above Break 3 (Right)":
       return [
-        `M ${C3R},${CORNER_Y}`,
+        `M ${WING_R_EXT.join(",")}`,
+        `L ${arc3pt(WING_A, ARC_CORNER_A)}`, // 3pt arc from wing to corner
+        `L ${C3R},${CORNER_Y}`,
         `L ${W - PAD},${CORNER_Y}`,
         `L ${W - PAD},${HALFCOURT}`,
-        `L ${WING_R_EXT.join(",")}`,
-        `L ${WING_R.join(",")}`,
         "Z",
       ].join(" ");
   }
@@ -321,11 +341,9 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
 
               <CourtLines />
 
-              {/* Zone divider lines (wing angles) */}
-              <line x1={WING_L[0]} y1={WING_L[1]} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
-              <line x1={WING_R[0]} y1={WING_R[1]} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
-              <line x1={PAINT_L} y1={FT_Y} x2={WING_L[0]} y2={WING_L[1]} stroke="#3a3a3a" strokeWidth="1" />
-              <line x1={PAINT_R} y1={FT_Y} x2={WING_R[0]} y2={WING_R[1]} stroke="#3a3a3a" strokeWidth="1" />
+              {/* Zone divider lines (wing angles — from paint edge through 3pt arc to court boundary) */}
+              <line x1={PAINT_L} y1={FT_Y} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={PAINT_R} y1={FT_Y} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
