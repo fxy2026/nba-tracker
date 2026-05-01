@@ -200,36 +200,21 @@ function zonePath(zone: ShotZone): string {
         "Z",
       ].join(" ");
 
-    // ---- Corner 3: bounded by sideline, baseline, and 3pt arc ----
+    // ---- Corner 3: simple rectangles (matches Hupu layout) ----
     case "Corner 3 (Left)":
-      // sideline→baseline→corner line→up to arc break→follow arc down toward baseline→bridge to sideline
-      return [
-        `M ${PAD},${BASELINE}`,
-        `L ${C3L},${BASELINE}`,
-        `L ${C3L},${CORNER_Y}`,
-        `L ${arc3pt(-ARC_CORNER_A, -90)}`,  // follow arc from corner break toward sideline
-        `L ${PAD},${arcPt(-90)[1]}`,        // bridge to sideline at arc end height
-        "Z",
-      ].join(" ");
+      return `M ${PAD},${BASELINE} L ${PAD},${CORNER_Y} L ${C3L},${CORNER_Y} L ${C3L},${BASELINE} Z`;
 
     case "Corner 3 (Right)":
-      return [
-        `M ${C3R},${BASELINE}`,
-        `L ${W - PAD},${BASELINE}`,
-        `L ${W - PAD},${arcPt(90)[1]}`,
-        `L ${arc3pt(90, ARC_CORNER_A)}`,
-        `L ${C3R},${CORNER_Y}`,
-        "Z",
-      ].join(" ");
+      return `M ${C3R},${BASELINE} L ${C3R},${CORNER_Y} L ${W - PAD},${CORNER_Y} L ${W - PAD},${BASELINE} Z`;
 
     // ---- Above Break 3: bounded by 3PT ARC (inner) and court boundary (outer) ----
     case "Above Break 3 (Left)":
-      // From sideline at arc-end height → arc from -90° to wing → wing line to court edge → court top → sideline
       return [
-        `M ${PAD},${arcPt(-90)[1]}`,            // sideline at arc end height
-        `L ${arc3pt(-90, -WING_A)}`,            // full arc from sideline to wing
-        `L ${WING_L_EXT.join(",")}`,            // wing line to court edge
-        `L ${PAD},${HALFCOURT}`,                // sideline at court top
+        `M ${PAD},${CORNER_Y}`,
+        `L ${C3L},${CORNER_Y}`,
+        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`,
+        `L ${WING_L_EXT.join(",")}`,
+        `L ${PAD},${HALFCOURT}`,
         "Z",
       ].join(" ");
 
@@ -246,8 +231,9 @@ function zonePath(zone: ShotZone): string {
     case "Above Break 3 (Right)":
       return [
         `M ${WING_R_EXT.join(",")}`,
-        `L ${arc3pt(WING_A, 90)}`,
-        `L ${W - PAD},${arcPt(90)[1]}`,
+        `L ${arc3pt(WING_A, ARC_CORNER_A)}`,
+        `L ${C3R},${CORNER_Y}`,
+        `L ${W - PAD},${CORNER_Y}`,
         `L ${W - PAD},${HALFCOURT}`,
         "Z",
       ].join(" ");
