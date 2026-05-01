@@ -143,9 +143,12 @@ const WING_PAINT_R = wingPaintIntersection(WING_A);
 // ---- Zone paths (10 zones) ----
 // Render order: outer→inner (later = on top = captures hover)
 const RENDER_ORDER: ShotZone[] = [
+  // Outermost first (background)
   "Above Break 3 (Left)", "Above Break 3 (Center)", "Above Break 3 (Right)",
-  "Corner 3 (Left)", "Corner 3 (Right)",
+  // Mid-range BEFORE corner 3 (corner 3 overlaps mid-range at baseline corners)
   "Mid-Range (Left)", "Mid-Range (Center)", "Mid-Range (Right)",
+  "Corner 3 (Left)", "Corner 3 (Right)",
+  // Innermost last (foreground)
   "Paint",
   "Restricted Area",
 ];
