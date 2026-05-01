@@ -470,6 +470,12 @@ const zh: Translations = {
     capHit: "帽占",
   },
 
+  shotHeatmap: {
+    belowAvg: "低于均值",
+    avg: "均值",
+    aboveAvg: "高于均值",
+  },
+
   shotChartComp: {
     allPlayers: "所有球员",
     all: "全部",

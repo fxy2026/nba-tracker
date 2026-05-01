@@ -470,6 +470,12 @@ const en: Translations = {
     capHit: "Cap Hit",
   },
 
+  shotHeatmap: {
+    belowAvg: "Below avg",
+    avg: "Avg",
+    aboveAvg: "Above avg",
+  },
+
   shotChartComp: {
     allPlayers: "All Players",
     all: "All",

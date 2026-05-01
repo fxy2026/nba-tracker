@@ -496,6 +496,13 @@ export interface Translations {
     capHit: string;
   };
 
+  // ---- Shot Heatmap ----
+  shotHeatmap: {
+    belowAvg: string;
+    avg: string;
+    aboveAvg: string;
+  };
+
   // ---- Shot Chart ----
   shotChartComp: {
     allPlayers: string;
