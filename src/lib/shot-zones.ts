@@ -81,13 +81,13 @@ export function classifyShotZone(shot: { x: number; y: number; shotDistance: num
   // Above-break 3: beyond the standard 3pt arc
   if (dist > THREE_PT_FT) {
     const angle = angleDeg(shot.x, shot.y);
-    if (angle >= 55) return isLeft ? "Above Break 3 (Left)" : "Above Break 3 (Right)";
+    if (angle >= 25) return isLeft ? "Above Break 3 (Left)" : "Above Break 3 (Right)";
     return "Above Break 3 (Center)";
   }
 
   // 4. Mid-range (between paint/RA and 3pt line)
   const angle = angleDeg(shot.x, shot.y);
-  if (angle >= 55) return isLeft ? "Mid-Range (Left)" : "Mid-Range (Right)";
+  if (angle >= 25) return isLeft ? "Mid-Range (Left)" : "Mid-Range (Right)";
   return "Mid-Range (Center)";
 }
 

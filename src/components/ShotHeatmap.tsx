@@ -56,7 +56,7 @@ const ARC_CORNER_A = ARC_CORNER_A_COURT;
 // Wing split angle — divides left/center/right for mid-range and above-break-3
 // At this angle, the 3pt arc point X equals the paint edge X
 // asin(8/23.75) ≈ 19.7°, but visually we want a wider center like Hupu → use ~40°
-const WING_A = 40;
+const WING_A = 25;
 
 // 3pt arc point at WING_A angle
 function arcPt(aDeg: number): [number, number] {
