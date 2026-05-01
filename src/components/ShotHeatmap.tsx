@@ -76,103 +76,201 @@ function CourtMarkings() {
   );
 }
 
-// ---------- Zone SVG paths (clean, non-overlapping) ----------
+// ---------- Zone SVG paths ----------
+// Polar helper: angle 0° = toward halfcourt (down in SVG), 90° = right sideline, -90° = left sideline
+function pt(rFt: number, aDeg: number): [number, number] {
+  const rad = (aDeg * Math.PI) / 180;
+  return ftToSvg(rFt * Math.sin(rad), rFt * Math.cos(rad));
+}
+
+// Generate arc polyline points from angle a1 to a2 at radius rFt
+function arc(rFt: number, a1: number, a2: number, n = 24): string {
+  const pts: string[] = [];
+  for (let i = 0; i <= n; i++) {
+    const a = a1 + (a2 - a1) * (i / n);
+    const [x, y] = pt(rFt, a);
+    pts.push(`${x},${y}`);
+  }
+  return pts.join(" L ");
+}
+
+// Distance constants (feet)
+const R = 4;      // restricted area
+const P = 14;     // paint / free-throw line
+const T = 23.75;  // 3pt arc
+const C3 = 22;    // corner 3
+
+// Angle split boundaries (degrees from center)
+// Mid-range: 0-30 center, 30-60 left-center/right-center, 60-90 left/right
+// Above-break-3: 0-25 center, 25-45 left-center/right-center, 45+ left/right
+const AM1 = 30, AM2 = 60;
+const A31 = 25, A32 = 45;
+
+// Paint boundary points
+const PAINT_L = ftToSvg(-8, 0);
+const PAINT_R = ftToSvg(8, 0);
+const FT_LINE_L = ftToSvg(-8, 19);
+const FT_LINE_R = ftToSvg(8, 19);
+const FT_LINE_C = ftToSvg(0, 19);
+
+// Corner 3 boundary
+const C3_L_TOP = ftToSvg(-C3, 0);
+const C3_R_TOP = ftToSvg(C3, 0);
+const CORNER_END = ftToSvg(0, 14); // corner extends 14ft from baseline
+
 function zonePath(zone: ShotZone): string {
-  // Helper: arc points string at given radius in ft
-  const arcStr = (rFt: number, a1Deg: number, a2Deg: number, steps = 24): string => {
-    const pts: string[] = [];
-    for (let i = 0; i <= steps; i++) {
-      const a = a1Deg + (a2Deg - a1Deg) * (i / steps);
-      const rad = (a * Math.PI) / 180;
-      const [x, y] = ftToSvg(rFt * Math.cos(rad), rFt * Math.sin(rad));
-      pts.push(`${x} ${y}`);
-    }
-    return pts.join(" L ");
-  };
-
-  const R = 4; // restricted area
-  const P = 14; // paint boundary
-  const T = 23.75; // 3pt arc
-  const C3 = 22; // corner 3 distance
-  const CE = 14; // corner extends 14ft from baseline
-
-  // Angle boundaries for zone splits
-  const A_MID = 30;  // mid-range center/left-center boundary
-  const A_WING = 60; // mid-range left-center/left boundary
-  const A_3LC = 25;  // above break 3 center/left-center
-  const A_3L = 45;   // above break 3 left-center/left
+  // Shorthand: left sideline, right sideline, bottom of court (half-court line)
+  const LEFT = PAD;
+  const RIGHT = W - PAD;
+  const BOTTOM = H - PAD;
+  const TOP = PAD;
+  const [c3lx] = C3_L_TOP;
+  const [c3rx] = C3_R_TOP;
+  const [, cornerY] = CORNER_END;
 
   switch (zone) {
+    // --- Inner zones ---
     case "Restricted Area":
-      return `M ${ftToSvg(-R, 0).join(",")} L ${arcStr(R, -90, 90)} Z`;
+      // Semicircle from left to right at 4ft
+      return `M ${pt(R, -90).join(",")} L ${arc(R, -90, 90)} Z`;
 
-    case "Paint (Left)": {
-      const [plx, ply] = ftToSvg(-8, 0);
-      const [, pby] = ftToSvg(0, 19);
-      return `M ${plx},${ply} L ${plx},${pby} L ${BX},${pby} L ${BX},${BY} L ${arcStr(R, 90, 180)} L ${plx},${ply} Z`;
-    }
-    case "Paint (Right)": {
-      const [prx, pry] = ftToSvg(8, 0);
-      const [, pby] = ftToSvg(0, 19);
-      return `M ${BX},${BY} L ${BX},${pby} L ${prx},${pby} L ${prx},${pry} L ${arcStr(R, 0, 90)} Z`;
-    }
+    case "Paint (Left)":
+      // Left paint box minus restricted area
+      return [
+        `M ${PAINT_L.join(",")}`,
+        `L ${FT_LINE_L.join(",")}`,
+        `L ${FT_LINE_C.join(",")}`,
+        `L ${BX},${BY}`,
+        `L ${arc(R, 90, 180)}`,
+        `L ${PAINT_L.join(",")}`,
+        "Z",
+      ].join(" ");
 
-    case "Mid-Range (Left)": {
-      const [plx] = ftToSvg(-8, 0);
-      const [, pby] = ftToSvg(0, 19);
-      const [clx, cly] = ftToSvg(-C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${plx},${BY} L ${plx},${pby} L ${arcStr(P, A_WING, 90)} L ${arcStr(T, 90, A_WING)} L ${clx},${cey} L ${clx},${cly} L ${plx},${BY} Z`;
-    }
-    case "Mid-Range (Right)": {
-      const [prx] = ftToSvg(8, 0);
-      const [, pby] = ftToSvg(0, 19);
-      const [crx, cry] = ftToSvg(C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${prx},${BY} L ${crx},${cry} L ${crx},${cey} L ${arcStr(T, A_WING, 90)} L ${arcStr(P, 90, A_WING)} L ${pby > BY ? `${prx},${pby}` : ""} L ${prx},${pby} L ${prx},${BY} Z`;
-    }
-    case "Mid-Range (Left Center)": {
-      const [, pby] = ftToSvg(0, 19);
-      return `M ${BX},${pby} L ${ftToSvg(-8, 19).join(",")} L ${arcStr(P, A_WING, A_MID)} L ${arcStr(T, A_MID, A_WING)} Z`;
-    }
-    case "Mid-Range (Right Center)": {
-      const [, pby] = ftToSvg(0, 19);
-      return `M ${ftToSvg(8, 19).join(",")},${pby} L ${BX},${pby} L ${arcStr(T, A_MID, A_WING)} L ${arcStr(P, A_WING, A_MID)} Z`;
-    }
-    case "Mid-Range (Center)": {
-      const [, pby] = ftToSvg(0, 19);
-      return `M ${BX},${pby} L ${arcStr(P, -A_MID, A_MID)} L ${arcStr(T, A_MID, -A_MID)} Z`;
-    }
+    case "Paint (Right)":
+      return [
+        `M ${BX},${BY}`,
+        `L ${FT_LINE_C.join(",")}`,
+        `L ${FT_LINE_R.join(",")}`,
+        `L ${PAINT_R.join(",")}`,
+        `L ${arc(R, 0, 90)}`,
+        "Z",
+      ].join(" ");
 
-    case "Corner 3 (Left)": {
-      const [clx] = ftToSvg(-C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${PAD},${PAD} L ${clx},${PAD} L ${clx},${cey} L ${PAD},${cey} Z`;
-    }
-    case "Corner 3 (Right)": {
-      const [crx] = ftToSvg(C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${crx},${PAD} L ${W - PAD},${PAD} L ${W - PAD},${cey} L ${crx},${cey} Z`;
-    }
+    // --- Mid-range (between paint and 3pt line) ---
+    case "Mid-Range (Left)":
+      // From paint left edge, along sideline region, bounded by 3pt corner line and arcs
+      return [
+        `M ${PAINT_L.join(",")}`,
+        `L ${c3lx},${PAINT_L[1]}`,
+        `L ${c3lx},${cornerY}`,
+        `L ${arc(T, -AM2, -90)}`,   // 3pt arc from -60° to -90° (going left)
+        `L ${arc(P, -90, -AM2)}`,   // paint arc from -90° back to -60°
+        `L ${FT_LINE_L.join(",")}`,
+        `L ${PAINT_L.join(",")}`,
+        "Z",
+      ].join(" ");
 
+    case "Mid-Range (Right)":
+      return [
+        `M ${PAINT_R.join(",")}`,
+        `L ${FT_LINE_R.join(",")}`,
+        `L ${arc(P, AM2, 90)}`,
+        `L ${arc(T, 90, AM2)}`,
+        `L ${c3rx},${cornerY}`,
+        `L ${c3rx},${PAINT_R[1]}`,
+        `L ${PAINT_R.join(",")}`,
+        "Z",
+      ].join(" ");
+
+    case "Mid-Range (Left Center)":
+      return [
+        `M ${FT_LINE_L.join(",")}`,
+        `L ${arc(P, -AM2, -AM1)}`,
+        `L ${arc(T, -AM1, -AM2)}`,
+        `L ${FT_LINE_L.join(",")}`,
+        "Z",
+      ].join(" ");
+
+    case "Mid-Range (Right Center)":
+      return [
+        `M ${FT_LINE_R.join(",")}`,
+        `L ${arc(T, AM2, AM1)}`,
+        `L ${arc(P, AM1, AM2)}`,
+        `L ${FT_LINE_R.join(",")}`,
+        "Z",
+      ].join(" ");
+
+    case "Mid-Range (Center)":
+      return [
+        `M ${FT_LINE_C.join(",")}`,
+        `L ${FT_LINE_L.join(",")}`,
+        `L ${arc(P, -AM1, AM1)}`,
+        `L ${FT_LINE_R.join(",")}`,
+        `L ${FT_LINE_C.join(",")}`,
+        `L ${arc(T, AM1, -AM1)}`,
+        "Z",
+      ].join(" ");
+
+    // --- Corner 3s ---
+    case "Corner 3 (Left)":
+      return `M ${LEFT},${TOP} L ${c3lx},${TOP} L ${c3lx},${cornerY} L ${LEFT},${cornerY} Z`;
+
+    case "Corner 3 (Right)":
+      return `M ${c3rx},${TOP} L ${RIGHT},${TOP} L ${RIGHT},${cornerY} L ${c3rx},${cornerY} Z`;
+
+    // --- Above-break 3s ---
     case "Above Break 3 (Left)": {
-      const [clx] = ftToSvg(-C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${clx},${cey} L ${PAD},${cey} L ${PAD},${H - PAD} L ${arcStr(T, -A_3L, -90)} L ${clx},${cey} Z`;
+      // From corner end down, along sideline, connect to 3pt arc
+      const [ax, ay] = pt(T, -A32);
+      return [
+        `M ${c3lx},${cornerY}`,
+        `L ${arc(T, -90, -A32)}`,
+        `L ${ax},${BOTTOM}`,
+        `L ${LEFT},${BOTTOM}`,
+        `L ${LEFT},${cornerY}`,
+        "Z",
+      ].join(" ");
     }
     case "Above Break 3 (Left Center)": {
-      return `M ${arcStr(T, -A_3L, -A_3LC)} L ${ftToSvg(-T * Math.cos(A_3LC * Math.PI / 180), T * Math.sin(A_3LC * Math.PI / 180)).join(",")},${H - PAD} L ${ftToSvg(-T * Math.cos(A_3L * Math.PI / 180), T * Math.sin(A_3L * Math.PI / 180)).join(",").split(",")[0]},${H - PAD} Z`;
+      const [x1, y1] = pt(T, -A32);
+      const [x2, y2] = pt(T, -A31);
+      return [
+        `M ${arc(T, -A32, -A31)}`,
+        `L ${x2},${BOTTOM}`,
+        `L ${x1},${BOTTOM}`,
+        "Z",
+      ].join(" ");
     }
     case "Above Break 3 (Center)": {
-      return `M ${arcStr(T, -A_3LC, A_3LC)} L ${ftToSvg(T * Math.cos(A_3LC * Math.PI / 180), T * Math.sin(A_3LC * Math.PI / 180)).join(",").split(",")[0]},${H - PAD} L ${ftToSvg(-T * Math.cos(A_3LC * Math.PI / 180), T * Math.sin(A_3LC * Math.PI / 180)).join(",").split(",")[0]},${H - PAD} Z`;
+      const [xl] = pt(T, -A31);
+      const [xr] = pt(T, A31);
+      return [
+        `M ${arc(T, -A31, A31)}`,
+        `L ${xr},${BOTTOM}`,
+        `L ${xl},${BOTTOM}`,
+        "Z",
+      ].join(" ");
     }
     case "Above Break 3 (Right Center)": {
-      return `M ${arcStr(T, A_3LC, A_3L)} L ${ftToSvg(T * Math.cos(A_3L * Math.PI / 180), T * Math.sin(A_3L * Math.PI / 180)).join(",").split(",")[0]},${H - PAD} L ${ftToSvg(T * Math.cos(A_3LC * Math.PI / 180), T * Math.sin(A_3LC * Math.PI / 180)).join(",").split(",")[0]},${H - PAD} Z`;
+      const [x1, y1] = pt(T, A31);
+      const [x2, y2] = pt(T, A32);
+      return [
+        `M ${arc(T, A31, A32)}`,
+        `L ${x2},${BOTTOM}`,
+        `L ${x1},${BOTTOM}`,
+        "Z",
+      ].join(" ");
     }
     case "Above Break 3 (Right)": {
-      const [crx] = ftToSvg(C3, 0);
-      const [, cey] = ftToSvg(0, CE);
-      return `M ${crx},${cey} L ${arcStr(T, 90, A_3L)} L ${W - PAD},${H - PAD} L ${W - PAD},${cey} Z`;
+      const [ax, ay] = pt(T, A32);
+      return [
+        `M ${arc(T, A32, 90)}`,
+        `L ${c3rx},${cornerY}`,
+        `L ${RIGHT},${cornerY}`,
+        `L ${RIGHT},${BOTTOM}`,
+        `L ${ax},${BOTTOM}`,
+        "Z",
+      ].join(" ");
     }
   }
 }
