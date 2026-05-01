@@ -294,55 +294,18 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
     setError("");
     setGamesInfo({ loaded: 0, total: 0 });
     try {
-      // Current season: use CDN play-by-play (always works)
-      if (s === currentSeason) {
-        const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-        const res = await fetch(`/api/player-shots?${params}`);
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        setShots(data.shots || []);
-        setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
-        return;
+      // Both current and historical seasons use the same API
+      // Current: schedule + CDN PBP. Historical: playergamelog + CDN PBP
+      const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
+      if (s !== currentSeason) params.set("season", s);
+      const res = await fetch(`/api/player-shots?${params}`);
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      setShots(data.shots || []);
+      setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
+      if ((data.shots || []).length === 0) {
+        setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
       }
-
-      // Historical seasons: try stats.nba.com proxy
-      const types = st === "all" ? ["Regular+Season", "Playoffs"] : [st === "regular" ? "Regular+Season" : "Playoffs"];
-      const allShots: ShotRow[] = [];
-      for (const stype of types) {
-        const params = new URLSearchParams({
-          endpoint: "shotchartdetail",
-          PlayerID: String(playerId),
-          Season: s,
-          SeasonType: stype,
-          ContextMeasure: "FGA",
-          LeagueID: "00",
-        });
-        const res = await fetch(`/api/stats?${params}`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const rs = data.resultSets?.[0];
-        if (!rs?.rowSet) continue;
-        const headers: string[] = rs.headers;
-        const xi = headers.indexOf("LOC_X");
-        const yi = headers.indexOf("LOC_Y");
-        const disti = headers.indexOf("SHOT_DISTANCE");
-        const resi = headers.indexOf("SHOT_MADE_FLAG");
-        for (const row of rs.rowSet) {
-          const locX = row[xi] as number;
-          const locY = row[yi] as number;
-          const dist = row[disti] as number;
-          const made = row[resi] as number;
-          const xPct = 5.59 + (locY / 10 / 94) * 100;
-          const yPct = 50 + (locX / 10 / 50) * 100;
-          allShots.push({ x: xPct, y: yPct, shotDistance: dist, shotResult: made === 1 ? "Made" : "Missed" });
-        }
-      }
-      if (allShots.length === 0) {
-        setError(locale === "zh"
-          ? "该赛季投篮数据暂不可用（NBA 限制了历史数据接口访问）"
-          : "Shot data not available for this season (NBA restricts historical data access)");
-      }
-      setShots(allShots);
     } catch {
       setError(locale === "zh" ? "加载投篮数据失败" : "Failed to load shot data");
     } finally {
@@ -384,7 +347,7 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
           className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
         >
           {seasons.map((s) => (
-            <option key={s} value={s}>{s}{s !== currentSeason ? (locale === "zh" ? " (有限)" : " (limited)") : ""}</option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
         <div className="flex rounded-lg overflow-hidden border border-border">
