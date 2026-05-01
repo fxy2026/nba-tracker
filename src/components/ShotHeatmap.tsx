@@ -17,205 +17,206 @@ interface ShotRow {
   shotResult: string;
 }
 
-// ---- Half-court SVG (basket at BOTTOM, halfcourt line at TOP — matches Hupu layout) ----
-const W = 470, H = 440, PAD = 8;
-// Court: 50ft wide × ~47ft visible
+// ============================================================
+// Half-court SVG — basket at BOTTOM, halfcourt at TOP
+// All zone boundaries are STRAIGHT LINES (no arc fills)
+// The 3pt arc is drawn as a court marking line on top
+// ============================================================
+const W = 470, H = 450, PAD = 6;
 const CW = W - PAD * 2;
 const CH = H - PAD * 2;
-// Scale factors
-const SX = CW / 50; // pixels per foot horizontal
-const SY = CH / 47; // pixels per foot vertical
-// Basket at bottom center, 5.25ft from baseline
+const SX = CW / 50;  // px per foot horizontal (court is 50ft wide)
+const SY = CH / 47;  // px per foot vertical (showing ~47ft of half court)
 const BX = W / 2;
-const BY = H - PAD - 5.25 * SY; // basket Y (near bottom)
-const BASELINE_Y = H - PAD; // very bottom
+const BY = H - PAD - 5.25 * SY; // basket position
+const BASELINE = H - PAD;
+const HALFCOURT = PAD;
 
-// Court-feet to SVG: dx = feet left/right from basket, dy = feet toward halfcourt (upward in SVG)
-function toSvg(dxFt: number, dyFt: number): [number, number] {
+// feet-from-basket → SVG. dy>0 = toward halfcourt (up in SVG)
+function sv(dxFt: number, dyFt: number): [number, number] {
   return [BX + dxFt * SX, BY - dyFt * SY];
 }
 
-// Polar: angle 0 = toward halfcourt (up), +90 = right, -90 = left
-function polar(rFt: number, aDeg: number): [number, number] {
-  const rad = (aDeg * Math.PI) / 180;
-  return toSvg(rFt * Math.sin(rad), rFt * Math.cos(rad));
+// ---- Key positions in SVG coords ----
+// Paint: 16ft wide (±8ft), 19ft from baseline to FT line
+const PAINT_L = sv(-8, 0)[0];
+const PAINT_R = sv(8, 0)[0];
+const FT_Y = sv(0, 19 - 5.25)[1]; // FT line in SVG-Y
+
+// Corner 3: sideline at ±22ft from center, extends 14ft from baseline
+const C3L = sv(-22, 0)[0];
+const C3R = sv(22, 0)[0];
+const CORNER_Y = sv(0, 14 - 5.25)[1]; // where corner 3 ends
+
+// 3pt arc intersection with corner line (angle where arc meets corner depth)
+const CORNER_DEPTH_FT = 14 - 5.25; // 8.75ft from basket
+const ARC_CORNER_A = Math.acos(CORNER_DEPTH_FT / 23.75) * (180 / Math.PI); // ≈68.4°
+
+// Wing split angle — divides left/center/right for mid-range and above-break-3
+// At this angle, the 3pt arc point X equals the paint edge X
+// asin(8/23.75) ≈ 19.7°, but visually we want a wider center like Hupu → use ~40°
+const WING_A = 40;
+
+// 3pt arc point at WING_A angle
+function arcPt(aDeg: number): [number, number] {
+  const r = (aDeg * Math.PI) / 180;
+  return sv(23.75 * Math.sin(r), 23.75 * Math.cos(r));
 }
 
-function arcStr(rFt: number, a1: number, a2: number, n = 30): string {
-  const pts: string[] = [];
-  for (let i = 0; i <= n; i++) {
-    const [x, y] = polar(rFt, a1 + (a2 - a1) * (i / n));
-    pts.push(`${x},${y}`);
-  }
-  return pts.join(" L ");
-}
-
-// ---- Court markings ----
+// ---- Court markings (lines only, no fills) ----
 function CourtLines() {
-  const [pl] = toSvg(-8, 0);
-  const [pr] = toSvg(8, 0);
-  const [, ftY] = toSvg(0, 19 - 5.25);
-  const raR = 4 * SX;
-  const ftR = 6 * SX;
-  const [c3l] = toSvg(-22, 0);
-  const [c3r] = toSvg(22, 0);
-  const [, cornerY] = toSvg(0, 14 - 5.25);
+  // 3pt arc polyline
+  const arcPts: string[] = [];
+  for (let a = -90; a <= 90; a += 2) {
+    const [x, y] = arcPt(a);
+    arcPts.push(`${x},${y}`);
+  }
 
   return (
     <>
-      <rect x={PAD} y={PAD} width={CW} height={CH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-      {/* Paint box */}
-      <rect x={pl} y={ftY} width={pr - pl} height={BASELINE_Y - ftY} fill="none" stroke="#3a3a3a" strokeWidth="1.5" />
+      {/* Court outline */}
+      <rect x={PAD} y={HALFCOURT} width={CW} height={CH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+      {/* Paint */}
+      <rect x={PAINT_L} y={FT_Y} width={PAINT_R - PAINT_L} height={BASELINE - FT_Y} fill="none" stroke="#3a3a3a" strokeWidth="1.5" />
       {/* FT circle */}
-      <circle cx={BX} cy={ftY} r={ftR} fill="none" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4,4" />
-      {/* Restricted area */}
-      <path d={`M ${toSvg(-4, 0).join(",")} A ${raR} ${4 * SY} 0 0 0 ${toSvg(4, 0).join(",")}`} fill="none" stroke="#3a3a3a" strokeWidth="1" />
+      <circle cx={BX} cy={FT_Y} r={6 * SX} fill="none" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4,4" />
+      {/* Restricted area semicircle */}
+      <path d={`M ${sv(-4, 0).join(",")} A ${4 * SX} ${4 * SY} 0 0 0 ${sv(4, 0).join(",")}`} fill="none" stroke="#3a3a3a" strokeWidth="1" />
       {/* Basket */}
       <circle cx={BX} cy={BY} r={4} fill="none" stroke="#928CEE" strokeWidth="1.5" />
       <line x1={BX - 12} y1={BY + 4} x2={BX + 12} y2={BY + 4} stroke="#555" strokeWidth="2" />
-      {/* 3pt line: corners + arc */}
-      <line x1={c3l} y1={BASELINE_Y} x2={c3l} y2={cornerY} stroke="#444" strokeWidth="1.5" />
-      <line x1={c3r} y1={BASELINE_Y} x2={c3r} y2={cornerY} stroke="#444" strokeWidth="1.5" />
-      <polyline points={arcStr(23.75, -90, 90)} fill="none" stroke="#444" strokeWidth="1.5" />
-      {/* Half court line */}
-      <line x1={PAD} y1={PAD} x2={W - PAD} y2={PAD} stroke="#2a2a2a" strokeWidth="1.5" />
+      {/* 3pt line */}
+      <line x1={C3L} y1={BASELINE} x2={C3L} y2={CORNER_Y} stroke="#444" strokeWidth="1.5" />
+      <line x1={C3R} y1={BASELINE} x2={C3R} y2={CORNER_Y} stroke="#444" strokeWidth="1.5" />
+      <polyline points={arcPts.join(" ")} fill="none" stroke="#444" strokeWidth="1.5" />
     </>
   );
 }
 
-// ---- Zone paths (10 zones, layered outer→inner) ----
-// Constants in feet from basket
-const CORNER_DEPTH = 14 - 5.25; // 8.75ft from basket
-const CORNER_ARC_A = Math.acos(CORNER_DEPTH / 23.75) * (180 / Math.PI); // ~68.4°
-const WING_ANGLE = 55; // divides center from left/right
+// ---- Zone boundary lines (straight lines from basket at WING_A angle) ----
+// These lines divide mid-range and above-break-3 into left/center/right
+// Extend from FT area to court edge
+const WING_L = arcPt(-WING_A); // left wing point on 3pt arc
+const WING_R = arcPt(WING_A);  // right wing point on 3pt arc
+// Extend wing lines to court top edge
+const WING_EXT = 45; // extend to this many feet from basket (past 3pt arc to court boundary)
+function wingPt(aDeg: number): [number, number] {
+  const r = (aDeg * Math.PI) / 180;
+  return sv(WING_EXT * Math.sin(r), WING_EXT * Math.cos(r));
+}
+const WING_L_EXT = wingPt(-WING_A);
+const WING_R_EXT = wingPt(WING_A);
 
+// ---- Zone paths (10 zones) ----
+// Render order: outer→inner (later = on top = captures hover)
 const RENDER_ORDER: ShotZone[] = [
-  // Outer (drawn first, behind)
   "Above Break 3 (Left)", "Above Break 3 (Center)", "Above Break 3 (Right)",
   "Corner 3 (Left)", "Corner 3 (Right)",
-  // Mid
   "Mid-Range (Left)", "Mid-Range (Center)", "Mid-Range (Right)",
-  // Inner (drawn last, on top)
   "Paint",
   "Restricted Area",
 ];
 
 function zonePath(zone: ShotZone): string {
-  const TOP = PAD;
-  const [c3l] = toSvg(-22, 0);
-  const [c3r] = toSvg(22, 0);
-  const [, cornerY] = toSvg(0, CORNER_DEPTH);
-
   switch (zone) {
-    case "Restricted Area":
-      // Semicircle above basket (toward halfcourt)
-      return `M ${polar(4, -90).join(",")} L ${arcStr(4, -90, 90)} Z`;
-
-    case "Paint": {
-      // Rectangle from baseline to FT line, 16ft wide
-      const [pl] = toSvg(-8, 0);
-      const [pr] = toSvg(8, 0);
-      const [, ftY] = toSvg(0, 19 - 5.25);
-      return `M ${pl},${BASELINE_Y} L ${pl},${ftY} L ${pr},${ftY} L ${pr},${BASELINE_Y} Z`;
+    // ---- Restricted Area: semicircle ----
+    case "Restricted Area": {
+      const [lx, ly] = sv(-4, 0);
+      const [rx, ry] = sv(4, 0);
+      // Semicircle upward from left to right
+      return `M ${lx},${ly} A ${4 * SX} ${4 * SY} 0 0 0 ${rx},${ry} Z`;
     }
 
-    case "Mid-Range (Left)": {
-      // Left side wedge: from paint edge to 3pt arc, high angle
-      // Bounded by: left sideline at paint height, corner 3 line, 3pt arc, radial line at WING_ANGLE
-      const [pl] = toSvg(-8, 0);
-      const [, ftY] = toSvg(0, 19 - 5.25);
-      return [
-        `M ${c3l},${BASELINE_Y}`,
-        `L ${c3l},${cornerY}`,
-        `L ${arcStr(23.75, -CORNER_ARC_A, -WING_ANGLE)}`,
-        `L ${polar(14, -WING_ANGLE).join(",")}`,
-        `L ${pl},${ftY}`,
-        `L ${pl},${BASELINE_Y}`,
-        "Z",
-      ].join(" ");
-    }
-    case "Mid-Range (Right)": {
-      const [pr] = toSvg(8, 0);
-      const [, ftY] = toSvg(0, 19 - 5.25);
-      return [
-        `M ${pr},${BASELINE_Y}`,
-        `L ${pr},${ftY}`,
-        `L ${polar(14, WING_ANGLE).join(",")}`,
-        `L ${arcStr(23.75, WING_ANGLE, CORNER_ARC_A)}`,
-        `L ${c3r},${cornerY}`,
-        `L ${c3r},${BASELINE_Y}`,
-        "Z",
-      ].join(" ");
-    }
-    case "Mid-Range (Center)": {
-      // Arc sector between paint (~14ft) and 3pt arc, center angles
-      const [pl] = toSvg(-8, 0);
-      const [pr] = toSvg(8, 0);
-      const [, ftY] = toSvg(0, 19 - 5.25);
-      return [
-        `M ${pl},${ftY}`,
-        `L ${polar(14, -WING_ANGLE).join(",")}`,
-        `L ${arcStr(23.75, -WING_ANGLE, WING_ANGLE)}`,
-        `L ${polar(14, WING_ANGLE).join(",")}`,
-        `L ${pr},${ftY}`,
-        `L ${pr},${ftY}`,
-        `L ${pl},${ftY}`,
-        "Z",
-      ].join(" ");
-    }
+    // ---- Paint: rectangle from baseline to FT line ----
+    case "Paint":
+      return `M ${PAINT_L},${BASELINE} L ${PAINT_L},${FT_Y} L ${PAINT_R},${FT_Y} L ${PAINT_R},${BASELINE} Z`;
 
+    // ---- Mid-Range: between paint/RA and 3pt arc ----
+    // Uses straight wing lines as left/right dividers
+    case "Mid-Range (Left)":
+      // From paint-left-top → along wing line to 3pt arc → along arc to corner → down to baseline → along bottom
+      return [
+        `M ${PAINT_L},${BASELINE}`,     // paint bottom-left
+        `L ${C3L},${BASELINE}`,          // left sideline at baseline
+        `L ${C3L},${CORNER_Y}`,          // corner top
+        `L ${WING_L.join(",")}`,         // 3pt arc at wing angle
+        `L ${PAINT_L},${FT_Y}`,         // paint top-left
+        `L ${PAINT_L},${BASELINE}`,      // back to start
+        "Z",
+      ].join(" ");
+
+    case "Mid-Range (Right)":
+      return [
+        `M ${PAINT_R},${BASELINE}`,
+        `L ${PAINT_R},${FT_Y}`,
+        `L ${WING_R.join(",")}`,
+        `L ${C3R},${CORNER_Y}`,
+        `L ${C3R},${BASELINE}`,
+        "Z",
+      ].join(" ");
+
+    case "Mid-Range (Center)":
+      // From paint-FT-left across to paint-FT-right, then up along wing lines to 3pt arc
+      return [
+        `M ${PAINT_L},${FT_Y}`,
+        `L ${WING_L.join(",")}`,
+        `L ${WING_R.join(",")}`,
+        `L ${PAINT_R},${FT_Y}`,
+        "Z",
+      ].join(" ");
+
+    // ---- Corner 3: rectangles at sidelines below corner break ----
     case "Corner 3 (Left)":
-      return `M ${PAD},${BASELINE_Y} L ${PAD},${cornerY} L ${c3l},${cornerY} L ${c3l},${BASELINE_Y} Z`;
-    case "Corner 3 (Right)":
-      return `M ${c3r},${BASELINE_Y} L ${c3r},${cornerY} L ${W - PAD},${cornerY} L ${W - PAD},${BASELINE_Y} Z`;
+      return `M ${PAD},${BASELINE} L ${PAD},${CORNER_Y} L ${C3L},${CORNER_Y} L ${C3L},${BASELINE} Z`;
 
-    case "Above Break 3 (Left)": {
-      const [ax, ay] = polar(23.75, -WING_ANGLE);
+    case "Corner 3 (Right)":
+      return `M ${C3R},${BASELINE} L ${C3R},${CORNER_Y} L ${W - PAD},${CORNER_Y} L ${W - PAD},${BASELINE} Z`;
+
+    // ---- Above Break 3: beyond 3pt arc to court boundary ----
+    case "Above Break 3 (Left)":
       return [
-        `M ${PAD},${cornerY}`,
-        `L ${arcStr(23.75, -90, -WING_ANGLE)}`,
-        `L ${ax},${TOP}`,
-        `L ${PAD},${TOP}`,
+        `M ${PAD},${CORNER_Y}`,
+        `L ${C3L},${CORNER_Y}`,
+        `L ${WING_L.join(",")}`,        // 3pt arc at wing angle
+        `L ${WING_L_EXT.join(",")}`,    // extend to court edge
+        `L ${PAD},${HALFCOURT}`,
         "Z",
       ].join(" ");
-    }
-    case "Above Break 3 (Center)": {
-      const [xl] = polar(23.75, -WING_ANGLE);
-      const [xr] = polar(23.75, WING_ANGLE);
+
+    case "Above Break 3 (Center)":
       return [
-        `M ${arcStr(23.75, -WING_ANGLE, WING_ANGLE)}`,
-        `L ${xr},${TOP}`,
-        `L ${xl},${TOP}`,
+        `M ${WING_L.join(",")}`,
+        `L ${WING_R.join(",")}`,
+        `L ${WING_R_EXT.join(",")}`,
+        `L ${WING_L_EXT.join(",")}`,
         "Z",
       ].join(" ");
-    }
-    case "Above Break 3 (Right)": {
-      const [ax, ay] = polar(23.75, WING_ANGLE);
+
+    case "Above Break 3 (Right)":
       return [
-        `M ${arcStr(23.75, WING_ANGLE, 90)}`,
-        `L ${c3r},${cornerY}`,
-        `L ${W - PAD},${cornerY}`,
-        `L ${W - PAD},${TOP}`,
-        `L ${ax},${TOP}`,
+        `M ${C3R},${CORNER_Y}`,
+        `L ${W - PAD},${CORNER_Y}`,
+        `L ${W - PAD},${HALFCOURT}`,
+        `L ${WING_R_EXT.join(",")}`,
+        `L ${WING_R.join(",")}`,
         "Z",
       ].join(" ");
-    }
   }
 }
 
-// Zone label positions (feet from basket)
+// ---- Zone label positions ----
 function zoneLabel(zone: ShotZone): [number, number] {
   switch (zone) {
-    case "Restricted Area": return toSvg(0, 1.5);
-    case "Paint": return toSvg(0, 10);
-    case "Mid-Range (Left)": return toSvg(-14, 6);
-    case "Mid-Range (Center)": return toSvg(0, 21);
-    case "Mid-Range (Right)": return toSvg(14, 6);
-    case "Corner 3 (Left)": return toSvg(-20, 2);
-    case "Corner 3 (Right)": return toSvg(20, 2);
-    case "Above Break 3 (Left)": return toSvg(-18, 28);
-    case "Above Break 3 (Center)": return toSvg(0, 33);
-    case "Above Break 3 (Right)": return toSvg(18, 28);
+    case "Restricted Area": return sv(0, 1.5);
+    case "Paint": return sv(0, 10);
+    case "Mid-Range (Left)": return sv(-14, 5);
+    case "Mid-Range (Center)": return sv(0, 20);
+    case "Mid-Range (Right)": return sv(14, 5);
+    case "Corner 3 (Left)": return [PAD + (C3L - PAD) / 2, BASELINE - 30];
+    case "Corner 3 (Right)": return [C3R + (W - PAD - C3R) / 2, BASELINE - 30];
+    case "Above Break 3 (Left)": return sv(-17, 28);
+    case "Above Break 3 (Center)": return sv(0, 32);
+    case "Above Break 3 (Right)": return sv(17, 28);
   }
 }
 
@@ -309,16 +310,22 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
                 const color = stat ? getZoneColor(stat.pct, leagueAvg) : "#1e1e1e";
-                const opacity = stat ? (hoveredZone === zone ? 0.95 : 0.65) : 0.2;
+                const opacity = stat ? (hoveredZone === zone ? 0.9 : 0.6) : 0.15;
                 return (
                   <path key={zone} d={zonePath(zone)} fill={color} fillOpacity={opacity}
-                    stroke={hoveredZone === zone ? "#fff" : "#333"} strokeWidth={hoveredZone === zone ? 2 : 0.5}
+                    stroke={hoveredZone === zone ? "#fff" : "none"} strokeWidth={hoveredZone === zone ? 2 : 0}
                     className="cursor-pointer transition-opacity"
                     onMouseEnter={() => setHoveredZone(zone)} onMouseLeave={() => setHoveredZone(null)} />
                 );
               })}
 
               <CourtLines />
+
+              {/* Zone divider lines (wing angles) */}
+              <line x1={WING_L[0]} y1={WING_L[1]} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={WING_R[0]} y1={WING_R[1]} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={PAINT_L} y1={FT_Y} x2={WING_L[0]} y2={WING_L[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={PAINT_R} y1={FT_Y} x2={WING_R[0]} y2={WING_R[1]} stroke="#3a3a3a" strokeWidth="1" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
@@ -327,7 +334,7 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props
                 return (
                   <g key={`lbl-${zone}`} className="pointer-events-none">
                     <text x={lx} y={ly - 2} textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">{stat.pct.toFixed(1)}%</text>
-                    <text x={lx} y={ly + 12} textAnchor="middle" fill="#bbb" fontSize="10">{stat.made}/{stat.total}</text>
+                    <text x={lx} y={ly + 12} textAnchor="middle" fill="#ccc" fontSize="10">{stat.made}/{stat.total}</text>
                   </g>
                 );
               })}
