@@ -76,155 +76,105 @@ function CourtMarkings() {
   );
 }
 
-// ---------- Zone SVG paths ----------
-// Polar helper: angle 0° = toward halfcourt (down in SVG), 90° = right sideline, -90° = left sideline
+// ---------- Zone geometry ----------
+// Polar: 0° = toward halfcourt (SVG +Y), 90° = right sideline (SVG +X), -90° = left
 function pt(rFt: number, aDeg: number): [number, number] {
   const rad = (aDeg * Math.PI) / 180;
   return ftToSvg(rFt * Math.sin(rad), rFt * Math.cos(rad));
 }
 
-// Generate arc polyline points from angle a1 to a2 at radius rFt
-function arc(rFt: number, a1: number, a2: number, n = 24): string {
+function arcPts(rFt: number, a1: number, a2: number, n = 24): string {
   const pts: string[] = [];
   for (let i = 0; i <= n; i++) {
-    const a = a1 + (a2 - a1) * (i / n);
-    const [x, y] = pt(rFt, a);
+    const [x, y] = pt(rFt, a1 + (a2 - a1) * (i / n));
     pts.push(`${x},${y}`);
   }
   return pts.join(" L ");
 }
 
-// Distance constants (feet)
-const R = 4;      // restricted area
-const P = 14;     // paint / free-throw line
-const T = 23.75;  // 3pt arc
-const C3 = 22;    // corner 3
+// Annular sector: donut slice from inner radius to outer radius, angle a1 to a2
+function annularSector(rInner: number, rOuter: number, a1: number, a2: number): string {
+  const [ox1, oy1] = pt(rOuter, a1);
+  return [
+    `M ${ox1},${oy1}`,
+    `L ${arcPts(rOuter, a1, a2)}`,   // outer arc forward
+    `L ${arcPts(rInner, a2, a1)}`,   // inner arc backward
+    "Z",
+  ].join(" ");
+}
 
-// Angle split boundaries (degrees from center)
-// Mid-range: 0-30 center, 30-60 left-center/right-center, 60-90 left/right
-// Above-break-3: 0-25 center, 25-45 left-center/right-center, 45+ left/right
-const AM1 = 30, AM2 = 60;
-const A31 = 25, A32 = 45;
+// Constants
+const T = 23.75; // 3pt distance
+const C3 = 22;   // corner 3 distance
+const LEFT = PAD, RIGHT = W - PAD, TOP = PAD, BOTTOM = H - PAD;
+const [c3lx] = ftToSvg(-C3, 0);
+const [c3rx] = ftToSvg(C3, 0);
+const [, cornerY] = ftToSvg(0, 14); // corner extends 14ft from baseline
 
-// Paint boundary points
-const PAINT_L = ftToSvg(-8, 0);
-const PAINT_R = ftToSvg(8, 0);
-const FT_LINE_L = ftToSvg(-8, 19);
-const FT_LINE_R = ftToSvg(8, 19);
-const FT_LINE_C = ftToSvg(0, 19);
+// Angle boundaries for zone splits
+const AM1 = 30, AM2 = 60; // mid-range splits
+const A31 = 25, A32 = 45; // above-break-3 splits
 
-// Corner 3 boundary
-const C3_L_TOP = ftToSvg(-C3, 0);
-const C3_R_TOP = ftToSvg(C3, 0);
-const CORNER_END = ftToSvg(0, 14); // corner extends 14ft from baseline
+// RENDER ORDER: outer→inner (later drawn = on top = captures hover)
+// 1. Above-break 3 + Corner 3 (outermost)
+// 2. Mid-range (annular sectors from 14ft to 23.75ft arc)
+// 3. Paint (simple rectangles, cover inner part of mid-range)
+// 4. Restricted Area (semicircle, covers center of paint)
+const RENDER_ORDER: ShotZone[] = [
+  // Outer first
+  "Above Break 3 (Left)", "Above Break 3 (Left Center)", "Above Break 3 (Center)",
+  "Above Break 3 (Right Center)", "Above Break 3 (Right)",
+  "Corner 3 (Left)", "Corner 3 (Right)",
+  // Mid-range
+  "Mid-Range (Left)", "Mid-Range (Left Center)", "Mid-Range (Center)",
+  "Mid-Range (Right Center)", "Mid-Range (Right)",
+  // Inner (on top)
+  "Paint (Left)", "Paint (Right)",
+  "Restricted Area",
+];
 
 function zonePath(zone: ShotZone): string {
-  // Shorthand: left sideline, right sideline, bottom of court (half-court line)
-  const LEFT = PAD;
-  const RIGHT = W - PAD;
-  const BOTTOM = H - PAD;
-  const TOP = PAD;
-  const [c3lx] = C3_L_TOP;
-  const [c3rx] = C3_R_TOP;
-  const [, cornerY] = CORNER_END;
-
   switch (zone) {
-    // --- Inner zones ---
+    // --- Restricted Area: semicircle below basket ---
     case "Restricted Area":
-      // Semicircle from left to right at 4ft
-      return `M ${pt(R, -90).join(",")} L ${arc(R, -90, 90)} Z`;
+      return `M ${pt(4, -90).join(",")} L ${arcPts(4, -90, 90)} Z`;
 
-    case "Paint (Left)":
-      // Left paint box minus restricted area
-      return [
-        `M ${PAINT_L.join(",")}`,
-        `L ${FT_LINE_L.join(",")}`,
-        `L ${FT_LINE_C.join(",")}`,
-        `L ${BX},${BY}`,
-        `L ${arc(R, 90, 180)}`,
-        `L ${PAINT_L.join(",")}`,
-        "Z",
-      ].join(" ");
+    // --- Paint: simple rectangles (RA drawn on top handles cutout) ---
+    case "Paint (Left)": {
+      const [lx, ly] = ftToSvg(-8, 0);
+      const [, by] = ftToSvg(0, 19);
+      return `M ${lx},${ly} L ${lx},${by} L ${BX},${by} L ${BX},${ly} Z`;
+    }
+    case "Paint (Right)": {
+      const [rx, ry] = ftToSvg(8, 0);
+      const [, by] = ftToSvg(0, 19);
+      return `M ${BX},${ry} L ${BX},${by} L ${rx},${by} L ${rx},${ry} Z`;
+    }
 
-    case "Paint (Right)":
-      return [
-        `M ${BX},${BY}`,
-        `L ${FT_LINE_C.join(",")}`,
-        `L ${FT_LINE_R.join(",")}`,
-        `L ${PAINT_R.join(",")}`,
-        `L ${arc(R, 0, 90)}`,
-        "Z",
-      ].join(" ");
-
-    // --- Mid-range (between paint and 3pt line) ---
-    case "Mid-Range (Left)":
-      // From paint left edge, along sideline region, bounded by 3pt corner line and arcs
-      return [
-        `M ${PAINT_L.join(",")}`,
-        `L ${c3lx},${PAINT_L[1]}`,
-        `L ${c3lx},${cornerY}`,
-        `L ${arc(T, -AM2, -90)}`,   // 3pt arc from -60° to -90° (going left)
-        `L ${arc(P, -90, -AM2)}`,   // paint arc from -90° back to -60°
-        `L ${FT_LINE_L.join(",")}`,
-        `L ${PAINT_L.join(",")}`,
-        "Z",
-      ].join(" ");
-
-    case "Mid-Range (Right)":
-      return [
-        `M ${PAINT_R.join(",")}`,
-        `L ${FT_LINE_R.join(",")}`,
-        `L ${arc(P, AM2, 90)}`,
-        `L ${arc(T, 90, AM2)}`,
-        `L ${c3rx},${cornerY}`,
-        `L ${c3rx},${PAINT_R[1]}`,
-        `L ${PAINT_R.join(",")}`,
-        "Z",
-      ].join(" ");
-
-    case "Mid-Range (Left Center)":
-      return [
-        `M ${FT_LINE_L.join(",")}`,
-        `L ${arc(P, -AM2, -AM1)}`,
-        `L ${arc(T, -AM1, -AM2)}`,
-        `L ${FT_LINE_L.join(",")}`,
-        "Z",
-      ].join(" ");
-
-    case "Mid-Range (Right Center)":
-      return [
-        `M ${FT_LINE_R.join(",")}`,
-        `L ${arc(T, AM2, AM1)}`,
-        `L ${arc(P, AM1, AM2)}`,
-        `L ${FT_LINE_R.join(",")}`,
-        "Z",
-      ].join(" ");
-
+    // --- Mid-range: annular sectors from 14ft to 3pt arc ---
     case "Mid-Range (Center)":
-      return [
-        `M ${FT_LINE_C.join(",")}`,
-        `L ${FT_LINE_L.join(",")}`,
-        `L ${arc(P, -AM1, AM1)}`,
-        `L ${FT_LINE_R.join(",")}`,
-        `L ${FT_LINE_C.join(",")}`,
-        `L ${arc(T, AM1, -AM1)}`,
-        "Z",
-      ].join(" ");
+      return annularSector(14, T, -AM1, AM1);
+    case "Mid-Range (Left Center)":
+      return annularSector(14, T, -AM2, -AM1);
+    case "Mid-Range (Right Center)":
+      return annularSector(14, T, AM1, AM2);
+    case "Mid-Range (Left)":
+      return annularSector(14, T, -90, -AM2);
+    case "Mid-Range (Right)":
+      return annularSector(14, T, AM2, 90);
 
-    // --- Corner 3s ---
+    // --- Corner 3: rectangles at sidelines ---
     case "Corner 3 (Left)":
       return `M ${LEFT},${TOP} L ${c3lx},${TOP} L ${c3lx},${cornerY} L ${LEFT},${cornerY} Z`;
-
     case "Corner 3 (Right)":
       return `M ${c3rx},${TOP} L ${RIGHT},${TOP} L ${RIGHT},${cornerY} L ${c3rx},${cornerY} Z`;
 
-    // --- Above-break 3s ---
+    // --- Above-break 3: from 3pt arc outward to court boundary ---
     case "Above Break 3 (Left)": {
-      // From corner end down, along sideline, connect to 3pt arc
-      const [ax, ay] = pt(T, -A32);
+      const [ax] = pt(T, -A32);
       return [
         `M ${c3lx},${cornerY}`,
-        `L ${arc(T, -90, -A32)}`,
+        `L ${arcPts(T, -90, -A32)}`,
         `L ${ax},${BOTTOM}`,
         `L ${LEFT},${BOTTOM}`,
         `L ${LEFT},${cornerY}`,
@@ -232,10 +182,10 @@ function zonePath(zone: ShotZone): string {
       ].join(" ");
     }
     case "Above Break 3 (Left Center)": {
-      const [x1, y1] = pt(T, -A32);
-      const [x2, y2] = pt(T, -A31);
+      const [x1] = pt(T, -A32);
+      const [x2] = pt(T, -A31);
       return [
-        `M ${arc(T, -A32, -A31)}`,
+        `M ${arcPts(T, -A32, -A31)}`,
         `L ${x2},${BOTTOM}`,
         `L ${x1},${BOTTOM}`,
         "Z",
@@ -245,26 +195,26 @@ function zonePath(zone: ShotZone): string {
       const [xl] = pt(T, -A31);
       const [xr] = pt(T, A31);
       return [
-        `M ${arc(T, -A31, A31)}`,
+        `M ${arcPts(T, -A31, A31)}`,
         `L ${xr},${BOTTOM}`,
         `L ${xl},${BOTTOM}`,
         "Z",
       ].join(" ");
     }
     case "Above Break 3 (Right Center)": {
-      const [x1, y1] = pt(T, A31);
-      const [x2, y2] = pt(T, A32);
+      const [x1] = pt(T, A31);
+      const [x2] = pt(T, A32);
       return [
-        `M ${arc(T, A31, A32)}`,
+        `M ${arcPts(T, A31, A32)}`,
         `L ${x2},${BOTTOM}`,
         `L ${x1},${BOTTOM}`,
         "Z",
       ].join(" ");
     }
     case "Above Break 3 (Right)": {
-      const [ax, ay] = pt(T, A32);
+      const [ax] = pt(T, A32);
       return [
-        `M ${arc(T, A32, 90)}`,
+        `M ${arcPts(T, A32, 90)}`,
         `L ${c3rx},${cornerY}`,
         `L ${RIGHT},${cornerY}`,
         `L ${RIGHT},${BOTTOM}`,
@@ -297,12 +247,7 @@ function zoneLabelPos(zone: ShotZone): [number, number] {
   return pos[zone];
 }
 
-const ALL_ZONES: ShotZone[] = [
-  "Restricted Area", "Paint (Left)", "Paint (Right)",
-  "Mid-Range (Left)", "Mid-Range (Left Center)", "Mid-Range (Center)", "Mid-Range (Right Center)", "Mid-Range (Right)",
-  "Corner 3 (Left)", "Corner 3 (Right)",
-  "Above Break 3 (Left)", "Above Break 3 (Left Center)", "Above Break 3 (Center)", "Above Break 3 (Right Center)", "Above Break 3 (Right)",
-];
+const ALL_ZONES = RENDER_ORDER;
 
 // Short display name for zone
 const SHORT_NAME: Record<ShotZone, string> = {
