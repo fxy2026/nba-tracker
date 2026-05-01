@@ -266,6 +266,35 @@ function zoneLabel(zone: ShotZone): [number, number] {
   }
 }
 
+// ---- Client-side game log fetch (browser → stats.nba.com, bypasses server blocks) ----
+async function fetchGameIdsFromBrowser(playerId: number, season: string, seasonType: string): Promise<string[]> {
+  const types = seasonType === "all"
+    ? ["Regular+Season", "Playoffs"]
+    : [seasonType === "regular" ? "Regular+Season" : "Playoffs"];
+
+  const gameIds: string[] = [];
+  for (const st of types) {
+    try {
+      const url = `https://stats.nba.com/stats/playergamelog?PlayerID=${playerId}&Season=${season}&SeasonType=${st}`;
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          Referer: "https://www.nba.com/",
+        },
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const rs = data.resultSets?.[0];
+      if (!rs?.rowSet) continue;
+      const gi = rs.headers.indexOf("Game_ID");
+      for (const row of rs.rowSet) {
+        gameIds.push(row[gi] as string);
+      }
+    } catch { /* CORS or network error — historical data unavailable */ }
+  }
+  return gameIds;
+}
+
 // ---- Main component ----
 export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYear, toYear }: Props) {
   const { t, locale } = useLocale();
@@ -294,16 +323,25 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
     setError("");
     setGamesInfo({ loaded: 0, total: 0 });
     try {
-      // Both current and historical seasons use the same API
-      // Current: schedule + CDN PBP. Historical: playergamelog + CDN PBP
       const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-      if (s !== currentSeason) params.set("season", s);
+
+      // Historical season: fetch game IDs from browser (stats.nba.com), pass to API
+      if (s !== currentSeason) {
+        const gameIds = await fetchGameIdsFromBrowser(playerId, s, st);
+        if (gameIds.length === 0) {
+          setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
+          setShots([]);
+          return;
+        }
+        params.set("gameIds", gameIds.join(","));
+      }
+
       const res = await fetch(`/api/player-shots?${params}`);
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
       setShots(data.shots || []);
       setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
-      if ((data.shots || []).length === 0) {
+      if ((data.shots || []).length === 0 && !error) {
         setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
       }
     } catch {
