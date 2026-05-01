@@ -338,7 +338,9 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
         }
       }
       if (allShots.length === 0) {
-        setError(locale === "zh" ? "该赛季数据暂不可用" : "Data not available for this season");
+        setError(locale === "zh"
+          ? "该赛季投篮数据暂不可用（NBA 限制了历史数据接口访问）"
+          : "Shot data not available for this season (NBA restricts historical data access)");
       }
       setShots(allShots);
     } catch {
@@ -382,7 +384,7 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
           className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
         >
           {seasons.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{s}{s !== currentSeason ? (locale === "zh" ? " (有限)" : " (limited)") : ""}</option>
           ))}
         </select>
         <div className="flex rounded-lg overflow-hidden border border-border">
