@@ -266,40 +266,10 @@ function zoneLabel(zone: ShotZone): [number, number] {
   }
 }
 
-// ---- Client-side game log fetch (browser → stats.nba.com, bypasses server blocks) ----
-async function fetchGameIdsFromBrowser(playerId: number, season: string, seasonType: string): Promise<string[]> {
-  const types = seasonType === "all"
-    ? ["Regular+Season", "Playoffs"]
-    : [seasonType === "regular" ? "Regular+Season" : "Playoffs"];
-
-  const gameIds: string[] = [];
-  for (const st of types) {
-    try {
-      const url = `https://stats.nba.com/stats/playergamelog?PlayerID=${playerId}&Season=${season}&SeasonType=${st}`;
-      const res = await fetch(url, {
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          Referer: "https://www.nba.com/",
-        },
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const rs = data.resultSets?.[0];
-      if (!rs?.rowSet) continue;
-      const gi = rs.headers.indexOf("Game_ID");
-      for (const row of rs.rowSet) {
-        gameIds.push(row[gi] as string);
-      }
-    } catch { /* CORS or network error — historical data unavailable */ }
-  }
-  return gameIds;
-}
-
 // ---- Main component ----
 export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYear, toYear }: Props) {
   const { t, locale } = useLocale();
   const currentSeason = `${toYear}-${String(parseInt(toYear) + 1).slice(2)}`;
-  const [season, setSeason] = useState(currentSeason);
   const [seasonType, setSeasonType] = useState<"regular" | "playoffs" | "all">("regular");
   const [shots, setShots] = useState<ShotRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -307,34 +277,12 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
   const [hoveredZone, setHoveredZone] = useState<ShotZone | null>(null);
   const [gamesInfo, setGamesInfo] = useState({ loaded: 0, total: 0 });
 
-  // Build season options
-  const seasons = useMemo(() => {
-    const from = parseInt(fromYear);
-    const to = parseInt(toYear);
-    const list: string[] = [];
-    for (let y = to; y >= from; y--) {
-      list.push(`${y}-${String(y + 1).slice(2)}`);
-    }
-    return list;
-  }, [fromYear, toYear]);
-
-  const fetchShots = useCallback(async (s: string, st: string) => {
+  const fetchShots = useCallback(async (st: string) => {
     setLoading(true);
     setError("");
     setGamesInfo({ loaded: 0, total: 0 });
     try {
       const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-
-      // Historical season: fetch game IDs from browser (stats.nba.com), pass to API
-      if (s !== currentSeason) {
-        const gameIds = await fetchGameIdsFromBrowser(playerId, s, st);
-        if (gameIds.length === 0) {
-          setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
-          setShots([]);
-          return;
-        }
-        params.set("gameIds", gameIds.join(","));
-      }
 
       const res = await fetch(`/api/player-shots?${params}`);
       if (!res.ok) throw new Error("API error");
@@ -349,9 +297,9 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
     } finally {
       setLoading(false);
     }
-  }, [playerId, teamTricode, currentSeason, locale]);
+  }, [playerId, teamTricode, locale]);
 
-  useEffect(() => { fetchShots(season, seasonType); }, [season, seasonType, fetchShots]);
+  useEffect(() => { fetchShots(seasonType); }, [seasonType, fetchShots]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
   const statsMap = useMemo(() => {
@@ -379,15 +327,7 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
       </h3>
 
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <select
-          value={season}
-          onChange={(e) => setSeason(e.target.value)}
-          className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-        >
-          {seasons.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <span className="text-xs text-text-secondary bg-bg-secondary border border-border rounded-lg px-2 py-1.5">{currentSeason}</span>
         <div className="flex rounded-lg overflow-hidden border border-border">
           {(["regular", "playoffs", "all"] as const).map((st) => (
             <button key={st} onClick={() => setSeasonType(st)}
