@@ -144,14 +144,15 @@ function zonePath(zone: ShotZone): string {
       return `M ${pt(4, -90).join(",")} L ${arcPts(4, -90, 90)} Z`;
 
     // --- Paint: rectangles from baseline to FT line (RA drawn on top handles cutout) ---
+    // CourtMarkings draws paint 19ft below basket for visual alignment; match that here
     case "Paint (Left)": {
       const [lx] = ftToSvg(-8, 0);
-      const [, ftY] = ftToSvg(0, 19 - 5.25); // FT line is 19ft from baseline = 13.75ft from basket
+      const [, ftY] = ftToSvg(0, 19);
       return `M ${lx},${BASELINE_Y} L ${lx},${ftY} L ${BX},${ftY} L ${BX},${BASELINE_Y} Z`;
     }
     case "Paint (Right)": {
       const [rx] = ftToSvg(8, 0);
-      const [, ftY] = ftToSvg(0, 19 - 5.25);
+      const [, ftY] = ftToSvg(0, 19);
       return `M ${BX},${BASELINE_Y} L ${BX},${ftY} L ${rx},${ftY} L ${rx},${BASELINE_Y} Z`;
     }
 
