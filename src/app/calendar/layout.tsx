@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "赛程日历",
-  description: "NBA 赛季月历视图，每天比赛一目了然。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.calendarTitle,
+    description: t.meta.calendarDesc,
+  };
+}
 
 export default function CalendarLayout({ children }: { children: React.ReactNode }) {
   return children;

@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "Stats & Leaders",
-  description: "NBA 得分王、篮板王、助攻王排行榜，球队排名与历年奖项一览。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.statsTitle,
+    description: t.meta.statsDesc,
+  };
+}
 
 export default function StatsLayout({ children }: { children: React.ReactNode }) {
   return children;

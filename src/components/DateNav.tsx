@@ -3,6 +3,7 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface DateNavProps {
   selectedDate: string;
@@ -16,6 +17,7 @@ function offsetDate(base: string, offset: number): string {
 }
 
 export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
+  const { t } = useLocale();
   const router = useRouter();
 
   const navigate = useCallback((date: string) => {
@@ -127,7 +129,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
           onClick={() => navigate(today)}
           className="ml-2 px-3 py-1.5 text-xs bg-bg-card border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-accent/50 transition-colors"
         >
-          今天
+          {t.dateNav.today}
         </button>
       )}
     </div>

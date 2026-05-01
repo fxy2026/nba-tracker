@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { GitCompareArrows, ArrowLeftRight } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayerData {
   personId: number;
@@ -25,6 +26,7 @@ const COMPARE_STATS = [
 ] as const;
 
 export default function ComparePage() {
+  const { t } = useLocale();
   const [query1, setQuery1] = useState("");
   const [query2, setQuery2] = useState("");
   const [results1, setResults1] = useState<PlayerData[]>([]);
@@ -59,7 +61,7 @@ export default function ComparePage() {
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <GitCompareArrows size={24} className="text-accent" />
-        Player Comparison
+        {t.comparePage.title}
       </h1>
 
       {/* Player selection */}
@@ -70,7 +72,7 @@ export default function ComparePage() {
             type="text"
             value={player1 ? `${player1.firstName} ${player1.lastName}` : query1}
             onChange={(e) => { setQuery1(e.target.value); setPlayer1(null); }}
-            placeholder="Search player 1..."
+            placeholder={t.comparePage.searchPlayer1}
             className="w-full bg-bg-card border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
           />
           {results1.length > 0 && !player1 && (
@@ -110,7 +112,7 @@ export default function ComparePage() {
             type="text"
             value={player2 ? `${player2.firstName} ${player2.lastName}` : query2}
             onChange={(e) => { setQuery2(e.target.value); setPlayer2(null); }}
-            placeholder="Search player 2..."
+            placeholder={t.comparePage.searchPlayer2}
             className="w-full bg-bg-card border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
           />
           {results2.length > 0 && !player2 && (
@@ -129,7 +131,7 @@ export default function ComparePage() {
 
       {/* Popular Matchups */}
       <div className="mb-6">
-        <p className="text-xs text-text-secondary font-medium mb-2">Popular Matchups</p>
+        <p className="text-xs text-text-secondary font-medium mb-2">{t.comparePage.popularMatchups}</p>
         <div className="flex flex-wrap gap-2">
           {[
             { label: "LeBron vs Curry", q1: "LeBron", q2: "Curry" },
@@ -165,7 +167,7 @@ export default function ComparePage() {
             </div>
             <div className="flex flex-col items-center justify-center gap-2 px-4">
               <div className="w-px h-8 bg-border" />
-              <span className="text-2xl font-bold text-text-secondary">VS</span>
+              <span className="text-2xl font-bold text-text-secondary">{t.common.vs}</span>
               <div className="w-px h-8 bg-border" />
             </div>
             <div className="flex flex-col items-center gap-3">
@@ -185,10 +187,10 @@ export default function ComparePage() {
           <div className="flex items-center gap-3 px-6 py-2 bg-bg-secondary/30">
             <div className="flex-1 h-px bg-border" />
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-text-secondary uppercase font-medium">Stats Comparison</span>
+              <span className="text-[10px] text-text-secondary uppercase font-medium">{t.comparePage.statsComparison}</span>
               {player1.position && player2.position && (
                 <span className={`text-[9px] px-1.5 py-0.5 rounded ${player1.position === player2.position ? "bg-accent/15 text-accent" : "bg-bg-hover text-text-secondary"}`}>
-                  {player1.position === player2.position ? `Same Position: ${player1.position}` : `${player1.position} vs ${player2.position}`}
+                  {player1.position === player2.position ? `${t.comparePage.samePosition}${player1.position}` : `${player1.position} ${t.common.vs} ${player2.position}`}
                 </span>
               )}
             </div>
@@ -237,9 +239,9 @@ export default function ComparePage() {
               return (
                 <p className="text-center text-sm">
                   {winner ? (
-                    <><span className="text-accent font-bold">{winner.firstName} {winner.lastName}</span> <span className="text-text-secondary">leads {p1Wins > p2Wins ? p1Wins : p2Wins}-{p1Wins > p2Wins ? p2Wins : p1Wins} in categories</span></>
+                    <><span className="text-accent font-bold">{winner.firstName} {winner.lastName}</span> <span className="text-text-secondary">{t.comparePage.leads} {p1Wins > p2Wins ? p1Wins : p2Wins}-{p1Wins > p2Wins ? p2Wins : p1Wins} {t.comparePage.categories}</span></>
                   ) : (
-                    <span className="text-text-secondary">Tied across all categories</span>
+                    <span className="text-text-secondary">{t.comparePage.tiedAll}</span>
                   )}
                 </p>
               );
@@ -256,7 +258,7 @@ export default function ComparePage() {
                     advantage === player2 ? "bg-success/15 text-success" :
                     "bg-bg-hover text-text-secondary"
                   }`}>
-                    {label}: {advantage ? `${advantage.lastName}` : "Tied"}
+                    {label}: {advantage ? `${advantage.lastName}` : t.common.tied}
                   </span>
                 );
               })}
@@ -265,7 +267,7 @@ export default function ComparePage() {
 
           {/* Radar Chart */}
           <div className="px-6 pb-4">
-            <h3 className="text-xs text-text-secondary font-medium uppercase mb-2 text-center">Radar Comparison</h3>
+            <h3 className="text-xs text-text-secondary font-medium uppercase mb-2 text-center">{t.comparePage.radarComparison}</h3>
             {(() => {
               const stats = COMPARE_STATS.map(({ key, label }) => {
                 const v1 = player1[key as keyof PlayerData] as number;
@@ -351,8 +353,8 @@ export default function ComparePage() {
         const max = Math.max(score1, score2, 0.1);
         return (
           <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">Overall Production Score</h3>
-            <p className="text-[9px] text-text-secondary text-center mb-3">PTS + 1.2×REB + 1.5×AST</p>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">{t.comparePage.overallScore}</h3>
+            <p className="text-[9px] text-text-secondary text-center mb-3">{t.comparePage.scoreFormula}</p>
             <div className="flex items-center gap-4">
               <div className="flex-1 text-right">
                 <span className={`text-lg font-bold ${score1 >= score2 ? "text-accent" : "text-text-secondary"}`}>{score1.toFixed(1)}</span>
@@ -374,7 +376,7 @@ export default function ComparePage() {
       {!player1 && !player2 && (
         <div className="text-center py-16 text-text-secondary">
           <GitCompareArrows size={48} className="mx-auto mb-4 opacity-30" />
-          <p>Select two players to compare their career stats</p>
+          <p>{t.comparePage.selectHint}</p>
         </div>
       )}
     </div>

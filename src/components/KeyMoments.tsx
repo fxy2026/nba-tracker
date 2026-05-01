@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, memo } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayAction {
   actionNumber: number;
@@ -31,10 +32,7 @@ interface KeyMoment {
   type: "run" | "lead_change" | "clutch" | "swing";
 }
 
-function periodLabel(period: number): string {
-  if (period <= 4) return `Q${period}`;
-  return `OT${period - 4}`;
-}
+// periodLabel moved inline inside component to access translations
 
 function clockToSeconds(clock: string, period: number): number {
   // Format: "PT05M30.00S" or "5:30"
@@ -59,6 +57,7 @@ function clockToSeconds(clock: string, period: number): number {
 }
 
 export default memo(function KeyMoments({ actions }: Props) {
+  const { t } = useLocale();
   const moments = useMemo(() => {
     if (actions.length === 0) return [];
 
@@ -180,13 +179,13 @@ export default memo(function KeyMoments({ actions }: Props) {
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
-          Key Moments
+          {t.keyMoments.title}
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{moments.length}</span>
         </h3>
         <div className="flex items-center gap-2 text-[9px]">
-          {moments.filter(m => m.type === "run").length > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{moments.filter(m => m.type === "run").length} runs</span>}
-          {moments.filter(m => m.type === "clutch").length > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{moments.filter(m => m.type === "clutch").length} clutch</span>}
-          {moments.filter(m => m.type === "lead_change").length > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{moments.filter(m => m.type === "lead_change").length} leads</span>}
+          {moments.filter(m => m.type === "run").length > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{moments.filter(m => m.type === "run").length} {t.keyMoments.runs}</span>}
+          {moments.filter(m => m.type === "clutch").length > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{moments.filter(m => m.type === "clutch").length} {t.keyMoments.clutch}</span>}
+          {moments.filter(m => m.type === "lead_change").length > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{moments.filter(m => m.type === "lead_change").length} {t.keyMoments.leads}</span>}
         </div>
       </div>
       <div className="divide-y divide-border/30 max-h-[400px] overflow-y-auto">
@@ -196,7 +195,7 @@ export default memo(function KeyMoments({ actions }: Props) {
             className={`flex items-start gap-3 px-4 py-3 border-l-2 ${typeColors[moment.type] || "border-l-border"}`}
           >
             <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-secondary text-text-secondary">
-              {periodLabel(moment.period)}
+              {moment.period <= 4 ? `${t.playByPlayComp.quarter}${moment.period}` : `${t.playByPlayComp.overtime}${moment.period - 4}`}
             </span>
             <span className="shrink-0 text-xs font-mono text-text-secondary w-16">
               {moment.clock?.replace("PT", "").replace("M", ":").replace(/(\d+\.\d+)S/, (_, s) => Math.floor(parseFloat(s)).toString().padStart(2, "0")) || ""}

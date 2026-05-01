@@ -1,3 +1,5 @@
+"use client";
+
 import { memo } from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
@@ -5,6 +7,7 @@ import type { ScheduleGame } from "@/lib/api";
 import { getGameStatusDisplay } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 import GameCountdown from "./GameCountdown";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface GameCardProps {
   game: ScheduleGame;
@@ -12,6 +15,7 @@ interface GameCardProps {
 }
 
 export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
+  const { t } = useLocale();
   const status = getGameStatusDisplay(game.gameStatus, game.gameStatusText);
   const isLive = game.gameStatus === 2;
   const isFinal = game.gameStatus === 3;
@@ -25,9 +29,9 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   if (isPlayoffs && game.gameId.length >= 8) {
     const roundDigit = game.gameId.charAt(7);
     if (roundDigit === "1") playoffRound = "R1";
-    else if (roundDigit === "2") playoffRound = "Semis";
-    else if (roundDigit === "3") playoffRound = "Conf Finals";
-    else if (roundDigit === "4") playoffRound = "Finals";
+    else if (roundDigit === "2") playoffRound = t.gameCard.semis;
+    else if (roundDigit === "3") playoffRound = t.gameCard.confFinals;
+    else if (roundDigit === "4") playoffRound = t.gameCard.finals;
   }
 
   const ariaLabel = `${game.awayTeam.teamTricode} ${game.gameStatus > 1 ? game.awayTeam.score : ""} vs ${game.homeTeam.teamTricode} ${game.gameStatus > 1 ? game.homeTeam.score : ""} — ${status}`;
@@ -40,7 +44,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
           <div className="flex items-center gap-1.5">
             {isPlayoffs && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
-                {playoffRound || "Playoffs"}
+                {playoffRound || t.common.playoffs}
               </span>
             )}
             {game.seriesText && (
@@ -58,7 +62,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                     const adjustedH = ((hh % 24) + 24) % 24;
                     const timeStr = `${String(adjustedH).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
                     return (
-                      <span className="text-[10px] text-text-secondary">{timeStr} 北京时间</span>
+                      <span className="text-[10px] text-text-secondary">{timeStr} {t.common.beijingTime}</span>
                     );
                   } catch { return null; }
                 })()}
@@ -69,7 +73,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
             {hasReplay && (
               <span className="flex items-center gap-0.5 text-xs text-accent bg-accent/10 px-2 py-0.5 rounded-full">
                 <Play size={10} fill="currentColor" />
-                Replay
+                {t.gameCard.replay}
               </span>
             )}
             <span
@@ -84,10 +88,10 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
               {isLive && <span className="inline-block w-1.5 h-1.5 rounded-full bg-success live-pulse" />}
               {status}
               {isLive && game.gameStatusText.toLowerCase().includes("half") && (
-                <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-yellow-500/15 text-yellow-500 rounded">HT</span>
+                <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-yellow-500/15 text-yellow-500 rounded">{t.gameCard.halftime}</span>
               )}
               {isLive && Math.abs(game.homeTeam.score - game.awayTeam.score) <= 5 && game.homeTeam.score + game.awayTeam.score > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-danger/15 text-danger rounded">Close!</span>
+                <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-danger/15 text-danger rounded">{t.gameCard.close}</span>
               )}
             </span>
           </div>
@@ -150,10 +154,10 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                 {awayWon ? game.awayTeam.teamTricode : game.homeTeam.teamTricode} +{Math.abs(game.homeTeam.score - game.awayTeam.score)}
               </span>
               {game.homeTeam.score + game.awayTeam.score >= 240 && (
-                <span className="text-[9px] px-1 py-0.5 rounded bg-accent/15 text-accent font-medium">High Score</span>
+                <span className="text-[9px] px-1 py-0.5 rounded bg-accent/15 text-accent font-medium">{t.gameCard.highScore}</span>
               )}
               {Math.abs(game.homeTeam.score - game.awayTeam.score) <= 3 && (
-                <span className="text-[9px] px-1 py-0.5 rounded bg-danger/15 text-danger font-medium">Nail-biter</span>
+                <span className="text-[9px] px-1 py-0.5 rounded bg-danger/15 text-danger font-medium">{t.gameCard.nailBiter}</span>
               )}
             </div>
             {isPlayoffs && game.seriesText && (

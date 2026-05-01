@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import awardsData from "@/data/awards.json";
+import { useLocale } from "@/components/LocaleProvider";
 
 const AWARD_CATS = [
   { key: "mvp", label: "MVP" },
@@ -14,6 +15,7 @@ const AWARD_CATS = [
 ] as const;
 
 export default function AwardsSection() {
+  const { t } = useLocale();
   const [cat, setCat] = useState("mvp");
   const entries = (awardsData as Record<string, { season: string; player: string; team: string }[]>)[cat] || [];
 
@@ -52,9 +54,9 @@ export default function AwardsSection() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-text-secondary text-xs">
-                <th className="text-left py-3 px-4">Season</th>
-                <th className="text-left py-3 px-2">Player</th>
-                <th className="text-left py-3 px-2">Team</th>
+                <th className="text-left py-3 px-4">{t.common.season}</th>
+                <th className="text-left py-3 px-2">{t.common.player}</th>
+                <th className="text-left py-3 px-2">{t.common.team}</th>
               </tr>
             </thead>
             <tbody>

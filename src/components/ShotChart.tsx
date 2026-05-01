@@ -2,6 +2,7 @@
 
 import { useState, useMemo, memo } from "react";
 import type { ShotAction } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   shots: ShotAction[];
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default memo(function ShotChart({ shots, homeTricode, awayTricode, players }: Props) {
+  const { t } = useLocale();
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
@@ -79,7 +81,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
                 filter === f ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"
               }`}
             >
-              {f === "all" ? "All" : f === "home" ? homeTricode : awayTricode}
+              {f === "all" ? t.shotChartComp.all : f === "home" ? homeTricode : awayTricode}
             </button>
           ))}
         </div>
@@ -90,7 +92,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             onChange={(e) => setSelectedPlayer(e.target.value ? parseInt(e.target.value) : null)}
             className="bg-bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
           >
-            <option value="">All Players</option>
+            <option value="">{t.shotChartComp.allPlayers}</option>
             {teamPlayers.map((p) => (
               <option key={p.personId} value={p.personId}>{p.nameI}</option>
             ))}
@@ -98,7 +100,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
         )}
 
         <span className="text-xs text-text-secondary ml-auto flex items-center gap-2">
-          <span>{made}/{total} FG ({pct}%)</span>
+          <span>{made}/{total} {t.shotChartComp.fg} ({pct}%)</span>
           {(() => {
             const threes = filtered.filter((s) => s.shotDistance > 22 || s.subType?.toLowerCase().includes("3pt"));
             const threesMade = threes.filter((s) => s.shotResult === "Made").length;
@@ -107,8 +109,8 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             if (total === 0) return null;
             return (
               <>
-                <span className="text-accent">2PT: {twosMade}/{twos.length}</span>
-                <span className="text-success">3PT: {threesMade}/{threes.length}</span>
+                <span className="text-accent">{t.shotChartComp.twoPoint} {twosMade}/{twos.length}</span>
+                <span className="text-success">{t.shotChartComp.threePoint} {threesMade}/{threes.length}</span>
               </>
             );
           })()}
@@ -203,18 +205,18 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
         <div className="flex items-center justify-center gap-4 mt-2 pb-1">
           <span className="flex items-center gap-1 text-xs text-text-secondary">
             <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#22c55e" /></svg>
-            2PT Made
+            {t.shotChartComp.twoPtMade}
           </span>
           <span className="flex items-center gap-1 text-xs text-text-secondary">
             <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#928CEE" /></svg>
-            3PT Made
+            {t.shotChartComp.threePtMade}
           </span>
           <span className="flex items-center gap-1 text-xs text-text-secondary">
             <svg width="12" height="12">
               <line x1="2" y1="2" x2="10" y2="10" stroke="#ef4444" strokeWidth="1.5" />
               <line x1="10" y1="2" x2="2" y2="10" stroke="#ef4444" strokeWidth="1.5" />
             </svg>
-            Missed
+            {t.shotChartComp.missed}
           </span>
         </div>
       </div>
@@ -222,9 +224,9 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
       {/* Shot Zone Breakdown */}
       {filtered.length > 0 && (() => {
         const zones = [
-          { name: "Restricted Area", test: (s: ShotAction) => s.shotDistance <= 4 },
-          { name: "Paint (non-RA)", test: (s: ShotAction) => s.shotDistance > 4 && s.shotDistance <= 14 && !(s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22) },
-          { name: "Mid-Range", test: (s: ShotAction) => s.shotDistance > 14 && s.shotDistance <= 22 && !s.subType?.toLowerCase().includes("3pt") },
+          { name: t.shotChartComp.restrictedArea, test: (s: ShotAction) => s.shotDistance <= 4 },
+          { name: t.shotChartComp.paintNonRa, test: (s: ShotAction) => s.shotDistance > 4 && s.shotDistance <= 14 && !(s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22) },
+          { name: t.shotChartComp.midRange, test: (s: ShotAction) => s.shotDistance > 14 && s.shotDistance <= 22 && !s.subType?.toLowerCase().includes("3pt") },
           { name: "3-Point", test: (s: ShotAction) => s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22 },
         ];
         const zoneStats = zones.map(({ name, test }) => {

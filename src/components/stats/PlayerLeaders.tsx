@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 import { CURRENT_SEASON } from "@/lib/constants";
+import { useLocale } from "@/components/LocaleProvider";
 const STATS_API = "/api/stats";
 
 interface LeaderRow {
@@ -40,6 +41,7 @@ function headshotUrl(id: number) {
 }
 
 export default function PlayerLeaders() {
+  const { t } = useLocale();
   const [cat, setCat] = useState("PTS");
   const [rows, setRows] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,8 +106,8 @@ export default function PlayerLeaders() {
         </div>
         <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)}
           className="bg-bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary">
-          <option value="Regular Season">Regular Season</option>
-          <option value="Playoffs">Playoffs</option>
+          <option value="Regular Season">{t.statsPage.regularSeason}</option>
+          <option value="Playoffs">{t.statsPage.playoffs}</option>
         </select>
       </div>
 
@@ -116,7 +118,7 @@ export default function PlayerLeaders() {
           ))}
         </div>
       ) : error ? (
-        <div className="text-center text-danger py-20 text-sm">Failed to load: {error}</div>
+        <div className="text-center text-danger py-20 text-sm">{t.statsPage.failedToLoad} {error}</div>
       ) : (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="overflow-x-auto">

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface SearchResult {
   personId: number;
@@ -39,6 +40,7 @@ function saveSearchHistory(query: string) {
 }
 
 export default function SearchInput({ initialQuery = "" }: { initialQuery?: string }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -129,8 +131,8 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           onKeyDown={handleKeyDown}
           onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
-          placeholder="Search players by name..."
-          aria-label="Search NBA players"
+          placeholder={t.nav.searchPlaceholder}
+          aria-label={t.nav.searchPlaceholder}
           className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
           autoFocus
         />
@@ -169,7 +171,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
         <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
           {/* Feature 10: Result count */}
           <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50" aria-live="polite">
-            <span className="text-xs text-text-secondary font-medium">{results.length} player{results.length !== 1 ? "s" : ""} found</span>
+            <span className="text-xs text-text-secondary font-medium">{results.length} {results.length !== 1 ? t.common.players : t.common.player}</span>
           </div>
           {results.map((p, idx) => (
             <Link
@@ -198,7 +200,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
               </div>
               <div className="text-right shrink-0 flex items-center gap-1.5">
                 {p.pts > 25 && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold">Star</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold">{t.searchPage.star}</span>
                 )}
                 <div>
                   <p className="text-xs text-accent font-medium">{p.pts} PPG</p>
@@ -218,9 +220,9 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
             <path d="M12,40 Q40,18 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="M12,40 Q40,62 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <p className="text-text-primary text-sm font-medium">No players found</p>
+          <p className="text-text-primary text-sm font-medium">{t.searchPage.noResults}</p>
           <p className="text-text-secondary text-xs mt-1">
-            No results for &ldquo;{query}&rdquo;. Try a different spelling or search by last name.
+            {t.searchPage.noResultsFor} &ldquo;{query}&rdquo;{t.searchPage.tryDifferent}
           </p>
         </div>
       )}

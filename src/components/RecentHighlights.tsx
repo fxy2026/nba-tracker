@@ -1,19 +1,23 @@
+"use client";
+
 import { memo } from "react";
 import Link from "next/link";
 import type { ScheduleGame } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 import { ChevronRight } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   games: ScheduleGame[];
 }
 
 export default memo(function RecentHighlights({ games }: Props) {
+  const { t } = useLocale();
   return (
     <section>
       <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
         <span className="w-1 h-5 bg-accent rounded-full" />
-        Recent Results
+        {t.recentHighlights.title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {games.map((game) => {
@@ -37,17 +41,17 @@ export default memo(function RecentHighlights({ games }: Props) {
                 <div className="flex items-center gap-1">
                   {isClose && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-danger/15 text-danger">
-                      Clutch
+                      {t.recentHighlights.clutch}
                     </span>
                   )}
                   {isBlowout && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">
-                      Blowout
+                      {t.recentHighlights.blowout}
                     </span>
                   )}
                   {game.gameId.startsWith("004") && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">
-                      PO
+                      {t.recentHighlights.po}
                     </span>
                   )}
                 </div>
@@ -79,7 +83,7 @@ export default memo(function RecentHighlights({ games }: Props) {
 
               <div className="mt-2 pt-2 border-t border-border/50 flex items-center justify-between">
                 <span className="text-xs text-text-secondary">
-                  {homeWon ? game.homeTeam.teamTricode : game.awayTeam.teamTricode} win by {diff}
+                  {homeWon ? game.homeTeam.teamTricode : game.awayTeam.teamTricode} {t.recentHighlights.winBy} {diff}
                 </span>
                 <div className="flex items-center gap-1.5">
                   {game.seriesText && (

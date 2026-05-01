@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { Target, Loader2 } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayerRow {
   PLAYER_ID: number;
@@ -21,6 +22,7 @@ interface PlayerRow {
 }
 
 export default function ClutchPage() {
+  const { t } = useLocale();
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -70,11 +72,11 @@ export default function ClutchPage() {
   }, [players]);
 
   const categories = [
-    { key: "EFF", label: "Efficiency" },
-    { key: "PTS", label: "Scoring" },
-    { key: "AST", label: "Playmaking" },
-    { key: "STL", label: "Steals" },
-    { key: "FG_PCT", label: "FG%" },
+    { key: "EFF", label: t.clutchPage.efficiency },
+    { key: "PTS", label: t.clutchPage.scoring },
+    { key: "AST", label: t.clutchPage.playmaking },
+    { key: "STL", label: t.clutchPage.steals },
+    { key: "FG_PCT", label: t.clutchPage.fgPct },
   ];
 
   const fmtVal = (p: PlayerRow) => {
@@ -93,9 +95,9 @@ export default function ClutchPage() {
           <Target size={20} className="text-accent" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Playoff Performers</h1>
+          <h1 className="text-2xl font-bold">{t.clutchPage.title}</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            {CURRENT_SEASON} Playoffs — Top players by category
+            {CURRENT_SEASON} {t.clutchPage.subtitle}
           </p>
         </div>
       </div>
@@ -104,19 +106,19 @@ export default function ClutchPage() {
       {!loading && overviewStats && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">Top Scorer</p>
+            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topScorer}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.topScorer.PLAYER?.split(" ").pop()}</p>
             <p className="text-xs text-text-secondary">{overviewStats.topScorer.PTS?.toFixed(1)} PPG</p>
           </div>
           <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">Top Playmaker</p>
+            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topPlaymaker}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.topAssist.PLAYER?.split(" ").pop()}</p>
             <p className="text-xs text-text-secondary">{overviewStats.topAssist.AST?.toFixed(1)} APG</p>
           </div>
           <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">Most Games</p>
+            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.mostGames}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.mostGP.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary">{overviewStats.mostGP.GP} GP</p>
+            <p className="text-xs text-text-secondary">{overviewStats.mostGP.GP}{t.clutchPage.gp}</p>
           </div>
         </div>
       )}
@@ -144,13 +146,13 @@ export default function ClutchPage() {
 
       {error && !loading && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
-          <p className="text-text-secondary">Failed to load data. Try again later.</p>
+          <p className="text-text-secondary">{t.clutchPage.failedToLoad}</p>
         </div>
       )}
 
       {!loading && !error && players.length === 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
-          <p className="text-text-secondary">No data available for this category yet.</p>
+          <p className="text-text-secondary">{t.clutchPage.noData}</p>
         </div>
       )}
 

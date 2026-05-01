@@ -2,12 +2,14 @@
 
 import { useState, memo } from "react";
 import { Share2, Check } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface ShareButtonProps {
   text: string;
 }
 
 export default memo(function ShareButton({ text }: ShareButtonProps) {
+  const { t } = useLocale();
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -37,8 +39,8 @@ export default memo(function ShareButton({ text }: ShareButtonProps) {
     <button
       onClick={handleShare}
       className="p-1.5 rounded-lg text-text-secondary hover:text-accent transition-colors relative"
-      title="Share game result"
-      aria-label="Share game result"
+      title={t.share.shareGame}
+      aria-label={t.share.shareGame}
     >
       {copied ? (
         <Check size={16} className="text-success" />
@@ -47,7 +49,7 @@ export default memo(function ShareButton({ text }: ShareButtonProps) {
       )}
       {copied && (
         <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-success whitespace-nowrap">
-          Copied!
+          {t.share.copied}
         </span>
       )}
     </button>

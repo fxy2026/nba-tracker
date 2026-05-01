@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "伤病报告",
-  description: "NBA 全联盟伤病名单，实时更新球员伤停状态。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.injuriesTitle,
+    description: t.meta.injuriesDesc,
+  };
+}
 
 export default function InjuriesLayout({ children }: { children: React.ReactNode }) {
   return children;

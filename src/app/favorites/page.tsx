@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Heart, Users, User, Copy, Check } from "lucide-react";
 import { getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayerInfo {
   personId: number;
@@ -15,6 +16,7 @@ interface PlayerInfo {
 }
 
 export default function FavoritesPage() {
+  const { t } = useLocale();
   const [favTeams, setFavTeams] = useState<string[]>([]);
   const [favPlayers, setFavPlayers] = useState<number[]>([]);
   const [playerDetails, setPlayerDetails] = useState<Map<number, PlayerInfo>>(new Map());
@@ -66,7 +68,7 @@ export default function FavoritesPage() {
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center gap-3 mb-6">
         <Heart size={24} className="text-red-500" fill="currentColor" />
-        <h1 className="text-2xl font-bold">Favorites</h1>
+        <h1 className="text-2xl font-bold">{t.favoritesPage.title}</h1>
         {hasAny && (
           <button
             onClick={() => {
@@ -94,7 +96,7 @@ export default function FavoritesPage() {
             className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-xs text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
           >
             {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-            {copied ? "Copied!" : "Export"}
+            {copied ? t.common.copied : t.favoritesPage.exportBtn}
           </button>
         )}
       </div>
@@ -103,10 +105,10 @@ export default function FavoritesPage() {
       {hasAny && !loading && (
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
-            {favTeams.length} team{favTeams.length !== 1 ? "s" : ""}
+            {favTeams.length} {favTeams.length !== 1 ? t.common.teams : t.common.team}
           </span>
           <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/15 text-red-500 font-medium">
-            {favPlayers.length} player{favPlayers.length !== 1 ? "s" : ""}
+            {favPlayers.length} {favPlayers.length !== 1 ? t.common.players : t.common.player}
           </span>
         </div>
       )}
@@ -114,16 +116,16 @@ export default function FavoritesPage() {
       {!hasAny && !loading && (
         <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
           <Heart size={48} className="mx-auto text-text-secondary/30 mb-4" />
-          <p className="text-lg font-medium text-text-primary">No favorites yet</p>
+          <p className="text-lg font-medium text-text-primary">{t.favoritesPage.noFavorites}</p>
           <p className="text-sm text-text-secondary mt-2 mb-6">
-            Add teams and players to your favorites by tapping the heart icon on their pages.
+            {t.favoritesPage.noFavoritesHint}
           </p>
           <div className="flex items-center justify-center gap-3">
             <Link href="/search" className="px-4 py-2 bg-accent text-white rounded-lg text-sm hover:bg-accent-hover transition-colors">
-              Find Players
+              {t.favoritesPage.findPlayers}
             </Link>
             <Link href="/stats" className="px-4 py-2 bg-bg-card border border-border rounded-lg text-sm text-text-primary hover:bg-bg-hover transition-colors">
-              Browse Teams
+              {t.favoritesPage.browseTeams}
             </Link>
           </div>
         </div>
@@ -134,7 +136,7 @@ export default function FavoritesPage() {
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden mb-6">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Users size={16} className="text-accent" />
-            <h2 className="font-semibold text-sm">Favorite Teams</h2>
+            <h2 className="font-semibold text-sm">{t.favoritesPage.favoriteTeams}</h2>
           </div>
           <div className="divide-y divide-border/50">
             {favTeams.map((tricode) => {
@@ -174,7 +176,7 @@ export default function FavoritesPage() {
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <User size={16} className="text-accent" />
-            <h2 className="font-semibold text-sm">Favorite Players</h2>
+            <h2 className="font-semibold text-sm">{t.favoritesPage.favoritePlayers}</h2>
           </div>
           <div className="divide-y divide-border/50">
             {favPlayers.map((playerId) => {

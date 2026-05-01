@@ -1,5 +1,8 @@
+"use client";
+
 import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   homePeriods: PeriodScore[];
@@ -9,6 +12,7 @@ interface Props {
 }
 
 export default memo(function QuarterBars({ homePeriods, awayPeriods, homeTricode, awayTricode }: Props) {
+  const { t } = useLocale();
   if (homePeriods.length === 0) return null;
 
   const maxScore = Math.max(
@@ -21,12 +25,12 @@ export default memo(function QuarterBars({ homePeriods, awayPeriods, homeTricode
     <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
-        Points by Quarter
+        {t.quarterBars.title}
       </h3>
       <div className="flex items-end gap-3 h-24">
         {homePeriods.map((hp, i) => {
           const ap = awayPeriods[i];
-          const label = hp.period <= 4 ? `Q${hp.period}` : `OT${hp.period - 4}`;
+          const label = hp.period <= 4 ? `${t.playByPlayComp.quarter}${hp.period}` : `${t.playByPlayComp.overtime}${hp.period - 4}`;
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div className="flex items-end gap-0.5 h-16 w-full">

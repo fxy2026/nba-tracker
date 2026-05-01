@@ -1,7 +1,11 @@
+"use client";
+
 import { Calendar } from "lucide-react";
 import { CURRENT_SEASON, SEASON_START, SEASON_END, PLAYOFFS_END } from "@/lib/constants";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function SeasonProgress() {
+  const { t } = useLocale();
   const regularStart = new Date(SEASON_START).getTime();
   const regularEnd = new Date(SEASON_END).getTime();
   const playoffsEnd = new Date(PLAYOFFS_END).getTime();
@@ -17,15 +21,15 @@ export default function SeasonProgress() {
 
   if (isRegularSeason) {
     progress = ((now - regularStart) / (regularEnd - regularStart)) * 100;
-    label = "Regular Season";
+    label = t.common.regularSeason;
     phase = "regular";
   } else if (isPlayoffs) {
     progress = ((now - regularEnd) / (playoffsEnd - regularEnd)) * 100;
-    label = "Playoffs";
+    label = t.common.playoffs;
     phase = "playoffs";
   } else if (isOffseason) {
     progress = 100;
-    label = "Offseason";
+    label = t.common.offseason;
   }
 
   progress = Math.min(Math.max(progress, 0), 100);
@@ -43,11 +47,11 @@ export default function SeasonProgress() {
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase text-text-secondary font-semibold flex items-center gap-1">
           <Calendar size={10} />
-          {CURRENT_SEASON} Season
+          {CURRENT_SEASON} {t.seasonProgress.seasonLabel}
         </span>
         <div className="flex items-center gap-2">
           {daysLeft > 0 && (
-            <span className="text-[10px] text-text-secondary">{daysLeft}d left</span>
+            <span className="text-[10px] text-text-secondary">{daysLeft}{t.seasonProgress.daysLeft}</span>
           )}
           <span className={`text-[10px] font-medium ${phase === "playoffs" ? "text-yellow-500" : "text-accent"}`}>
             {label} &middot; {progress.toFixed(0)}%

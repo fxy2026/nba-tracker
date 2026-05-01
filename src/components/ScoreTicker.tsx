@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface TickerGame {
   gameId: string;
@@ -13,13 +14,14 @@ interface TickerGame {
 }
 
 export default memo(function ScoreTicker({ games }: { games: TickerGame[] }) {
+  const { t } = useLocale();
   if (games.length === 0) return null;
 
   return (
     <div className="bg-bg-card border border-border rounded-xl overflow-hidden mb-4">
       <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-hide">
         <span className="shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium mr-1 animate-pulse">
-          LIVE
+          {t.liveScore.liveLabel}
         </span>
         {games.map((g) => {
           const awayLeading = g.awayScore > g.homeScore;

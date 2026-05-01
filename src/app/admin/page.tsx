@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Lock, Plus, Trash2, Search, Play, ExternalLink, Calendar, BarChart3, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface ScheduleGame {
   gameId: string;
@@ -22,6 +23,7 @@ interface ReplayLink {
 type Tab = "replays" | "dashboard";
 
 export default function AdminPage() {
+  const { t } = useLocale();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -54,7 +56,7 @@ export default function AdminPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!password.trim()) { setAuthError("Please enter password"); return; }
+    if (!password.trim()) { setAuthError(t.admin.enterPassword); return; }
     setLoginLoading(true);
     setAuthError("");
     try {
@@ -167,13 +169,13 @@ export default function AdminPage() {
               <Lock size={24} className="text-accent" />
             </div>
           </div>
-          <h1 className="text-xl font-bold text-center mb-6">Admin Login</h1>
+          <h1 className="text-xl font-bold text-center mb-6">{t.admin.login}</h1>
           {authError && <p className="text-danger text-sm text-center mb-4">{authError}</p>}
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter admin password"
+            placeholder={t.admin.passwordPlaceholder}
             className="w-full bg-bg-primary border border-border rounded-lg px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent mb-4" />
           <button type="submit" disabled={loginLoading} className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50">
-            {loginLoading ? "Logging in..." : "Login"}
+            {loginLoading ? t.admin.loggingIn : t.admin.loginBtn}
           </button>
         </form>
       </div>
@@ -187,9 +189,9 @@ export default function AdminPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Lock size={20} className="text-accent" />Admin Panel</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Lock size={20} className="text-accent" />{t.admin.panel}</h1>
         <div className="flex gap-1 bg-bg-card rounded-lg border border-border p-0.5">
-          {([{ key: "replays" as Tab, label: "Replay Links", icon: Play }, { key: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 }]).map(({ key, label, icon: Icon }) => (
+          {([{ key: "replays" as Tab, label: t.admin.replayLinks, icon: Play }, { key: "dashboard" as Tab, label: t.admin.dashboard, icon: BarChart3 }]).map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setTab(key)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === key ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}`}>
               <Icon size={14} />{label}
@@ -206,19 +208,19 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
                 <p className="text-2xl font-bold text-accent">{String(adminStats.replayCount ?? "—")}</p>
-                <p className="text-[10px] text-text-secondary uppercase mt-1">Replay Links</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.replayLinks}</p>
               </div>
               <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
                 <p className="text-2xl font-bold text-text-primary">{String(adminStats.replayGames ?? "—")}</p>
-                <p className="text-[10px] text-text-secondary uppercase mt-1">Games with Replay</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.gamesWithReplay}</p>
               </div>
               <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
                 <p className="text-2xl font-bold text-success">{String(adminStats.finishedGames ?? "—")}</p>
-                <p className="text-[10px] text-text-secondary uppercase mt-1">Finished Games</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.finishedGames}</p>
               </div>
               <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
                 <p className="text-2xl font-bold text-text-primary">{String(adminStats.playerCount ?? "—")}</p>
-                <p className="text-[10px] text-text-secondary uppercase mt-1">Players Indexed</p>
+                <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.playersIndexed}</p>
               </div>
             </div>
           ) : null}
@@ -226,7 +228,7 @@ export default function AdminPage() {
           {/* Recent Replay Links */}
           {adminStats?.recentLinks && (adminStats.recentLinks as ReplayLink[]).length > 0 ? (
             <div className="bg-bg-card rounded-xl border border-border p-4">
-              <h2 className="text-sm font-semibold mb-3">Recently Added Replay Links</h2>
+              <h2 className="text-sm font-semibold mb-3">{t.admin.recentlyAdded}</h2>
               <div className="space-y-2">
                 {(adminStats.recentLinks as ReplayLink[]).map((link) => (
                   <div key={link.id} className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-lg text-xs">
@@ -255,27 +257,27 @@ export default function AdminPage() {
                 <div key={name} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${ok ? "bg-success/10" : "bg-danger/10"}`}>
                   <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-danger"}`} />
                   <span className="text-text-primary">{name}</span>
-                  <span className={`text-xs ml-auto ${ok ? "text-success" : "text-danger"}`}>{ok ? "OK" : "DOWN"}</span>
+                  <span className={`text-xs ml-auto ${ok ? "text-success" : "text-danger"}`}>{ok ? t.admin.ok : t.admin.down}</span>
                 </div>
               ))}
-              {Object.keys(apiHealth).length === 0 && <p className="text-xs text-text-secondary col-span-3 text-center py-4">Click Refresh to check</p>}
+              {Object.keys(apiHealth).length === 0 && <p className="text-xs text-text-secondary col-span-3 text-center py-4">{t.admin.clickRefresh}</p>}
             </div>
           </div>
 
           {/* Environment Config */}
           {adminStats ? (
             <div className="bg-bg-card rounded-xl border border-border p-4">
-              <h2 className="text-sm font-semibold mb-3">Environment</h2>
+              <h2 className="text-sm font-semibold mb-3">{t.admin.environment}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {[
-                  { label: "Supabase", ok: adminStats.hasSupabase as boolean },
-                  { label: "Admin Password", ok: adminStats.hasAdminPw as boolean },
-                  { label: "BallDontLie API", ok: adminStats.hasBdlKey as boolean },
+                  { label: t.admin.supabase, ok: adminStats.hasSupabase as boolean },
+                  { label: t.admin.adminPassword, ok: adminStats.hasAdminPw as boolean },
+                  { label: t.admin.ballDontLieApi, ok: adminStats.hasBdlKey as boolean },
                 ].map(({ label, ok }) => (
                   <div key={label} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${ok ? "bg-success/10" : "bg-yellow-500/10"}`}>
                     <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-yellow-500"}`} />
                     <span className="text-text-primary">{label}</span>
-                    <span className={`ml-auto ${ok ? "text-success" : "text-yellow-500"}`}>{ok ? "Set" : "Missing"}</span>
+                    <span className={`ml-auto ${ok ? "text-success" : "text-yellow-500"}`}>{ok ? t.admin.set : t.admin.missing}</span>
                   </div>
                 ))}
               </div>
@@ -288,24 +290,24 @@ export default function AdminPage() {
           {/* System Info + Quick Links */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Data Sources</p>
-              <p className="text-sm font-bold text-text-primary mt-1">NBA CDN + ESPN</p>
-              <p className="text-[10px] text-text-secondary mt-1">Schedule, scores, injuries, news</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.admin.dataSources}</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{t.admin.nbaCdnEspn}</p>
+              <p className="text-[10px] text-text-secondary mt-1">{t.admin.scheduleScores}</p>
             </div>
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Replay Storage</p>
-              <p className="text-sm font-bold text-text-primary mt-1">Supabase</p>
-              <p className="text-[10px] text-text-secondary mt-1">PostgreSQL + REST API</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.admin.replayStorage}</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{t.admin.supabase}</p>
+              <p className="text-[10px] text-text-secondary mt-1">{t.admin.postgresql}</p>
             </div>
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Hosting</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.admin.hosting}</p>
               <p className="text-sm font-bold text-text-primary mt-1">Vercel</p>
               <p className="text-[10px] text-text-secondary mt-1">nba.xpy.me</p>
             </div>
           </div>
 
           <div className="bg-bg-card rounded-xl border border-border p-4">
-            <h2 className="text-sm font-semibold mb-3">Quick Links</h2>
+            <h2 className="text-sm font-semibold mb-3">{t.admin.quickLinks}</h2>
             <div className="flex flex-wrap gap-2">
               {[
                 { label: "Vercel", href: "https://vercel.com/dashboard" },
@@ -324,7 +326,7 @@ export default function AdminPage() {
           </div>
 
           <button onClick={loadAdminStats} className="w-full text-xs text-text-secondary hover:text-accent py-2 transition-colors">
-            ↻ Refresh Dashboard Data
+            {t.admin.refreshDashboard}
           </button>
         </div>
       )}
@@ -338,7 +340,7 @@ export default function AdminPage() {
               <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)}
                 className="bg-bg-primary border border-border rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent" />
               <button onClick={() => offsetDate(1)} className="p-2 rounded-lg bg-bg-hover hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors"><ChevronRight size={16} /></button>
-              <button onClick={() => searchGames()} className="flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"><Search size={16} />Search</button>
+              <button onClick={() => searchGames()} className="flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"><Search size={16} />{t.admin.searchLabel}</button>
               <div className="ml-auto flex gap-1">
                 {[-1, 0, 1].map((offset) => {
                   const d = new Date(); d.setDate(d.getDate() + offset);
@@ -346,7 +348,7 @@ export default function AdminPage() {
                   return (
                     <button key={offset} onClick={() => { setSearchDate(ds); searchGames(ds); }}
                       className={`px-2.5 py-1.5 text-[10px] rounded-lg transition-colors ${searchDate === ds ? "bg-accent text-white" : "bg-bg-hover text-text-secondary hover:text-accent"}`}>
-                      {offset === -1 ? "Yesterday" : offset === 0 ? "Today" : "Tomorrow"}
+                      {offset === -1 ? t.admin.yesterday : offset === 0 ? t.admin.todayLabel : t.admin.tomorrow}
                     </button>
                   );
                 })}
@@ -376,14 +378,14 @@ export default function AdminPage() {
                             <span className="font-medium">{game.homeTeam.teamTricode}</span>
                           </div>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full ${isFinal ? "bg-success/10 text-success" : game.gameStatus === 2 ? "bg-accent/10 text-accent" : "bg-bg-hover text-text-secondary"}`}>
-                            {isFinal ? "Final" : game.gameStatus === 2 ? "Live" : "Scheduled"}
+                            {isFinal ? t.common.final : game.gameStatus === 2 ? t.common.live : t.common.scheduled}
                           </span>
                         </div>
-                        <p className="text-[10px] text-text-secondary mt-1">{game.awayTeam.teamCity} @ {game.homeTeam.teamCity} <span className="text-text-secondary/50 ml-1">ID: {game.gameId}</span></p>
+                        <p className="text-[10px] text-text-secondary mt-1">{game.awayTeam.teamCity} @ {game.homeTeam.teamCity} <span className="text-text-secondary/50 ml-1">{t.admin.id}{game.gameId}</span></p>
                       </button>
                     );
                   })}
-                  {games.length === 0 && !loading && <p className="text-sm text-text-secondary text-center py-8">No games on {searchDate}</p>}
+                  {games.length === 0 && !loading && <p className="text-sm text-text-secondary text-center py-8">{t.admin.noGamesOn}{searchDate}</p>}
                 </div>
               )}
             </div>
@@ -394,7 +396,7 @@ export default function AdminPage() {
                 <>
                   <h2 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-2">
                     <Play size={14} className="text-accent" />
-                    Replay Links — {selectedGame.awayTeam.teamTricode} vs {selectedGame.homeTeam.teamTricode}
+                    {t.admin.replayLinks} — {selectedGame.awayTeam.teamTricode} vs {selectedGame.homeTeam.teamTricode}
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent">{replayLinks.length}</span>
                   </h2>
                   <div className="space-y-2 mb-4">
@@ -413,31 +415,31 @@ export default function AdminPage() {
                       </div>
                     ))}
                     {replayLinks.length === 0 && (
-                      <div className="text-center py-6 text-text-secondary"><Play size={24} className="mx-auto mb-2 opacity-20" /><p className="text-sm">No replay links</p></div>
+                      <div className="text-center py-6 text-text-secondary"><Play size={24} className="mx-auto mb-2 opacity-20" /><p className="text-sm">{t.admin.noReplayLinks}</p></div>
                     )}
                   </div>
                   <form onSubmit={addLink} className="bg-bg-card rounded-xl border border-border p-4 space-y-3">
-                    <h3 className="text-sm font-medium flex items-center gap-1.5"><Plus size={14} className="text-accent" />Add Replay Link</h3>
-                    <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Title (e.g. Full Game HD)"
+                    <h3 className="text-sm font-medium flex items-center gap-1.5"><Plus size={14} className="text-accent" />{t.admin.addReplayLink}</h3>
+                    <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t.admin.titlePlaceholder}
                       className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent" required />
-                    <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="URL" type="url"
+                    <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder={t.admin.url} type="url"
                       className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent" required />
                     <select value={newSource} onChange={(e) => setNewSource(e.target.value)}
                       className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent">
-                      <option value="cloud">Cloud Drive</option>
-                      <option value="youtube">YouTube</option>
-                      <option value="bilibili">Bilibili</option>
-                      <option value="other">Other</option>
+                      <option value="cloud">{t.admin.cloudDrive}</option>
+                      <option value="youtube">{t.admin.youtube}</option>
+                      <option value="bilibili">{t.admin.bilibili}</option>
+                      <option value="other">{t.admin.other}</option>
                     </select>
                     <button type="submit" disabled={submitting}
                       className="w-full bg-accent hover:bg-accent-hover text-white font-medium py-2 rounded-lg text-sm transition-colors disabled:opacity-50">
-                      {submitting ? "Adding..." : "Add Link"}
+                      {submitting ? t.admin.adding : t.admin.addLink}
                     </button>
                   </form>
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
-                  <Play size={32} className="mb-3 opacity-20" /><p className="text-sm font-medium">Select a game</p><p className="text-[10px]">Choose from the left to manage replay links</p>
+                  <Play size={32} className="mb-3 opacity-20" /><p className="text-sm font-medium">{t.admin.selectGame}</p><p className="text-[10px]">{t.admin.chooseFromLeft}</p>
                 </div>
               )}
             </div>

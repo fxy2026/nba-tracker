@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import PlayerHeadshot from "./PlayerHeadshot";
 import { Star } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface StarPlayer {
   personId: number;
@@ -16,6 +17,7 @@ interface StarPlayer {
 }
 
 export default function TodayStars() {
+  const { t } = useLocale();
   const [stars, setStars] = useState<StarPlayer[]>([]);
 
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function TodayStars() {
     <div className="mt-6">
       <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
         <Star size={14} className="text-accent" />
-        Today&apos;s Stars
+        {t.todayStars.title}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stars.map((s) => {
@@ -103,9 +105,9 @@ export default function TodayStars() {
                 <span className="text-text-secondary">{s.reb} REB</span>
                 <span className="text-text-secondary">{s.ast} AST</span>
               </div>
-              {doubles >= 3 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold mt-1 inline-block">Triple-Double!</span>
-                : doubles >= 2 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">Double-Double</span>
-                : s.pts >= 30 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-danger/15 text-danger font-bold mt-1 inline-block">30+ PTS</span>
+              {doubles >= 3 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold mt-1 inline-block">{t.todayStars.tripleDouble}</span>
+                : doubles >= 2 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">{t.todayStars.doubleDouble}</span>
+                : s.pts >= 30 ? <span className="text-[9px] px-1.5 py-0.5 rounded bg-danger/15 text-danger font-bold mt-1 inline-block">{t.todayStars.thirtyPts}</span>
                 : null}
             </Link>
           );

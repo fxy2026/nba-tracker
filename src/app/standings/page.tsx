@@ -3,11 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { TEAM_META } from "@/lib/teams";
 import ExportStandings from "@/components/ExportStandings";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
+import type { Translations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "排名",
-  description: "NBA 东西部排名、胜率、连胜连败，实时更新。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.standingsTitle,
+    description: t.meta.standingsDesc,
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -37,11 +44,12 @@ async function getStandings(): Promise<TeamRecord[]> {
   }
 }
 
-function DivisionCard({ division, teams, conferenceRanks, streaks }: {
+function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
   division: string;
   teams: TeamRecord[];
   conferenceRanks: Map<string, number>;
   streaks: Map<string, string>;
+  t: Translations;
 }) {
   // Sort by win pct within the division
   const sorted = [...teams].sort((a, b) => {
@@ -63,11 +71,11 @@ function DivisionCard({ division, teams, conferenceRanks, streaks }: {
         {/* Header row */}
         <div className="grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] uppercase text-text-secondary font-medium">
           <span className="w-5">#</span>
-          <span>Team</span>
-          <span className="text-center">W</span>
-          <span className="text-center">L</span>
-          <span className="text-center">PCT</span>
-          <span className="text-center">GB</span>
+          <span>{t.common.team}</span>
+          <span className="text-center">{t.common.wins}</span>
+          <span className="text-center">{t.common.losses}</span>
+          <span className="text-center">{t.standingsPage.pct}</span>
+          <span className="text-center">{t.standingsPage.gb}</span>
         </div>
         {sorted.map((team, idx) => {
           const winPct = team.wins / (team.wins + team.losses || 1);
@@ -95,8 +103,8 @@ function DivisionCard({ division, teams, conferenceRanks, streaks }: {
                 />
                 <div>
                   <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
-                  {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">Playoff</span>}
-                  {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">Play-In</span>}
+                  {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
+                  {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">{t.standingsPage.playIn}</span>}
                   {streaks.get(team.tricode) && (() => {
                     const streak = streaks.get(team.tricode)!;
                     const isWin = streak.startsWith("W");
@@ -132,7 +140,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks }: {
   );
 }
 
-function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] }) {
+function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord[]; t: Translations }) {
   const leader = teams[0];
   const leaderDiff = leader ? leader.wins - leader.losses : 0;
 
@@ -141,7 +149,7 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
       <div className="px-4 py-3 border-b border-border bg-bg-secondary/50 flex items-center justify-between">
         <h3 className="text-sm font-semibold">{title}</h3>
         {leader && (
-          <span className="text-[10px] text-accent">Best: {leader.tricode} ({leader.wins}-{leader.losses})</span>
+          <span className="text-[10px] text-accent">{t.standingsPage.best}{leader.tricode} ({leader.wins}-{leader.losses})</span>
         )}
       </div>
       <div className="overflow-x-auto">
@@ -149,12 +157,12 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
           <thead>
             <tr className="border-b border-border text-text-secondary text-xs">
               <th className="text-center py-2.5 px-2 w-8">#</th>
-              <th className="text-left py-2.5 px-3">Team</th>
-              <th className="text-center py-2.5 px-2">W</th>
-              <th className="text-center py-2.5 px-2">L</th>
-              <th className="text-center py-2.5 px-2">PCT</th>
-              <th className="text-center py-2.5 px-2">GB</th>
-              <th className="text-center py-2.5 px-1">Proj</th>
+              <th className="text-left py-2.5 px-3">{t.common.team}</th>
+              <th className="text-center py-2.5 px-2">{t.common.wins}</th>
+              <th className="text-center py-2.5 px-2">{t.common.losses}</th>
+              <th className="text-center py-2.5 px-2">{t.standingsPage.pct}</th>
+              <th className="text-center py-2.5 px-2">{t.standingsPage.gb}</th>
+              <th className="text-center py-2.5 px-1">{t.standingsPage.proj}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,7 +178,7 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                     <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors ${i >= 10 && winPct < 0.3 ? "opacity-50" : ""}`}>
                       <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={20} height={20} unoptimized />
                       <span className="font-medium text-text-primary">{team.tricode}</span>
-                      {i === 0 && <span title="Conference leader">&#128081;</span>}
+                      {i === 0 && <span title={t.standingsPage.confLeader}>&#128081;</span>}
                       {isPlayoff && <span className="text-[8px] px-1 py-0.5 rounded bg-accent/10 text-accent">P</span>}
                       {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">PI</span>}
                     </Link>
@@ -190,14 +198,14 @@ function ConferenceTable({ title, teams }: { title: string; teams: TeamRecord[] 
                     {isPlayoff && (() => {
                       const gamesLeft = 82 - team.wins - team.losses;
                       return gamesLeft > 0 ? (
-                        <span className="block text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}g left)</span>
+                        <span className="block text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}{t.standingsPage.gamesLeft})</span>
                       ) : null;
                     })()}
                   </td>
                   <td className="text-center py-2 px-1 text-[10px] text-text-secondary/70 tabular-nums">
                     {(() => {
                       const projected = Math.round(winPct * 82);
-                      return <span title="Projected final wins">&rarr; {projected}w</span>;
+                      return <span title={t.standingsPage.proj}>&rarr; {projected}w</span>;
                     })()}
                   </td>
                 </tr>
@@ -247,7 +255,8 @@ async function getTeamStreaks(): Promise<Map<string, string>> {
 }
 
 export default async function StandingsPage() {
-  const [standings, streaks] = await Promise.all([getStandings(), getTeamStreaks()]);
+  const [standings, streaks, locale] = await Promise.all([getStandings(), getTeamStreaks(), getLocale()]);
+  const t = getTranslations(locale);
 
   // Compute conference ranks
   const eastTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "East");
@@ -271,8 +280,8 @@ export default async function StandingsPage() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-2xl font-bold">Division Standings</h1>
-          <p className="text-sm text-text-secondary">Top 6 in each conference highlighted for playoff eligibility</p>
+          <h1 className="text-2xl font-bold">{t.standingsPage.divisionStandings}</h1>
+          <p className="text-sm text-text-secondary">{t.standingsPage.top6Hint}</p>
         </div>
         <ExportStandings east={eastTeams} west={westTeams} />
       </div>
@@ -286,21 +295,21 @@ export default async function StandingsPage() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-text-secondary uppercase">East Avg W</p>
+                <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.eastAvgW}</p>
                 <p className="text-lg font-bold text-accent">{eastAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-text-secondary">Best</p>
+                <p className="text-[10px] text-text-secondary">{t.standingsPage.best}</p>
                 <p className="text-xs font-medium text-text-primary">{eastBest.tricode} ({eastBest.wins}-{eastBest.losses})</p>
               </div>
             </div>
             <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-text-secondary uppercase">West Avg W</p>
+                <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.westAvgW}</p>
                 <p className="text-lg font-bold text-accent">{westAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-text-secondary">Best</p>
+                <p className="text-[10px] text-text-secondary">{t.standingsPage.best}</p>
                 <p className="text-xs font-medium text-text-primary">{westBest.tricode} ({westBest.wins}-{westBest.losses})</p>
               </div>
             </div>
@@ -308,14 +317,14 @@ export default async function StandingsPage() {
         );
       })()}
       <div className="flex items-center gap-4 text-xs text-text-secondary mb-6">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent rounded" /> Playoff (1-6)</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-yellow-500 rounded" /> Play-In (7-10)</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent rounded" /> {t.standingsPage.playoff} (1-6)</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-yellow-500 rounded" /> {t.standingsPage.playIn} (7-10)</span>
       </div>
 
       {/* Eastern Conference */}
       <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
         <span className="w-1.5 h-5 bg-accent rounded-full" />
-        Eastern Conference
+        {t.standingsPage.eastConference}
       </h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         {EAST_DIVISIONS.map((div) => (
@@ -325,6 +334,7 @@ export default async function StandingsPage() {
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
             streaks={streaks}
+            t={t}
           />
         ))}
       </div>
@@ -332,7 +342,7 @@ export default async function StandingsPage() {
       {/* Western Conference */}
       <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
         <span className="w-1.5 h-5 bg-accent rounded-full" />
-        Western Conference
+        {t.standingsPage.westConference}
       </h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
         {WEST_DIVISIONS.map((div) => (
@@ -342,6 +352,7 @@ export default async function StandingsPage() {
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
             streaks={streaks}
+            t={t}
           />
         ))}
       </div>
@@ -354,34 +365,28 @@ export default async function StandingsPage() {
         const eastPct = (eastWins / total) * 100;
         return (
           <div className="bg-bg-card rounded-xl border border-border p-4 mb-8">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">East vs West</h3>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.standingsPage.eastVsWest}</h3>
             <div className="flex items-center gap-4 mb-2">
-              <span className="text-sm font-bold text-accent">East {eastWins}W</span>
+              <span className="text-sm font-bold text-accent">East {eastWins}{t.common.wins}</span>
               <div className="flex-1 h-3 bg-bg-hover rounded-full overflow-hidden">
                 <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${eastPct}%` }} />
               </div>
-              <span className="text-sm font-bold text-success">West {westWins}W</span>
+              <span className="text-sm font-bold text-success">West {westWins}{t.common.wins}</span>
             </div>
             <p className="text-[10px] text-text-secondary text-center">
-              {eastWins > westWins ? `East leads by ${eastWins - westWins} wins` : westWins > eastWins ? `West leads by ${westWins - eastWins} wins` : "Tied"}
+              {eastWins > westWins ? `${t.standingsPage.eastLeads} ${eastWins - westWins} ${t.common.wins}` : westWins > eastWins ? `${t.standingsPage.westLeads} ${westWins - eastWins} ${t.common.wins}` : t.common.tied}
             </p>
             {(() => {
-              // Inter-conference: East losses = games played vs West that East lost = West's wins against East
-              // Total inter-conference games = eastLosses that come from west + eastWins that come from west
-              // Since standings only has W/L totals, approximate: total games = sum of all team games / 2
               const eastTotalGames = eastTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
               const westTotalGames = westTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
               const totalGames = eastTotalGames + westTotalGames;
-              // Intra-conference games: each conference plays within itself
-              // Inter-conference: total games - intra games on each side
-              // Rough estimate: each team plays 82 games, ~52 within conference, ~30 inter
               const eastTeamCount = eastTeams.length || 15;
               const westTeamCount = westTeams.length || 15;
               const interConferenceGames = Math.round(totalGames - (eastTeamCount * (eastTeamCount - 1)) - (westTeamCount * (westTeamCount - 1)));
               const estInterGames = Math.max(interConferenceGames, 0);
               return estInterGames > 0 ? (
                 <p className="text-[10px] text-text-secondary text-center mt-1">
-                  ~{Math.round(totalGames)} total games played this season ({eastTeams.length + westTeams.length} teams)
+                  {t.standingsPage.totalGames.replace("%s", String(Math.round(totalGames))).replace("%s", String(eastTeams.length + westTeams.length))}
                 </p>
               ) : null;
             })()}
@@ -392,11 +397,11 @@ export default async function StandingsPage() {
       {/* Full Conference Rankings */}
       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <span className="w-1.5 h-5 bg-accent rounded-full" />
-        Full League Rankings
+        {t.standingsPage.fullRankings}
       </h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ConferenceTable title="Eastern Conference" teams={eastTeams} />
-        <ConferenceTable title="Western Conference" teams={westTeams} />
+        <ConferenceTable title={t.standingsPage.eastConference} teams={eastTeams} t={t} />
+        <ConferenceTable title={t.standingsPage.westConference} teams={westTeams} t={t} />
       </div>
     </div>
   );

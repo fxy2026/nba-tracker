@@ -3,47 +3,49 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock } from "lucide-react";
-import { useState } from "react";
-
-const mainLinks = [
-  { href: "/", label: "Today", icon: Trophy },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/search", label: "Search", icon: Search },
-];
-
-const moreGroups = [
-  {
-    title: "Explore",
-    items: [
-      { href: "/standings", label: "Standings", icon: ListOrdered },
-      { href: "/schedule", label: "Schedule", icon: Clock },
-      { href: "/injuries", label: "Injuries", icon: AlertTriangle },
-      { href: "/transactions", label: "Trades", icon: ArrowLeftRight },
-    ],
-  },
-  {
-    title: "Analysis",
-    items: [
-      { href: "/compare", label: "Compare", icon: GitCompareArrows },
-      { href: "/h2h", label: "Head to Head", icon: Swords },
-      { href: "/clutch", label: "Playoff Leaders", icon: Target },
-    ],
-  },
-  {
-    title: "More",
-    items: [
-      { href: "/favorites", label: "Favorites", icon: Heart },
-      { href: "/history", label: "Champions", icon: History },
-    ],
-  },
-];
-
-const allMoreLinks = moreGroups.flatMap((g) => g.items);
+import { useState, useMemo } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const [moreOpen, setMoreOpen] = useState(false);
+
+  const mainLinks = useMemo(() => [
+    { href: "/", label: t.nav.today, icon: Trophy },
+    { href: "/calendar", label: t.nav.calendar, icon: Calendar },
+    { href: "/stats", label: t.nav.stats, icon: BarChart3 },
+    { href: "/search", label: t.nav.search, icon: Search },
+  ], [t]);
+
+  const moreGroups = useMemo(() => [
+    {
+      title: t.nav.explore,
+      items: [
+        { href: "/standings", label: t.nav.standings, icon: ListOrdered },
+        { href: "/schedule", label: t.nav.schedule, icon: Clock },
+        { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
+        { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
+      ],
+    },
+    {
+      title: t.nav.analysis,
+      items: [
+        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
+        { href: "/h2h", label: t.nav.h2h, icon: Swords },
+        { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
+      ],
+    },
+    {
+      title: t.nav.more,
+      items: [
+        { href: "/favorites", label: t.nav.favorites, icon: Heart },
+        { href: "/history", label: t.nav.champions, icon: History },
+      ],
+    },
+  ], [t]);
+
+  const allMoreLinks = useMemo(() => moreGroups.flatMap((g) => g.items), [moreGroups]);
   const isMoreActive = allMoreLinks.some(({ href }) => pathname === href);
 
   return (
@@ -107,7 +109,7 @@ export default function MobileNav() {
             }`}
           >
             <MoreHorizontal size={20} strokeWidth={moreOpen || isMoreActive ? 2.5 : 2} />
-            <span className={`text-[9px] ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>More</span>
+            <span className={`text-[9px] ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>{t.nav.more}</span>
           </button>
         </div>
       </nav>

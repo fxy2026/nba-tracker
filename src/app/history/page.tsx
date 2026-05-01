@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
 export const metadata: Metadata = {
   title: "历届总冠军",
@@ -37,7 +39,9 @@ const champions = [
   { year: 2000, champion: "Los Angeles Lakers", fmvp: "Shaquille O'Neal", runnerUp: "Indiana Pacers", series: "4-2" },
 ];
 
-export default function HistoryPage() {
+export default async function HistoryPage() {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
   // Detect sweeps and game-7s
   const sweeps = champions.filter((r) => r.series === "4-0");
   const game7s = champions.filter((r) => r.series === "4-3");
@@ -61,26 +65,26 @@ export default function HistoryPage() {
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center gap-2 mb-6">
         <Trophy size={20} className="text-accent" />
-        <h1 className="text-xl font-bold">NBA Champions (2000-2026)</h1>
+        <h1 className="text-xl font-bold">{t.historyPage.title}</h1>
       </div>
 
       {/* Quick Facts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-accent">{sweeps.length}</p>
-          <p className="text-[10px] text-text-secondary uppercase">Sweeps (4-0)</p>
+          <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.sweeps}</p>
         </div>
         <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-accent">{game7s.length}</p>
-          <p className="text-[10px] text-text-secondary uppercase">Game 7s</p>
+          <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.game7s}</p>
         </div>
         <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-accent">{repeats.length}</p>
-          <p className="text-[10px] text-text-secondary uppercase">Repeat Champs</p>
+          <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.repeatChamps}</p>
         </div>
         <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-accent">{topFmvps.length > 0 ? topFmvps[0][1] : 0}</p>
-          <p className="text-[10px] text-text-secondary uppercase">Most FMVPs</p>
+          <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.mostFmvps}</p>
           {topFmvps.length > 0 && <p className="text-[10px] text-accent mt-0.5">{topFmvps[0][0]}</p>}
         </div>
       </div>
@@ -101,11 +105,11 @@ export default function HistoryPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-bg-secondary">
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Year</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Champion</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Finals MVP</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Runner-up</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Series</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.year}</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.champion}</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.finalsMvp}</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.runnerUp}</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.series}</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +122,7 @@ export default function HistoryPage() {
                     <td className="py-3 px-4 font-bold text-accent">{row.year}</td>
                     <td className="py-3 px-4 font-medium text-text-primary">
                       {row.champion}
-                      {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold">REPEAT</span>}
+                      {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold">{t.historyPage.repeat}</span>}
                     </td>
                     <td className="py-3 px-4 text-text-secondary">
                       {row.fmvp}
@@ -129,8 +133,8 @@ export default function HistoryPage() {
                       <span className={`${isSweep ? "text-accent font-bold" : isGame7 ? "text-yellow-500 font-medium" : "text-text-secondary"}`}>
                         {row.series}
                       </span>
-                      {isSweep && <span className="ml-1 text-[9px] text-accent">SWEEP</span>}
-                      {isGame7 && <span className="ml-1 text-[9px] text-yellow-500">G7</span>}
+                      {isSweep && <span className="ml-1 text-[9px] text-accent">{t.historyPage.sweep}</span>}
+                      {isGame7 && <span className="ml-1 text-[9px] text-yellow-500">{t.historyPage.g7}</span>}
                     </td>
                   </tr>
                 );
@@ -144,7 +148,7 @@ export default function HistoryPage() {
       <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <Trophy size={16} className="text-accent" />
-          Championships by Franchise
+          {t.historyPage.championshipsByFranchise}
         </h2>
         <div className="space-y-2">
           {(() => {
@@ -174,7 +178,7 @@ export default function HistoryPage() {
         <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Trophy size={16} className="text-yellow-500" />
-            Dynasty Watch (Repeat Champions)
+            {t.historyPage.dynastyWatch}
           </h2>
           <div className="space-y-2">
             {repeats.map((team) => {
@@ -196,7 +200,7 @@ export default function HistoryPage() {
 
       <div className="mt-4 text-center">
         <Link href="/" className="text-xs text-text-secondary hover:text-accent transition-colors">
-          &larr; Back to Home
+          &larr; {t.common.backToHome}
         </Link>
       </div>
     </div>

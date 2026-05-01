@@ -1,6 +1,9 @@
+"use client";
+
 import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   homeTeam: { teamId: number; teamTricode: string; teamCity: string; teamName: string; score: number; periods: PeriodScore[] };
@@ -8,6 +11,7 @@ interface Props {
 }
 
 export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
+  const { t } = useLocale();
   const periods = Math.max(homeTeam.periods.length, awayTeam.periods.length);
   if (periods === 0) return null;
 
@@ -29,13 +33,13 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-text-secondary text-xs">
-            <th className="text-left py-2.5 px-3 font-medium min-w-[140px]">Team</th>
+            <th className="text-left py-2.5 px-3 font-medium min-w-[140px]">{t.common.team}</th>
             {homeTeam.periods.map((p, i) => (
               <th key={i} className={`text-center py-2.5 px-2 font-medium w-12 ${i === bestQuarterIdx ? "text-accent" : ""}`}>
-                {p.periodType === "OVERTIME" ? `OT${p.period - 4}` : `Q${p.period}`}
+                {p.periodType === "OVERTIME" ? `${t.playByPlayComp.overtime}${p.period - 4}` : `${t.playByPlayComp.quarter}${p.period}`}
               </th>
             ))}
-            <th className="text-center py-2.5 px-3 font-bold w-14">Total</th>
+            <th className="text-center py-2.5 px-3 font-bold w-14">{t.gameDetail.total}</th>
           </tr>
         </thead>
         <tbody>
@@ -87,7 +91,7 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
       {/* Halftime score */}
       {showHalftime && (
         <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-text-secondary">
-          <span>Halftime: {awayTeam.teamTricode} <span className={awayHalf > homeHalf ? "font-bold text-accent" : ""}>{awayHalf}</span> - <span className={homeHalf > awayHalf ? "font-bold text-accent" : ""}>{homeHalf}</span> {homeTeam.teamTricode}</span>
+          <span>{t.quarterScores.halftime}{awayTeam.teamTricode} <span className={awayHalf > homeHalf ? "font-bold text-accent" : ""}>{awayHalf}</span> - <span className={homeHalf > awayHalf ? "font-bold text-accent" : ""}>{homeHalf}</span> {homeTeam.teamTricode}</span>
           {awayHalf !== homeHalf && (
             <span className="px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary">
               {awayHalf > homeHalf ? awayTeam.teamTricode : homeTeam.teamTricode} led by {Math.abs(awayHalf - homeHalf)}
@@ -98,7 +102,7 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
       {/* Best quarter indicator */}
       {bestQuarterIdx >= 0 && (
         <div className="text-center mt-1 text-[10px] text-text-secondary">
-          Highest-scoring: <span className="text-accent font-medium">{bestQuarterIdx < 4 ? `Q${bestQuarterIdx + 1}` : `OT${bestQuarterIdx - 3}`}</span> ({bestQuarterTotal} pts)
+          {t.quarterScores.highestScoring}<span className="text-accent font-medium">{bestQuarterIdx < 4 ? `${t.playByPlayComp.quarter}${bestQuarterIdx + 1}` : `${t.playByPlayComp.overtime}${bestQuarterIdx - 3}`}</span> ({bestQuarterTotal} pts)
         </div>
       )}
     </div>

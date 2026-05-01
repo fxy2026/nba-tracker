@@ -3,6 +3,8 @@
 import { useEffect, useState, memo } from "react";
 import Link from "next/link";
 import { CURRENT_SEASON } from "@/lib/constants";
+import { useLocale } from "@/components/LocaleProvider";
+import type { Translations } from "@/locales/types";
 
 interface SeasonRow {
   SEASON_ID: string;
@@ -38,6 +40,7 @@ interface Props {
 }
 
 export default function PlayerStatsBundle({ playerId, playerName, teamTricode }: Props) {
+  const { t } = useLocale();
   const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
   const [games, setGames] = useState<GameLogRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,18 +88,18 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
     const encodedName = encodeURIComponent(playerName || "");
     return (
       <div className="bg-bg-secondary rounded-xl p-4 text-center space-y-3">
-        <p className="text-sm text-text-secondary">Detailed stats temporarily unavailable</p>
+        <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-            View on NBA.com &rarr;
+            {t.playerStats.viewOnNba}
           </a>
           <a href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodedName}`} target="_blank" rel="noopener noreferrer"
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-            Basketball Reference &rarr;
+            {t.playerStats.basketballRef}
           </a>
           <button onClick={() => setRetryKey((k) => k + 1)} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors">
-            Retry
+            {t.common.retry}
           </button>
         </div>
       </div>
@@ -111,14 +114,14 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
     <div className="space-y-6">
       {/* Scoring Trend Chart */}
       {games && games.length >= 3 && (
-        <GameTrendChart games={games} />
+        <GameTrendChart games={games} t={t} />
       )}
 
       {/* Recent Games */}
       {games && games.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <h3 className="text-sm font-semibold">Recent Games ({CURRENT_SEASON})</h3>
+            <h3 className="text-sm font-semibold">{t.playerStats.recentGames}{CURRENT_SEASON})</h3>
             {(() => {
               const last10 = [...games].slice(0, 10).reverse();
               if (last10.length < 2) return null;
@@ -141,9 +144,9 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border text-text-secondary">
-                  <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">Date</th>
-                  <th className="text-left py-2.5 px-2">Matchup</th>
-                  <th className="text-center py-2.5 px-2">W/L</th>
+                  <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">{t.playerStats.date}</th>
+                  <th className="text-left py-2.5 px-2">{t.playerStats.matchup}</th>
+                  <th className="text-center py-2.5 px-2">{t.playerStats.wl}</th>
                   <th className="text-center py-2.5 px-2">MIN</th>
                   <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
                   <th className="text-center py-2.5 px-2">REB</th>
@@ -183,13 +186,13 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
 
       {/* Career Stats */}
       {seasons && seasons.length > 0 && (
-        <CareerStatsTable seasons={seasons} />
+        <CareerStatsTable seasons={seasons} t={t} />
       )}
     </div>
   );
 }
 
-const GameTrendChart = memo(function GameTrendChart({ games }: { games: GameLogRow[] }) {
+const GameTrendChart = memo(function GameTrendChart({ games, t }: { games: GameLogRow[]; t: Translations }) {
   // Show last 20 games in chronological order (oldest first)
   const data = [...games].reverse().slice(-20);
   const maxPts = Math.max(...data.map((g) => g.PTS), 10);
@@ -216,12 +219,12 @@ const GameTrendChart = memo(function GameTrendChart({ games }: { games: GameLogR
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
-          Scoring Trend (Last {data.length} Games)
+          {t.playerStats.scoringTrend.replace("%s", String(data.length))}
         </h3>
         <div className="flex items-center gap-3 text-[10px]">
-          <span className="text-text-secondary">Avg: <span className="text-accent font-bold">{avgPts.toFixed(1)}</span></span>
-          <span className="text-text-secondary">High: <span className="text-success font-bold">{Math.max(...data.map(g => g.PTS))}</span></span>
-          <span className="text-text-secondary">Low: <span className="text-danger font-bold">{Math.min(...data.map(g => g.PTS))}</span></span>
+          <span className="text-text-secondary">{t.playerStats.avgLabel} <span className="text-accent font-bold">{avgPts.toFixed(1)}</span></span>
+          <span className="text-text-secondary">{t.playerStats.highLabel} <span className="text-success font-bold">{Math.max(...data.map(g => g.PTS))}</span></span>
+          <span className="text-text-secondary">{t.playerStats.lowLabel} <span className="text-danger font-bold">{Math.min(...data.map(g => g.PTS))}</span></span>
         </div>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
@@ -264,7 +267,7 @@ function CompareArrow({ current, career }: { current: number; career: number }) 
   return null;
 }
 
-function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
+function CareerStatsTable({ seasons, t }: { seasons: SeasonRow[]; t: Translations }) {
   // Find best season by PPG
   let bestIdx = 0;
   let bestPts = 0;
@@ -322,14 +325,14 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold">Season-by-Season Stats</h3>
+        <h3 className="text-sm font-semibold">{t.playerStats.seasonBySeasonStats}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border text-text-secondary">
-              <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">Season</th>
-              <th className="text-left py-2.5 px-2">Team</th>
+              <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">{t.common.season}</th>
+              <th className="text-left py-2.5 px-2">{t.common.team}</th>
               <th className="text-center py-2.5 px-2">GP</th>
               <th className="text-center py-2.5 px-2">MIN</th>
               <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
@@ -350,7 +353,7 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
               >
                 <td className={`py-2 px-3 font-medium sticky left-0 whitespace-nowrap ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
                   {s.SEASON_ID}
-                  {i === bestIdx && <span className="ml-1 text-yellow-400 text-[10px]" title="Best PPG season">★</span>}
+                  {i === bestIdx && <span className="ml-1 text-yellow-400 text-[10px]" title={t.playerStats.bestSeason}>★</span>}
                 </td>
                 <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>
@@ -368,7 +371,7 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
             {/* Career Average Row */}
             {careerAvg && (
               <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
-                <td className="py-2 px-3 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold">Career</td>
+                <td className="py-2 px-3 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold">{t.common.career}</td>
                 <td className="py-2 px-2 text-text-secondary">-</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.GP}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.MIN.toFixed(1)}</td>
@@ -385,7 +388,7 @@ function CareerStatsTable({ seasons }: { seasons: SeasonRow[] }) {
             {/* Current Season vs Career Comparison */}
             {currentSeason && careerAvg && seasons.length > 1 && (
               <tr className="bg-bg-hover/30 text-[10px]">
-                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>vs Career Avg</td>
+                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>{t.playerStats.vsCareerAvg}</td>
                 <td className="text-center py-1.5 px-2 font-medium">
                   {currentSeason.PTS > careerAvg.PTS ? "+" : ""}{(currentSeason.PTS - careerAvg.PTS).toFixed(1)}
                   <CompareArrow current={currentSeason.PTS} career={careerAvg.PTS} />

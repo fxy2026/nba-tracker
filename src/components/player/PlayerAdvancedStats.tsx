@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface AdvancedData {
   TS_PCT: number | null;
@@ -32,6 +33,7 @@ function computeAdvanced(seasons: Record<string, unknown>[]): AdvancedData | nul
 }
 
 export default function PlayerAdvancedStats({ playerId, playerName, teamTricode }: { playerId: number; playerName?: string; teamTricode?: string }) {
+  const { t } = useLocale();
   const [stats, setStats] = useState<AdvancedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -75,31 +77,31 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
     <div>
       <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-2">
         <TrendingUp size={14} className="text-accent" />
-        Advanced Stats (Latest Season)
+        {t.playerAdvanced.title}
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.TS_PCT != null && (
           <div className="bg-bg-secondary rounded-lg p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase tracking-wide">TS%</p>
+            <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.tsPct}</p>
             <p className="text-xl font-bold mt-1 text-accent">{(stats.TS_PCT * 100).toFixed(1)}%</p>
-            <p className="text-[9px] text-text-secondary">True Shooting</p>
-            {stats.TS_PCT >= 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">Elite</span>}
-            {stats.TS_PCT >= 0.55 && stats.TS_PCT < 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">Above Avg</span>}
+            <p className="text-[9px] text-text-secondary">{t.playerAdvanced.trueShooting}</p>
+            {stats.TS_PCT >= 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">{t.playerAdvanced.elite}</span>}
+            {stats.TS_PCT >= 0.55 && stats.TS_PCT < 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">{t.playerAdvanced.aboveAvg}</span>}
           </div>
         )}
         {stats.EFG_PCT != null && (
           <div className="bg-bg-secondary rounded-lg p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase tracking-wide">eFG%</p>
+            <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.efgPct}</p>
             <p className="text-xl font-bold mt-1 text-text-primary">{(stats.EFG_PCT * 100).toFixed(1)}%</p>
-            <p className="text-[9px] text-text-secondary">Effective FG</p>
-            {stats.EFG_PCT >= 0.55 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">Elite</span>}
+            <p className="text-[9px] text-text-secondary">{t.playerAdvanced.effectiveFg}</p>
+            {stats.EFG_PCT >= 0.55 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">{t.playerAdvanced.elite}</span>}
           </div>
         )}
         {stats.USG_PCT != null && (
           <div className="bg-bg-secondary rounded-lg p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase tracking-wide">USG%</p>
+            <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.usgPct}</p>
             <p className="text-xl font-bold mt-1 text-text-primary">{(stats.USG_PCT * 100).toFixed(1)}%</p>
-            <p className="text-[9px] text-text-secondary">Usage Rate</p>
+            <p className="text-[9px] text-text-secondary">{t.playerAdvanced.usageRate}</p>
           </div>
         )}
       </div>

@@ -3,6 +3,8 @@ import { Search, TrendingUp, Flame } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
 export const metadata: Metadata = {
   title: "搜索球员",
@@ -25,25 +27,27 @@ interface PageProps {
 }
 
 export default async function SearchPage({ searchParams }: PageProps) {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
   const { q } = await searchParams;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <Search size={24} className="text-accent" />
-        Player Search
+        {t.searchPage.title}
       </h1>
       <SearchInput initialQuery={q || ""} />
 
       {/* Quick filters */}
       <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-        {["Guard", "Forward", "Center"].map((pos) => (
+        {([["Guard", t.searchPage.guard], ["Forward", t.searchPage.forward], ["Center", t.searchPage.center]] as const).map(([pos, label]) => (
           <a
             key={pos}
             href={`/search?q=${pos}`}
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
           >
-            {pos}
+            {label}
           </a>
         ))}
         <span className="text-border mx-1">|</span>
@@ -62,7 +66,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         <div className="mt-8">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Flame size={14} className="text-accent" />
-            Popular Players
+            {t.searchPage.popularPlayers}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {POPULAR_PLAYERS.map((p) => (
@@ -85,10 +89,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
       {/* Quick Search Tips */}
       <div className="mt-6 text-center space-y-1">
         <p className="text-xs text-text-secondary">
-          Search by player name to view detailed stats and profiles
+          {t.searchPage.searchHint}
         </p>
         <p className="text-[10px] text-text-secondary/70">
-          Tip: Use <kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[10px]">Ctrl+K</kbd> to search from anywhere
+          {t.searchPage.tip}
         </p>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CURRENT_SEASON } from "@/lib/constants";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface LeaderRow {
   PLAYER_ID: number;
@@ -25,6 +26,7 @@ function mvpScore(p: LeaderRow): number {
 }
 
 export default function MvpLadder() {
+  const { t } = useLocale();
   const [players, setPlayers] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,8 +83,8 @@ export default function MvpLadder() {
   return (
     <div>
       <p className="text-xs text-text-secondary mb-4">
-        Custom MVP ranking based on PTS, REB, AST, STL, BLK, EFF, and games played.
-        <span className="text-text-secondary/60 ml-1">Min 40 GP required.</span>
+        {t.statsPage.mvpRankingNote}
+        <span className="text-text-secondary/60 ml-1">{t.statsPage.minGpRequired}</span>
       </p>
       <div className="space-y-2">
         {ranked.map((p, i) => {

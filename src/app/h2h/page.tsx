@@ -4,6 +4,8 @@ import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "@/components/TeamLogo";
 import Link from "next/link";
 import { Swords } from "lucide-react";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
 export const metadata: Metadata = {
   title: "Head-to-Head",
@@ -17,6 +19,8 @@ interface PageProps {
 }
 
 export default async function H2HPage({ searchParams }: PageProps) {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
   const params = await searchParams;
   const t1 = params.t1?.toUpperCase();
   const t2 = params.t2?.toUpperCase();
@@ -65,14 +69,14 @@ export default async function H2HPage({ searchParams }: PageProps) {
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
         <Swords size={24} className="text-accent" />
-        Head-to-Head
+        {t.h2hPage.title}
       </h1>
-      <p className="text-sm text-text-secondary mb-6">Select two teams to see their season matchup history</p>
+      <p className="text-sm text-text-secondary mb-6">{t.h2hPage.selectHint}</p>
 
       {/* Team Selectors */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
         <TeamSelector teams={teams} selected={t1} paramName="t1" other={t2} />
-        <span className="text-lg font-bold text-text-secondary">VS</span>
+        <span className="text-lg font-bold text-text-secondary">{t.common.vs}</span>
         <TeamSelector teams={teams} selected={t2} paramName="t2" other={t1} />
       </div>
 
@@ -97,10 +101,10 @@ export default async function H2HPage({ searchParams }: PageProps) {
             {/* Season record context */}
             {games.length > 0 && (
               <p className="text-xs text-text-secondary text-center mt-2">
-                {games.length} game{games.length !== 1 ? "s" : ""} this season
-                {games.length >= 3 && t1Wins > t2Wins && ` — ${TEAM_META[t1]?.name} dominates`}
-                {games.length >= 3 && t2Wins > t1Wins && ` — ${TEAM_META[t2]?.name} dominates`}
-                {t1Wins === t2Wins && games.length >= 2 && " — series tied"}
+                {games.length} {t.h2hPage.gamesThisSeason}
+                {games.length >= 3 && t1Wins > t2Wins && ` — ${TEAM_META[t1]?.name} ${t.h2hPage.dominates}`}
+                {games.length >= 3 && t2Wins > t1Wins && ` — ${TEAM_META[t2]?.name} ${t.h2hPage.dominates}`}
+                {t1Wins === t2Wins && games.length >= 2 && ` — ${t.h2hPage.seriesTied}`}
               </p>
             )}
             {/* Win percentage donut */}
@@ -127,7 +131,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
               );
             })()}
             {games.length === 0 && (
-              <p className="text-center text-text-secondary text-sm mt-4">No completed games between these teams this season</p>
+              <p className="text-center text-text-secondary text-sm mt-4">{t.h2hPage.noGames}</p>
             )}
             {games.length > 0 && (() => {
               const t1Total = games.reduce((s, g) => {
@@ -140,8 +144,8 @@ export default async function H2HPage({ searchParams }: PageProps) {
               }, 0);
               return (
                 <div className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-6 text-xs text-text-secondary">
-                  <span>Avg Score: {t1} {(t1Total / games.length).toFixed(1)} - {(t2Total / games.length).toFixed(1)} {t2}</span>
-                  <span>{games.length} games played</span>
+                  <span>{t.h2hPage.avgScore}{t1} {(t1Total / games.length).toFixed(1)} - {(t2Total / games.length).toFixed(1)} {t2}</span>
+                  <span>{games.length} {t.h2hPage.gamesPlayed}</span>
                 </div>
               );
             })()}
@@ -166,7 +170,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
               <>
                 {(t1Blowouts + t2Blowouts > 0) && (
                   <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-                    <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Blowout Wins (&gt;15 pts)</h3>
+                    <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.blowoutWins}</h3>
                     <div className="flex items-center justify-center gap-6">
                       <div className="text-center">
                         <p className="text-2xl font-bold text-accent">{t1Blowouts}</p>
@@ -182,7 +186,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
                 )}
                 {(t1Best.game || t2Best.game) && (
                   <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-                    <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Biggest Wins</h3>
+                    <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.biggestWins}</h3>
                     <div className="grid grid-cols-2 gap-4">
                       {t1Best.game && (
                         <div className="bg-bg-secondary rounded-lg p-3 text-center">
@@ -215,19 +219,19 @@ export default async function H2HPage({ searchParams }: PageProps) {
             const lowGame = games.find(g => g.homeScore + g.awayScore === lowest);
             return (
               <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Scoring Distribution</h3>
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.scoringDist}</h3>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="bg-bg-secondary rounded-lg p-3">
-                    <p className="text-[10px] text-text-secondary uppercase">Avg Total</p>
+                    <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.avgTotal}</p>
                     <p className="text-lg font-bold text-accent">{avgTotal}</p>
                   </div>
                   <div className="bg-bg-secondary rounded-lg p-3">
-                    <p className="text-[10px] text-text-secondary uppercase">Highest</p>
+                    <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.highest}</p>
                     <p className="text-lg font-bold text-success">{highest}</p>
                     {highGame && <p className="text-[9px] text-text-secondary">{highGame.awayTricode} {highGame.awayScore}-{highGame.homeScore} {highGame.homeTricode}</p>}
                   </div>
                   <div className="bg-bg-secondary rounded-lg p-3">
-                    <p className="text-[10px] text-text-secondary uppercase">Lowest</p>
+                    <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.lowest}</p>
                     <p className="text-lg font-bold text-danger">{lowest}</p>
                     {lowGame && <p className="text-[9px] text-text-secondary">{lowGame.awayTricode} {lowGame.awayScore}-{lowGame.homeScore} {lowGame.homeTricode}</p>}
                   </div>
@@ -250,24 +254,24 @@ export default async function H2HPage({ searchParams }: PageProps) {
             }
             return (
               <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Home / Away Split</h3>
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.homeAwaySplit}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium text-text-primary mb-1">{t1}</p>
                     <p className="text-text-secondary">
-                      Home: <span className="text-success font-medium">{t1HomeWins}W</span> - <span className="text-danger font-medium">{t1HomeLosses}L</span>
+                      {t.h2hPage.homeLabel} <span className="text-success font-medium">{t1HomeWins}{t.common.wins}</span> - <span className="text-danger font-medium">{t1HomeLosses}{t.common.losses}</span>
                     </p>
                     <p className="text-text-secondary">
-                      Away: <span className="text-success font-medium">{t1AwayWins}W</span> - <span className="text-danger font-medium">{t1AwayLosses}L</span>
+                      {t.h2hPage.awayLabel} <span className="text-success font-medium">{t1AwayWins}{t.common.wins}</span> - <span className="text-danger font-medium">{t1AwayLosses}{t.common.losses}</span>
                     </p>
                   </div>
                   <div>
                     <p className="font-medium text-text-primary mb-1">{t2}</p>
                     <p className="text-text-secondary">
-                      Home: <span className="text-success font-medium">{t1AwayLosses}W</span> - <span className="text-danger font-medium">{t1AwayWins}L</span>
+                      {t.h2hPage.homeLabel} <span className="text-success font-medium">{t1AwayLosses}{t.common.wins}</span> - <span className="text-danger font-medium">{t1AwayWins}{t.common.losses}</span>
                     </p>
                     <p className="text-text-secondary">
-                      Away: <span className="text-success font-medium">{t1HomeLosses}W</span> - <span className="text-danger font-medium">{t1HomeWins}L</span>
+                      {t.h2hPage.awayLabel} <span className="text-success font-medium">{t1HomeLosses}{t.common.wins}</span> - <span className="text-danger font-medium">{t1HomeWins}{t.common.losses}</span>
                     </p>
                   </div>
                 </div>
@@ -282,7 +286,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             const winner = homeWon ? lastGame.homeTricode : lastGame.awayTricode;
             return (
               <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6">
-                <h3 className="text-xs font-medium text-accent uppercase mb-2">Last Meeting</h3>
+                <h3 className="text-xs font-medium text-accent uppercase mb-2">{t.h2hPage.lastMeeting}</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TeamLogo teamId={lastGame.awayId} tricode={lastGame.awayTricode} size={28} />
@@ -322,7 +326,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             const polyline = points.map(p => `${p.x},${p.y}`).join(" ");
             return (
               <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
-                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Point Differential Trend ({t1} perspective)</h3>
+                <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.pointDiffTrend} ({t1})</h3>
                 <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-md" preserveAspectRatio="xMidYMid meet">
                   <line x1={padX} y1={midY} x2={w - padX} y2={midY} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 2" />
                   <polyline points={polyline} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
@@ -345,7 +349,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
           {games.length > 0 && (
             <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
               <div className="px-4 py-3 border-b border-border">
-                <h3 className="text-sm font-semibold">Game Results</h3>
+                <h3 className="text-sm font-semibold">{t.h2hPage.gameResults}</h3>
               </div>
               <div className="divide-y divide-border/50">
                 {games.map((g) => {

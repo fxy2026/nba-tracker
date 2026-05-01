@@ -1,7 +1,10 @@
+"use client";
+
 import { memo } from "react";
 import type { ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "./TeamLogo";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   games: ScheduleGame[];
@@ -46,9 +49,9 @@ function getConference(tricode1: string, tricode2: string): "East" | "West" | "F
   return t1.conference;
 }
 
-const roundLabels: Record<number, string> = { 1: "First Round", 2: "Conf. Semis", 3: "Conf. Finals", 4: "Finals" };
+// roundLabels moved inside component to access translations
 
-function SeriesCard({ s }: { s: Series }) {
+function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translations }) {
   const finished = s.team1.wins === 4 || s.team2.wins === 4;
   const t1Leading = s.team1.wins > s.team2.wins;
   const t2Leading = s.team2.wins > s.team1.wins;
@@ -108,14 +111,14 @@ function SeriesCard({ s }: { s: Series }) {
         </div>
       ) : s.totalGames > 0 ? (
         <div className="text-[10px] text-center text-text-secondary mt-0.5">
-          Game {s.totalGames + 1}
+          {t.common.game} {s.totalGames + 1}
         </div>
       ) : null}
     </div>
   );
 }
 
-function BracketColumn({ series, title }: { series: Series[]; title: string }) {
+function BracketColumn({ series, title, t, roundLabels }: { series: Series[]; title: string; t: import("@/locales/types").Translations; roundLabels: Record<number, string> }) {
   const byRound = new Map<number, Series[]>();
   for (const s of series) {
     const arr = byRound.get(s.round) || [];
@@ -132,7 +135,7 @@ function BracketColumn({ series, title }: { series: Series[]; title: string }) {
           <div key={round} className="flex-1 flex flex-col gap-2">
             <p className="text-[10px] text-text-secondary text-center mb-1">{roundLabels[round]}</p>
             {byRound.get(round)!.map((s) => (
-              <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+              <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
             ))}
           </div>
         ))}
@@ -142,6 +145,14 @@ function BracketColumn({ series, title }: { series: Series[]; title: string }) {
 }
 
 export default memo(function PlayoffBracketV2({ games }: Props) {
+  const { t } = useLocale();
+  const roundLabels: Record<number, string> = {
+    1: t.playoffBracket.firstRound,
+    2: t.playoffBracket.confSemis,
+    3: t.playoffBracket.confFinals,
+    4: t.playoffBracket.finals,
+  };
+
   // Group by series (same two teams)
   const seriesMap = new Map<string, Series>();
 
@@ -211,65 +222,65 @@ export default memo(function PlayoffBracketV2({ games }: Props) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <span className="w-1 h-5 bg-accent rounded-full" />
-          Playoff Bracket
+          {t.playoffBracket.title}
         </h2>
         <div className="flex items-center gap-2 text-[10px]">
           <span className="px-2 py-0.5 rounded-full bg-bg-card border border-border text-text-secondary">
-            {allSeries.length} series
+            {allSeries.length} {t.historyPage.series}
           </span>
           <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
-            {allSeries.filter(s => s.team1.wins === 4 || s.team2.wins === 4).length} completed
+            {allSeries.filter(s => s.team1.wins === 4 || s.team2.wins === 4).length} {t.playoffBracket.completed}
           </span>
           <span className="px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-            {allSeries.filter(s => s.team1.wins < 4 && s.team2.wins < 4 && s.totalGames > 0).length} active
+            {allSeries.filter(s => s.team1.wins < 4 && s.team2.wins < 4 && s.totalGames > 0).length} {t.playoffBracket.active}
           </span>
         </div>
       </div>
 
       {/* Desktop: East | Finals | West */}
       <div className="hidden md:flex gap-4 items-start">
-        {eastSeries.length > 0 && <BracketColumn series={eastSeries} title="Eastern Conference" />}
+        {eastSeries.length > 0 && <BracketColumn series={eastSeries} title={t.playoffBracket.eastConference} t={t} roundLabels={roundLabels} />}
         {finalsSeries.length > 0 && (
           <div className="flex flex-col items-center justify-center px-2">
-            <h3 className="text-xs font-semibold text-accent uppercase tracking-wide mb-3">Finals</h3>
+            <h3 className="text-xs font-semibold text-accent uppercase tracking-wide mb-3">{t.playoffBracket.finals}</h3>
             <div className="space-y-2">
               {finalsSeries.map((s) => (
-                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
               ))}
             </div>
           </div>
         )}
-        {westSeries.length > 0 && <BracketColumn series={westSeries} title="Western Conference" />}
+        {westSeries.length > 0 && <BracketColumn series={westSeries} title={t.playoffBracket.westConference} t={t} roundLabels={roundLabels} />}
       </div>
 
       {/* Mobile: stacked */}
       <div className="md:hidden space-y-6">
         {eastSeries.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Eastern Conference</h3>
+            <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">{t.playoffBracket.eastConference}</h3>
             <div className="grid grid-cols-2 gap-2">
               {eastSeries.map((s) => (
-                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
               ))}
             </div>
           </div>
         )}
         {finalsSeries.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">Finals</h3>
+            <h3 className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">{t.playoffBracket.finals}</h3>
             <div className="grid grid-cols-1 gap-2 max-w-xs mx-auto">
               {finalsSeries.map((s) => (
-                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
               ))}
             </div>
           </div>
         )}
         {westSeries.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Western Conference</h3>
+            <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">{t.playoffBracket.westConference}</h3>
             <div className="grid grid-cols-2 gap-2">
               {westSeries.map((s) => (
-                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} />
+                <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
               ))}
             </div>
           </div>

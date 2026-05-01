@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, memo } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 function formatClock(raw: string): string {
   if (!raw) return "";
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export default memo(function PlayByPlay({ actions }: Props) {
+  const { t } = useLocale();
   const periods = useMemo(() => {
     const ps = [...new Set(actions.map((a) => a.period))].sort((a, b) => a - b);
     return ps;
@@ -71,7 +73,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
-          Play-by-Play
+          {t.playByPlayComp.title}
         </h3>
         <div className="flex rounded-lg overflow-hidden border border-border">
           {periods.map((p) => (
@@ -82,7 +84,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
                 selectedPeriod === p ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"
               }`}
             >
-              {p <= 4 ? `Q${p}` : `OT${p - 4}`}
+              {p <= 4 ? `${t.playByPlayComp.quarter}${p}` : `${t.playByPlayComp.overtime}${p - 4}`}
               <span className="text-[8px] opacity-60 ml-0.5">
                 ({actions.filter((a) => a.period === p && a.description).length})
               </span>
@@ -118,7 +120,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
         ))}
         {filteredActions.length === 0 && (
           <div className="px-4 py-8 text-center text-text-secondary text-sm">
-            No play data for this period
+            {t.playByPlayComp.noPlayData}
           </div>
         )}
       </div>

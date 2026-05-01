@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Ruler } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Measurements {
   wingspan: string;
@@ -13,6 +14,7 @@ interface Measurements {
 }
 
 export default function PlayerMeasurements({ draftYear }: { draftYear: number | null }) {
+  const { t } = useLocale();
   const [data, setData] = useState<Measurements | null>(null);
   const [loading, setLoading] = useState(!!draftYear);
 
@@ -68,18 +70,18 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Ruler size={14} className="text-accent" />
-        <h3 className="text-sm font-semibold">Draft Combine Measurements ({draftYear})</h3>
+        <h3 className="text-sm font-semibold">{t.playerMeasurements.title} ({draftYear})</h3>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-px bg-border">
-        <MeasureCell label="Wingspan" value={data.wingspan} />
-        <MeasureCell label="Standing Reach" value={data.standingReach} />
-        <MeasureCell label="Height (no shoes)" value={data.heightNoShoes} />
-        <MeasureCell label="Hand Length" value={data.handLength} />
-        <MeasureCell label="Hand Width" value={data.handWidth} />
-        <MeasureCell label="Body Fat" value={data.bodyFat} />
+        <MeasureCell label={t.playerMeasurements.wingspan} value={data.wingspan} />
+        <MeasureCell label={t.playerMeasurements.standingReach} value={data.standingReach} />
+        <MeasureCell label={t.playerMeasurements.heightNoShoes} value={data.heightNoShoes} />
+        <MeasureCell label={t.playerMeasurements.handLength} value={data.handLength} />
+        <MeasureCell label={t.playerMeasurements.handWidth} value={data.handWidth} />
+        <MeasureCell label={t.playerMeasurements.bodyFat} value={data.bodyFat} />
       </div>
       <p className="px-4 py-2 text-[10px] text-text-secondary">
-        Data from {draftYear} NBA Draft Combine. Showing class average if individual data not matched.
+        {t.playerMeasurements.disclaimer}
       </p>
     </div>
   );

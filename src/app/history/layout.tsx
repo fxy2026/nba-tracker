@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "历届总冠军",
-  description: "NBA 历届总冠军、FMVP、夺冠历史回顾。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.championsTitle,
+    description: t.meta.championsDesc,
+  };
+}
 
 export default function HistoryLayout({ children }: { children: React.ReactNode }) {
   return children;

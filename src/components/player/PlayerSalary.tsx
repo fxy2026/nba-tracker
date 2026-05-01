@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DollarSign } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface ContractData {
   season: number;
@@ -10,6 +11,7 @@ interface ContractData {
 }
 
 export default function PlayerSalary({ playerName, teamAbbr }: { playerName: string; teamAbbr: string }) {
+  const { t } = useLocale();
   const [contracts, setContracts] = useState<ContractData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,15 +42,15 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <DollarSign size={14} className="text-success" />
-        <h3 className="text-sm font-semibold">Contract & Salary</h3>
+        <h3 className="text-sm font-semibold">{t.playerSalary.title}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border text-text-secondary">
-              <th className="text-left py-2.5 px-4">Season</th>
-              <th className="text-right py-2.5 px-4">Base Salary</th>
-              <th className="text-right py-2.5 px-4">Cap Hit</th>
+              <th className="text-left py-2.5 px-4">{t.playerSalary.seasonCol}</th>
+              <th className="text-right py-2.5 px-4">{t.playerSalary.baseSalary}</th>
+              <th className="text-right py-2.5 px-4">{t.playerSalary.capHit}</th>
             </tr>
           </thead>
           <tbody>

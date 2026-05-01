@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Newspaper } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface NewsItem {
   headline: string;
@@ -12,6 +13,7 @@ interface NewsItem {
 }
 
 export default function PlayerNews({ playerName }: { playerName: string }) {
+  const { t } = useLocale();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +36,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
       <div className="bg-bg-card rounded-xl border border-border p-4">
         <div className="flex items-center gap-2 mb-3">
           <Newspaper size={14} className="text-accent" />
-          <h3 className="text-sm font-semibold">Latest News</h3>
+          <h3 className="text-sm font-semibold">{t.playerNews.title}</h3>
         </div>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (

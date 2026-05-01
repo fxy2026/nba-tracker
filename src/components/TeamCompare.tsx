@@ -1,27 +1,31 @@
+"use client";
+
 import { memo } from "react";
 import type { BoxScoreTeam } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   homeTeam: BoxScoreTeam;
   awayTeam: BoxScoreTeam;
 }
 
-const STATS = [
-  { key: "fieldGoalsPercentage", label: "FG%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
-  { key: "threePointersPercentage", label: "3P%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
-  { key: "freeThrowsPercentage", label: "FT%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
-  { key: "reboundsTotal", label: "Rebounds", fmt: (v: number) => String(v) },
-  { key: "assists", label: "Assists", fmt: (v: number) => String(v) },
-  { key: "steals", label: "Steals", fmt: (v: number) => String(v) },
-  { key: "blocks", label: "Blocks", fmt: (v: number) => String(v) },
-  { key: "turnovers", label: "Turnovers", fmt: (v: number) => String(v) },
-  { key: "pointsInThePaint", label: "Paint Pts", fmt: (v: number) => String(v) },
-  { key: "fastBreakPoints", label: "Fast Break", fmt: (v: number) => String(v) },
-] as const;
-
 export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
+  const { t } = useLocale();
   const hStats = homeTeam.statistics as Record<string, number>;
   const aStats = awayTeam.statistics as Record<string, number>;
+
+  const STATS = [
+    { key: "fieldGoalsPercentage", label: "FG%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
+    { key: "threePointersPercentage", label: "3P%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
+    { key: "freeThrowsPercentage", label: "FT%", fmt: (v: number) => `${(v * 100).toFixed(1)}%` },
+    { key: "reboundsTotal", label: t.teamCompare.rebounds, fmt: (v: number) => String(v) },
+    { key: "assists", label: t.teamCompare.assists, fmt: (v: number) => String(v) },
+    { key: "steals", label: t.teamCompare.stealsLabel, fmt: (v: number) => String(v) },
+    { key: "blocks", label: t.teamCompare.blocks, fmt: (v: number) => String(v) },
+    { key: "turnovers", label: t.teamCompare.turnovers, fmt: (v: number) => String(v) },
+    { key: "pointsInThePaint", label: t.teamCompare.paintPts, fmt: (v: number) => String(v) },
+    { key: "fastBreakPoints", label: t.teamCompare.fastBreak, fmt: (v: number) => String(v) },
+  ] as const;
 
   if (!hStats || !aStats) return null;
 
@@ -29,11 +33,11 @@ export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
     <div className="bg-bg-card rounded-xl border border-border p-5">
       <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
-        Team Stats Comparison
+        {t.teamCompare.title}
       </h3>
       <div className="flex items-center justify-between mb-4 text-xs font-medium">
         <span className="text-text-primary">{awayTeam.teamTricode}</span>
-        <span className="text-text-secondary">VS</span>
+        <span className="text-text-secondary">{t.common.vs}</span>
         <span className="text-text-primary">{homeTeam.teamTricode}</span>
       </div>
       <div className="space-y-3">

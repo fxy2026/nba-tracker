@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "Playoff Performers",
-  description: "NBA 季后赛表现最佳球员，效率、得分、助攻排行榜。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.clutchTitle,
+    description: t.meta.clutchDesc,
+  };
+}
 
 export default function ClutchLayout({ children }: { children: React.ReactNode }) {
   return children;

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import type { ShotAction, PlayerInfo } from "@/lib/api";
 import { X } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
   playerName: string;
@@ -64,6 +65,7 @@ function CourtLines() {
 
 /* ── Main component ── */
 export default function PlayerShotChart({ playerName, playerId, shots, playerInfo }: Props) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -192,11 +194,11 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
         {data.hasShots && (
           <>
             <div className="px-5 pt-2 pb-1">
-              <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">This Game</h4>
+              <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">{t.playerShotChart.thisGame}</h4>
             </div>
             <div className="grid grid-cols-4 gap-2 px-5 pb-3">
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
-                <p className="text-[10px] text-text-secondary">Total FG</p>
+                <p className="text-[10px] text-text-secondary">{t.playerShotChart.totalFg}</p>
                 <p className="text-lg font-bold">{data.made.length}/{data.fieldGoalShots.length}</p>
                 <p className="text-xs text-accent">{data.fieldGoalShots.length > 0 ? ((data.made.length / data.fieldGoalShots.length) * 100).toFixed(1) : "0"}%</p>
               </div>
@@ -220,12 +222,12 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             {/* Per-quarter scoring */}
             {data.quarterScoring.length > 0 && (
               <div className="px-5 pb-3">
-                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">每节得分</h4>
+                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">{t.gameDetail.scoringPerQ}</h4>
                 <div className="flex gap-2">
                   {data.quarterScoring.map((q) => (
                     <div key={q.period} className="flex-1 bg-bg-card rounded-lg p-2 text-center">
                       <p className="text-[10px] text-text-secondary">
-                        {q.period <= 4 ? `Q${q.period}` : `OT${q.period - 4}`}
+                        {q.period <= 4 ? `${t.playByPlayComp.quarter}${q.period}` : `${t.playByPlayComp.overtime}${q.period - 4}`}
                       </p>
                       <p className="text-lg font-bold text-accent">{q.pts}</p>
                       <div className="text-[10px] text-text-secondary leading-tight">
@@ -238,7 +240,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                     </div>
                   ))}
                   <div className="flex-1 bg-accent/10 rounded-lg p-2 text-center border border-accent/20">
-                    <p className="text-[10px] text-text-secondary">合计</p>
+                    <p className="text-[10px] text-text-secondary">{t.gameDetail.total}</p>
                     <p className="text-lg font-bold text-accent">
                       {data.quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
                     </p>
@@ -277,19 +279,19 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                   <svg width="12" height="12">
                     <line x1="2" y1="2" x2="10" y2="10" stroke="#ef4444" strokeWidth="1.5" />
                     <line x1="10" y1="2" x2="2" y2="10" stroke="#ef4444" strokeWidth="1.5" />
-                  </svg> Miss
+                  </svg> {t.playerShotChart.miss}
                 </span>
               </div>
             </div>
 
             {/* Shot log */}
             <div className="px-5 pb-5">
-              <h4 className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Shot Log</h4>
+              <h4 className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">{t.playerShotChart.shotLog}</h4>
               <div className="space-y-1 max-h-36 overflow-y-auto">
                 {data.playerShots.map((s, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <span className={`w-2 h-2 rounded-full shrink-0 ${s.shotResult === "Made" ? "bg-success" : "bg-danger"}`} />
-                    <span className="text-text-secondary">Q{s.period}</span>
+                    <span className="text-text-secondary">{t.playByPlayComp.quarter}{s.period}</span>
                     <span className="text-text-primary">{s.description}</span>
                   </div>
                 ))}
@@ -300,7 +302,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
 
         {!data.hasShots && (
           <div className="px-5 pb-5 text-center text-sm text-text-secondary py-6">
-            No shot data for this game
+            {t.playerShotChart.noShotData}
           </div>
         )}
       </div>

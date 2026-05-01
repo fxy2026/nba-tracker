@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface CalendarGame {
   gameId: string;
@@ -22,8 +23,6 @@ interface CalendarDay {
   games: CalendarGame[];
 }
 
-const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 function getMonthStr(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
@@ -35,6 +34,7 @@ function getTodayStr(): string {
 
 export default function CalendarPage() {
   const router = useRouter();
+  const { t } = useLocale();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth()); // 0-indexed
@@ -42,6 +42,16 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
 
   const today = getTodayStr();
+
+  const DAYS_OF_WEEK = [
+    t.calendarPage.sun,
+    t.calendarPage.mon,
+    t.calendarPage.tue,
+    t.calendarPage.wed,
+    t.calendarPage.thu,
+    t.calendarPage.fri,
+    t.calendarPage.sat,
+  ];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -94,8 +104,8 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Season Calendar</h1>
-          <p className="text-xs text-text-secondary mt-0.5">{CURRENT_SEASON} NBA Season</p>
+          <h1 className="text-2xl font-bold">{t.calendarPage.seasonCalendar}</h1>
+          <p className="text-xs text-text-secondary mt-0.5">{CURRENT_SEASON} {t.calendarPage.nbaSeason}</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={goToPrevMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">
@@ -110,7 +120,7 @@ export default function CalendarPage() {
               onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
               className="px-3 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium hover:bg-accent/25 transition-colors"
             >
-              Today
+              {t.common.today}
             </button>
           )}
         </div>
@@ -120,18 +130,17 @@ export default function CalendarPage() {
       {(() => {
         // Approximate NBA season phases based on month
         const m = month; // 0-indexed
-        const y = year;
-        let phase = "Offseason";
-        if (m === 9) phase = "Preseason"; // October
-        else if (m >= 10 || (m >= 0 && m <= 1)) phase = "Regular Season"; // Nov-Feb
-        else if (m === 2) phase = "All-Star Break / Regular Season"; // March
-        else if (m === 3) phase = "Regular Season"; // April (end of regular season)
-        else if (m === 4) phase = "Playoffs"; // May
-        else if (m === 5) phase = "NBA Finals"; // June
-        else if (m >= 6 && m <= 8) phase = "Offseason"; // Jul-Sep
-        const phaseColor = phase.includes("Playoff") || phase.includes("Finals") ? "text-accent bg-accent/10" :
-          phase.includes("Regular") || phase.includes("All-Star") ? "text-success bg-success/10" :
-          phase.includes("Preseason") ? "text-yellow-400 bg-yellow-400/10" :
+        let phase = t.common.offseason;
+        if (m === 9) phase = t.common.preseason; // October
+        else if (m >= 10 || (m >= 0 && m <= 1)) phase = t.common.regularSeason; // Nov-Feb
+        else if (m === 2) phase = t.common.allStarBreak; // March
+        else if (m === 3) phase = t.common.regularSeason; // April (end of regular season)
+        else if (m === 4) phase = t.common.playoffs; // May
+        else if (m === 5) phase = t.common.nbaFinals; // June
+        else if (m >= 6 && m <= 8) phase = t.common.offseason; // Jul-Sep
+        const phaseColor = phase === t.common.playoffs || phase === t.common.nbaFinals ? "text-accent bg-accent/10" :
+          phase === t.common.regularSeason || phase === t.common.allStarBreak ? "text-success bg-success/10" :
+          phase === t.common.preseason ? "text-yellow-400 bg-yellow-400/10" :
           "text-text-secondary bg-bg-hover";
         return (
           <div className="mb-4">
@@ -149,12 +158,12 @@ export default function CalendarPage() {
         const busiestDay = days.reduce((best, d) => d.gameCount > best.gameCount ? d : best, days[0]);
         return (
           <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary flex-wrap">
-            <span><span className="font-bold text-accent">{totalGames}</span> games this month</span>
-            <span><span className="font-bold text-text-primary">{gameDays}</span> game days</span>
+            <span><span className="font-bold text-accent">{totalGames}</span> {t.calendarPage.gamesThisMonth}</span>
+            <span><span className="font-bold text-text-primary">{gameDays}</span> {t.calendarPage.gameDays}</span>
             {busiestDay.gameCount > 0 && (
-              <span>Busiest: <span className="font-bold text-text-primary">{busiestDay.date}</span> ({busiestDay.gameCount} games)</span>
+              <span>{t.calendarPage.busiest}<span className="font-bold text-text-primary">{busiestDay.date}</span> ({busiestDay.gameCount} {t.common.games})</span>
             )}
-            <span>Avg: <span className="font-bold text-text-primary">{gameDays > 0 ? (totalGames / gameDays).toFixed(1) : 0}</span> games/day</span>
+            <span>{t.calendarPage.avg}<span className="font-bold text-text-primary">{gameDays > 0 ? (totalGames / gameDays).toFixed(1) : 0}</span> {t.calendarPage.gamesPerDay}</span>
           </div>
         );
       })()}
@@ -163,8 +172,8 @@ export default function CalendarPage() {
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border">
-          {DAYS_OF_WEEK.map((d) => (
-            <div key={d} className={`text-center py-2.5 text-xs font-medium ${d === "Sun" || d === "Sat" ? "text-accent/70" : "text-text-secondary"}`}>
+          {DAYS_OF_WEEK.map((d, idx) => (
+            <div key={d} className={`text-center py-2.5 text-xs font-medium ${idx === 0 || idx === 6 ? "text-accent/70" : "text-text-secondary"}`}>
               {d}
             </div>
           ))}
@@ -204,7 +213,7 @@ export default function CalendarPage() {
                       {hasGames && (
                         <div className="mt-1">
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
-                            {cell.calDay!.gameCount} {cell.calDay!.gameCount === 1 ? "game" : "games"}
+                            {cell.calDay!.gameCount} {cell.calDay!.gameCount === 1 ? t.common.game : t.common.games}
                           </span>
                           {(() => {
                             const completedGames = cell.calDay!.games.filter(g => g.gameStatus === 3);
@@ -212,7 +221,7 @@ export default function CalendarPage() {
                             const totalPts = completedGames.reduce((s, g) => s + g.homeScore + g.awayScore, 0);
                             return (
                               <span className="block text-[8px] text-text-secondary mt-0.5">
-                                {totalPts} pts
+                                {totalPts} {t.common.points}
                               </span>
                             );
                           })()}
@@ -241,7 +250,7 @@ export default function CalendarPage() {
                             ))}
                             {cell.calDay!.games.length > 2 && (
                               <div className="text-[9px] text-text-secondary/60">
-                                +{cell.calDay!.games.length - 2} more
+                                +{cell.calDay!.games.length - 2} {t.calendarPage.more}
                               </div>
                             )}
                           </div>

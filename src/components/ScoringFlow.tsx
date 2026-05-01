@@ -1,5 +1,8 @@
+"use client";
+
 import { memo } from "react";
 import type { PeriodScore } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface ScoreEvent {
   period: number;
@@ -28,6 +31,7 @@ function toGameMinutes(period: number, clock: string): number {
 }
 
 export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode, scoreEvents }: Props) {
+  const { t } = useLocale();
   if (homePeriods.length === 0) return null;
 
   // Build data points: use play-by-play if available, else quarter-level
@@ -78,8 +82,8 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
 
   // Quarter boundary lines
   const qLines: { t: number; label: string }[] = [];
-  for (let q = 1; q <= Math.min(numPeriods, 4); q++) qLines.push({ t: q * 12, label: `Q${q}` });
-  for (let ot = 1; ot <= numPeriods - 4; ot++) qLines.push({ t: 48 + ot * 5, label: `OT${ot}` });
+  for (let q = 1; q <= Math.min(numPeriods, 4); q++) qLines.push({ t: q * 12, label: `${t.playByPlayComp.quarter}${q}` });
+  for (let ot = 1; ot <= numPeriods - 4; ot++) qLines.push({ t: 48 + ot * 5, label: `${t.playByPlayComp.overtime}${ot}` });
 
   // Find max lead for each team
   let maxHomeLead = 0, maxAwayLead = 0;
@@ -97,12 +101,12 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
-          Scoring Flow
+          {t.scoringFlow.title}
           {isDetailed && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-normal">{points.length} plays</span>}
         </h3>
         <div className="flex items-center gap-3 text-[10px] text-text-secondary">
-          {maxHomeLead > 0 && <span>{homeTricode} led by {maxHomeLead}</span>}
-          {maxAwayLead > 0 && <span>{awayTricode} led by {maxAwayLead}</span>}
+          {maxHomeLead > 0 && <span>{homeTricode} {t.scoringFlow.ledBy} {maxHomeLead}</span>}
+          {maxAwayLead > 0 && <span>{awayTricode} {t.scoringFlow.ledBy} {maxAwayLead}</span>}
         </div>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">

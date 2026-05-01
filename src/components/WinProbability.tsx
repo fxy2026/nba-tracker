@@ -1,4 +1,7 @@
+"use client";
+
 import { memo } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 interface PeriodData {
   period: number;
   homeScore: number;
@@ -10,6 +13,7 @@ interface Props {
 }
 
 export default memo(function WinProbability({ periods }: Props) {
+  const { t } = useLocale();
   if (periods.length === 0) return null;
 
   // Compute cumulative differentials after each period
@@ -21,7 +25,7 @@ export default memo(function WinProbability({ periods }: Props) {
     homeCum += p.homeScore;
     awayCum += p.awayScore;
     const diff = homeCum - awayCum;
-    const label = p.period <= 4 ? `Q${p.period}` : `OT${p.period - 4}`;
+    const label = p.period <= 4 ? `${t.playByPlayComp.quarter}${p.period}` : `${t.playByPlayComp.overtime}${p.period - 4}`;
     diffs.push({ label, diff });
   }
 
@@ -29,7 +33,7 @@ export default memo(function WinProbability({ periods }: Props) {
 
   return (
     <div className="mt-3 pt-3 border-t border-border/50">
-      <p className="text-xs text-text-secondary mb-2 font-medium">Score Flow (cumulative differential)</p>
+      <p className="text-xs text-text-secondary mb-2 font-medium">{t.winProb.title}</p>
       <div className="flex items-end gap-1.5 h-16">
         {diffs.map((d, i) => {
           const heightPct = (Math.abs(d.diff) / maxAbs) * 100;
@@ -72,8 +76,8 @@ export default memo(function WinProbability({ periods }: Props) {
         ))}
       </div>
       <div className="flex justify-between mt-1 text-[10px] text-text-secondary">
-        <span className="text-success">Home leading</span>
-        <span className="text-accent">Away leading</span>
+        <span className="text-success">{t.winProb.homeLeading}</span>
+        <span className="text-accent">{t.winProb.awayLeading}</span>
       </div>
     </div>
   );

@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "交易动态",
-  description: "NBA 最新交易、签约、裁员动态。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.tradesTitle,
+    description: t.meta.tradesDesc,
+  };
+}
 
 export default function TransactionsLayout({ children }: { children: React.ReactNode }) {
   return children;

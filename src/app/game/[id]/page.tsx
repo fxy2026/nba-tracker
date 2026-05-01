@@ -12,6 +12,9 @@ import ShareButton from "@/components/ShareButton";
 import QuarterBars from "@/components/QuarterBars";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
+import type { Translations } from "@/locales";
 
 const ChartPlaceholder = () => <div className="h-64 bg-bg-card rounded-xl skeleton-shimmer" />;
 const WinProbability = dynamic(() => import("@/components/WinProbability"), { loading: ChartPlaceholder });
@@ -44,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export const revalidate = 60;
 
-function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[]; shots: ShotAction[]; playerInfoMap: Map<number, PlayerInfo> }) {
+function StatsTable({ players, shots, playerInfoMap, t }: { players: PlayerStats[]; shots: ShotAction[]; playerInfoMap: Map<number, PlayerInfo>; t: Translations }) {
   const starters = players.filter((p) => p.starter === "1");
   const bench = players.filter((p) => p.starter !== "1" && p.played === "1");
   const dnp = players.filter((p) => p.played !== "1" && p.starter !== "1");
@@ -148,15 +151,15 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
         </thead>
         <tbody>
           {starters.length > 0 && (
-            <tr><td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-accent bg-accent/5 sticky left-0">Starters</td></tr>
+            <tr><td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-accent bg-accent/5 sticky left-0">{t.gameDetail.starters}</td></tr>
           )}
           {starters.map(renderRow)}
           {bench.length > 0 && (
-            <tr><td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-text-secondary bg-bg-hover/30 sticky left-0">Bench</td></tr>
+            <tr><td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-text-secondary bg-bg-hover/30 sticky left-0">{t.gameDetail.bench}</td></tr>
           )}
           {bench.map(renderRow)}
           {dnp.length > 0 && (
-            <tr><td colSpan={13} className="py-1.5 px-2 text-xs text-text-secondary/60 sticky left-0">DNP: {dnp.map((p) => p.nameI).join(", ")}</td></tr>
+            <tr><td colSpan={13} className="py-1.5 px-2 text-xs text-text-secondary/60 sticky left-0">{t.gameDetail.dnp} {dnp.map((p) => p.nameI).join(", ")}</td></tr>
           )}
           {/* Team Totals */}
           <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
@@ -180,16 +183,17 @@ function StatsTable({ players, shots, playerInfoMap }: { players: PlayerStats[];
   );
 }
 
-function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers }: {
+function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers, t }: {
   shots: ShotAction[]; homeTricode: string; awayTricode: string;
   allPlayers: { personId: number; nameI: string; teamTricode: string }[];
+  t: Translations;
 }) {
   if (shots.length === 0) return null;
   return (
     <div className="bg-bg-card rounded-xl border border-border p-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
-        Shot Chart
+        {t.gameDetail.shotChart}
       </h3>
       <ShotChart shots={shots} homeTricode={homeTricode} awayTricode={awayTricode} players={allPlayers} />
     </div>
@@ -202,14 +206,14 @@ function PlayByPlaySection({ actions }: { actions: Record<string, unknown>[] }) 
   return <PlayByPlay actions={actions as any} />;
 }
 
-async function ReplaySection({ gameId }: { gameId: string }) {
+async function ReplaySection({ gameId, t }: { gameId: string; t: Translations }) {
   const replayLinks = await getReplayLinks(gameId).catch(() => []);
   if (replayLinks.length === 0) return null;
   return (
     <div className="bg-bg-card rounded-xl border border-accent/30 p-4 mt-4">
       <h3 className="text-sm font-semibold text-accent flex items-center gap-1.5 mb-3">
         <Play size={14} fill="currentColor" />
-        比赛回放
+        {t.gameDetail.gameReplay}
       </h3>
       <div className="flex flex-wrap gap-2">
         {replayLinks.map((link) => (
@@ -225,7 +229,7 @@ async function ReplaySection({ gameId }: { gameId: string }) {
   );
 }
 
-function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam; shots: ShotAction[] }) {
+function GameSummary({ homeTeam, awayTeam, shots, t }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam; shots: ShotAction[]; t: Translations }) {
   // Find highest scorer from each team
   const getTopScorer = (team: BoxScoreTeam) => {
     const played = team.players.filter((p) => p.played === "1");
@@ -328,7 +332,7 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
     <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
         <span className="w-1 h-4 bg-accent rounded-full" />
-        Game Summary
+        {t.gameDetail.gameSummary}
       </h3>
       {/* Game Hero */}
       {(() => {
@@ -351,15 +355,15 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
       })()}
       {/* Pace Indicator */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs mb-3">
-        <span className="text-text-secondary">Pace:</span>
+        <span className="text-text-secondary">{t.gameDetail.pace}</span>
         <span className={`font-bold px-1.5 py-0.5 rounded ${paceColor}`}>{paceLabel}</span>
-        <span className="text-text-secondary">({pacePerQ.toFixed(1)} pts/Q)</span>
+        <span className="text-text-secondary">({pacePerQ.toFixed(1)} {t.gameDetail.ptsPerQ})</span>
       </div>
       {/* Biggest Run & Foul Comparison */}
       <div className="flex flex-wrap gap-3 mb-3">
         {biggestRun && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
-            <span className="text-text-secondary">Biggest Run:</span>
+            <span className="text-text-secondary">{t.gameDetail.biggestRun}</span>
             <span className="font-bold text-accent">{biggestRun.teamTricode} {biggestRun.points}-0</span>
             <span className="text-text-secondary">in {biggestRun.qLabel}</span>
           </div>
@@ -374,7 +378,7 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
           const homeRatio = homeTO > 0 ? (homeAST / homeTO).toFixed(2) : "-";
           return (
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
-              <span className="text-text-secondary">AST/TO:</span>
+              <span className="text-text-secondary">{t.gameDetail.astTo}</span>
               <span className="font-bold text-text-primary">{awayTeam.teamTricode} {awayRatio}</span>
               <span className="text-text-secondary">-</span>
               <span className="font-bold text-text-primary">{homeRatio} {homeTeam.teamTricode}</span>
@@ -382,7 +386,7 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
           );
         })()}
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary rounded-lg text-xs">
-          <span className="text-text-secondary">Fouls:</span>
+          <span className="text-text-secondary">{t.gameDetail.fouls}</span>
           <span className={`font-bold ${awayFouls > homeFouls ? "text-danger" : "text-text-primary"}`}>{awayTeam.teamTricode} {awayFouls}</span>
           <span className="text-text-secondary">-</span>
           <span className={`font-bold ${homeFouls > awayFouls ? "text-danger" : "text-text-primary"}`}>{homeFouls} {homeTeam.teamTricode}</span>
@@ -404,18 +408,18 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
             <div className="mt-1">
               {awaySpecial.map((p) => (
                 <span key={p.name} className={`inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 ${p.isTriple ? "bg-accent/20 text-accent" : "bg-accent/10 text-accent"}`}>
-                  {p.name}: {p.isTriple ? "Triple-Double" : "Double-Double"} ({p.pts}/{p.reb}/{p.ast})
+                  {p.name}: {p.isTriple ? t.gameDetail.tripleDouble : t.gameDetail.doubleDouble} ({p.pts}/{p.reb}/{p.ast})
                 </span>
               ))}
             </div>
           )}
           {awayTopAssist && awayTopAssist.personId !== awayTopScorer?.personId && awayTopAssist.statistics.assists >= 5 && (
             <p className="text-text-secondary text-xs mt-0.5">
-              Dimes: <span className="text-text-primary font-medium">{awayTopAssist.nameI}</span> {awayTopAssist.statistics.assists} AST
+              {t.gameDetail.dimes} <span className="text-text-primary font-medium">{awayTopAssist.nameI}</span> {awayTopAssist.statistics.assists} AST
             </p>
           )}
           {awayLargestLead > 0 && (
-            <p className="text-xs text-text-secondary mt-1">Largest lead: {awayLargestLead} pts</p>
+            <p className="text-xs text-text-secondary mt-1">{t.gameDetail.largestLead} {awayLargestLead} pts</p>
           )}
         </div>
         {/* Home team summary */}
@@ -431,20 +435,20 @@ function GameSummary({ homeTeam, awayTeam, shots }: { homeTeam: BoxScoreTeam; aw
           )}
           {homeTopAssist && homeTopAssist.personId !== homeTopScorer?.personId && homeTopAssist.statistics.assists >= 5 && (
             <p className="text-text-secondary text-xs mt-0.5">
-              Dimes: <span className="text-text-primary font-medium">{homeTopAssist.nameI}</span> {homeTopAssist.statistics.assists} AST
+              {t.gameDetail.dimes} <span className="text-text-primary font-medium">{homeTopAssist.nameI}</span> {homeTopAssist.statistics.assists} AST
             </p>
           )}
           {homeSpecial.length > 0 && (
             <div className="mt-1">
               {homeSpecial.map((p) => (
                 <span key={p.name} className={`inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 ${p.isTriple ? "bg-accent/20 text-accent" : "bg-accent/10 text-accent"}`}>
-                  {p.name}: {p.isTriple ? "Triple-Double" : "Double-Double"} ({p.pts}/{p.reb}/{p.ast})
+                  {p.name}: {p.isTriple ? t.gameDetail.tripleDouble : t.gameDetail.doubleDouble} ({p.pts}/{p.reb}/{p.ast})
                 </span>
               ))}
             </div>
           )}
           {homeLargestLead > 0 && (
-            <p className="text-xs text-text-secondary mt-1">Largest lead: {homeLargestLead} pts</p>
+            <p className="text-xs text-text-secondary mt-1">{t.gameDetail.largestLead} {homeLargestLead} pts</p>
           )}
         </div>
       </div>
@@ -460,6 +464,8 @@ function KeyMomentsSection({ actions }: { actions: Record<string, unknown>[] }) 
 
 export default async function GamePage({ params }: PageProps) {
   const { id } = await params;
+  const locale = await getLocale();
+  const t = getTranslations(locale);
 
   // Fetch boxScore + shots + playerIndex + full PBP in parallel
   const [boxScore, shots, playerIndex, pbpActions] = await Promise.all([
@@ -488,10 +494,10 @@ export default async function GamePage({ params }: PageProps) {
   if (!boxScore) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">&larr; Back</Link>
+        <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">&larr; {t.common.back}</Link>
         <div className="flex flex-col items-center justify-center py-24 text-text-secondary">
-          <p className="text-lg">Box Score not available yet</p>
-          <p className="text-sm mt-1">The game may not have started</p>
+          <p className="text-lg">{t.gameDetail.boxScoreNotAvailable}</p>
+          <p className="text-sm mt-1">{t.gameDetail.gameNotStarted}</p>
         </div>
       </div>
     );
@@ -519,11 +525,11 @@ export default async function GamePage({ params }: PageProps) {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-text-secondary">
-        <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+        <Link href="/" className="hover:text-accent transition-colors">{t.common.home}</Link>
         <span>/</span>
         <Link href={`/?date=${backDate}`} className="hover:text-accent transition-colors">{backDate}</Link>
         <span>/</span>
-        <span className="text-text-primary">{boxScore.awayTeam.teamTricode} vs {boxScore.homeTeam.teamTricode}</span>
+        <span className="text-text-primary">{boxScore.awayTeam.teamTricode} {t.common.vs} {boxScore.homeTeam.teamTricode}</span>
       </nav>
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
@@ -531,20 +537,20 @@ export default async function GamePage({ params }: PageProps) {
       <div className="bg-bg-card rounded-xl border border-border p-6 mt-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            {isPlayoffs && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">Playoffs</span>}
+            {isPlayoffs && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{t.common.playoffs}</span>}
             {isCloseGame && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">Thriller</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">{t.gameDetail.thriller}</span>
             )}
             {isFinal && scoreDiff >= 20 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">Blowout</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">{t.gameDetail.blowout}</span>
             )}
             {boxScore.homeTeam.periods?.length > 4 && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
-                {boxScore.homeTeam.periods.length - 4}OT
+                {boxScore.homeTeam.periods.length - 4}{t.gameDetail.ot}
               </span>
             )}
             <span className="text-xs text-text-secondary">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
-            {beijingTime && <span className="text-xs text-text-secondary">&middot; 北京时间 {beijingTime}</span>}
+            {beijingTime && <span className="text-xs text-text-secondary">&middot; {t.common.beijingTime} {beijingTime}</span>}
             {isFinal && (() => {
               const periodsCount = boxScore.homeTeam.periods?.length || 4;
               const otPeriods = Math.max(periodsCount - 4, 0);
@@ -646,7 +652,7 @@ export default async function GamePage({ params }: PageProps) {
               const qLabel = bestQuarter <= 4 ? `Q${bestQuarter}` : `OT${bestQuarter - 4}`;
               return (
                 <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
-                  <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">{qLabel} MVP</span>
+                  <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">{qLabel} {t.gameDetail.mvp}</span>
                   <span className="font-medium text-text-primary">{mvpName}</span>
                   <span>({mvpPts} pts from FG in highest-scoring quarter)</span>
                 </div>
@@ -704,11 +710,11 @@ export default async function GamePage({ params }: PageProps) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
               <p className="text-xl font-bold text-accent">{pace}</p>
-              <p className="text-[10px] text-text-secondary uppercase">Est. Pace</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.estPace}</p>
             </div>
             <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
               <p className="text-xl font-bold text-text-primary">{totalPts}</p>
-              <p className="text-[10px] text-text-secondary uppercase">Total Points</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.totalPoints}</p>
             </div>
             <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
               <p className="text-sm font-bold">
@@ -718,7 +724,7 @@ export default async function GamePage({ params }: PageProps) {
                 <span className="text-accent">{homeBench}</span>{" "}
                 <span className="text-text-secondary">{boxScore.homeTeam.teamTricode}</span>
               </p>
-              <p className="text-[10px] text-text-secondary uppercase">Bench Points</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.benchPoints}</p>
             </div>
             <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
               <p className="text-sm font-bold">
@@ -728,7 +734,7 @@ export default async function GamePage({ params }: PageProps) {
                 <span className={homeFTA > awayFTA ? "text-accent" : "text-text-primary"}>{homeFTA}</span>{" "}
                 <span className="text-text-secondary">{boxScore.homeTeam.teamTricode}</span>
               </p>
-              <p className="text-[10px] text-text-secondary uppercase">Free Throw Att.</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.freeThrowAtt}</p>
             </div>
           </div>
         );
@@ -736,7 +742,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {/* Game Summary — right after scoreboard for final games */}
       {isFinal && (
-        <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} />
+        <GameSummary homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} t={t} />
       )}
 
       {/* Player Ratings — for final games */}
@@ -755,7 +761,7 @@ export default async function GamePage({ params }: PageProps) {
           <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
               <span className="w-1 h-4 bg-accent rounded-full" />
-              Player Ratings
+              {t.gameDetail.playerRatings}
             </h3>
             <div className="space-y-2">
               {scored.map((p, i) => (
@@ -774,7 +780,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {/* Replay links — streamed */}
       <Suspense fallback={null}>
-        <ReplaySection gameId={id} />
+        <ReplaySection gameId={id} t={t} />
       </Suspense>
 
       {/* Team Stats Comparison */}
@@ -792,7 +798,7 @@ export default async function GamePage({ params }: PageProps) {
           <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
-              Stats Radar
+              {t.gameDetail.statsRadar}
             </h3>
             <div className="flex justify-center">
               <RadarChart
@@ -825,7 +831,7 @@ export default async function GamePage({ params }: PageProps) {
           <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
-              Shooting Efficiency
+              {t.gameDetail.shootingEfficiency}
             </h3>
             <div className="space-y-4">
               {metrics.map((m) => (
@@ -863,7 +869,7 @@ export default async function GamePage({ params }: PageProps) {
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Shot Chart */}
         <div className="lg:col-span-1 space-y-6">
-          <ShotChartSection shots={shots} homeTricode={boxScore.homeTeam.teamTricode} awayTricode={boxScore.awayTeam.teamTricode} allPlayers={allPlayers} />
+          <ShotChartSection shots={shots} homeTricode={boxScore.homeTeam.teamTricode} awayTricode={boxScore.awayTeam.teamTricode} allPlayers={allPlayers} t={t} />
         </div>
 
         {/* Box Score Tables — immediate */}
@@ -874,7 +880,7 @@ export default async function GamePage({ params }: PageProps) {
               <h2 className="font-semibold">{boxScore.awayTeam.teamCity} {boxScore.awayTeam.teamName}</h2>
               <span className="text-text-secondary text-sm ml-auto">{boxScore.awayTeam.score} pts</span>
             </div>
-            <StatsTable players={boxScore.awayTeam.players} shots={shots} playerInfoMap={playerInfoMap} />
+            <StatsTable players={boxScore.awayTeam.players} shots={shots} playerInfoMap={playerInfoMap} t={t} />
           </div>
           <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center gap-2">
@@ -882,7 +888,7 @@ export default async function GamePage({ params }: PageProps) {
               <h2 className="font-semibold">{boxScore.homeTeam.teamCity} {boxScore.homeTeam.teamName}</h2>
               <span className="text-text-secondary text-sm ml-auto">{boxScore.homeTeam.score} pts</span>
             </div>
-            <StatsTable players={boxScore.homeTeam.players} shots={shots} playerInfoMap={playerInfoMap} />
+            <StatsTable players={boxScore.homeTeam.players} shots={shots} playerInfoMap={playerInfoMap} t={t} />
           </div>
         </div>
       </div>

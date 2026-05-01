@@ -4,15 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
+import LocaleToggle from "@/components/LocaleToggle";
+import { useLocale } from "@/components/LocaleProvider";
 
 const TEAMS = Object.values(TEAM_META);
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLocale();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
@@ -59,24 +62,24 @@ export default function Navbar() {
   }, [teamsOpen]);
 
   // Primary nav — always visible
-  const primaryLinks = [
-    { href: "/", label: "Today", icon: Trophy },
-    { href: "/calendar", label: "Calendar", icon: Calendar },
-    { href: "/stats", label: "Stats", icon: BarChart3 },
-    { href: "/standings", label: "Standings", icon: BarChart3 },
-  ];
+  const primaryLinks = useMemo(() => [
+    { href: "/", label: t.nav.today, icon: Trophy },
+    { href: "/calendar", label: t.nav.calendar, icon: Calendar },
+    { href: "/stats", label: t.nav.stats, icon: BarChart3 },
+    { href: "/standings", label: t.nav.standings, icon: BarChart3 },
+  ], [t]);
 
   // Secondary nav — inside "More" dropdown
-  const moreLinks = [
-    { href: "/compare", label: "Compare Players", icon: GitCompareArrows },
-    { href: "/h2h", label: "Head to Head", icon: Swords },
-    { href: "/clutch", label: "Playoff Leaders", icon: Target },
-    { href: "/injuries", label: "Injury Report", icon: AlertTriangle },
-    { href: "/transactions", label: "Trades", icon: ArrowLeftRight },
-    { href: "/history", label: "Champions", icon: History },
-    { href: "/search", label: "Player Search", icon: Search },
-    { href: "/favorites", label: "Favorites", icon: Trophy },
-  ];
+  const moreLinks = useMemo(() => [
+    { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
+    { href: "/h2h", label: t.nav.h2h, icon: Swords },
+    { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
+    { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
+    { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
+    { href: "/history", label: t.nav.champions, icon: History },
+    { href: "/search", label: t.nav.playerSearch, icon: Search },
+    { href: "/favorites", label: t.nav.favorites, icon: Trophy },
+  ], [t]);
 
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -126,7 +129,7 @@ export default function Navbar() {
                 moreOpen || isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}>
               <MoreHorizontal size={16} />
-              <span className="hidden lg:inline">More</span>
+              <span className="hidden lg:inline">{t.nav.more}</span>
             </button>
             {moreOpen && (
               <div className="absolute right-0 top-full mt-2 w-52 bg-bg-card border border-border rounded-xl shadow-2xl p-1.5 z-50">
@@ -154,27 +157,27 @@ export default function Navbar() {
               }`}
             >
               <Users size={16} />
-              <span className="hidden lg:inline">Teams</span>
+              <span className="hidden lg:inline">{t.nav.teams}</span>
             </button>
             {teamsOpen && (
               <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[90vw] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
                 <div className="grid grid-cols-5 gap-1.5">
-                  {TEAMS.map((t) => (
+                  {TEAMS.map((tm) => (
                     <Link
-                      key={t.tricode}
-                      href={`/team/${t.tricode}`}
+                      key={tm.tricode}
+                      href={`/team/${tm.tricode}`}
                       onClick={() => setTeamsOpen(false)}
                       className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group"
-                      title={`${t.city} ${t.name}`}
+                      title={`${tm.city} ${tm.name}`}
                     >
                       <Image
-                        src={`https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`}
-                        alt={t.tricode}
+                        src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
+                        alt={tm.tricode}
                         width={28}
                         height={28}
                         unoptimized
                       />
-                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors">{t.tricode}</span>
+                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors">{tm.tricode}</span>
                     </Link>
                   ))}
                 </div>
@@ -182,6 +185,7 @@ export default function Navbar() {
             )}
           </div>
 
+          <LocaleToggle />
           <ThemeToggle />
 
           {/* Search */}
@@ -201,8 +205,8 @@ export default function Navbar() {
                   name="q"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search players..."
-                  aria-label="Search players"
+                  placeholder={t.nav.searchPlaceholder}
+                  aria-label={t.nav.search}
                   className="w-48 bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
                   onBlur={() => { setTimeout(() => { if (!searchQuery) setSearchOpen(false); }, 150); }}
                 />
@@ -211,7 +215,7 @@ export default function Navbar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center gap-1.5 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                title="Search (Ctrl+K)"
+                title={t.nav.searchShortcut}
               >
                 <Search size={18} />
                 <kbd className="hidden lg:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">⌘K</kbd>
@@ -220,8 +224,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile right side — only search + theme */}
+        {/* Mobile right side — only search + theme + locale */}
         <div className="flex sm:hidden items-center gap-1">
+          <LocaleToggle />
           <ThemeToggle />
           <button
             onClick={() => {

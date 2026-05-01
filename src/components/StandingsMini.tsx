@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TEAM_META } from "@/lib/teams";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface TeamRecord {
   tricode: string;
@@ -35,6 +36,7 @@ function ConferenceColumn({ title, teams }: { title: string; teams: TeamRecord[]
 }
 
 export default function StandingsMini() {
+  const { t } = useLocale();
   const [east, setEast] = useState<TeamRecord[]>([]);
   const [west, setWest] = useState<TeamRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,11 +64,11 @@ export default function StandingsMini() {
   return (
     <div className="bg-bg-card rounded-xl border border-border p-3 mt-4">
       <div className="grid grid-cols-2 gap-4">
-        <ConferenceColumn title="East" teams={east} />
-        <ConferenceColumn title="West" teams={west} />
+        <ConferenceColumn title={t.standingsMini.east} teams={east} />
+        <ConferenceColumn title={t.standingsMini.west} teams={west} />
       </div>
       <Link href="/stats" className="block text-center text-[10px] text-accent hover:underline mt-2">
-        Full Standings &rarr;
+        {t.standingsMini.fullStandings}
       </Link>
     </div>
   );

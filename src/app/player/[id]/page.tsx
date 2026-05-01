@@ -11,6 +11,8 @@ import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
 import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
 import PlayerAdvancedStats from "@/components/player/PlayerAdvancedStats";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
 // Dynamic rendering — no edge cache, avoids stale hanging pages
 export const dynamic = "force-dynamic";
@@ -43,6 +45,9 @@ export default async function PlayerPage({ params }: PageProps) {
   const player = await getPlayerInfo(personId);
   if (!player) notFound();
 
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+
   // Get all players for position ranking
   const { getPlayerIndex } = await import("@/lib/api");
   const allPlayers = await getPlayerIndex().catch(() => []);
@@ -61,7 +66,7 @@ export default async function PlayerPage({ params }: PageProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors">
-        &larr; Back to search
+        {t.common.backToSearch}
       </Link>
 
       {/* Player Header */}
@@ -118,13 +123,13 @@ export default async function PlayerPage({ params }: PageProps) {
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
             <Ruler size={14} />
-            Body Metrics
+            {t.playerDetail.bodyMetrics}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard icon={<Ruler size={14} className="text-accent" />} label="Height" value={player.height || "-"} />
-            <MetricCard icon={<Weight size={14} className="text-accent" />} label="Weight" value={player.weight ? `${player.weight} lbs` : "-"} />
-            <MetricCard icon={<MapPin size={14} className="text-accent" />} label="Country" value={player.country || "-"} />
-            <MetricCard icon={<Calendar size={14} className="text-accent" />} label="Seasons" value={seasons > 0 ? `${seasons} years` : "-"} />
+            <MetricCard icon={<Ruler size={14} className="text-accent" />} label={t.playerDetail.height} value={player.height || "-"} />
+            <MetricCard icon={<Weight size={14} className="text-accent" />} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "-"} />
+            <MetricCard icon={<MapPin size={14} className="text-accent" />} label={t.playerDetail.country} value={player.country || "-"} />
+            <MetricCard icon={<Calendar size={14} className="text-accent" />} label={t.playerDetail.seasons} value={seasons > 0 ? `${seasons} years` : "-"} />
           </div>
         </div>
 
@@ -132,24 +137,24 @@ export default async function PlayerPage({ params }: PageProps) {
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
             <Award size={14} />
-            Draft Info
+            {t.playerDetail.draftInfo}
           </h2>
           {player.draftYear ? (
             <div className="bg-bg-secondary rounded-xl p-4">
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-accent">{player.draftYear}</p>
-                  <p className="text-xs text-text-secondary">Year</p>
+                  <p className="text-xs text-text-secondary">{t.playerDetail.yearLabel}</p>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div className="text-center">
                   <p className="text-3xl font-bold text-text-primary">R{player.draftRound}</p>
-                  <p className="text-xs text-text-secondary">Round</p>
+                  <p className="text-xs text-text-secondary">{t.playerDetail.round}</p>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div className="text-center">
                   <p className="text-3xl font-bold text-text-primary">#{player.draftNumber}</p>
-                  <p className="text-xs text-text-secondary">Pick</p>
+                  <p className="text-xs text-text-secondary">{t.playerDetail.pick}</p>
                 </div>
                 {player.college && (
                   <>
@@ -158,7 +163,7 @@ export default async function PlayerPage({ params }: PageProps) {
                       <GraduationCap size={16} className="text-text-secondary" />
                       <div>
                         <p className="text-sm font-medium text-text-primary">{player.college}</p>
-                        <p className="text-xs text-text-secondary">College</p>
+                        <p className="text-xs text-text-secondary">{t.playerDetail.college}</p>
                       </div>
                     </div>
                   </>
@@ -167,8 +172,8 @@ export default async function PlayerPage({ params }: PageProps) {
             </div>
           ) : (
             <div className="bg-bg-secondary rounded-xl p-4 text-center">
-              <p className="text-text-secondary text-sm">Undrafted</p>
-              {player.college && <p className="text-xs text-text-secondary mt-1">College: {player.college}</p>}
+              <p className="text-text-secondary text-sm">{t.playerDetail.undrafted}</p>
+              {player.college && <p className="text-xs text-text-secondary mt-1">{t.playerDetail.college}: {player.college}</p>}
             </div>
           )}
         </div>
@@ -189,7 +194,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <div className="p-6 border-t border-border">
               <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
                 <Calendar size={14} />
-                Career Timeline
+                {t.playerDetail.careerTimeline}
               </h2>
               <div className="relative h-8 bg-bg-secondary rounded-full overflow-hidden">
                 <div
@@ -207,7 +212,7 @@ export default async function PlayerPage({ params }: PageProps) {
               <div className="flex justify-between text-[10px] text-text-secondary mt-1.5">
                 <span>{player.fromYear}</span>
                 {currentYear >= from && currentYear <= to && (
-                  <span className="text-accent font-medium">{currentYear} (current)</span>
+                  <span className="text-accent font-medium">{currentYear} {t.playerDetail.current}</span>
                 )}
                 <span>{player.toYear}</span>
               </div>
@@ -221,15 +226,15 @@ export default async function PlayerPage({ params }: PageProps) {
           const reb = typeof player.reb === "number" ? player.reb : parseFloat(String(player.reb)) || 0;
           const ast = typeof player.ast === "number" ? player.ast : parseFloat(String(player.ast)) || 0;
           const tags: { label: string; color: string }[] = [];
-          if (pts >= 25) tags.push({ label: "Elite Scorer", color: "bg-accent/15 text-accent" });
-          else if (pts >= 20) tags.push({ label: "Scorer", color: "bg-accent/10 text-accent" });
-          if (ast >= 8) tags.push({ label: "Floor General", color: "bg-blue-500/15 text-blue-400" });
-          else if (ast >= 5) tags.push({ label: "Playmaker", color: "bg-blue-500/10 text-blue-400" });
-          if (reb >= 10) tags.push({ label: "Glass Cleaner", color: "bg-success/15 text-success" });
-          else if (reb >= 7) tags.push({ label: "Rebounder", color: "bg-success/10 text-success" });
-          if (pts >= 15 && reb >= 5 && ast >= 5) tags.push({ label: "All-Around", color: "bg-yellow-500/15 text-yellow-500" });
-          if (seasons >= 15) tags.push({ label: "Veteran", color: "bg-orange-500/10 text-orange-400" });
-          if (seasons <= 2 && pts >= 10) tags.push({ label: "Rising Star", color: "bg-pink-500/10 text-pink-400" });
+          if (pts >= 25) tags.push({ label: t.playerDetail.eliteScorer, color: "bg-accent/15 text-accent" });
+          else if (pts >= 20) tags.push({ label: t.playerDetail.scorer, color: "bg-accent/10 text-accent" });
+          if (ast >= 8) tags.push({ label: t.playerDetail.floorGeneral, color: "bg-blue-500/15 text-blue-400" });
+          else if (ast >= 5) tags.push({ label: t.playerDetail.playmaker, color: "bg-blue-500/10 text-blue-400" });
+          if (reb >= 10) tags.push({ label: t.playerDetail.glassCleaner, color: "bg-success/15 text-success" });
+          else if (reb >= 7) tags.push({ label: t.playerDetail.rebounder, color: "bg-success/10 text-success" });
+          if (pts >= 15 && reb >= 5 && ast >= 5) tags.push({ label: t.playerDetail.allAround, color: "bg-yellow-500/15 text-yellow-500" });
+          if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, color: "bg-orange-500/10 text-orange-400" });
+          if (seasons <= 2 && pts >= 10) tags.push({ label: t.playerDetail.risingStar, color: "bg-pink-500/10 text-pink-400" });
           if (tags.length === 0) return null;
           return (
             <div className="px-6 pt-4 flex flex-wrap gap-2">
@@ -242,7 +247,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Career Stats */}
         <div className="p-6 border-t border-border">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">Career Averages</h2>
+          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">{t.playerDetail.careerAverages}</h2>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             <CareerStatBox label="PPG" value={player.pts} highlight allPlayers={allPlayers} personId={personId} statKey="pts" />
             <CareerStatBox label="RPG" value={player.reb} allPlayers={allPlayers} personId={personId} statKey="reb" />
@@ -264,7 +269,7 @@ export default async function PlayerPage({ params }: PageProps) {
             const ft = (ppg * ftPct).toFixed(1);
             return (
               <div className="mt-3 bg-bg-secondary rounded-lg p-3">
-                <p className="text-[10px] text-text-secondary uppercase mb-2">Scoring Profile (est.)</p>
+                <p className="text-[10px] text-text-secondary uppercase mb-2">{t.playerDetail.scoringProfile}</p>
                 <div className="flex h-4 rounded-full overflow-hidden">
                   <div className="bg-accent" style={{ width: `${fg2Pct * 100}%` }} title={`2PT: ~${fg2}`} />
                   <div className="bg-success" style={{ width: `${fg3Pct * 100}%` }} title={`3PT: ~${fg3}`} />
@@ -284,16 +289,16 @@ export default async function PlayerPage({ params }: PageProps) {
         {player.pts > 0 && (() => {
           const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
           if (isNaN(ppg) || ppg <= 0) return null;
-          const tier = ppg >= 25 ? { label: "Elite Scorer", color: "text-accent", bg: "bg-accent/10", icon: "star" }
-            : ppg >= 18 ? { label: "High Volume Scorer", color: "text-success", bg: "bg-success/10", icon: "up" }
-            : ppg >= 12 ? { label: "Solid Contributor", color: "text-blue-400", bg: "bg-blue-400/10", icon: "check" }
-            : { label: "Role Player", color: "text-text-secondary", bg: "bg-bg-hover", icon: "dot" };
+          const tier = ppg >= 25 ? { label: t.playerDetail.eliteScorer, color: "text-accent", bg: "bg-accent/10", icon: "star" }
+            : ppg >= 18 ? { label: t.playerDetail.scorer, color: "text-success", bg: "bg-success/10", icon: "up" }
+            : ppg >= 12 ? { label: t.playerDetail.playmaker, color: "text-blue-400", bg: "bg-blue-400/10", icon: "check" }
+            : { label: t.playerDetail.rebounder, color: "text-text-secondary", bg: "bg-bg-hover", icon: "dot" };
           return (
             <div className="p-6 border-t border-border">
               <div className={`${tier.bg} border border-border rounded-xl p-4 flex items-center gap-4`}>
                 <div className="text-center">
                   <p className={`text-3xl font-bold ${tier.color}`}>{ppg}</p>
-                  <p className="text-[10px] text-text-secondary uppercase">Career PPG</p>
+                  <p className="text-[10px] text-text-secondary uppercase">{t.playerDetail.careerPpg}</p>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div>
@@ -331,7 +336,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <div className="p-6 border-t border-border">
               <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
                 <Trophy size={14} />
-                Career Milestones
+                {t.playerDetail.careerMilestones}
               </h2>
               <div className="bg-bg-secondary rounded-xl p-4 space-y-2">
                 <p className="text-xs text-text-secondary">
@@ -353,27 +358,27 @@ export default async function PlayerPage({ params }: PageProps) {
         <div className="p-6 border-t border-border">
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
             <Newspaper size={14} />
-            More Info & News
+            {t.playerDetail.moreInfo}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <ExternalLinkCard
-              title="Player Profile"
-              subtitle="Full career stats on NBA.com"
+              title={t.playerDetail.playerProfile}
+              subtitle={t.playerDetail.fullCareerStats}
               href={player.slug ? `https://www.nba.com/player/${personId}/${player.slug}` : `https://www.nba.com/player/${personId}`}
             />
             <ExternalLinkCard
-              title="Salary & Contract"
-              subtitle="Cap info on Spotrac"
+              title={t.playerDetail.salaryContract}
+              subtitle={t.playerDetail.capInfo}
               href={`https://www.spotrac.com/nba/player/_/id/${personId}`}
             />
             <ExternalLinkCard
-              title="Latest News"
-              subtitle="Search recent articles"
+              title={t.playerDetail.latestNews}
+              subtitle={t.playerDetail.searchArticles}
               href={`https://www.google.com/search?q=${encodeURIComponent(fullName)}+NBA+news&tbm=nws`}
             />
             <ExternalLinkCard
-              title="Stats & Analytics"
-              subtitle="Advanced data on Basketball Reference"
+              title={t.playerDetail.statsAnalytics}
+              subtitle={t.playerDetail.advancedData}
               href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodeURIComponent(fullName)}`}
             />
           </div>
@@ -398,7 +403,7 @@ export default async function PlayerPage({ params }: PageProps) {
           if (teammates.length === 0) return null;
           return (
             <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">Teammates</h2>
+              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">{t.playerDetail.teammates}</h2>
               <div className="flex flex-wrap gap-2">
                 {teammates.map((t) => (
                   <Link key={t.personId} href={`/player/${t.personId}`} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors text-sm">
@@ -432,7 +437,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <div className="p-6 border-t border-border">
               <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-2">
                 <TrendingUp size={14} />
-                Similar Players (same position)
+                {t.playerDetail.similarPlayers}
               </h2>
               <div className="space-y-2">
                 {similar.map((s) => (

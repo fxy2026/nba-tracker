@@ -4,11 +4,17 @@ import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
 import DateJumper from "@/components/DateJumper";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "赛程",
-  description: "NBA 完整赛程，包括常规赛和季后赛日程安排。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.scheduleTitle,
+    description: t.meta.scheduleDesc,
+  };
+}
 
 // Serve stale page instantly, revalidate in background every 10 min
 export const revalidate = 600;
@@ -20,6 +26,9 @@ interface PageProps {
 export default async function SchedulePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const filterTeam = params.team?.toUpperCase() || "";
+
+  const locale = await getLocale();
+  const t = getTranslations(locale);
 
   const allDates = await getFullSchedule();
 
@@ -45,7 +54,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
       if (filteredGames.length > 0) {
         recentDates.push({
           dateStr: `${year}-${month}-${day}`,
-          displayDate: dateObj.toLocaleDateString("zh-CN", {
+          displayDate: dateObj.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
             year: "numeric",
             month: "long",
             day: "numeric",
@@ -64,7 +73,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-2">Recent Schedule</h1>
+      <h1 className="text-2xl font-bold mb-2">{t.schedulePage.recentSchedule}</h1>
       {/* Quick stats */}
       {recentDates.length > 0 && (() => {
         const totalGames = recentDates.reduce((s, d) => s + d.games.length, 0);
@@ -73,19 +82,19 @@ export default async function SchedulePage({ searchParams }: PageProps) {
         return (
           <div className="flex items-center gap-3 mb-4 text-xs">
             <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
-              {recentDates.length} days
+              {recentDates.length} {t.schedulePage.days}
             </span>
             <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
-              {totalGames} games
+              {totalGames} {t.common.games}
             </span>
             {finishedGames > 0 && (
               <span className="px-2.5 py-1 rounded-full bg-success/15 text-success font-medium">
-                {finishedGames} completed
+                {finishedGames} {t.schedulePage.completed}
               </span>
             )}
             {upcomingGames > 0 && (
               <span className="px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
-                {upcomingGames} upcoming
+                {upcomingGames} {t.common.upcoming}
               </span>
             )}
           </div>
@@ -97,26 +106,26 @@ export default async function SchedulePage({ searchParams }: PageProps) {
 
       {/* Team filter */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <span className="text-xs text-text-secondary font-medium">Filter by team:</span>
+        <span className="text-xs text-text-secondary font-medium">{t.schedulePage.filterByTeam}</span>
         <Link
           href="/schedule"
           className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
             !filterTeam ? "bg-accent/20 text-accent border border-accent/30" : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
           }`}
         >
-          All
+          {t.schedulePage.all}
         </Link>
-        {teamsList.map((t) => (
+        {teamsList.map((t_team) => (
           <Link
-            key={t.tricode}
-            href={`/schedule?team=${t.tricode}`}
+            key={t_team.tricode}
+            href={`/schedule?team=${t_team.tricode}`}
             className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
-              filterTeam === t.tricode
+              filterTeam === t_team.tricode
                 ? "bg-accent/20 text-accent border border-accent/30"
                 : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
             }`}
           >
-            {t.tricode}
+            {t_team.tricode}
           </Link>
         ))}
       </div>
@@ -132,7 +141,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
                   {new Date(dateStr).toLocaleDateString("en-US", { weekday: "long" })}
                 </span>
                 <span className="ml-2 text-xs text-text-secondary/60">
-                  ({games.length} games)
+                  ({games.length} {t.common.games})
                 </span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -145,7 +154,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-text-secondary">
-          <p className="text-lg">No games found{filterTeam ? ` for ${filterTeam}` : ""}</p>
+          <p className="text-lg">{t.schedulePage.noGamesFound}{filterTeam ? ` ${filterTeam}` : ""}</p>
         </div>
       )}
     </div>

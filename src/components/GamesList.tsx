@@ -9,6 +9,7 @@ import LiveScoreRefresher from "./LiveScoreRefresher";
 import TodayStars from "./TodayStars";
 import HomeExtra from "./HomeExtra";
 import { formatDate } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface GamesListProps {
   selectedDate: string;
@@ -17,6 +18,7 @@ interface GamesListProps {
 }
 
 export default function GamesList({ selectedDate, initialGames, initialReplayIds }: GamesListProps) {
+  const { t } = useLocale();
   const today = formatDate(new Date());
   const isToday = selectedDate === today;
   const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
@@ -129,12 +131,12 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
   if (error) {
     return (
       <div className="mt-6 bg-bg-card border border-border rounded-xl p-8 text-center">
-        <p className="text-text-secondary text-sm mb-3">Failed to load games</p>
+        <p className="text-text-secondary text-sm mb-3">{t.home.failedToLoad}</p>
         <button
           onClick={() => { setError(false); setLoading(true); fetchGames(selectedDate); }}
           className="text-xs px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors"
         >
-          Retry
+          {t.common.retry}
         </button>
       </div>
     );
@@ -161,7 +163,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {/* Last updated */}
       {isToday && games.length > 0 && (
         <p className="text-[10px] text-text-secondary text-right mt-4">
-          Updated: {new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit" })} (Beijing)
+          {t.common.updated}{new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit" })} ({t.common.beijing})
         </p>
       )}
 
@@ -169,11 +171,11 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {gameOfTheDay && (
         <Link href={`/game/${gameOfTheDay.gameId}`} className="block mt-6 mb-2 px-4 py-2.5 bg-accent/10 border border-accent/20 rounded-xl hover:bg-accent/15 transition-colors">
           <p className="text-sm text-center">
-            <span className="text-accent font-bold">Game of the Day: </span>
+            <span className="text-accent font-bold">{t.home.gameOfTheDay}</span>
             <span className="text-text-primary font-medium">
               {gameOfTheDay.awayTeam.teamTricode} {gameOfTheDay.awayTeam.score} - {gameOfTheDay.homeTeam.score} {gameOfTheDay.homeTeam.teamTricode}
             </span>
-            <span className="text-text-secondary ml-1">(margin: {gameOfTheDay.margin})</span>
+            <span className="text-text-secondary ml-1">({t.home.margin}{gameOfTheDay.margin})</span>
           </p>
         </Link>
       )}
@@ -182,25 +184,25 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {games.length > 0 ? (
         <div className="mt-6 mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-text-primary">{games.length} Games</span>
+            <span className="text-sm font-medium text-text-primary">{games.length} {games.length !== 1 ? t.common.games : t.common.game}</span>
             {games.length >= 10 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">Packed Slate</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{t.home.packedSlate}</span>
             )}
             {games.length > 0 && games.length <= 3 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">Light Day</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">{t.home.lightDay}</span>
             )}
             {liveNow.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">{liveNow.length} Live</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">{liveNow.length}{t.home.liveCount}</span>
             )}
             {final.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">{final.length} Final</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">{final.length}{t.home.finalCount}</span>
             )}
           </div>
           {final.length > 0 && (() => {
             const totalPts = final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0);
             return (
               <p className="text-xs text-text-secondary mt-1">
-                Total Points: <span className="font-bold text-accent">{totalPts}</span> across {final.length} finished game{final.length !== 1 ? "s" : ""}
+                {t.home.totalPoints}<span className="font-bold text-accent">{totalPts}</span> {t.home.across} {final.length} {final.length !== 1 ? t.home.finishedGames : t.home.finishedGame}
               </p>
             );
           })()}
@@ -212,14 +214,14 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         <div className="space-y-6">
           {games.some((g) => g.gameId.startsWith("004")) && (
             <div className="bg-gradient-to-r from-accent/10 to-yellow-500/10 border border-accent/20 rounded-xl px-4 py-2 text-center">
-              <span className="text-xs font-bold text-accent uppercase tracking-wide">Playoff Games Today</span>
+              <span className="text-xs font-bold text-accent uppercase tracking-wide">{t.home.playoffGamesToday}</span>
             </div>
           )}
           {liveNow.length > 0 && (
             <>
               <h2 className="text-sm font-semibold text-success flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
-                Live Now
+                {t.home.liveNow}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {liveNow.map((game) => (
@@ -232,7 +234,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <>
               <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/50" />
-                Upcoming
+                {t.common.upcoming}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcoming.map((game) => (
@@ -245,7 +247,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <>
               <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/30" />
-                Final
+                {t.common.final}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {final.map((game) => (
@@ -263,8 +265,8 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <path d="M10,40 Q40,15 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="M10,40 Q40,65 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <p className="text-lg font-medium text-text-primary">{selectedDate} 没有比赛</p>
-          <p className="text-sm mt-1 mb-4">试试选择其他日期，或浏览以下内容</p>
+          <p className="text-lg font-medium text-text-primary">{selectedDate} — {t.home.noGames}</p>
+          <p className="text-sm mt-1 mb-4">{t.home.noGamesHint}</p>
           {(() => {
             const facts = [
               "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",
@@ -279,35 +281,35 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             const idx = new Date(selectedDate).getDate() % facts.length;
             return (
               <div className="bg-bg-card border border-border rounded-xl p-4 mb-4 max-w-md text-center">
-                <p className="text-[10px] text-text-secondary uppercase font-medium mb-1">NBA Fun Fact</p>
+                <p className="text-[10px] text-text-secondary uppercase font-medium mb-1">{t.home.funFact}</p>
                 <p className="text-xs text-text-primary">{facts[idx]}</p>
               </div>
             );
           })()}
           <div className="flex items-center gap-3 text-xs">
-            <Link href="/standings" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">排名</Link>
-            <Link href="/search" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">搜索球员</Link>
-            <Link href="/injuries" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">伤病报告</Link>
+            <Link href="/standings" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">{t.home.rankings}</Link>
+            <Link href="/search" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">{t.home.searchPlayers}</Link>
+            <Link href="/injuries" className="px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 transition-colors">{t.home.injuryReport}</Link>
           </div>
           {isToday && (
             <div className="mt-6 w-full max-w-lg">
-              <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">No games today? Try these</p>
+              <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{t.home.noGamesToday}</p>
               <div className="grid grid-cols-2 gap-3">
                 <Link href={`/?date=${(() => { const d = new Date(); d.setDate(d.getDate() - 1); return formatDate(d); })()}`} className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
-                  <span className="text-sm font-medium text-text-primary">Browse Recent Games</span>
-                  <span className="text-[10px] text-text-secondary">Yesterday&apos;s results</span>
+                  <span className="text-sm font-medium text-text-primary">{t.home.browseRecent}</span>
+                  <span className="text-[10px] text-text-secondary">{t.home.yesterdayResults}</span>
                 </Link>
                 <Link href="/standings" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
-                  <span className="text-sm font-medium text-text-primary">Check Standings</span>
-                  <span className="text-[10px] text-text-secondary">Conference rankings</span>
+                  <span className="text-sm font-medium text-text-primary">{t.home.checkStandings}</span>
+                  <span className="text-[10px] text-text-secondary">{t.home.conferenceRankings}</span>
                 </Link>
                 <Link href="/search" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
-                  <span className="text-sm font-medium text-text-primary">Player Search</span>
-                  <span className="text-[10px] text-text-secondary">Find any NBA player</span>
+                  <span className="text-sm font-medium text-text-primary">{t.home.findPlayer}</span>
+                  <span className="text-[10px] text-text-secondary">{t.home.findAnyPlayer}</span>
                 </Link>
                 <Link href="/injuries" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
-                  <span className="text-sm font-medium text-text-primary">Injury Report</span>
-                  <span className="text-[10px] text-text-secondary">Latest injury updates</span>
+                  <span className="text-sm font-medium text-text-primary">{t.home.injuryReport}</span>
+                  <span className="text-[10px] text-text-secondary">{t.home.latestInjury}</span>
                 </Link>
               </div>
             </div>
@@ -318,23 +320,23 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {/* Day insights */}
       {dayInsights && (
         <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Day Insights</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.home.dayInsights}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
             <div>
               <p className="text-lg font-bold text-accent">{dayInsights.avgScore}</p>
-              <p className="text-text-secondary">Avg Total Pts</p>
+              <p className="text-text-secondary">{t.home.avgTotalPts}</p>
             </div>
             <div>
               <p className="text-lg font-bold text-text-primary">{dayInsights.homeWins}-{dayInsights.awayWins}</p>
-              <p className="text-text-secondary">Home-Away</p>
+              <p className="text-text-secondary">{t.home.homeAway}</p>
             </div>
             <div>
               <p className="text-lg font-bold text-yellow-500">{dayInsights.thrillers}</p>
-              <p className="text-text-secondary">Thrillers (&le;5)</p>
+              <p className="text-text-secondary">{t.home.thrillers}</p>
             </div>
             <div>
               <p className="text-lg font-bold text-danger">{dayInsights.blowouts}</p>
-              <p className="text-text-secondary">Blowouts (&ge;20)</p>
+              <p className="text-text-secondary">{t.home.blowouts}</p>
             </div>
           </div>
         </div>

@@ -7,12 +7,14 @@ import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
 import { formatDate } from "@/lib/api";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface HomeClientProps {
   initialDate: string;
 }
 
 export default function HomeClient({ initialDate }: HomeClientProps) {
+  const { t } = useLocale();
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const today = formatDate(new Date());
   const isToday = selectedDate === today;
@@ -27,7 +29,7 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
         return (
           <div className="mt-1 mb-1">
             <button onClick={() => setSelectedDate(yStr)} className="text-xs text-text-secondary hover:text-accent transition-colors">
-              &larr; Yesterday&apos;s Results ({yStr})
+              {t.home.yesterdayLink}{yStr})
             </button>
           </div>
         );

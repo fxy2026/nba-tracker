@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "球队战绩",
-  description: "NBA 东西部球队战绩排名、胜率、近期表现。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.standingsTitle,
+    description: t.meta.standingsDesc,
+  };
+}
 
 export default function StandingsLayout({ children }: { children: React.ReactNode }) {
   return children;

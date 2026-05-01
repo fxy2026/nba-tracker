@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "Favorites",
-  description: "Your favorite NBA teams and players.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.favoritesTitle,
+    description: t.meta.favoritesDesc,
+  };
+}
 
 export default function FavoritesLayout({ children }: { children: React.ReactNode }) {
   return children;
