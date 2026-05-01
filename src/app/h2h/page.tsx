@@ -7,10 +7,14 @@ import { Swords } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "Head-to-Head",
-  description: "NBA 球队对战记录，赛季交锋历史。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.h2hTitle,
+    description: t.meta.h2hDesc,
+  };
+}
 
 export const dynamic = "force-dynamic";
 

@@ -100,7 +100,7 @@ export default function ComparePage() {
               setQuery2(tempQ);
             }}
             className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover hover:border-accent/50 transition-colors text-text-secondary hover:text-accent"
-            title="Swap players"
+            title={t.comparePage.swapPlayers}
           >
             <ArrowLeftRight size={18} />
           </button>

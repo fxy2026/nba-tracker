@@ -155,7 +155,7 @@ export default function FavoritesPage() {
                     {team.city} {team.name}
                   </Link>
                   <Link href={`/schedule?team=${tricode}`} className="text-[10px] px-2 py-1 rounded bg-bg-hover text-text-secondary hover:text-accent transition-colors">
-                    Schedule
+                    {t.nav.schedule}
                   </Link>
                   <button
                     onClick={() => removeTeam(tricode)}

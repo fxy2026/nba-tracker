@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFullSchedule, getPlayerIndex, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
@@ -13,11 +15,12 @@ export const revalidate = 600;
 
 export async function generateMetadata({ params }: { params: Promise<{ tricode: string }> }): Promise<Metadata> {
   const { tricode } = await params;
-  const team = TEAM_META[tricode.toUpperCase()];
+  const [team, locale] = [TEAM_META[tricode.toUpperCase()], await getLocale()];
+  const t = getTranslations(locale);
   if (!team) return {};
   return {
     title: `${team.city} ${team.name}`,
-    description: `${team.city} ${team.name} 球队主页：阵容、赛程、近期战绩一览。`,
+    description: locale === "zh" ? t.teamPage.teamDesc : t.teamPage.teamDescEn,
   };
 }
 
@@ -34,6 +37,9 @@ export default async function TeamPage({ params }: PageProps) {
   const { tricode } = await params;
   const team = TEAM_META[tricode.toUpperCase()];
   if (!team) notFound();
+
+  const locale = await getLocale();
+  const t = getTranslations(locale);
 
   const [schedule, playerIndex] = await Promise.all([
     getFullSchedule().catch(() => []),
@@ -154,7 +160,7 @@ export default async function TeamPage({ params }: PageProps) {
   const winPct = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : "0.0";
 
   // Compute conference ranking by sorting all conference teams by win%
-  const conferenceTeams = Object.values(TEAM_META).filter((t) => t.conference === team.conference);
+  const conferenceTeams = Object.values(TEAM_META).filter((tm) => tm.conference === team.conference);
   // Build a map of tricode -> {wins, losses} for all teams
   const teamRecordMap: Record<string, { w: number; l: number }> = {};
   for (const gd of schedule) {
@@ -171,18 +177,18 @@ export default async function TeamPage({ params }: PageProps) {
     }
   }
   const conferenceRanking = conferenceTeams
-    .map((t) => {
-      const rec = teamRecordMap[t.tricode] || { w: 0, l: 0 };
-      return { tricode: t.tricode, winPct: rec.w + rec.l > 0 ? rec.w / (rec.w + rec.l) : 0 };
+    .map((tm) => {
+      const rec = teamRecordMap[tm.tricode] || { w: 0, l: 0 };
+      return { tricode: tm.tricode, winPct: rec.w + rec.l > 0 ? rec.w / (rec.w + rec.l) : 0 };
     })
     .sort((a, b) => b.winPct - a.winPct);
-  const confRank = conferenceRanking.findIndex((t) => t.tricode === team.tricode) + 1;
+  const confRank = conferenceRanking.findIndex((tm) => tm.tricode === team.tricode) + 1;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <Link href="/stats" className="text-sm text-text-secondary hover:text-accent transition-colors">
         <ArrowLeft size={14} className="inline mr-1" />
-        Back to standings
+        {t.teamPage.backToStandings}
       </Link>
 
       {/* Team color accent */}
@@ -205,7 +211,7 @@ export default async function TeamPage({ params }: PageProps) {
                 </span>
               )}
               <Link href={`/schedule?team=${team.tricode}`} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-hover text-text-secondary hover:text-accent transition-colors">
-                Schedule &rarr;
+                {t.teamPage.scheduleLink}
               </Link>
             </p>
           </div>
@@ -226,7 +232,7 @@ export default async function TeamPage({ params }: PageProps) {
         {/* Record */}
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-6">
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">Record</p>
+            <p className="text-xs text-text-secondary uppercase">{t.teamPage.record}</p>
             <p className="text-2xl font-bold mt-1">
               <span className="text-success">{wins}</span>
               <span className="text-text-secondary mx-1">-</span>
@@ -234,12 +240,12 @@ export default async function TeamPage({ params }: PageProps) {
             </p>
           </div>
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">Win%</p>
+            <p className="text-xs text-text-secondary uppercase">{t.teamPage.winPct}</p>
             <p className="text-2xl font-bold text-accent mt-1">{winPct}%</p>
           </div>
           {(playoffWins + playoffLosses > 0) && (
             <div className="bg-bg-secondary rounded-lg p-4 text-center">
-              <p className="text-xs text-yellow-500 uppercase">Playoffs</p>
+              <p className="text-xs text-yellow-500 uppercase">{t.common.playoffs}</p>
               <p className="text-2xl font-bold mt-1">
                 <span className="text-success">{playoffWins}</span>
                 <span className="text-text-secondary mx-1">-</span>
@@ -248,7 +254,7 @@ export default async function TeamPage({ params }: PageProps) {
             </div>
           )}
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">Last 10</p>
+            <p className="text-xs text-text-secondary uppercase">{t.teamPage.last10}</p>
             {(() => {
               const last10 = recentGames.slice(0, 10);
               const w10 = last10.filter((g) => g.won).length;
@@ -263,7 +269,7 @@ export default async function TeamPage({ params }: PageProps) {
             })()}
           </div>
           <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">Players</p>
+            <p className="text-xs text-text-secondary uppercase">{t.teamPage.playersCount}</p>
             <p className="text-2xl font-bold mt-1">{roster.length}</p>
           </div>
         </div>
@@ -280,7 +286,7 @@ export default async function TeamPage({ params }: PageProps) {
               <p className="text-lg font-bold mt-0.5">{oppPpg}</p>
             </div>
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Home</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.home}</p>
               <p className="text-lg font-bold mt-0.5">
                 <span className="text-success">{homeWins}</span>
                 <span className="text-text-secondary mx-0.5">-</span>
@@ -288,7 +294,7 @@ export default async function TeamPage({ params }: PageProps) {
               </p>
             </div>
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Away</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.away}</p>
               <p className="text-lg font-bold mt-0.5">
                 <span className="text-success">{awayWins}</span>
                 <span className="text-text-secondary mx-0.5">-</span>
@@ -296,18 +302,18 @@ export default async function TeamPage({ params }: PageProps) {
               </p>
             </div>
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Streak</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.streak}</p>
               <p className={`text-lg font-bold mt-0.5 ${streakType === "W" ? "text-success" : "text-danger"}`}>
                 {streakDisplay}
               </p>
             </div>
             {/* Season Highs */}
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Best Streak</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.bestStreak}</p>
               <p className="text-lg font-bold text-success mt-0.5">W{longestWinStreak}</p>
             </div>
             <div className="bg-bg-secondary rounded-lg p-3 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">Worst Streak</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.worstStreak}</p>
               <p className="text-lg font-bold text-danger mt-0.5">L{longestLossStreak}</p>
             </div>
           </div>
@@ -328,7 +334,7 @@ export default async function TeamPage({ params }: PageProps) {
         const maxWins = Math.max(...segments.map(s => s.total), 1);
         return (
           <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Season Progression (Wins per 10 games)</h3>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.seasonProgression}</h3>
             <div className="flex items-end gap-2 h-28">
               {segments.map((seg, i) => {
                 const barH = (seg.wins / maxWins) * 100;
@@ -351,8 +357,8 @@ export default async function TeamPage({ params }: PageProps) {
       {recentGames.length > 0 && (() => {
         const divisionTeams = new Set(
           Object.values(TEAM_META)
-            .filter((t) => t.division === team.division && t.tricode !== team.tricode)
-            .map((t) => t.tricode)
+            .filter((tm) => tm.division === team.division && tm.tricode !== team.tricode)
+            .map((tm) => tm.tricode)
         );
         let divW = 0, divL = 0, nonDivW = 0, nonDivL = 0;
         for (const g of recentGames) {
@@ -365,7 +371,7 @@ export default async function TeamPage({ params }: PageProps) {
         return (
           <div className="grid grid-cols-2 gap-3 mt-6">
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">vs Division</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.vsDivision}</p>
               <p className="text-xl font-bold mt-1">
                 <span className="text-success">{divW}</span>
                 <span className="text-text-secondary mx-1">-</span>
@@ -373,7 +379,7 @@ export default async function TeamPage({ params }: PageProps) {
               </p>
             </div>
             <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-[10px] text-text-secondary uppercase">vs Non-Division</p>
+              <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.vsNonDivision}</p>
               <p className="text-xl font-bold mt-1">
                 <span className="text-success">{nonDivW}</span>
                 <span className="text-text-secondary mx-1">-</span>
@@ -387,7 +393,7 @@ export default async function TeamPage({ params }: PageProps) {
       {/* Recent Opponents */}
       {recentGames.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Recent Opponents</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.recentOpponents}</h3>
           <div className="flex items-center gap-2 overflow-x-auto">
             {recentGames.slice(0, 8).map((g, i) => (
               <Link key={i} href={`/team/${g.opponent}`} className="flex flex-col items-center gap-1 shrink-0">
@@ -404,7 +410,7 @@ export default async function TeamPage({ params }: PageProps) {
       {/* Offense vs Defense */}
       {gamesPlayed > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Offense vs Defense</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.offVsDef}</h3>
           <div className="flex items-end gap-1 h-20">
             <div className="flex-1 flex flex-col items-center gap-1">
               <span className="text-xs text-accent font-bold">{ppg}</span>
@@ -446,7 +452,7 @@ export default async function TeamPage({ params }: PageProps) {
         const midY = chartH / 2;
         return (
           <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Point Differential (Last {last15.length})</h3>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.pointDiff} ({t.teamPage.lastNGames.replace("%s", String(last15.length))})</h3>
             <svg viewBox={`0 0 100 ${chartH}`} className="w-full" preserveAspectRatio="none">
               <line x1="0" y1={midY} x2="100" y2={midY} stroke="var(--border)" strokeWidth="0.3" />
               {diffs.map((d, i) => {
@@ -489,7 +495,7 @@ export default async function TeamPage({ params }: PageProps) {
       {/* Last 10 Games W/L Streak */}
       {recentGames.length > 0 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Last {Math.min(recentGames.length, 10)} Games</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.lastNGames.replace("%s", String(Math.min(recentGames.length, 10)))}</h3>
           <div className="flex items-center gap-1">
             {recentGames.slice(0, 10).reverse().map((g, i) => (
               <div key={i} className={`flex-1 h-8 rounded flex items-center justify-center text-xs font-bold text-white ${g.won ? "bg-success" : "bg-danger"}`}>
@@ -505,7 +511,7 @@ export default async function TeamPage({ params }: PageProps) {
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Calendar size={16} className="text-accent" />
-            <h2 className="font-semibold text-sm">Recent Games</h2>
+            <h2 className="font-semibold text-sm">{t.teamPage.recentGames}</h2>
           </div>
           <div className="divide-y divide-border/50">
             {recentGames.slice(0, 10).map((g) => (
@@ -522,7 +528,7 @@ export default async function TeamPage({ params }: PageProps) {
               </Link>
             ))}
             {recentGames.length === 0 && (
-              <p className="px-4 py-6 text-center text-text-secondary text-sm">No completed games yet</p>
+              <p className="px-4 py-6 text-center text-text-secondary text-sm">{t.teamPage.noCompletedGames}</p>
             )}
           </div>
         </div>
@@ -531,7 +537,7 @@ export default async function TeamPage({ params }: PageProps) {
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Trophy size={16} className="text-accent" />
-            <h2 className="font-semibold text-sm">Upcoming Games</h2>
+            <h2 className="font-semibold text-sm">{t.teamPage.upcomingGames}</h2>
             {upcomingGames.length > 0 && (() => {
               // Compute average opponent win% for schedule difficulty
               const oppRecords: Record<string, { w: number; l: number }> = {};
@@ -557,7 +563,7 @@ export default async function TeamPage({ params }: PageProps) {
               }
               if (count === 0) return null;
               const avgWinPct = totalWinPct / count;
-              const diffLabel = avgWinPct > 0.55 ? "Tough Schedule" : avgWinPct < 0.45 ? "Easy Schedule" : "Average";
+              const diffLabel = avgWinPct > 0.55 ? t.teamPage.toughSchedule : avgWinPct < 0.45 ? t.teamPage.easySchedule : t.teamPage.average;
               const diffColor = avgWinPct > 0.55 ? "text-danger bg-danger/10" : avgWinPct < 0.45 ? "text-success bg-success/10" : "text-text-secondary bg-bg-hover";
               return (
                 <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-medium ${diffColor}`}>
@@ -576,7 +582,7 @@ export default async function TeamPage({ params }: PageProps) {
               </div>
             ))}
             {upcomingGames.length === 0 && (
-              <p className="px-4 py-6 text-center text-text-secondary text-sm">No upcoming games scheduled</p>
+              <p className="px-4 py-6 text-center text-text-secondary text-sm">{t.teamPage.noUpcomingGames}</p>
             )}
           </div>
         </div>
@@ -595,7 +601,7 @@ export default async function TeamPage({ params }: PageProps) {
         if (months.length < 2) return null;
         return (
           <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Monthly Record</h3>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.monthlyRecord}</h3>
             <div className="flex flex-wrap gap-2">
               {months.map(([month, rec]) => (
                 <div key={month} className="bg-bg-secondary rounded-lg px-3 py-2 text-center">
@@ -616,7 +622,7 @@ export default async function TeamPage({ params }: PageProps) {
               const points = pcts.map((p, i) => `${pad + i * xStep},${h - pad - p * (h - pad * 2)}`).join(" ");
               return (
                 <div className="mt-3">
-                  <p className="text-[10px] text-text-secondary mb-1">Win% Trend</p>
+                  <p className="text-[10px] text-text-secondary mb-1">{t.teamPage.winPctTrend}</p>
                   <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-[240px]" preserveAspectRatio="none">
                     <line x1={pad} y1={h / 2} x2={w - pad} y2={h / 2} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3" />
                     <polyline points={points} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
@@ -636,13 +642,13 @@ export default async function TeamPage({ params }: PageProps) {
         <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Trophy size={16} className="text-accent" />
-            <h2 className="font-semibold text-sm">Head-to-Head</h2>
+            <h2 className="font-semibold text-sm">{t.h2hPage.title}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-text-secondary text-xs">
-                  <th className="text-left py-3 px-4">Opponent</th>
+                  <th className="text-left py-3 px-4">{t.teamPage.opponent}</th>
                   <th className="text-center py-3 px-2">W</th>
                   <th className="text-center py-3 px-2">L</th>
                   <th className="text-center py-3 px-2">Win%</th>
@@ -703,7 +709,7 @@ export default async function TeamPage({ params }: PageProps) {
         }
         return (
           <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Position Breakdown</h3>
+            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.positionBreakdown}</h3>
             <div className="flex items-center gap-6">
               <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
                 {slices.map(s => <path key={s.key} d={s.path} fill={s.color} opacity={0.8} />)}
@@ -725,7 +731,7 @@ export default async function TeamPage({ params }: PageProps) {
       {/* Top Scorers */}
       {roster.length >= 3 && (
         <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">Top Scorers</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.topScorers}</h3>
           <div className="grid grid-cols-3 gap-3">
             {roster.slice(0, 3).map((p) => (
               <Link key={p.personId} href={`/player/${p.personId}`} className="flex flex-col items-center gap-2 bg-bg-secondary rounded-lg p-3 hover:bg-bg-hover transition-colors">
@@ -742,7 +748,7 @@ export default async function TeamPage({ params }: PageProps) {
       <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           <Users size={16} className="text-accent" />
-          <h2 className="font-semibold text-sm">Roster</h2>
+          <h2 className="font-semibold text-sm">{t.teamPage.roster}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

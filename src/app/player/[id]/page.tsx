@@ -23,12 +23,15 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const player = await getPlayerInfo(parseInt(id, 10));
+  const [player, locale] = await Promise.all([getPlayerInfo(parseInt(id, 10)), getLocale()]);
   if (!player) return {};
   const name = `${player.firstName} ${player.lastName}`;
+  const desc = locale === "zh"
+    ? `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`
+    : `${name} player profile: ${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`;
   return {
     title: `${name} — ${player.teamCity} ${player.teamName}`,
-    description: `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`,
+    description: desc,
     openGraph: {
       title: name,
       description: `${player.pts} PPG · ${player.reb} RPG · ${player.ast} APG`,

@@ -4,7 +4,7 @@ import { useLocale } from "./LocaleProvider";
 import { Globe } from "lucide-react";
 
 export default function LocaleToggle() {
-  const { locale, setLocale } = useLocale();
+  const { locale, t, setLocale } = useLocale();
 
   const toggle = () => {
     setLocale(locale === "zh" ? "en" : "zh");
@@ -14,8 +14,8 @@ export default function LocaleToggle() {
     <button
       onClick={toggle}
       className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors text-xs font-medium"
-      title={locale === "zh" ? "Switch to English" : "切换到中文"}
-      aria-label={locale === "zh" ? "Switch to English" : "切换到中文"}
+      title={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
+      aria-label={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
     >
       <span className="flex items-center gap-1">
         <Globe size={16} />

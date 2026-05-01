@@ -8,6 +8,7 @@ import {
   getFavoritePlayers,
   toggleFavoritePlayer,
 } from "@/lib/favorites";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface FavoriteButtonProps {
   type: "team" | "player";
@@ -16,6 +17,7 @@ interface FavoriteButtonProps {
 
 export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
+  const { t } = useLocale();
 
   useEffect(() => {
     if (type === "team") {
@@ -43,8 +45,8 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
           ? "text-red-500 hover:text-red-400"
           : "text-text-secondary hover:text-red-400"
       }`}
-      title={isFav ? "Remove from favorites" : "Add to favorites"}
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      title={isFav ? t.favorite.remove : t.favorite.add}
+      aria-label={isFav ? t.favorite.remove : t.favorite.add}
     >
       <Heart size={20} fill={isFav ? "currentColor" : "none"} className={isFav ? "animate-count" : ""} />
     </button>

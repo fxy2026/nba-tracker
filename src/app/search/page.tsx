@@ -6,10 +6,14 @@ import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "搜索球员",
-  description: "搜索 NBA 球员，查看详细数据和职业生涯信息。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.searchTitle,
+    description: t.meta.searchDesc,
+  };
+}
 
 const POPULAR_PLAYERS = [
   { id: 2544, name: "LeBron James", team: "LAL" },

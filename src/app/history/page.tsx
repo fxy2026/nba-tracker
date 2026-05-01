@@ -4,10 +4,14 @@ import { Trophy } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
-export const metadata: Metadata = {
-  title: "历届总冠军",
-  description: "NBA 历届总冠军、FMVP 和总决赛比分一览。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
+  return {
+    title: t.meta.championsTitle,
+    description: t.meta.championsDesc,
+  };
+}
 
 const champions = [
   { year: 2026, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },

@@ -352,6 +352,7 @@ export interface Translations {
     overallScore: string;
     scoreFormula: string;
     selectHint: string;
+    swapPlayers: string;
   };
 
   // ---- Search ----
@@ -651,6 +652,59 @@ export interface Translations {
     playInLine: string;
     mvpRankingNote: string;
     minGpRequired: string;
+  };
+
+  // ---- Team Page ----
+  teamPage: {
+    backToStandings: string;
+    record: string;
+    winPct: string;
+    last10: string;
+    playersCount: string;
+    home: string;
+    away: string;
+    streak: string;
+    bestStreak: string;
+    worstStreak: string;
+    seasonProgression: string;
+    vsDivision: string;
+    vsNonDivision: string;
+    recentOpponents: string;
+    offVsDef: string;
+    pointDiff: string;
+    lastNGames: string;
+    recentGames: string;
+    upcomingGames: string;
+    noCompletedGames: string;
+    noUpcomingGames: string;
+    toughSchedule: string;
+    easySchedule: string;
+    average: string;
+    monthlyRecord: string;
+    winPctTrend: string;
+    positionBreakdown: string;
+    topScorers: string;
+    roster: string;
+    opponent: string;
+    teamDesc: string;
+    teamDescEn: string;
+    scheduleLink: string;
+    conference: string;
+    division: string;
+  };
+
+  // ---- Favorite Button ----
+  favorite: {
+    add: string;
+    remove: string;
+  };
+
+  // ---- Export ----
+  export: {
+    copied: string;
+    exportBtn: string;
+    eastConf: string;
+    westConf: string;
   };
 
   // ---- Admin ----

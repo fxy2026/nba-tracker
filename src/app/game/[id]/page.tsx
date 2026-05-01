@@ -30,14 +30,18 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const box = await getBoxScore(id);
+  const [box, locale] = await Promise.all([getBoxScore(id), getLocale()]);
+  const t = getTranslations(locale);
   if (!box) return {};
   const away = box.awayTeam;
   const home = box.homeTeam;
   const score = box.gameStatus >= 2 ? ` ${away.score}-${home.score}` : "";
+  const desc = locale === "zh"
+    ? `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName} — Box Score、投篮图、逐球回放。`
+    : `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName} — ${t.gameDetail.boxScore}, ${t.gameDetail.shotChart}, ${t.gameDetail.playByPlay}.`;
   return {
     title: `${away.teamTricode} vs ${home.teamTricode}${score}`,
-    description: `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName} — Box Score、投篮图、逐球回放。`,
+    description: desc,
     openGraph: {
       title: `${away.teamTricode}${score ? " " + away.score : ""} vs ${home.teamTricode}${score ? " " + home.score : ""} | NBA Tracker`,
       description: `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName}`,

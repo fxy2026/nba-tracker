@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 const INTERVAL = 15;
 
@@ -11,6 +12,7 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   const routerRef = useRef(router);
   routerRef.current = router;
   const [countdown, setCountdown] = useState(INTERVAL);
+  const { t } = useLocale();
 
   useEffect(() => {
     if (!isLive) return;
@@ -35,7 +37,7 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   return (
     <div className="flex items-center gap-2 text-xs text-success mb-3 mt-2">
       <Radio size={12} className="animate-pulse" />
-      <span>LIVE — auto-refreshing</span>
+      <span>{t.liveScore.autoRefreshing}</span>
       <span className="text-text-secondary tabular-nums">({countdown}s)</span>
     </div>
   );
