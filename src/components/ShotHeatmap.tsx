@@ -255,33 +255,90 @@ export default function ShotHeatmap({ playerId, playerName, fromYear, toYear }: 
       const types = st === "All" ? ["Regular+Season", "Playoffs"] : [st.replace(" ", "+")];
       const allShots: ShotRow[] = [];
       for (const stype of types) {
-        const params = new URLSearchParams({
-          endpoint: "shotchartdetail",
-          PlayerID: String(playerId),
-          Season: s,
-          SeasonType: stype,
-          ContextMeasure: "FGA",
-          LeagueID: "00",
-        });
-        const res = await fetch(`/api/stats?${params}`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const rs = data.resultSets?.[0];
+        // Try server proxy first, fall back to direct browser request
+        let data: Record<string, unknown> | null = null;
+
+        // Attempt 1: server proxy (works in some environments)
+        try {
+          const proxyParams = new URLSearchParams({
+            endpoint: "shotchartdetail",
+            PlayerID: String(playerId),
+            Season: s,
+            SeasonType: stype,
+            ContextMeasure: "FGA",
+            LeagueID: "00",
+          });
+          const proxyRes = await fetch(`/api/stats?${proxyParams}`);
+          if (proxyRes.ok) {
+            const proxyData = await proxyRes.json();
+            if (proxyData.resultSets) data = proxyData;
+          }
+        } catch { /* proxy failed, try direct */ }
+
+        // Attempt 2: direct browser request to stats.nba.com (bypasses server-side blocks)
+        if (!data) {
+          try {
+            const directParams = new URLSearchParams({
+              PlayerID: String(playerId),
+              Season: s,
+              SeasonType: stype,
+              ContextMeasure: "FGA",
+              LeagueID: "00",
+              TeamID: "0",
+              GameID: "",
+              Position: "",
+              Outcome: "",
+              Location: "",
+              Month: "0",
+              SeasonSegment: "",
+              DateFrom: "",
+              DateTo: "",
+              OpponentTeamID: "0",
+              VsConference: "",
+              VsDivision: "",
+              PlayerPosition: "",
+              GameSegment: "",
+              Period: "0",
+              LastNGames: "0",
+              AheadBehind: "",
+              ContextFilter: "",
+              ClutchTime: "",
+              RookieYear: "",
+              StartPeriod: "",
+              EndPeriod: "",
+              StartRange: "",
+              EndRange: "",
+              RangeType: "",
+            });
+            const directRes = await fetch(
+              `https://stats.nba.com/stats/shotchartdetail?${directParams}`,
+              {
+                headers: {
+                  Accept: "application/json, text/plain, */*",
+                  Referer: "https://www.nba.com/",
+                  Origin: "https://www.nba.com",
+                },
+              }
+            );
+            if (directRes.ok) data = await directRes.json();
+          } catch { /* direct also failed */ }
+        }
+
+        if (!data) continue;
+        const rs = (data.resultSets as { headers: string[]; rowSet: (string | number)[][] }[])?.[0];
         if (!rs?.rowSet) continue;
-        const headers: string[] = rs.headers;
+        const headers = rs.headers;
         const xi = headers.indexOf("LOC_X");
         const yi = headers.indexOf("LOC_Y");
         const disti = headers.indexOf("SHOT_DISTANCE");
         const resi = headers.indexOf("SHOT_MADE_FLAG");
         for (const row of rs.rowSet) {
-          // NBA stats API: LOC_X/LOC_Y in tenths of feet from basket center
-          // Convert to percentage coords matching our zone system
-          const locX = row[xi] as number; // -250 to 250 (tenths of feet, left-right)
-          const locY = row[yi] as number; // -50 to 900+ (tenths of feet, baseline to halfcourt)
+          // LOC_X/LOC_Y: tenths of feet from basket center
+          const locX = row[xi] as number; // -250 to 250 (left-right)
+          const locY = row[yi] as number; // -50 to 900+ (baseline to halfcourt)
           const dist = row[disti] as number;
           const made = row[resi] as number;
-          // Convert to our coordinate system: x = along court length (0-100), y = across width (0-100)
-          // basket at (5.59, 50)
+          // Convert to our percentage coordinate system (x = court length, y = court width)
           const xPct = 5.59 + (locY / 10 / 94) * 100;
           const yPct = 50 + (locX / 10 / 50) * 100;
           allShots.push({
