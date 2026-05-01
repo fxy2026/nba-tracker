@@ -43,14 +43,15 @@ const PAINT_L = sv(-8, 0)[0];
 const PAINT_R = sv(8, 0)[0];
 const FT_Y = sv(0, 19 - 5.25)[1]; // FT line in SVG-Y
 
-// Corner 3: sideline at ±22ft from center, extends 14ft from baseline
-const C3L = sv(-22, 0)[0];
-const C3R = sv(22, 0)[0];
-const CORNER_Y = sv(0, 14 - 5.25)[1]; // where corner 3 ends
+// Corner 3: the 3pt arc at corner break angle gives the exact corner line position
+const CORNER_DEPTH_FT = 14 - 5.25; // 8.75ft from basket (14ft from baseline)
+const ARC_CORNER_A_COURT = Math.acos(CORNER_DEPTH_FT / 23.75) * (180 / Math.PI);
+const [C3L] = arcPt(-ARC_CORNER_A_COURT); // x where arc meets corner break
+const [C3R] = arcPt(ARC_CORNER_A_COURT);
+const CORNER_Y = sv(0, CORNER_DEPTH_FT)[1]; // y of corner break
 
-// 3pt arc intersection with corner line (angle where arc meets corner depth)
-const CORNER_DEPTH_FT = 14 - 5.25; // 8.75ft from basket
-const ARC_CORNER_A = Math.acos(CORNER_DEPTH_FT / 23.75) * (180 / Math.PI); // ≈68.4°
+// 3pt arc intersection angle (reuse CORNER_DEPTH_FT from above)
+const ARC_CORNER_A = ARC_CORNER_A_COURT;
 
 // Wing split angle — divides left/center/right for mid-range and above-break-3
 // At this angle, the 3pt arc point X equals the paint edge X
@@ -65,12 +66,19 @@ function arcPt(aDeg: number): [number, number] {
 
 // ---- Court markings (lines only, no fills) ----
 function CourtLines() {
-  // 3pt arc polyline
+  // 3pt arc polyline — only from corner break angle to corner break angle
+  // Below corner break, straight corner lines take over
+  const ARC_A = Math.acos((14 - 5.25) / 23.75) * (180 / Math.PI); // ≈68.4°
   const arcPts: string[] = [];
-  for (let a = -90; a <= 90; a += 2) {
+  for (let a = -ARC_A; a <= ARC_A; a += 2) {
     const [x, y] = arcPt(a);
     arcPts.push(`${x},${y}`);
   }
+  // Add the exact end point
+  arcPts.push(`${arcPt(ARC_A).join(",")}`);
+  // Corner lines connect arc ends to baseline
+  const [arcLeftX, arcLeftY] = arcPt(-ARC_A);
+  const [arcRightX, arcRightY] = arcPt(ARC_A);
 
   return (
     <>
@@ -85,9 +93,9 @@ function CourtLines() {
       {/* Basket */}
       <circle cx={BX} cy={BY} r={4} fill="none" stroke="#928CEE" strokeWidth="1.5" />
       <line x1={BX - 12} y1={BY + 4} x2={BX + 12} y2={BY + 4} stroke="#555" strokeWidth="2" />
-      {/* 3pt line */}
-      <line x1={C3L} y1={BASELINE} x2={C3L} y2={CORNER_Y} stroke="#444" strokeWidth="1.5" />
-      <line x1={C3R} y1={BASELINE} x2={C3R} y2={CORNER_Y} stroke="#444" strokeWidth="1.5" />
+      {/* 3pt line: corner straight lines + arc */}
+      <line x1={arcLeftX} y1={BASELINE} x2={arcLeftX} y2={arcLeftY} stroke="#444" strokeWidth="1.5" />
+      <line x1={arcRightX} y1={BASELINE} x2={arcRightX} y2={arcRightY} stroke="#444" strokeWidth="1.5" />
       <polyline points={arcPts.join(" ")} fill="none" stroke="#444" strokeWidth="1.5" />
     </>
   );
