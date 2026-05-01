@@ -3,13 +3,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import { aggregateZoneStats, getZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
-import { CURRENT_SEASON } from "@/lib/constants";
 
 interface Props {
   playerId: number;
   playerName: string;
-  fromYear: string; // e.g. "2009"
-  toYear: string;   // e.g. "2025"
+  teamTricode: string;
 }
 
 interface ShotRow {
@@ -228,138 +226,39 @@ const SHORT_NAME: Record<ShotZone, string> = {
 };
 
 // ---------- Main component ----------
-export default function ShotHeatmap({ playerId, playerName, fromYear, toYear }: Props) {
+export default function ShotHeatmap({ playerId, playerName, teamTricode }: Props) {
   const { t, locale } = useLocale();
-  const [season, setSeason] = useState(CURRENT_SEASON);
-  const [seasonType, setSeasonType] = useState<"Regular Season" | "Playoffs" | "All">("Regular Season");
+  const [seasonType, setSeasonType] = useState<"regular" | "playoffs" | "all">("regular");
   const [shots, setShots] = useState<ShotRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hoveredZone, setHoveredZone] = useState<ShotZone | null>(null);
+  const [gamesInfo, setGamesInfo] = useState({ loaded: 0, total: 0 });
 
-  // Build season options from player career span
-  const seasons = useMemo(() => {
-    const from = parseInt(fromYear);
-    const to = parseInt(toYear);
-    const list: string[] = [];
-    for (let y = to; y >= from; y--) {
-      list.push(`${y}-${String(y + 1).slice(2)}`);
-    }
-    return list;
-  }, [fromYear, toYear]);
-
-  const fetchShots = useCallback(async (s: string, st: string) => {
+  const fetchShots = useCallback(async (st: string) => {
     setLoading(true);
     setError("");
     try {
-      const types = st === "All" ? ["Regular+Season", "Playoffs"] : [st.replace(" ", "+")];
-      const allShots: ShotRow[] = [];
-      for (const stype of types) {
-        // Try server proxy first, fall back to direct browser request
-        let data: Record<string, unknown> | null = null;
-
-        // Attempt 1: server proxy (works in some environments)
-        try {
-          const proxyParams = new URLSearchParams({
-            endpoint: "shotchartdetail",
-            PlayerID: String(playerId),
-            Season: s,
-            SeasonType: stype,
-            ContextMeasure: "FGA",
-            LeagueID: "00",
-          });
-          const proxyRes = await fetch(`/api/stats?${proxyParams}`);
-          if (proxyRes.ok) {
-            const proxyData = await proxyRes.json();
-            if (proxyData.resultSets) data = proxyData;
-          }
-        } catch { /* proxy failed, try direct */ }
-
-        // Attempt 2: direct browser request to stats.nba.com (bypasses server-side blocks)
-        if (!data) {
-          try {
-            const directParams = new URLSearchParams({
-              PlayerID: String(playerId),
-              Season: s,
-              SeasonType: stype,
-              ContextMeasure: "FGA",
-              LeagueID: "00",
-              TeamID: "0",
-              GameID: "",
-              Position: "",
-              Outcome: "",
-              Location: "",
-              Month: "0",
-              SeasonSegment: "",
-              DateFrom: "",
-              DateTo: "",
-              OpponentTeamID: "0",
-              VsConference: "",
-              VsDivision: "",
-              PlayerPosition: "",
-              GameSegment: "",
-              Period: "0",
-              LastNGames: "0",
-              AheadBehind: "",
-              ContextFilter: "",
-              ClutchTime: "",
-              RookieYear: "",
-              StartPeriod: "",
-              EndPeriod: "",
-              StartRange: "",
-              EndRange: "",
-              RangeType: "",
-            });
-            const directRes = await fetch(
-              `https://stats.nba.com/stats/shotchartdetail?${directParams}`,
-              {
-                headers: {
-                  Accept: "application/json, text/plain, */*",
-                  Referer: "https://www.nba.com/",
-                  Origin: "https://www.nba.com",
-                },
-              }
-            );
-            if (directRes.ok) data = await directRes.json();
-          } catch { /* direct also failed */ }
-        }
-
-        if (!data) continue;
-        const rs = (data.resultSets as { headers: string[]; rowSet: (string | number)[][] }[])?.[0];
-        if (!rs?.rowSet) continue;
-        const headers = rs.headers;
-        const xi = headers.indexOf("LOC_X");
-        const yi = headers.indexOf("LOC_Y");
-        const disti = headers.indexOf("SHOT_DISTANCE");
-        const resi = headers.indexOf("SHOT_MADE_FLAG");
-        for (const row of rs.rowSet) {
-          // LOC_X/LOC_Y: tenths of feet from basket center
-          const locX = row[xi] as number; // -250 to 250 (left-right)
-          const locY = row[yi] as number; // -50 to 900+ (baseline to halfcourt)
-          const dist = row[disti] as number;
-          const made = row[resi] as number;
-          // Convert to our percentage coordinate system (x = court length, y = court width)
-          const xPct = 5.59 + (locY / 10 / 94) * 100;
-          const yPct = 50 + (locX / 10 / 50) * 100;
-          allShots.push({
-            x: xPct,
-            y: yPct,
-            shotDistance: dist,
-            shotResult: made === 1 ? "Made" : "Missed",
-          });
-        }
-      }
-      setShots(allShots);
+      const params = new URLSearchParams({
+        playerId: String(playerId),
+        team: teamTricode,
+        seasonType: st,
+      });
+      const res = await fetch(`/api/player-shots?${params}`);
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      setShots(data.shots || []);
+      setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
     } catch {
       setError(locale === "zh" ? "加载投篮数据失败" : "Failed to load shot data");
     } finally {
       setLoading(false);
     }
-  }, [playerId, locale]);
+  }, [playerId, teamTricode, locale]);
 
   useEffect(() => {
-    fetchShots(season, seasonType);
-  }, [season, seasonType, fetchShots]);
+    fetchShots(seasonType);
+  }, [seasonType, fetchShots]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
   const statsMap = useMemo(() => {
@@ -375,8 +274,8 @@ export default function ShotHeatmap({ playerId, playerName, fromYear, toYear }: 
   const hoveredStat = hoveredZone ? statsMap.get(hoveredZone) : null;
 
   const seasonTypeLabel = (st: string) => {
-    if (st === "Regular Season") return locale === "zh" ? "常规赛" : "Regular";
-    if (st === "Playoffs") return locale === "zh" ? "季后赛" : "Playoffs";
+    if (st === "regular") return locale === "zh" ? "常规赛" : "Regular";
+    if (st === "playoffs") return locale === "zh" ? "季后赛" : "Playoffs";
     return locale === "zh" ? "全部" : "All";
   };
 
@@ -389,17 +288,8 @@ export default function ShotHeatmap({ playerId, playerName, fromYear, toYear }: 
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <select
-          value={season}
-          onChange={(e) => setSeason(e.target.value)}
-          className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-        >
-          {seasons.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
         <div className="flex rounded-lg overflow-hidden border border-border">
-          {(["Regular Season", "Playoffs", "All"] as const).map((st) => (
+          {(["regular", "playoffs", "all"] as const).map((st) => (
             <button
               key={st}
               onClick={() => setSeasonType(st)}
@@ -414,6 +304,11 @@ export default function ShotHeatmap({ playerId, playerName, fromYear, toYear }: 
         {shots.length > 0 && (
           <span className="text-xs text-text-secondary ml-auto">
             {overallMade}/{shots.length} FG ({overallPct.toFixed(1)}%)
+            {gamesInfo.loaded > 0 && (
+              <span className="text-text-secondary/60 ml-1">
+                · {gamesInfo.loaded}/{gamesInfo.total} {locale === "zh" ? "场" : "games"}
+              </span>
+            )}
           </span>
         )}
       </div>
