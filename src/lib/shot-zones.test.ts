@@ -3,10 +3,7 @@ import { classifyShotZone, aggregateZoneStats, getZoneColor } from "./shot-zones
 import type { ShotZone } from "./shot-zones";
 
 describe("classifyShotZone", () => {
-  // NBA court: basket at ~(5.59, 50) in percentage coords
-  // x = 0-100 along 94ft length, y = 0-100 along 50ft width
-
-  it("classifies a layup at the rim as Restricted Area", () => {
+  it("classifies a layup as Restricted Area", () => {
     expect(classifyShotZone({ x: 6, y: 50, shotDistance: 1 })).toBe("Restricted Area");
   });
 
@@ -14,29 +11,29 @@ describe("classifyShotZone", () => {
     expect(classifyShotZone({ x: 8, y: 48, shotDistance: 3 })).toBe("Restricted Area");
   });
 
-  it("classifies a 10-foot left-side shot as Paint (Left)", () => {
-    expect(classifyShotZone({ x: 12, y: 35, shotDistance: 10 })).toBe("Paint (Left)");
+  it("classifies a 10-foot shot in the paint as Paint", () => {
+    expect(classifyShotZone({ x: 12, y: 50, shotDistance: 10 })).toBe("Paint");
   });
 
-  it("classifies a 10-foot right-side shot as Paint (Right)", () => {
-    expect(classifyShotZone({ x: 12, y: 65, shotDistance: 10 })).toBe("Paint (Right)");
+  it("classifies a shot at the FT line as Paint", () => {
+    expect(classifyShotZone({ x: 20, y: 50, shotDistance: 14 })).toBe("Paint");
   });
 
-  it("classifies a 17-foot left baseline shot as Mid-Range (Left)", () => {
-    // High angle, left side, between paint and 3pt line
+  it("classifies a shot outside paint left as Mid-Range (Left)", () => {
+    // High angle to the left, between paint and 3pt
     expect(classifyShotZone({ x: 8, y: 22, shotDistance: 17 })).toBe("Mid-Range (Left)");
   });
 
-  it("classifies an 18-foot elbow shot as Mid-Range (Left Center)", () => {
-    expect(classifyShotZone({ x: 20, y: 30, shotDistance: 18 })).toBe("Mid-Range (Left Center)");
+  it("classifies a shot outside paint right as Mid-Range (Right)", () => {
+    expect(classifyShotZone({ x: 8, y: 78, shotDistance: 17 })).toBe("Mid-Range (Right)");
   });
 
-  it("classifies a 15-foot free-throw area shot as Mid-Range (Center)", () => {
-    expect(classifyShotZone({ x: 22, y: 50, shotDistance: 15 })).toBe("Mid-Range (Center)");
+  it("classifies a shot at the elbow as Mid-Range (Center)", () => {
+    // Moderate angle, between paint and 3pt
+    expect(classifyShotZone({ x: 22, y: 50, shotDistance: 16 })).toBe("Mid-Range (Center)");
   });
 
   it("classifies a left corner 3 as Corner 3 (Left)", () => {
-    // Corner 3: close to baseline (x near basket), far from center (y near sideline), > 22ft
     expect(classifyShotZone({ x: 6, y: 6, shotDistance: 23 })).toBe("Corner 3 (Left)");
   });
 
@@ -45,9 +42,6 @@ describe("classifyShotZone", () => {
   });
 
   it("classifies a left wing 3 as Above Break 3 (Left)", () => {
-    // Wing shot: past baseline (x far from basket), extreme sideline (y near 0)
-    // angle needs to be >= 72° → y must be far from center
-    // x=22 → baselineDist=15.4ft > 14 (not corner), angle ~51° ≥ 45° → Left
     expect(classifyShotZone({ x: 22, y: 5, shotDistance: 26 })).toBe("Above Break 3 (Left)");
   });
 
@@ -60,29 +54,21 @@ describe("classifyShotZone", () => {
   });
 
   it("uses distance calculation when shotDistance is 0", () => {
-    // At basket, should be Restricted Area even with shotDistance=0
     expect(classifyShotZone({ x: 6, y: 50, shotDistance: 0 })).toBe("Restricted Area");
   });
 });
 
 describe("aggregateZoneStats", () => {
   const makeShot = (zone: ShotZone, made: boolean) => {
-    // Map zones to rough coordinates
     const coords: Record<string, { x: number; y: number; shotDistance: number }> = {
       "Restricted Area": { x: 6, y: 50, shotDistance: 2 },
-      "Paint (Left)": { x: 12, y: 35, shotDistance: 10 },
+      "Paint": { x: 12, y: 50, shotDistance: 10 },
       "Mid-Range (Center)": { x: 22, y: 50, shotDistance: 15 },
       "Above Break 3 (Center)": { x: 32, y: 50, shotDistance: 25 },
       "Corner 3 (Left)": { x: 6, y: 6, shotDistance: 23 },
     };
     const c = coords[zone] || coords["Restricted Area"];
-    return {
-      ...c,
-      shotResult: made ? "Made" as const : "Missed" as const,
-      actionType: c.shotDistance > 22 ? "3pt" as const : "2pt" as const,
-      personId: 1, teamTricode: "LAL", period: 1,
-      description: "", subType: "",
-    };
+    return { ...c, shotResult: made ? "Made" : "Missed" };
   };
 
   it("returns stats for each zone that has shots", () => {
@@ -124,11 +110,10 @@ describe("aggregateZoneStats", () => {
 describe("getZoneColor", () => {
   it("returns red-ish color when well above league average", () => {
     const color = getZoneColor(65, 45);
-    // Red channel should dominate
     const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
     expect(match).not.toBeNull();
     const [, r, , b] = match!.map(Number);
-    expect(r).toBeGreaterThan(b); // red > blue
+    expect(r).toBeGreaterThan(b);
   });
 
   it("returns blue-ish color when well below league average", () => {
@@ -136,7 +121,7 @@ describe("getZoneColor", () => {
     const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
     expect(match).not.toBeNull();
     const [, r, , b] = match!.map(Number);
-    expect(b).toBeGreaterThan(r); // blue > red
+    expect(b).toBeGreaterThan(r);
   });
 
   it("returns orange-ish color when near league average", () => {
@@ -144,7 +129,6 @@ describe("getZoneColor", () => {
     const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
     expect(match).not.toBeNull();
     const [, r, g, b] = match!.map(Number);
-    // Orange: high red, medium green, low blue
     expect(r).toBeGreaterThan(b);
     expect(g).toBeGreaterThan(b);
   });
