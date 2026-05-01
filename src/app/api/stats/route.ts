@@ -12,6 +12,7 @@ const HEADERS: HeadersInit = {
 const ALLOWED_ENDPOINTS = new Set([
   "leagueleaders", "playercareerstats", "playergamelog",
   "draftcombineplayeranthro", "commonplayerinfo",
+  "shotchartdetail",
 ]);
 
 export async function GET(request: NextRequest) {

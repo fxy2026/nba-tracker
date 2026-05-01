@@ -122,20 +122,31 @@ describe("aggregateZoneStats", () => {
 });
 
 describe("getZoneColor", () => {
-  it("returns hot color when pct is well above league average", () => {
-    const color = getZoneColor(60, 45);
-    // Should be a reddish/hot tone
-    expect(color).toMatch(/^#|^rgb/);
+  it("returns red-ish color when well above league average", () => {
+    const color = getZoneColor(65, 45);
+    // Red channel should dominate
+    const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    expect(match).not.toBeNull();
+    const [, r, , b] = match!.map(Number);
+    expect(r).toBeGreaterThan(b); // red > blue
   });
 
-  it("returns cold color when pct is well below league average", () => {
+  it("returns blue-ish color when well below league average", () => {
     const color = getZoneColor(25, 45);
-    expect(color).toMatch(/^#|^rgb/);
+    const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    expect(match).not.toBeNull();
+    const [, r, , b] = match!.map(Number);
+    expect(b).toBeGreaterThan(r); // blue > red
   });
 
-  it("returns neutral color when pct equals league average", () => {
+  it("returns orange-ish color when near league average", () => {
     const color = getZoneColor(45, 45);
-    expect(color).toMatch(/^#|^rgb/);
+    const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    expect(match).not.toBeNull();
+    const [, r, g, b] = match!.map(Number);
+    // Orange: high red, medium green, low blue
+    expect(r).toBeGreaterThan(b);
+    expect(g).toBeGreaterThan(b);
   });
 
   it("hot color is different from cold color", () => {

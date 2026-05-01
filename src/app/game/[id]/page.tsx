@@ -23,7 +23,6 @@ const PlayerShotChart = dynamic(() => import("@/components/PlayerShotChart"), { 
 const PlayByPlay = dynamic(() => import("@/components/PlayByPlay"), { loading: ChartPlaceholder });
 const RadarChart = dynamic(() => import("@/components/RadarChart"), { loading: ChartPlaceholder });
 const ScoringFlow = dynamic(() => import("@/components/ScoringFlow"), { loading: ChartPlaceholder });
-const ShotHeatmap = dynamic(() => import("@/components/ShotHeatmap"), { loading: ChartPlaceholder });
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -201,9 +200,6 @@ function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers, t }: {
         {t.gameDetail.shotChart}
       </h3>
       <ShotChart shots={shots} homeTricode={homeTricode} awayTricode={awayTricode} players={allPlayers} />
-      <div className="mt-4 pt-4 border-t border-border">
-        <ShotHeatmap shots={shots} />
-      </div>
     </div>
   );
 }

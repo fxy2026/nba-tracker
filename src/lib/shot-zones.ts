@@ -124,25 +124,25 @@ export function aggregateZoneStats(
 }
 
 // Map a shooting percentage to a color relative to league average
-// Returns hex color: red (hot) when above avg, blue (cold) when below
+// Blue (cold, below avg) → Orange (neutral, at avg) → Red (hot, above avg)
 export function getZoneColor(pct: number, leagueAvg: number): string {
   const diff = pct - leagueAvg;
   // Clamp to [-20, +20] range for color mapping
   const clamped = Math.max(-20, Math.min(20, diff));
   const t = (clamped + 20) / 40; // 0 (cold) to 1 (hot)
 
-  // Interpolate: blue (#3b82f6) → gray (#6b7280) → red (#ef4444)
+  // Blue (#3b82f6) → Orange (#f59e0b) → Red (#ef4444)
   if (t <= 0.5) {
-    const s = t * 2; // 0-1 within cold-to-neutral
-    const r = Math.round(59 + s * (107 - 59));
-    const g = Math.round(130 + s * (114 - 130));
-    const b = Math.round(246 + s * (128 - 246));
+    const s = t * 2; // 0-1 within blue-to-orange
+    const r = Math.round(59 + s * (245 - 59));
+    const g = Math.round(130 + s * (158 - 130));
+    const b = Math.round(246 + s * (11 - 246));
     return `rgb(${r},${g},${b})`;
   } else {
-    const s = (t - 0.5) * 2; // 0-1 within neutral-to-hot
-    const r = Math.round(107 + s * (239 - 107));
-    const g = Math.round(114 + s * (68 - 114));
-    const b = Math.round(128 + s * (68 - 128));
+    const s = (t - 0.5) * 2; // 0-1 within orange-to-red
+    const r = Math.round(245 + s * (239 - 245));
+    const g = Math.round(158 + s * (68 - 158));
+    const b = Math.round(11 + s * (68 - 11));
     return `rgb(${r},${g},${b})`;
   }
 }

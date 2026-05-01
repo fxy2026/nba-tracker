@@ -11,6 +11,7 @@ import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
 import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
 import PlayerAdvancedStats from "@/components/player/PlayerAdvancedStats";
+import ShotHeatmap from "@/components/ShotHeatmap";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -392,6 +393,7 @@ export default async function PlayerPage({ params }: PageProps) {
           {/* Stats bundle first — most important for basketball fans */}
           <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
           <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+          <ShotHeatmap playerId={personId} playerName={fullName} fromYear={player.fromYear} toYear={player.toYear} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerNews playerName={fullName} />
