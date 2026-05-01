@@ -165,25 +165,24 @@ function zonePath(zone: ShotZone): string {
 
     // ---- Mid-Range: bounded by paint edge (inner), 3PT ARC (outer), wing lines (sides) ----
     case "Mid-Range (Left)":
-      // baseline along paint → up paint edge → wing-paint intersection →
-      // along wing line to 3pt arc → ARC from wing to corner → corner line → baseline
+      // paint edge → along 3pt arc (from corner break to wing) → wing line to paint
       return [
         `M ${PAINT_L},${BASELINE}`,
-        `L ${C3L},${BASELINE}`,
+        `L ${PAINT_L},${WING_PAINT_L[1]}`,
+        `L ${arc3pt(-WING_A, -ARC_CORNER_A)}`,  // arc from wing to corner break
         `L ${C3L},${CORNER_Y}`,
-        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`,
-        `L ${WING_PAINT_L.join(",")}`,          // wing line back to paint edge
-        `L ${PAINT_L},${BASELINE}`,
+        `L ${C3L},${BASELINE}`,
         "Z",
       ].join(" ");
 
     case "Mid-Range (Right)":
       return [
         `M ${PAINT_R},${BASELINE}`,
-        `L ${PAINT_R},${WING_PAINT_R[1]}`,      // up paint edge to wing intersection
-        `L ${arc3pt(WING_A, ARC_CORNER_A)}`,
-        `L ${C3R},${CORNER_Y}`,
         `L ${C3R},${BASELINE}`,
+        `L ${C3R},${CORNER_Y}`,
+        `L ${arc3pt(ARC_CORNER_A, WING_A)}`,
+        `L ${WING_PAINT_R.join(",")}`,
+        `L ${PAINT_R},${BASELINE}`,
         "Z",
       ].join(" ");
 
@@ -198,21 +197,36 @@ function zonePath(zone: ShotZone): string {
         "Z",
       ].join(" ");
 
-    // ---- Corner 3 ----
+    // ---- Corner 3: bounded by sideline, baseline, and 3pt arc ----
     case "Corner 3 (Left)":
-      return `M ${PAD},${BASELINE} L ${PAD},${CORNER_Y} L ${C3L},${CORNER_Y} L ${C3L},${BASELINE} Z`;
+      // sideline→baseline→corner line→up to arc break→follow arc down toward baseline→bridge to sideline
+      return [
+        `M ${PAD},${BASELINE}`,
+        `L ${C3L},${BASELINE}`,
+        `L ${C3L},${CORNER_Y}`,
+        `L ${arc3pt(-ARC_CORNER_A, -90)}`,  // follow arc from corner break toward sideline
+        `L ${PAD},${arcPt(-90)[1]}`,        // bridge to sideline at arc end height
+        "Z",
+      ].join(" ");
 
     case "Corner 3 (Right)":
-      return `M ${C3R},${BASELINE} L ${C3R},${CORNER_Y} L ${W - PAD},${CORNER_Y} L ${W - PAD},${BASELINE} Z`;
+      return [
+        `M ${C3R},${BASELINE}`,
+        `L ${W - PAD},${BASELINE}`,
+        `L ${W - PAD},${arcPt(90)[1]}`,
+        `L ${arc3pt(90, ARC_CORNER_A)}`,
+        `L ${C3R},${CORNER_Y}`,
+        "Z",
+      ].join(" ");
 
     // ---- Above Break 3: bounded by 3PT ARC (inner) and court boundary (outer) ----
     case "Above Break 3 (Left)":
+      // From sideline at arc-end height → arc from -90° to wing → wing line to court edge → court top → sideline
       return [
-        `M ${PAD},${CORNER_Y}`,
-        `L ${C3L},${CORNER_Y}`,
-        `L ${arc3pt(-ARC_CORNER_A, -WING_A)}`, // 3pt arc from corner to wing
+        `M ${PAD},${arcPt(-90)[1]}`,            // sideline at arc end height
+        `L ${arc3pt(-90, -WING_A)}`,            // full arc from sideline to wing
         `L ${WING_L_EXT.join(",")}`,            // wing line to court edge
-        `L ${PAD},${HALFCOURT}`,
+        `L ${PAD},${HALFCOURT}`,                // sideline at court top
         "Z",
       ].join(" ");
 
@@ -229,9 +243,8 @@ function zonePath(zone: ShotZone): string {
     case "Above Break 3 (Right)":
       return [
         `M ${WING_R_EXT.join(",")}`,
-        `L ${arc3pt(WING_A, ARC_CORNER_A)}`, // 3pt arc from wing to corner
-        `L ${C3R},${CORNER_Y}`,
-        `L ${W - PAD},${CORNER_Y}`,
+        `L ${arc3pt(WING_A, 90)}`,
+        `L ${W - PAD},${arcPt(90)[1]}`,
         `L ${W - PAD},${HALFCOURT}`,
         "Z",
       ].join(" ");
