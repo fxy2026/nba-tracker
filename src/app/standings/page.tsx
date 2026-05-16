@@ -173,16 +173,29 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
               const gb = i === 0 ? "-" : ((leaderDiff - (team.wins - team.losses)) / 2).toFixed(1);
               const isPlayoff = i < 6;
               const isPlayIn = i >= 6 && i < 10;
+              const isTop3 = i < 3;
+              const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
+                : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
+                : i === 2 ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
+                : "";
               return (
                 <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-accent-amber/30" : ""}`}>
-                  <td className="text-center py-2 px-2 text-text-secondary text-xs">{i + 1}</td>
+                  <td className="text-center py-2 px-2">
+                    {isTop3 ? (
+                      <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full text-[11px] font-bold font-mono tabular-nums ${medalBg}`}>
+                        {i + 1}
+                      </span>
+                    ) : (
+                      <span className="text-text-secondary text-xs font-mono tabular-nums">{i + 1}</span>
+                    )}
+                  </td>
                   <td className="py-2 px-3">
-                    <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors ${i >= 10 && winPct < 0.3 ? "opacity-50" : ""}`}>
-                      <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={20} height={20} unoptimized />
-                      <span className="font-medium text-text-primary">{team.tricode}</span>
-                      {i === 0 && <span title={t.standingsPage.confLeader}>&#128081;</span>}
-                      {isPlayoff && <span className="text-[8px] px-1 py-0.5 rounded bg-accent/10 text-accent">P</span>}
-                      {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">PI</span>}
+                    <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors cursor-pointer ${i >= 10 && winPct < 0.3 ? "opacity-60" : ""}`}>
+                      <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={22} height={22} unoptimized />
+                      <span className="font-semibold text-text-primary font-mono">{team.tricode}</span>
+                      {i === 0 && <span title={t.standingsPage.confLeader} className="text-[#FFD700]">★</span>}
+                      {isPlayoff && i !== 0 && <span className="text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent/15 text-accent">P</span>}
+                      {isPlayIn && <span className="text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">PI</span>}
                     </Link>
                   </td>
                   <td className="text-center py-2 px-2 font-medium font-mono tabular-nums">{team.wins}</td>
