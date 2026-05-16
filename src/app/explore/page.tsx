@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, type LucideIcon } from "lucide-react";
+import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 
 export const metadata: Metadata = {
@@ -32,6 +32,8 @@ const CATEGORIES: FeatureCategory[] = [
       { href: "/", label: "Today", description: "Live scores, finished games, upcoming tip-offs", icon: Trophy, badge: "LIVE" },
       { href: "/calendar", label: "Calendar", description: "Pick any date to see games and results", icon: Calendar },
       { href: "/schedule", label: "Schedule", description: "Upcoming games across all teams", icon: Clock },
+      { href: "/schedule-heatmap", label: "Schedule Heatmap", description: "Game density calendar — busy nights at a glance", icon: Activity },
+      { href: "/back-to-back", label: "Back-to-Backs", description: "B2B counts per team and upcoming pairs", icon: Repeat },
       { href: "/game-predictor", label: "Game Predictor", description: "Win probabilities for next 7 days", icon: Zap },
     ],
   },
@@ -41,9 +43,13 @@ const CATEGORIES: FeatureCategory[] = [
     color: "#FFD700",
     features: [
       { href: "/standings", label: "Standings", description: "Conference standings with W-L records", icon: ListOrdered },
+      { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-6, 7-10 play-in, 11-15 lottery", icon: Trophy },
       { href: "/power-rankings", label: "Power Rankings", description: "Composite team strength · 1-30", icon: Crown },
       { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
       { href: "/streaks", label: "Streaks", description: "Hottest and coldest teams · L10 form dots", icon: Flame },
+      { href: "/scoring-output", label: "Scoring Output", description: "Offense, defense, and net point differential", icon: Shield },
+      { href: "/home-vs-road", label: "Home vs Road", description: "Best home fortresses and road warriors", icon: Home },
+      { href: "/rivalries", label: "Rivalries", description: "Most-played and tightest matchups", icon: Swords },
     ],
   },
   {
@@ -92,6 +98,15 @@ const CATEGORIES: FeatureCategory[] = [
       { href: "/injuries", label: "Injuries", description: "Latest injury reports across the league", icon: AlertTriangle },
       { href: "/transactions", label: "Transactions", description: "Trades, signings, waivers", icon: ArrowLeftRight },
       { href: "/favorites", label: "Favorites", description: "Your saved teams and players", icon: Heart },
+    ],
+  },
+  {
+    title: "Fan Tools",
+    eyebrow: "Play & learn",
+    color: "#A855F7",
+    features: [
+      { href: "/quiz", label: "NBA Quiz", description: "Guess players from headshots, stat lines, or teams", icon: HelpCircle },
+      { href: "/glossary", label: "Glossary", description: "Stats and terminology explained · PPG to PER", icon: Book },
     ],
   },
 ];

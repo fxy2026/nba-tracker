@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity, Home, Shield } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -27,8 +27,11 @@ export default function MobileNav() {
         { href: "/conference-race", label: "Conference", icon: Trophy },
         { href: "/schedule", label: t.nav.schedule, icon: Clock },
         { href: "/schedule-heatmap", label: "Heatmap", icon: Activity },
+        { href: "/back-to-back", label: "B2Bs", icon: Repeat },
         { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
         { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
+        { href: "/quiz", label: "Quiz", icon: HelpCircle },
+        { href: "/glossary", label: "Glossary", icon: Book },
       ],
     },
     {
