@@ -34,9 +34,9 @@ export default memo(function ScoreTicker({ games }: { games: TickerGame[] }) {
               className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg-secondary hover:bg-bg-hover transition-colors text-xs ${isClose ? "ring-1 ring-danger/30" : ""}`}
             >
               <span className={`font-medium ${awayLeading ? "text-text-primary" : "text-text-secondary"}`}>{g.awayTricode}</span>
-              <span className={`font-bold tabular-nums ${awayLeading ? "text-accent" : "text-text-secondary"}`}>{g.awayScore}</span>
+              <span className={`font-bold font-mono tabular-nums ${awayLeading ? "text-accent" : "text-text-secondary"}`}>{g.awayScore}</span>
               <span className="text-text-secondary">-</span>
-              <span className={`font-bold tabular-nums ${homeLeading ? "text-accent" : "text-text-secondary"}`}>{g.homeScore}</span>
+              <span className={`font-bold font-mono tabular-nums ${homeLeading ? "text-accent" : "text-text-secondary"}`}>{g.homeScore}</span>
               <span className={`font-medium ${homeLeading ? "text-text-primary" : "text-text-secondary"}`}>{g.homeTricode}</span>
               <span className="text-[9px] text-text-secondary ml-0.5">{g.gameStatusText.trim()}</span>
             </Link>

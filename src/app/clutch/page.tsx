@@ -210,7 +210,7 @@ export default function ClutchPage() {
                     <td className="text-center py-2.5 px-2 text-text-secondary">{p.GP}</td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-accent tabular-nums min-w-[40px] text-center">{fmtVal(p)}</span>
+                        <span className="font-bold text-accent font-mono tabular-nums min-w-[40px] text-center">{fmtVal(p)}</span>
                         <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
                           <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
                         </div>

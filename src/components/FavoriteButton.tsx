@@ -13,9 +13,10 @@ import { useLocale } from "@/components/LocaleProvider";
 interface FavoriteButtonProps {
   type: "team" | "player";
   id: string | number;
+  className?: string;
 }
 
-export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
+export default function FavoriteButton({ type, id, className = "" }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
   const { t } = useLocale();
 
@@ -42,11 +43,11 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
   return (
     <button
       onClick={handleToggle}
-      className={`p-1.5 rounded-lg transition-colors ${
+      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
         isFav
-          ? "text-red-500 hover:text-red-400"
-          : "text-text-secondary hover:text-red-400"
-      }`}
+          ? "text-danger hover:opacity-80"
+          : "text-text-secondary hover:text-danger"
+      } ${className}`}
       title={isFav ? t.favorite.remove : t.favorite.add}
       aria-label={isFav ? t.favorite.remove : t.favorite.add}
     >

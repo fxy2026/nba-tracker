@@ -126,7 +126,7 @@ export default async function HistoryPage() {
                     <td className="py-3 px-4 font-bold text-accent">{row.year}</td>
                     <td className="py-3 px-4 font-medium text-text-primary">
                       {row.champion}
-                      {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/15 text-yellow-500 font-bold">{t.historyPage.repeat}</span>}
+                      {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent-amber/15 text-accent-amber font-bold">{t.historyPage.repeat}</span>}
                     </td>
                     <td className="py-3 px-4 text-text-secondary">
                       {row.fmvp}
@@ -134,11 +134,11 @@ export default async function HistoryPage() {
                     </td>
                     <td className="py-3 px-4 text-text-secondary">{row.runnerUp}</td>
                     <td className="py-3 px-4">
-                      <span className={`${isSweep ? "text-accent font-bold" : isGame7 ? "text-yellow-500 font-medium" : "text-text-secondary"}`}>
+                      <span className={`${isSweep ? "text-accent font-bold" : isGame7 ? "text-accent-amber font-medium" : "text-text-secondary"}`}>
                         {row.series}
                       </span>
                       {isSweep && <span className="ml-1 text-[9px] text-accent">{t.historyPage.sweep}</span>}
-                      {isGame7 && <span className="ml-1 text-[9px] text-yellow-500">{t.historyPage.g7}</span>}
+                      {isGame7 && <span className="ml-1 text-[9px] text-accent-amber">{t.historyPage.g7}</span>}
                     </td>
                   </tr>
                 );
@@ -181,7 +181,7 @@ export default async function HistoryPage() {
       {repeats.length > 0 && (
         <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Trophy size={16} className="text-yellow-500" />
+            <Trophy size={16} className="text-accent-amber" />
             {t.historyPage.dynastyWatch}
           </h2>
           <div className="space-y-2">

@@ -173,7 +173,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                   <div className="flex-1 h-3 bg-bg-secondary rounded-full overflow-hidden">
                     <div className="h-full bg-danger/60 rounded-full" style={{ width: `${((team.injuries?.length || 0) / maxInj) * 100}%` }} />
                   </div>
-                  <span className="text-xs font-bold text-danger tabular-nums w-6 text-right">{team.injuries?.length}</span>
+                  <span className="text-xs font-bold text-danger font-mono tabular-nums w-6 text-right">{team.injuries?.length}</span>
                 </div>
               ))}
             </div>

@@ -554,10 +554,10 @@ export default async function GamePage({ params }: PageProps) {
               <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">{t.gameDetail.thriller}</span>
             )}
             {isFinal && scoreDiff >= 20 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">{t.gameDetail.blowout}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">{t.gameDetail.blowout}</span>
             )}
             {boxScore.homeTeam.periods?.length > 4 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">
                 {boxScore.homeTeam.periods.length - 4}{t.gameDetail.ot}
               </span>
             )}
@@ -591,11 +591,11 @@ export default async function GamePage({ params }: PageProps) {
             </Link>
           </div>
           <div className="flex items-center gap-3 sm:gap-5">
-            <span className={`text-4xl sm:text-5xl font-bold tabular-nums ${isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {boxScore.awayTeam.score}
             </span>
             <span className="text-text-secondary text-2xl">-</span>
-            <span className={`text-4xl sm:text-5xl font-bold tabular-nums ${isFinal && homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${isFinal && homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {boxScore.homeTeam.score}
             </span>
           </div>
@@ -626,7 +626,7 @@ export default async function GamePage({ params }: PageProps) {
               }
               return (
                 <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
-                  <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 font-medium">Lead Changes: {leadChanges}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">Lead Changes: {leadChanges}</span>
                 </div>
               );
             })()}
@@ -785,7 +785,7 @@ export default async function GamePage({ params }: PageProps) {
                   <span className={`text-sm font-bold w-6 text-center ${i === 0 ? "text-accent" : "text-text-secondary"}`}>#{i + 1}</span>
                   <span className="text-sm font-medium text-text-primary flex-1">{p.name}</span>
                   <span className="text-[10px] text-text-secondary">{p.teamTricode}</span>
-                  <span className={`text-sm font-bold tabular-nums ${i === 0 ? "text-accent" : "text-text-primary"}`}>{p.gameScore}</span>
+                  <span className={`text-sm font-bold font-mono tabular-nums ${i === 0 ? "text-accent" : "text-text-primary"}`}>{p.gameScore}</span>
                 </div>
               ))}
             </div>

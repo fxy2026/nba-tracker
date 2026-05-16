@@ -170,7 +170,7 @@ export default memo(function KeyMoments({ actions }: Props) {
   const typeColors: Record<string, string> = {
     run: "bg-success/15 text-success border-l-success",
     lead_change: "bg-accent/10 text-accent border-l-accent",
-    clutch: "bg-yellow-500/10 text-yellow-400 border-l-yellow-500",
+    clutch: "bg-accent-amber/10 text-yellow-400 border-l-accent-amber",
     swing: "bg-danger/10 text-danger border-l-danger",
   };
 
@@ -187,7 +187,7 @@ export default memo(function KeyMoments({ actions }: Props) {
         </h3>
         <div className="flex items-center gap-2 text-[9px]">
           {counts.run > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{counts.run} {t.keyMoments.runs}</span>}
-          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{counts.clutch} {t.keyMoments.clutch}</span>}
+          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-yellow-400">{counts.clutch} {t.keyMoments.clutch}</span>}
           {counts.lead_change > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{counts.lead_change} {t.keyMoments.leads}</span>}
         </div>
       </div>
@@ -204,7 +204,7 @@ export default memo(function KeyMoments({ actions }: Props) {
               {moment.clock?.replace("PT", "").replace("M", ":").replace(/(\d+\.\d+)S/, (_, s) => Math.floor(parseFloat(s)).toString().padStart(2, "0")) || ""}
             </span>
             <p className="flex-1 text-sm text-text-primary">{moment.description}</p>
-            <span className="shrink-0 text-xs font-mono text-text-secondary tabular-nums">
+            <span className="shrink-0 text-xs font-mono text-text-secondary font-mono tabular-nums">
               {moment.scoreAway}-{moment.scoreHome}
             </span>
           </div>

@@ -55,12 +55,12 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
               const homeQ = homeTeam.periods[i]?.score || 0;
               const won = p.score > homeQ;
               return (
-                <td key={i} className={`text-center py-2.5 px-2 tabular-nums ${won ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
+                <td key={i} className={`text-center py-2.5 px-2 font-mono tabular-nums ${won ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
                   {p.score}
                 </td>
               );
             })}
-            <td className={`text-center py-2.5 px-3 tabular-nums font-bold ${awayTeam.score > homeTeam.score ? "text-accent" : ""}`}>
+            <td className={`text-center py-2.5 px-3 font-mono tabular-nums font-bold ${awayTeam.score > homeTeam.score ? "text-accent" : ""}`}>
               {awayTeam.score}
             </td>
           </tr>
@@ -77,12 +77,12 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
               const awayQ = awayTeam.periods[i]?.score || 0;
               const won = p.score > awayQ;
               return (
-                <td key={i} className={`text-center py-2.5 px-2 tabular-nums ${won ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
+                <td key={i} className={`text-center py-2.5 px-2 font-mono tabular-nums ${won ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
                   {p.score}
                 </td>
               );
             })}
-            <td className={`text-center py-2.5 px-3 tabular-nums font-bold ${homeTeam.score > awayTeam.score ? "text-accent" : ""}`}>
+            <td className={`text-center py-2.5 px-3 font-mono tabular-nums font-bold ${homeTeam.score > awayTeam.score ? "text-accent" : ""}`}>
               {homeTeam.score}
             </td>
           </tr>

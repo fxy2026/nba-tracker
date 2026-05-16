@@ -44,7 +44,7 @@ export default memo(function GameCountdown({ gameTimeUTC }: { gameTimeUTC: strin
   return (
     <span className="flex items-center gap-1 text-[10px] text-accent">
       <Clock size={10} />
-      <span className="tabular-nums">{timeLeft}</span>
+      <span className="font-mono tabular-nums">{timeLeft}</span>
     </span>
   );
 });

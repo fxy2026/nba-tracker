@@ -126,7 +126,7 @@ export default function MvpLadder() {
                   <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[200px]">
                     <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
                   </div>
-                  <span className="text-[10px] text-accent font-bold tabular-nums">{score.toFixed(1)}</span>
+                  <span className="text-[10px] text-accent font-bold font-mono tabular-nums">{score.toFixed(1)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-xs text-text-secondary shrink-0">

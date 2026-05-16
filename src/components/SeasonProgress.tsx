@@ -46,7 +46,7 @@ export default function SeasonProgress() {
   }
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-3 mt-4">
+    <div className="glass-tile p-3 mt-4">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase text-text-secondary font-semibold flex items-center gap-1">
           <Calendar size={10} />
@@ -54,10 +54,10 @@ export default function SeasonProgress() {
         </span>
         <div className="flex items-center gap-2">
           {daysLeft > 0 && (
-            <span className="text-[10px] text-text-secondary">{daysLeft}{t.seasonProgress.daysLeft}</span>
+            <span className="text-[10px] text-text-secondary font-mono tabular-nums">{daysLeft}{t.seasonProgress.daysLeft}</span>
           )}
-          <span className={`text-[10px] font-medium ${phase === "playoffs" ? "text-yellow-500" : "text-accent"}`}>
-            {label} &middot; {progress.toFixed(0)}%
+          <span className={`text-[10px] font-medium ${phase === "playoffs" ? "text-accent-amber" : "text-accent"}`}>
+            {label} &middot; <span className="font-mono tabular-nums">{progress.toFixed(0)}%</span>
           </span>
         </div>
       </div>
@@ -65,10 +65,10 @@ export default function SeasonProgress() {
         <div
           className={`h-full rounded-full transition-all ${
             phase === "playoffs"
-              ? "bg-gradient-to-r from-yellow-500 to-orange-500"
+              ? "bg-gradient-to-r from-accent-amber to-accent-amber-hover"
               : "bg-gradient-to-r from-accent to-accent-hover"
           }`}
-          style={{ width: `${progress}%` }}
+          style={{ width: `${progress.toFixed(2)}%` }}
         />
       </div>
     </div>

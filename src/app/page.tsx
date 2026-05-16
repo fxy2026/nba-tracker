@@ -14,8 +14,11 @@ export default async function HomePage({ searchParams }: PageProps) {
   const initialDate = params.date || today;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <HomeClient initialDate={initialDate} />
+    <div className="relative">
+      <div className="absolute inset-0 bg-mesh-aurora pointer-events-none -z-10" />
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <HomeClient initialDate={initialDate} />
+      </div>
     </div>
   );
 }

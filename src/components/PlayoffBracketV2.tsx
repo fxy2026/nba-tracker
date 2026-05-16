@@ -70,7 +70,7 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
             </span>
           </div>
         </div>
-        <span className={`text-sm font-bold tabular-nums ${t1Leading ? "text-accent" : "text-text-secondary"}`}>
+        <span className={`text-sm font-bold font-mono tabular-nums ${t1Leading ? "text-accent" : "text-text-secondary"}`}>
           {s.team1.wins}
         </span>
       </div>
@@ -85,7 +85,7 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
             </span>
           </div>
         </div>
-        <span className={`text-sm font-bold tabular-nums ${t2Leading ? "text-accent" : "text-text-secondary"}`}>
+        <span className={`text-sm font-bold font-mono tabular-nums ${t2Leading ? "text-accent" : "text-text-secondary"}`}>
           {s.team2.wins}
         </span>
       </div>

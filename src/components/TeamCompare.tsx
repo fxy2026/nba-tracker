@@ -57,9 +57,9 @@ export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
         {rows.map(({ key, label, fmt, hVal, aVal, hBetter, aBetter, max }) => (
           <div key={key}>
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className={`font-medium tabular-nums ${aBetter ? "text-accent" : "text-text-primary"}`}>{fmt(aVal)}</span>
+              <span className={`font-medium font-mono tabular-nums ${aBetter ? "text-accent" : "text-text-primary"}`}>{fmt(aVal)}</span>
               <span className="text-text-secondary">{label}</span>
-              <span className={`font-medium tabular-nums ${hBetter ? "text-accent" : "text-text-primary"}`}>{fmt(hVal)}</span>
+              <span className={`font-medium font-mono tabular-nums ${hBetter ? "text-accent" : "text-text-primary"}`}>{fmt(hVal)}</span>
             </div>
             <div className="flex gap-1 h-2">
               <div className="flex-1 flex justify-end">

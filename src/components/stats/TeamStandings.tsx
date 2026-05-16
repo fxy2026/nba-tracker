@@ -79,7 +79,7 @@ export default function TeamStandings() {
                   const logoUrl = `https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`;
                   return (
                     <React.Fragment key={tm.tricode}>
-                    <tr className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-yellow-500/5" : ""}`}>
+                    <tr className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-accent-amber/5" : ""}`}>
                       <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
                       <td className="py-2.5 px-2">
                         <Link href={`/team/${tm.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
@@ -93,19 +93,19 @@ export default function TeamStandings() {
                       <td className="py-2.5 px-2 text-center text-danger font-medium">{tm.losses}</td>
                       <td className="py-2.5 px-2 text-center">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-accent tabular-nums min-w-[40px]">{(pct * 100).toFixed(1)}%</span>
+                          <span className="font-medium text-accent font-mono tabular-nums min-w-[40px]">{(pct * 100).toFixed(1)}%</span>
                           <div className="w-12 h-1.5 bg-bg-hover rounded-full overflow-hidden">
                             <div className="h-full bg-accent/60 rounded-full" style={{ width: `${pct * 100}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-2 text-center text-text-secondary tabular-nums">{gb}</td>
+                      <td className="py-2.5 px-2 text-center text-text-secondary font-mono tabular-nums">{gb}</td>
                     </tr>
                     {i === 5 && conf !== "all" && (
                       <tr><td colSpan={6} className="py-0"><div className="h-px bg-accent/30" /><p className="text-[9px] text-accent text-center py-0.5">{t.statsPage.playoffLine}</p></td></tr>
                     )}
                     {i === 9 && conf !== "all" && (
-                      <tr><td colSpan={6} className="py-0"><div className="h-px bg-yellow-500/30" /><p className="text-[9px] text-yellow-500 text-center py-0.5">{t.statsPage.playInLine}</p></td></tr>
+                      <tr><td colSpan={6} className="py-0"><div className="h-px bg-accent-amber/30" /><p className="text-[9px] text-accent-amber text-center py-0.5">{t.statsPage.playInLine}</p></td></tr>
                     )}
                     </React.Fragment>
                   );

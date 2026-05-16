@@ -89,7 +89,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
               key={team.tricode}
               href={`/team/${team.tricode}`}
               className={`grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2.5 hover:bg-bg-hover transition-colors ${
-                isPlayoff ? "border-l-2 border-l-accent" : isPlayIn ? "border-l-2 border-l-yellow-500" : "border-l-2 border-l-transparent"
+                isPlayoff ? "border-l-2 border-l-accent" : isPlayIn ? "border-l-2 border-l-accent-amber" : "border-l-2 border-l-transparent"
               }`}
             >
               <span className="text-xs text-text-secondary w-5">{idx + 1}</span>
@@ -104,7 +104,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
                 <div>
                   <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
                   {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
-                  {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">{t.standingsPage.playIn}</span>}
+                  {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{t.standingsPage.playIn}</span>}
                   {streaks.get(team.tricode) && (() => {
                     const streak = streaks.get(team.tricode)!;
                     const isWin = streak.startsWith("W");
@@ -116,11 +116,11 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
                   })()}
                 </div>
               </div>
-              <span className="text-center text-sm font-medium tabular-nums">{team.wins}</span>
-              <span className="text-center text-sm text-text-secondary tabular-nums">{team.losses}</span>
-              <span className="text-center text-sm tabular-nums">{winPct.toFixed(3).slice(1)}</span>
+              <span className="text-center text-sm font-medium font-mono tabular-nums">{team.wins}</span>
+              <span className="text-center text-sm text-text-secondary font-mono tabular-nums">{team.losses}</span>
+              <span className="text-center text-sm font-mono tabular-nums">{winPct.toFixed(3).slice(1)}</span>
               <div className="text-center">
-                <span className="text-xs text-text-secondary tabular-nums">{gb}</span>
+                <span className="text-xs text-text-secondary font-mono tabular-nums">{gb}</span>
                 {idx > 0 && (() => {
                   const gbNum = ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2;
                   const maxGb = sorted.length > 1 ? ((leaderWins - leaderLosses) - (sorted[sorted.length - 1].wins - sorted[sorted.length - 1].losses)) / 2 : 1;
@@ -172,7 +172,7 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
               const isPlayoff = i < 6;
               const isPlayIn = i >= 6 && i < 10;
               return (
-                <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-yellow-500/30" : ""}`}>
+                <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-accent-amber/30" : ""}`}>
                   <td className="text-center py-2 px-2 text-text-secondary text-xs">{i + 1}</td>
                   <td className="py-2 px-3">
                     <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors ${i >= 10 && winPct < 0.3 ? "opacity-50" : ""}`}>
@@ -180,20 +180,20 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                       <span className="font-medium text-text-primary">{team.tricode}</span>
                       {i === 0 && <span title={t.standingsPage.confLeader}>&#128081;</span>}
                       {isPlayoff && <span className="text-[8px] px-1 py-0.5 rounded bg-accent/10 text-accent">P</span>}
-                      {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-yellow-500/10 text-yellow-500">PI</span>}
+                      {isPlayIn && <span className="text-[8px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">PI</span>}
                     </Link>
                   </td>
-                  <td className="text-center py-2 px-2 font-medium tabular-nums">{team.wins}</td>
-                  <td className="text-center py-2 px-2 text-text-secondary tabular-nums">{team.losses}</td>
+                  <td className="text-center py-2 px-2 font-medium font-mono tabular-nums">{team.wins}</td>
+                  <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">{team.losses}</td>
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs tabular-nums w-8 text-right">{winPct.toFixed(3).slice(1)}</span>
+                      <span className="text-xs font-mono tabular-nums w-8 text-right">{winPct.toFixed(3).slice(1)}</span>
                       <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
                         <div className="h-full bg-accent rounded-full" style={{ width: `${winPct * 100}%` }} />
                       </div>
                     </div>
                   </td>
-                  <td className="text-center py-2 px-2 text-text-secondary text-xs tabular-nums">
+                  <td className="text-center py-2 px-2 text-text-secondary text-xs font-mono tabular-nums">
                     {gb}
                     {isPlayoff && (() => {
                       const gamesLeft = 82 - team.wins - team.losses;
@@ -202,7 +202,7 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                       ) : null;
                     })()}
                   </td>
-                  <td className="text-center py-2 px-1 text-[10px] text-text-secondary/70 tabular-nums">
+                  <td className="text-center py-2 px-1 text-[10px] text-text-secondary/70 font-mono tabular-nums">
                     {(() => {
                       const projected = Math.round(winPct * 82);
                       return <span title={t.standingsPage.proj}>&rarr; {projected}w</span>;
@@ -327,7 +327,7 @@ export default async function StandingsPage() {
       })()}
       <div className="flex items-center gap-4 text-xs text-text-secondary mb-6">
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent rounded" /> {t.standingsPage.playoff} (1-6)</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-yellow-500 rounded" /> {t.standingsPage.playIn} (7-10)</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent-amber rounded" /> {t.standingsPage.playIn} (7-10)</span>
       </div>
 
       {/* Eastern Conference */}

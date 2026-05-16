@@ -55,7 +55,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
   const getActionStyle = (action: PlayAction) => {
     if (action.shotResult === "Made") return "border-l-success bg-success/5";
     if (action.shotResult === "Missed") return "border-l-danger/50";
-    if (action.actionType === "foul") return "border-l-yellow-500/50";
+    if (action.actionType === "foul") return "border-l-accent-amber/50";
     if (action.actionType === "turnover") return "border-l-danger/30";
     if (action.actionType === "timeout") return "border-l-text-secondary";
     return "border-l-border";
@@ -117,7 +117,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
               </p>
             </div>
             {action.scoreAway && action.scoreHome && (
-              <span className="text-xs font-mono text-text-secondary shrink-0 tabular-nums">
+              <span className="text-xs font-mono text-text-secondary shrink-0 font-mono tabular-nums">
                 {action.scoreAway}-{action.scoreHome}
               </span>
             )}

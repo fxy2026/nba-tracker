@@ -3,9 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Calendar, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
+import { TEAM_META } from "@/lib/teams";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
@@ -52,436 +53,647 @@ export default async function PlayerPage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  // Get all players for position ranking
+  // Get all players for league-wide stat context (rank, percentile, average)
   const { getPlayerIndex } = await import("@/lib/api");
   const allPlayers = await getPlayerIndex().catch(() => []);
-  const positionPlayers = player.position
-    ? allPlayers.filter((p) => p.position === player.position && p.pts > 0).sort((a, b) => b.pts - a.pts)
-    : [];
-  const posRank = positionPlayers.findIndex((p) => p.personId === personId) + 1;
 
   const headshotUrl = getPlayerHeadshotUrl(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
+  // Helper: compute rank/percentile/delta for any stat
+  function statContext(statKey: "pts" | "reb" | "ast", value: number) {
+    const active = allPlayers.filter((p) => p.pts > 0);
+    if (active.length === 0 || value <= 0) return { rank: 0, percentile: 0, delta: 0, leagueAvg: 0 };
+    const leagueAvg = active.reduce((s, p) => s + p[statKey], 0) / active.length;
+    const sorted = [...active].sort((a, b) => b[statKey] - a[statKey]);
+    const rank = sorted.findIndex((p) => p.personId === personId) + 1;
+    const percentile = rank > 0 ? Math.round(((sorted.length - rank) / sorted.length) * 100) : 0;
+    const delta = leagueAvg > 0 ? ((value - leagueAvg) / leagueAvg) * 100 : 0;
+    return { rank, percentile, delta, leagueAvg };
+  }
+
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
   // Client components will attempt fetch and show graceful fallback if blocked.
 
+  const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts || 0));
+  const rpg = typeof player.reb === "number" ? player.reb : parseFloat(String(player.reb || 0));
+  const apg = typeof player.ast === "number" ? player.ast : parseFloat(String(player.ast || 0));
+
+  // Team primary color for accents
+  const teamColor = player.teamAbbr ? TEAM_META[player.teamAbbr]?.primaryColor || "#3B82F6" : "#3B82F6";
+
+  const ptsCtx = statContext("pts", ppg);
+  const rebCtx = statContext("reb", rpg);
+  const astCtx = statContext("ast", apg);
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors">
-        {t.common.backToSearch}
+    <div className="relative max-w-6xl mx-auto px-4 py-6">
+      {/* Aurora mesh backdrop — vibrant for glass tiles to refract */}
+      <div className="absolute inset-0 bg-mesh-aurora pointer-events-none -z-10" />
+
+      <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors inline-flex items-center gap-1 cursor-pointer">
+        ← {t.common.backToSearch}
       </Link>
 
-      {/* Player Header */}
-      <div className="bg-bg-card rounded-xl border border-border mt-4 overflow-hidden">
-        <div className="relative bg-gradient-to-r from-accent/10 via-bg-card to-bg-card p-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-bg-secondary border-4 border-accent/20 shrink-0">
-              <Image
-                src={headshotUrl}
-                alt={fullName}
-                width={128}
-                height={128}
-                className="w-full h-full object-cover object-top"
-              />
+      {/* ─── Bento Hero ─────────────────────────────────────── */}
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">
+
+        {/* Tile 1 — HEADSHOT (Apple-card style: photo top + meta bottom, no bleed) */}
+        <div
+          className="glass-tile glass-tile-featured col-span-2 sm:col-span-2 row-span-3 sm:row-span-3 group cursor-default bento-rise"
+          style={{
+            animationDelay: "0ms",
+            // Team-color tinted halo on the featured ring
+            ["--team-color" as string]: teamColor,
+          }}
+        >
+          {/* Top: photo area — fixed height, image properly centered on face */}
+          <div className="relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary">
+            {/* Team color gradient backdrop */}
+            <div
+              className="absolute inset-0 opacity-50"
+              style={{ background: `linear-gradient(135deg, ${teamColor}33 0%, transparent 60%)` }}
+            />
+            <Image
+              src={headshotUrl}
+              alt={fullName}
+              width={320}
+              height={234}
+              priority
+              unoptimized
+              className="relative w-full h-full object-cover"
+              style={{ objectPosition: "50% 15%" }}
+            />
+            {/* Vignette at edges + bottom fade for text legibility */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, transparent 50%, rgba(0,0,0,0.25) 100%)" }} />
+            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-bg-card/95 to-transparent" />
+            {/* Team logo watermark, top-left */}
+            <Image
+              src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              className="absolute top-2 left-2 opacity-60 group-hover:opacity-90 transition-opacity drop-shadow-lg"
+            />
+          </div>
+          {/* Bottom: meta */}
+          <div className="relative flex flex-col gap-1 p-4">
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-accent-amber">
+              #{player.jersey} · {player.position}
+            </p>
+            <h1 className="leading-[0.9] tracking-[-0.03em]">
+              <span className="block text-base font-extralight text-text-secondary">{player.firstName}</span>
+              <span className="block text-2xl font-black text-text-primary">{player.lastName}</span>
+            </h1>
+            <Link
+              href={`/team/${player.teamAbbr}`}
+              className="mt-1 text-[11px] text-text-secondary hover:text-accent transition-colors font-medium cursor-pointer w-fit"
+            >
+              {player.teamCity} {player.teamName}
+            </Link>
+          </div>
+          <FavoriteButton type="player" id={personId} className="absolute top-2 right-2 z-10 bg-bg-card/60 backdrop-blur-md" />
+        </div>
+
+        {/* Tile 2 — PPG HERO (the star number, with rank + delta + percentile bar) */}
+        <div className="glass-tile col-span-2 sm:col-span-2 row-span-2 group bento-rise" style={{ animationDelay: "60ms" }}>
+          <div className="h-full flex flex-col justify-between p-4 sm:p-5">
+            <div className="flex items-start justify-between">
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Points / Game</p>
+              {ptsCtx.rank > 0 && (
+                <span className="text-[9px] font-mono tabular-nums uppercase tracking-[0.15em] text-accent-amber flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-accent-amber" />
+                  #{ptsCtx.rank} in NBA
+                </span>
+              )}
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">
-                  {player.firstName} <span className="text-accent">{player.lastName}</span>
-                </h1>
-                <FavoriteButton type="player" id={personId} />
-              </div>
-              <div className="flex items-center justify-center sm:justify-start gap-3 mt-2 flex-wrap">
-                <Link
-                  href={`/team/${player.teamAbbr}`}
-                  className="text-sm text-text-secondary hover:text-accent transition-colors"
-                >
-                  {player.teamCity} {player.teamName}
-                </Link>
-                <span className="text-accent font-medium text-sm">#{player.jersey} &middot; {player.position}</span>
-                {posRank > 0 && posRank <= 30 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent">
-                    #{posRank} {player.position} in PPG
+            <div>
+              <div className="flex items-baseline gap-3">
+                <p className="text-[clamp(3rem,8vw,6rem)] font-light font-mono tabular-nums leading-none text-accent-amber">
+                  {ppg > 0 ? ppg.toFixed(1).replace(/\.0$/, "") : "—"}
+                </p>
+                {ppg > 0 && ptsCtx.leagueAvg > 0 && (
+                  <span className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded ${
+                    ptsCtx.delta >= 0
+                      ? "bg-success/15 text-success"
+                      : "bg-danger/15 text-danger"
+                  }`}>
+                    {ptsCtx.delta >= 0 ? "▲" : "▼"} {Math.abs(ptsCtx.delta).toFixed(0)}%
                   </span>
                 )}
-                <Link
-                  href={`/compare?q1=${encodeURIComponent(player.lastName)}`}
-                  className="text-[10px] px-2 py-0.5 rounded-full bg-bg-hover text-text-secondary hover:text-accent hover:border-accent/50 transition-colors flex items-center gap-1"
-                >
-                  <GitCompareArrows size={10} /> Compare
-                </Link>
               </div>
-              {/* Quick stat pills */}
-              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                {player.pts > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent font-bold">{player.pts} PPG</span>}
-                {player.reb > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success font-bold">{player.reb} RPG</span>}
-                {player.ast > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-bold">{player.ast} APG</span>}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Body Metrics */}
-        <div className="p-6 border-t border-border">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
-            <Ruler size={14} />
-            {t.playerDetail.bodyMetrics}
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard icon={<Ruler size={14} className="text-accent" />} label={t.playerDetail.height} value={player.height || "-"} />
-            <MetricCard icon={<Weight size={14} className="text-accent" />} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "-"} />
-            <MetricCard icon={<MapPin size={14} className="text-accent" />} label={t.playerDetail.country} value={player.country || "-"} />
-            <MetricCard icon={<Calendar size={14} className="text-accent" />} label={t.playerDetail.seasons} value={seasons > 0 ? `${seasons} years` : "-"} />
-          </div>
-        </div>
-
-        {/* Draft Info */}
-        <div className="p-6 border-t border-border">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
-            <Award size={14} />
-            {t.playerDetail.draftInfo}
-          </h2>
-          {player.draftYear ? (
-            <div className="bg-bg-secondary rounded-xl p-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-accent">{player.draftYear}</p>
-                  <p className="text-xs text-text-secondary">{t.playerDetail.yearLabel}</p>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-text-primary">R{player.draftRound}</p>
-                  <p className="text-xs text-text-secondary">{t.playerDetail.round}</p>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-text-primary">#{player.draftNumber}</p>
-                  <p className="text-xs text-text-secondary">{t.playerDetail.pick}</p>
-                </div>
-                {player.college && (
-                  <>
-                    <div className="w-px h-12 bg-border" />
-                    <div className="flex items-center gap-2">
-                      <GraduationCap size={16} className="text-text-secondary" />
-                      <div>
-                        <p className="text-sm font-medium text-text-primary">{player.college}</p>
-                        <p className="text-xs text-text-secondary">{t.playerDetail.college}</p>
-                      </div>
-                    </div>
-                  </>
+              <div className="flex items-center justify-between gap-3 mt-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-text-secondary font-mono">
+                  vs league avg <span className="text-text-primary">{ptsCtx.leagueAvg.toFixed(1)}</span>
+                </p>
+                {ptsCtx.percentile > 0 && (
+                  <p className="text-[9px] font-mono tabular-nums text-text-secondary">P{ptsCtx.percentile}</p>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className="bg-bg-secondary rounded-xl p-4 text-center">
-              <p className="text-text-secondary text-sm">{t.playerDetail.undrafted}</p>
-              {player.college && <p className="text-xs text-text-secondary mt-1">{t.playerDetail.college}: {player.college}</p>}
-            </div>
-          )}
-        </div>
-
-        {/* Career Timeline */}
-        {player.fromYear && player.toYear && (() => {
-          const from = parseInt(player.fromYear);
-          const to = parseInt(player.toYear);
-          const currentYear = new Date().getFullYear();
-          const spanStart = Math.min(from, currentYear - 1);
-          const spanEnd = Math.max(to, currentYear);
-          const totalSpan = spanEnd - spanStart + 1;
-          if (totalSpan <= 0) return null;
-          const careerLeft = ((from - spanStart) / totalSpan) * 100;
-          const careerWidth = ((to - from + 1) / totalSpan) * 100;
-          const currentPos = ((currentYear - spanStart) / totalSpan) * 100;
-          return (
-            <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
-                <Calendar size={14} />
-                {t.playerDetail.careerTimeline}
-              </h2>
-              <div className="relative h-8 bg-bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="absolute top-0 h-full bg-accent/20 rounded-full"
-                  style={{ left: `${careerLeft}%`, width: `${careerWidth}%` }}
-                />
-                {currentYear >= from && currentYear <= to && (
+              {ptsCtx.percentile > 0 && (
+                <div className="mt-2 h-1 bg-bg-hover rounded-full overflow-hidden">
                   <div
-                    className="absolute top-0 h-full w-1 bg-accent rounded-full"
-                    style={{ left: `${currentPos}%` }}
-                    title={`Current: ${currentYear}`}
+                    className="h-full bg-gradient-to-r from-accent to-accent-amber rounded-full"
+                    style={{ width: `${ptsCtx.percentile}%` }}
                   />
-                )}
-              </div>
-              <div className="flex justify-between text-[10px] text-text-secondary mt-1.5">
-                <span>{player.fromYear}</span>
-                {currentYear >= from && currentYear <= to && (
-                  <span className="text-accent font-medium">{currentYear} {t.playerDetail.current}</span>
-                )}
-                <span>{player.toYear}</span>
-              </div>
+                </div>
+              )}
             </div>
-          );
-        })()}
-
-        {/* Player Archetype */}
-        {player.pts > 0 && (() => {
-          const pts = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts)) || 0;
-          const reb = typeof player.reb === "number" ? player.reb : parseFloat(String(player.reb)) || 0;
-          const ast = typeof player.ast === "number" ? player.ast : parseFloat(String(player.ast)) || 0;
-          const tags: { label: string; color: string }[] = [];
-          if (pts >= 25) tags.push({ label: t.playerDetail.eliteScorer, color: "bg-accent/15 text-accent" });
-          else if (pts >= 20) tags.push({ label: t.playerDetail.scorer, color: "bg-accent/10 text-accent" });
-          if (ast >= 8) tags.push({ label: t.playerDetail.floorGeneral, color: "bg-blue-500/15 text-blue-400" });
-          else if (ast >= 5) tags.push({ label: t.playerDetail.playmaker, color: "bg-blue-500/10 text-blue-400" });
-          if (reb >= 10) tags.push({ label: t.playerDetail.glassCleaner, color: "bg-success/15 text-success" });
-          else if (reb >= 7) tags.push({ label: t.playerDetail.rebounder, color: "bg-success/10 text-success" });
-          if (pts >= 15 && reb >= 5 && ast >= 5) tags.push({ label: t.playerDetail.allAround, color: "bg-yellow-500/15 text-yellow-500" });
-          if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, color: "bg-orange-500/10 text-orange-400" });
-          if (seasons <= 2 && pts >= 10) tags.push({ label: t.playerDetail.risingStar, color: "bg-pink-500/10 text-pink-400" });
-          if (tags.length === 0) return null;
-          return (
-            <div className="px-6 pt-4 flex flex-wrap gap-2">
-              {tags.map((t) => (
-                <span key={t.label} className={`text-xs px-2.5 py-1 rounded-full font-medium ${t.color}`}>{t.label}</span>
-              ))}
-            </div>
-          );
-        })()}
-
-        {/* Career Stats */}
-        <div className="p-6 border-t border-border">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4">{t.playerDetail.careerAverages}</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-            <CareerStatBox label="PPG" value={player.pts} highlight allPlayers={allPlayers} personId={personId} statKey="pts" />
-            <CareerStatBox label="RPG" value={player.reb} allPlayers={allPlayers} personId={personId} statKey="reb" />
-            <CareerStatBox label="APG" value={player.ast} allPlayers={allPlayers} personId={personId} statKey="ast" />
-            <StatBox label="From" value={player.fromYear || "-"} />
-            <StatBox label="To" value={player.toYear || "-"} />
           </div>
-          {/* Feature 3: Scoring Profile mini-bar */}
-          {player.pts > 0 && (() => {
-            const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
-            if (isNaN(ppg) || ppg <= 0) return null;
-            // Approximate scoring breakdown based on position heuristics
-            const pos = (player.position || "").toUpperCase();
-            let fg2Pct = 0.5, fg3Pct = 0.25, ftPct = 0.25;
-            if (pos.includes("C")) { fg2Pct = 0.65; fg3Pct = 0.10; ftPct = 0.25; }
-            else if (pos.includes("G")) { fg2Pct = 0.35; fg3Pct = 0.40; ftPct = 0.25; }
-            const fg2 = (ppg * fg2Pct).toFixed(1);
-            const fg3 = (ppg * fg3Pct).toFixed(1);
-            const ft = (ppg * ftPct).toFixed(1);
-            return (
-              <div className="mt-3 bg-bg-secondary rounded-lg p-3">
-                <p className="text-[10px] text-text-secondary uppercase mb-2">{t.playerDetail.scoringProfile}</p>
-                <div className="flex h-4 rounded-full overflow-hidden">
-                  <div className="bg-accent" style={{ width: `${fg2Pct * 100}%` }} title={`2PT: ~${fg2}`} />
-                  <div className="bg-success" style={{ width: `${fg3Pct * 100}%` }} title={`3PT: ~${fg3}`} />
-                  <div className="bg-yellow-400" style={{ width: `${ftPct * 100}%` }} title={`FT: ~${ft}`} />
-                </div>
-                <div className="flex justify-between mt-1.5 text-[10px] text-text-secondary">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-accent" />2PT ~{fg2}</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" />3PT ~{fg3}</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" />FT ~{ft}</span>
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
-        {/* Career PPG Highlight */}
-        {player.pts > 0 && (() => {
-          const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
-          if (isNaN(ppg) || ppg <= 0) return null;
-          const tier = ppg >= 25 ? { label: t.playerDetail.eliteScorer, color: "text-accent", bg: "bg-accent/10", icon: "star" }
-            : ppg >= 18 ? { label: t.playerDetail.scorer, color: "text-success", bg: "bg-success/10", icon: "up" }
-            : ppg >= 12 ? { label: t.playerDetail.playmaker, color: "text-blue-400", bg: "bg-blue-400/10", icon: "check" }
-            : { label: t.playerDetail.rebounder, color: "text-text-secondary", bg: "bg-bg-hover", icon: "dot" };
-          return (
-            <div className="p-6 border-t border-border">
-              <div className={`${tier.bg} border border-border rounded-xl p-4 flex items-center gap-4`}>
-                <div className="text-center">
-                  <p className={`text-3xl font-bold ${tier.color}`}>{ppg}</p>
-                  <p className="text-[10px] text-text-secondary uppercase">{t.playerDetail.careerPpg}</p>
+        {/* Tile 3 — RPG (with full context like PPG) */}
+        <DataStatTile label="Rebounds" value={rpg} ctx={rebCtx} delayMs={120} />
+
+        {/* Tile 4 — APG (with full context like PPG) */}
+        <DataStatTile label="Assists" value={apg} ctx={astCtx} delayMs={180} />
+
+        {/* Tile 5 — Career arc (year range with progress + active dot) */}
+        <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: "240ms" }}>
+          <div className="flex items-center justify-between">
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">Career</p>
+            <p className="text-[9px] font-mono tabular-nums text-accent-amber">{seasons || "—"} yrs</p>
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between font-mono tabular-nums">
+              <span className="text-base font-semibold text-text-primary">{player.fromYear || "—"}</span>
+              <span className="text-[10px] text-text-secondary">→</span>
+              <span className="text-base font-semibold text-text-primary">{player.toYear || "—"}</span>
+            </div>
+            <div className="mt-1.5 h-0.5 bg-bg-hover rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-accent to-accent-amber" style={{ width: "100%" }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Tile 6 — Draft snapshot OR college (filled, not bare) */}
+        <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: "300ms" }}>
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">
+            {player.draftYear ? `Draft ${player.draftYear}` : "Origin"}
+          </p>
+          <div>
+            {player.draftYear ? (
+              <p className="text-sm font-semibold text-text-primary leading-tight">
+                R{player.draftRound} · <span className="text-accent-amber font-mono tabular-nums">#{player.draftNumber}</span>
+              </p>
+            ) : (
+              <p className="text-sm font-semibold text-text-primary leading-tight">Undrafted</p>
+            )}
+            <p className="text-[10px] text-text-secondary mt-0.5 truncate">
+              {player.college || player.country || "—"}
+            </p>
+          </div>
+        </div>
+
+        {/* Tile 7 — Compare CTA (compact, packed) */}
+        <Link
+          href={`/compare?q1=${encodeURIComponent(player.lastName)}`}
+          className="glass-tile col-span-2 sm:col-span-2 row-span-1 p-3 flex items-center justify-between group cursor-pointer bento-rise"
+          style={{ animationDelay: "360ms" }}
+        >
+          <div>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Compare</p>
+            <p className="text-sm font-medium text-text-primary mt-0.5 group-hover:text-accent-amber transition-colors">
+              vs. other {player.position}s
+            </p>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-accent-amber/10 flex items-center justify-center group-hover:bg-accent-amber group-hover:text-bg-primary transition-colors">
+            <GitCompareArrows size={14} className="text-accent-amber group-hover:text-bg-primary" />
+          </div>
+        </Link>
+      </div>
+
+      {/* ─── Profile (archetype + scoring DNA + body metrics) ─── */}
+      {(() => {
+        const tags: { label: string; tone: "amber" | "blue" | "green" }[] = [];
+        if (ppg > 0) {
+          if (ppg >= 25) tags.push({ label: t.playerDetail.eliteScorer, tone: "amber" });
+          else if (ppg >= 20) tags.push({ label: t.playerDetail.scorer, tone: "blue" });
+          if (apg >= 8) tags.push({ label: t.playerDetail.floorGeneral, tone: "blue" });
+          else if (apg >= 5) tags.push({ label: t.playerDetail.playmaker, tone: "blue" });
+          if (rpg >= 10) tags.push({ label: t.playerDetail.glassCleaner, tone: "green" });
+          else if (rpg >= 7) tags.push({ label: t.playerDetail.rebounder, tone: "green" });
+          if (ppg >= 15 && rpg >= 5 && apg >= 5) tags.push({ label: t.playerDetail.allAround, tone: "amber" });
+          if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, tone: "amber" });
+          if (seasons <= 2 && ppg >= 10) tags.push({ label: t.playerDetail.risingStar, tone: "amber" });
+        }
+
+        const pos = (player.position || "").toUpperCase();
+        let fg2Pct = 0.5, fg3Pct = 0.25, ftPct = 0.25;
+        if (pos.includes("C")) { fg2Pct = 0.65; fg3Pct = 0.10; ftPct = 0.25; }
+        else if (pos.includes("G")) { fg2Pct = 0.35; fg3Pct = 0.40; ftPct = 0.25; }
+
+        return (
+          <section className="mt-8 sm:mt-10">
+            <SectionHeader icon={Award} title="Profile" eyebrow="01" />
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.label}
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${
+                      tag.tone === "amber" ? "border-accent-amber/30 bg-accent-amber/5 text-accent-amber" :
+                      tag.tone === "blue" ? "border-accent/30 bg-accent/5 text-accent" :
+                      "border-success/30 bg-success/5 text-success"
+                    }`}
+                  >
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 auto-rows-[90px]">
+              {/* Scoring DNA (3-col wide) — only when scoring data exists */}
+              {ppg > 0 ? (
+                <ScoringDnaTile ppg={ppg} fg2Pct={fg2Pct} fg3Pct={fg3Pct} ftPct={ftPct} t={t} />
+              ) : (
+                <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
+                  No scoring data available
                 </div>
-                <div className="w-px h-10 bg-border" />
+              )}
+              {/* Body metrics — 3 small (height + weight + country) on top, college (3-col) below */}
+              <GlassFact icon={Ruler} label={t.playerDetail.height} value={player.height || "—"} />
+              <GlassFact icon={Weight} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "—"} />
+              <GlassFact icon={MapPin} label={t.playerDetail.country} value={player.country || "—"} />
+              <GlassFact icon={GraduationCap} label={t.playerDetail.college} value={player.college || "—"} />
+              <GlassFact icon={Award} label="Status" value={seasons > 0 && player.toYear && parseInt(player.toYear) >= new Date().getFullYear() ? "Active" : "—"} />
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ─── Career Milestones ───────────────── */}
+      {ppg > 0 && seasons > 0 && (() => {
+        const gpEstimate = 70;
+        const estTotalPts = Math.round(ppg * gpEstimate * seasons);
+        const milestones: string[] = [];
+        if (estTotalPts >= 25000) milestones.push("25,000+ career points (est.)");
+        else if (estTotalPts >= 20000) milestones.push("20,000+ career points (est.)");
+        else if (estTotalPts >= 15000) milestones.push("15,000+ career points (est.)");
+        else if (estTotalPts >= 10000) milestones.push("10,000+ career points (est.)");
+        else if (estTotalPts >= 5000) milestones.push("5,000+ career points (est.)");
+        if (ppg >= 20 && seasons >= 10) milestones.push("Decade-long 20+ PPG scorer");
+        if (ppg >= 25) milestones.push("Elite scorer (25+ PPG)");
+        if (seasons >= 15) milestones.push("15+ year veteran");
+        if (milestones.length === 0) return null;
+        return (
+          <section className="mt-8 sm:mt-10">
+            <SectionHeader icon={Trophy} title={t.playerDetail.careerMilestones} eyebrow="02" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {/* Total points hero tile */}
+              <div className="glass-tile glass-tile-featured sm:col-span-1 row-span-1 p-5 flex flex-col justify-between min-h-[150px]">
+                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Estimated Total</p>
                 <div>
-                  <p className={`text-sm font-semibold ${tier.color}`}>{tier.label}</p>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {ppg >= 25 ? "Top-tier scoring output in the NBA" :
-                     ppg >= 18 ? "Consistent high-level scorer" :
-                     ppg >= 12 ? "Reliable scoring contributor" :
-                     "Valuable role in the rotation"}
+                  <p className="text-3xl sm:text-4xl font-light font-mono tabular-nums text-accent-amber leading-none">
+                    {estTotalPts.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-text-secondary mt-2 font-mono tabular-nums">
+                    {ppg} ppg × ~{gpEstimate} gp × {seasons} seasons
                   </p>
                 </div>
               </div>
-            </div>
-          );
-        })()}
-
-        {/* Career Milestones */}
-        {player.pts > 0 && seasons > 0 && (() => {
-          const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts));
-          if (isNaN(ppg) || ppg <= 0) return null;
-          // Estimate career total points: PPG * ~70 GP per season * seasons played
-          const gpEstimate = 70;
-          const estTotalPts = Math.round(ppg * gpEstimate * seasons);
-          const milestones: string[] = [];
-          if (estTotalPts >= 25000) milestones.push("25,000+ career points (est.)");
-          else if (estTotalPts >= 20000) milestones.push("20,000+ career points (est.)");
-          else if (estTotalPts >= 15000) milestones.push("15,000+ career points (est.)");
-          else if (estTotalPts >= 10000) milestones.push("10,000+ career points (est.)");
-          else if (estTotalPts >= 5000) milestones.push("5,000+ career points (est.)");
-          if (ppg >= 20 && seasons >= 10) milestones.push("Decade-long 20+ PPG scorer");
-          if (ppg >= 25) milestones.push("Elite scorer (25+ PPG)");
-          if (seasons >= 15) milestones.push("15+ year veteran");
-          if (milestones.length === 0) return null;
-          return (
-            <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
-                <Trophy size={14} />
-                {t.playerDetail.careerMilestones}
-              </h2>
-              <div className="bg-bg-secondary rounded-xl p-4 space-y-2">
-                <p className="text-xs text-text-secondary">
-                  Estimated career total: <span className="font-bold text-accent">{estTotalPts.toLocaleString()}</span> points
-                  <span className="text-text-secondary/70 ml-1">({ppg} PPG x ~{gpEstimate} GP x {seasons} seasons)</span>
-                </p>
-                {milestones.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="text-accent text-sm">&#9733;</span>
-                    <span className="text-sm text-text-primary font-medium">{m}</span>
+              {/* Milestone chips, distributed across remaining tiles */}
+              {milestones.slice(0, 4).map((m, i) => (
+                <div key={i} className="glass-tile p-4 flex items-center gap-3 min-h-[80px]">
+                  <div className="shrink-0 w-9 h-9 rounded-full bg-accent-amber/10 flex items-center justify-center">
+                    <Trophy size={14} className="text-accent-amber" />
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm text-text-primary font-medium leading-snug">{m}</p>
+                </div>
+              ))}
             </div>
-          );
-        })()}
+          </section>
+        );
+      })()}
 
-        {/* External Links */}
-        <div className="p-6 border-t border-border">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-4 flex items-center gap-2">
-            <Newspaper size={14} />
-            {t.playerDetail.moreInfo}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <ExternalLinkCard
-              title={t.playerDetail.playerProfile}
-              subtitle={t.playerDetail.fullCareerStats}
-              href={player.slug ? `https://www.nba.com/player/${personId}/${player.slug}` : `https://www.nba.com/player/${personId}`}
-            />
-            <ExternalLinkCard
-              title={t.playerDetail.salaryContract}
-              subtitle={t.playerDetail.capInfo}
-              href={`https://www.spotrac.com/nba/player/_/id/${personId}`}
-            />
-            <ExternalLinkCard
-              title={t.playerDetail.latestNews}
-              subtitle={t.playerDetail.searchArticles}
-              href={`https://www.google.com/search?q=${encodeURIComponent(fullName)}+NBA+news&tbm=nws`}
-            />
-            <ExternalLinkCard
-              title={t.playerDetail.statsAnalytics}
-              subtitle={t.playerDetail.advancedData}
-              href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodeURIComponent(fullName)}`}
-            />
-          </div>
-        </div>
+      {/* ─── Stats Deep Dive (dynamic client sections — own styling) ─ */}
+      <section className="mt-8 sm:mt-10 space-y-4">
+        <SectionHeader icon={TrendingUp} title="Stats Deep Dive" eyebrow="03" />
+        <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+        <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+        <ShotHeatmap playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
+        <PlayerMeasurements draftYear={player.draftYear} />
+        <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
+        <PlayerNews playerName={fullName} />
+      </section>
 
-        {/* Dynamic data sections (client-fetched) */}
-        <div className="p-6 border-t border-border space-y-6">
-          {/* Stats bundle first — most important for basketball fans */}
-          <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-          <ShotHeatmap playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
-          <PlayerMeasurements draftYear={player.draftYear} />
-          <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
-          <PlayerNews playerName={fullName} />
-        </div>
+      {/* ─── Connections (Teammates + Similar) ──────────── */}
+      {(() => {
+        const teammates = player.teamAbbr
+          ? allPlayers
+              .filter((p) => p.teamAbbr === player.teamAbbr && p.personId !== personId && p.pts > 0)
+              .sort((a, b) => b.pts - a.pts)
+              .slice(0, 6)
+          : [];
 
-        {/* Teammates */}
-        {player.teamAbbr && (() => {
-          const teammates = allPlayers
-            .filter((p) => p.teamAbbr === player.teamAbbr && p.personId !== personId && p.pts > 0)
-            .sort((a, b) => b.pts - a.pts)
-            .slice(0, 6);
-          if (teammates.length === 0) return null;
-          return (
-            <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3">{t.playerDetail.teammates}</h2>
-              <div className="flex flex-wrap gap-2">
-                {teammates.map((t) => (
-                  <Link key={t.personId} href={`/player/${t.personId}`} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors text-sm">
-                    <PlayerHeadshot personId={t.personId} name={`${t.firstName} ${t.lastName}`} size={20} />
-                    <span className="text-text-primary">{t.firstName.charAt(0)}. {t.lastName}</span>
-                    <span className="text-[10px] text-accent">{t.pts}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Similar Players */}
-        {player.pts > 0 && (() => {
-          // Multi-stat similarity: weighted distance across PTS, REB, AST.
-          // Single pass: filter + distance, then sort by distance (no spread per row).
-          const candidates: { p: typeof allPlayers[number]; distance: number }[] = [];
+        const similarCandidates: { p: typeof allPlayers[number]; distance: number }[] = [];
+        if (ppg > 0) {
           for (const p of allPlayers) {
             if (p.personId === personId || p.pts <= 0 || p.position !== player.position) continue;
-            const dPts = p.pts - player.pts;
-            const dReb = (p.reb - player.reb) * 1.5;
-            const dAst = (p.ast - player.ast) * 1.5;
-            candidates.push({ p, distance: Math.sqrt(dPts * dPts + dReb * dReb + dAst * dAst) });
+            const dPts = p.pts - ppg;
+            const dReb = (p.reb - rpg) * 1.5;
+            const dAst = (p.ast - apg) * 1.5;
+            similarCandidates.push({ p, distance: Math.sqrt(dPts * dPts + dReb * dReb + dAst * dAst) });
           }
-          candidates.sort((a, b) => a.distance - b.distance);
-          const similar = candidates.slice(0, 5);
-          if (similar.length === 0) return null;
-          return (
-            <div className="p-6 border-t border-border">
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-2">
-                <TrendingUp size={14} />
-                {t.playerDetail.similarPlayers}
-              </h2>
-              <div className="space-y-2">
-                {similar.map(({ p: s, distance }) => (
-                  <Link key={s.personId} href={`/player/${s.personId}`}
-                    className="flex items-center gap-3 px-3 py-2.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors group">
-                    <PlayerHeadshot personId={s.personId} name={`${s.firstName} ${s.lastName}`} size={28} />
-                    <span className="font-medium text-text-primary group-hover:text-accent transition-colors text-sm flex-1">{s.firstName} {s.lastName}</span>
-                    <span className="text-[10px] text-text-secondary">{s.teamAbbr}</span>
-                    <span className="text-xs text-accent font-bold">{s.pts}</span>
-                    <span className="text-xs text-text-secondary">{s.reb}</span>
-                    <span className="text-xs text-text-secondary">{s.ast}</span>
-                    <span className="text-[9px] text-text-secondary/50 tabular-nums w-10 text-right">Δ{distance.toFixed(1)}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
+          similarCandidates.sort((a, b) => a.distance - b.distance);
+        }
+        const similar = similarCandidates.slice(0, 5);
 
-        {/* Team Link */}
+        if (teammates.length === 0 && similar.length === 0) return null;
+
+        return (
+          <section className="mt-8 sm:mt-10">
+            <SectionHeader icon={Users} title="Connections" eyebrow="04" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+              {/* Teammates tile */}
+              {teammates.length > 0 && (
+                <div className="glass-tile p-5">
+                  <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-4">{t.playerDetail.teammates}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {teammates.map((tm) => (
+                      <Link
+                        key={tm.personId}
+                        href={`/player/${tm.personId}`}
+                        className="group flex flex-col items-center text-center cursor-pointer"
+                      >
+                        <div className="relative">
+                          <PlayerHeadshot personId={tm.personId} name={`${tm.firstName} ${tm.lastName}`} size={48} />
+                          <span className="absolute -bottom-1 -right-1 text-[9px] font-mono tabular-nums px-1.5 py-0.5 bg-bg-card/90 backdrop-blur-md text-accent-amber rounded-full border border-border">
+                            {tm.pts.toFixed(0)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-text-primary group-hover:text-accent transition-colors mt-2 font-medium leading-tight">
+                          {tm.firstName.charAt(0)}. {tm.lastName}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Similar players tile */}
+              {similar.length > 0 && (
+                <div className="glass-tile p-5">
+                  <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-4 flex items-center justify-between">
+                    {t.playerDetail.similarPlayers}
+                    <span className="text-text-secondary/60 normal-case">by PPG · RPG · APG</span>
+                  </p>
+                  <div className="space-y-1">
+                    {similar.map(({ p: s, distance }) => (
+                      <Link
+                        key={s.personId}
+                        href={`/player/${s.personId}`}
+                        className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                      >
+                        <PlayerHeadshot personId={s.personId} name={`${s.firstName} ${s.lastName}`} size={32} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors truncate">
+                            {s.firstName} {s.lastName}
+                          </p>
+                          <p className="text-[10px] text-text-secondary font-mono tabular-nums">{s.teamAbbr}</p>
+                        </div>
+                        <div className="flex items-center gap-3 font-mono tabular-nums">
+                          <span className="text-xs text-accent-amber font-bold w-6 text-right">{s.pts.toFixed(0)}</span>
+                          <span className="text-xs text-text-secondary w-6 text-right">{s.reb.toFixed(0)}</span>
+                          <span className="text-xs text-text-secondary w-6 text-right">{s.ast.toFixed(0)}</span>
+                          <span className="text-[9px] text-text-secondary/50 w-10 text-right">Δ{distance.toFixed(1)}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ─── Resources & Team CTA ────────────────────── */}
+      <section className="mt-8 sm:mt-10">
+        <SectionHeader icon={Newspaper} title={t.playerDetail.moreInfo} eyebrow="05" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <ExternalLinkTile
+            icon={Award}
+            iconColor="#1D428A"   /* NBA navy */
+            label="NBA.com"
+            title={t.playerDetail.playerProfile}
+            subtitle={t.playerDetail.fullCareerStats}
+            href={player.slug ? `https://www.nba.com/player/${personId}/${player.slug}` : `https://www.nba.com/player/${personId}`}
+          />
+          <ExternalLinkTile
+            icon={TrendingUp}
+            iconColor="#F37920"   /* Spotrac orange */
+            label="Spotrac"
+            title={t.playerDetail.salaryContract}
+            subtitle={t.playerDetail.capInfo}
+            href={`https://www.spotrac.com/nba/player/_/id/${personId}`}
+          />
+          <ExternalLinkTile
+            icon={Newspaper}
+            iconColor="#EA4335"   /* Google red */
+            label="Google News"
+            title={t.playerDetail.latestNews}
+            subtitle={t.playerDetail.searchArticles}
+            href={`https://www.google.com/search?q=${encodeURIComponent(fullName)}+NBA+news&tbm=nws`}
+          />
+          <ExternalLinkTile
+            icon={TrendingUp}
+            iconColor="#7E5733"   /* Basketball Reference brown */
+            label="Basketball Reference"
+            title={t.playerDetail.statsAnalytics}
+            subtitle={t.playerDetail.advancedData}
+            href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodeURIComponent(fullName)}`}
+          />
+        </div>
+
+        {/* Featured team CTA — team color tint */}
         {player.teamAbbr && (
-          <div className="p-6 border-t border-border">
-            <Link
-              href={`/team/${player.teamAbbr}`}
-              className="flex items-center gap-3 px-4 py-3 bg-bg-hover rounded-lg hover:bg-accent/10 transition-colors group"
-            >
-              <Image
-                src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
-                alt={player.teamAbbr}
-                width={32}
-                height={32}
-                unoptimized
-              />
+          <Link
+            href={`/team/${player.teamAbbr}`}
+            className="glass-tile glass-tile-featured mt-4 sm:mt-5 p-5 flex items-center justify-between group cursor-pointer relative overflow-hidden"
+            style={{ ["--team-color" as string]: teamColor }}
+          >
+            {/* Team color tint */}
+            <div
+              className="absolute inset-0 opacity-25 pointer-events-none"
+              style={{ background: `linear-gradient(120deg, ${teamColor}55 0%, transparent 70%)` }}
+            />
+            {/* Watermark logo */}
+            <Image
+              src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+              alt=""
+              width={220}
+              height={220}
+              unoptimized
+              className="absolute -right-8 -bottom-12 opacity-15 group-hover:opacity-30 transition-opacity"
+            />
+            <div className="relative flex items-center gap-4">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: `${teamColor}22`, boxShadow: `0 0 0 1px ${teamColor}44 inset` }}
+              >
+                <Image
+                  src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+                  alt={player.teamAbbr}
+                  width={40}
+                  height={40}
+                  unoptimized
+                />
+              </div>
               <div>
-                <p className="font-medium text-text-primary group-hover:text-accent transition-colors">
+                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{player.teamAbbr}</p>
+                <p className="text-lg font-bold text-text-primary group-hover:text-accent transition-colors">
                   {player.teamCity} {player.teamName}
                 </p>
-                <p className="text-xs text-text-secondary">View team roster & schedule</p>
+                <p className="text-xs text-text-secondary mt-0.5">View team roster &amp; schedule</p>
               </div>
-            </Link>
+            </div>
+            <ArrowUpRight size={20} className="relative text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+          </Link>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/* ─── Bento helper components ───────────────────────────── */
+
+function SectionHeader({ icon: Icon, title, eyebrow, action }: {
+  icon: LucideIcon;
+  title: string;
+  eyebrow?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-end justify-between mb-4 sm:mb-5">
+      <div>
+        {eyebrow && (
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-1">
+            / {eyebrow}
+          </p>
+        )}
+        <h2 className="text-base sm:text-lg font-semibold text-text-primary tracking-tight flex items-center gap-2">
+          <Icon size={16} className="text-accent-amber" />
+          {title}
+        </h2>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function GlassFact({ icon: Icon, label, value, mono = false }: {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  mono?: boolean;
+}) {
+  return (
+    <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 sm:p-4 flex flex-col justify-between">
+      <div className="flex items-center gap-1.5">
+        <Icon size={11} className="text-text-secondary/70" />
+        <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
+      </div>
+      <p className={`text-sm sm:text-base font-semibold text-text-primary truncate ${mono ? "font-mono tabular-nums" : ""}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ScoringDnaTile({ ppg, fg2Pct, fg3Pct, ftPct, t }: {
+  ppg: number;
+  fg2Pct: number;
+  fg3Pct: number;
+  ftPct: number;
+  t: { playerDetail: { scoringProfile: string } };
+}) {
+  const fg2 = (ppg * fg2Pct).toFixed(1);
+  const fg3 = (ppg * fg3Pct).toFixed(1);
+  const ft = (ppg * ftPct).toFixed(1);
+  return (
+    <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-4 flex flex-col justify-between">
+      <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.playerDetail.scoringProfile}</p>
+      <div>
+        <div className="flex h-2 rounded-full overflow-hidden bg-bg-hover">
+          <div className="bg-accent transition-all duration-500" style={{ width: `${fg2Pct * 100}%` }} title={`2PT: ~${fg2}`} />
+          <div className="bg-success transition-all duration-500" style={{ width: `${fg3Pct * 100}%` }} title={`3PT: ~${fg3}`} />
+          <div className="bg-accent-amber transition-all duration-500" style={{ width: `${ftPct * 100}%` }} title={`FT: ~${ft}`} />
+        </div>
+        <div className="flex justify-between mt-2 text-[10px] font-mono tabular-nums">
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent" /><span className="text-text-secondary">2PT</span><span className="text-text-primary">{fg2}</span></span>
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-success" /><span className="text-text-secondary">3PT</span><span className="text-text-primary">{fg3}</span></span>
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent-amber" /><span className="text-text-secondary">FT</span><span className="text-text-primary">{ft}</span></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExternalLinkTile({ icon: Icon, iconColor, label, title, subtitle, href }: {
+  icon: LucideIcon;
+  iconColor: string;
+  label: string;
+  title: string;
+  subtitle: string;
+  href: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="glass-tile p-4 flex items-center gap-3 group cursor-pointer"
+    >
+      <div
+        className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+        style={{ background: `${iconColor}1A`, boxShadow: `0 0 0 1px ${iconColor}33 inset` }}
+      >
+        <Icon size={16} style={{ color: iconColor }} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary truncate">{label}</p>
+        <p className="text-sm font-semibold text-text-primary group-hover:text-accent transition-colors truncate">{title}</p>
+        <p className="text-[11px] text-text-secondary truncate">{subtitle}</p>
+      </div>
+      <ExternalLink size={14} className="text-text-secondary/50 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+    </a>
+  );
+}
+
+function DataStatTile({ label, value, ctx, delayMs = 0 }: {
+  label: string;
+  value: number;
+  ctx: { rank: number; percentile: number; delta: number; leagueAvg: number };
+  delayMs?: number;
+}) {
+  return (
+    <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: `${delayMs}ms` }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
+        {ctx.rank > 0 && ctx.rank <= 50 && (
+          <p className="text-[9px] font-mono tabular-nums text-accent-amber">#{ctx.rank}</p>
+        )}
+      </div>
+      <div>
+        <div className="flex items-baseline gap-1.5">
+          <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums leading-none text-text-primary">
+            {value > 0 ? value.toFixed(1).replace(/\.0$/, "") : "—"}
+          </p>
+          {value > 0 && ctx.leagueAvg > 0 && (
+            <span className={`text-[9px] font-mono tabular-nums ${ctx.delta >= 0 ? "text-success" : "text-danger"}`}>
+              {ctx.delta >= 0 ? "▲" : "▼"}{Math.abs(ctx.delta).toFixed(0)}%
+            </span>
+          )}
+        </div>
+        {ctx.percentile > 0 && (
+          <div className="mt-1.5 h-0.5 bg-bg-hover rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-accent to-accent-amber"
+              style={{ width: `${ctx.percentile}%` }}
+            />
           </div>
         )}
       </div>
@@ -489,79 +701,3 @@ export default async function PlayerPage({ params }: PageProps) {
   );
 }
 
-function StatBox({ label, value, highlight }: { label: string; value: string | number; highlight?: boolean }) {
-  return (
-    <div className="bg-bg-secondary rounded-lg p-3 text-center">
-      <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
-      <p className={`text-xl font-bold mt-1 ${highlight ? "text-accent" : "text-text-primary"}`}>{value}</p>
-    </div>
-  );
-}
-
-function CareerStatBox({ label, value, highlight, allPlayers, personId, statKey }: {
-  label: string; value: string | number; highlight?: boolean;
-  allPlayers: { personId: number; pts: number; reb: number; ast: number }[];
-  personId: number; statKey: "pts" | "reb" | "ast";
-}) {
-  // Compute the position average across all players with >0 pts to determine if above average
-  const activePlayers = allPlayers.filter((p) => p.pts > 0);
-  const avg = activePlayers.length > 0 ? activePlayers.reduce((s, p) => s + p[statKey], 0) / activePlayers.length : 0;
-  const numVal = typeof value === "number" ? value : parseFloat(String(value));
-  const aboveAvg = !isNaN(numVal) && numVal > avg && avg > 0;
-  // Check if player is in the top 20 for this stat
-  const sorted = [...activePlayers].sort((a, b) => b[statKey] - a[statKey]);
-  const rank = sorted.findIndex((p) => p.personId === personId) + 1;
-  const isElite = rank > 0 && rank <= 20;
-
-  // Percentile: what % of players this player is better than
-  const percentile = sorted.length > 0 ? Math.round(((sorted.length - rank) / sorted.length) * 100) : 0;
-
-  return (
-    <div className="bg-bg-secondary rounded-lg p-3 text-center relative">
-      <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
-      <p className={`text-xl font-bold mt-1 ${highlight ? "text-accent" : "text-text-primary"}`}>
-        {value}
-        {aboveAvg && <span className="text-success text-xs ml-1" title="Above league average">&#9650;</span>}
-      </p>
-      {rank > 0 && (
-        <div className="mt-1.5">
-          <div className="h-1 bg-bg-hover rounded-full overflow-hidden">
-            <div className={`h-full rounded-full ${percentile >= 90 ? "bg-accent" : percentile >= 70 ? "bg-success" : percentile >= 40 ? "bg-yellow-400" : "bg-text-secondary/30"}`} style={{ width: `${percentile}%` }} />
-          </div>
-          <span className="text-[8px] text-text-secondary mt-0.5 block">
-            {isElite ? `#${rank} in NBA` : `Top ${100 - percentile}%`}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="bg-bg-secondary rounded-lg p-3 flex items-center gap-3">
-      <div className="shrink-0">{icon}</div>
-      <div>
-        <p className="text-[10px] text-text-secondary uppercase">{label}</p>
-        <p className="text-sm font-medium text-text-primary">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function ExternalLinkCard({ title, subtitle, href }: { title: string; subtitle: string; href: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 px-4 py-3 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors group"
-    >
-      <ExternalLink size={14} className="text-text-secondary group-hover:text-accent shrink-0" />
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">{title}</p>
-        <p className="text-xs text-text-secondary truncate">{subtitle}</p>
-      </div>
-    </a>
-  );
-}

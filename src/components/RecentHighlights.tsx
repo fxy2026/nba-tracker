@@ -64,7 +64,7 @@ export default memo(function RecentHighlights({ games }: Props) {
                     {game.awayTeam.teamTricode}
                   </span>
                 </div>
-                <span className={`text-sm tabular-nums ${!homeWon ? "font-bold" : "text-text-secondary"}`}>
+                <span className={`text-sm font-mono tabular-nums ${!homeWon ? "font-bold" : "text-text-secondary"}`}>
                   {game.awayTeam.score}
                 </span>
               </div>
@@ -76,7 +76,7 @@ export default memo(function RecentHighlights({ games }: Props) {
                     {game.homeTeam.teamTricode}
                   </span>
                 </div>
-                <span className={`text-sm tabular-nums ${homeWon ? "font-bold" : "text-text-secondary"}`}>
+                <span className={`text-sm font-mono tabular-nums ${homeWon ? "font-bold" : "text-text-secondary"}`}>
                   {game.homeTeam.score}
                 </span>
               </div>

@@ -203,7 +203,7 @@ export default async function TeamPage({ params }: PageProps) {
             <p className="text-text-secondary text-sm mt-1 flex items-center gap-2 flex-wrap">
               {team.conference}ern Conference &middot; {team.division} Division
               {confRank > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${confRank <= 6 ? "bg-accent/15 text-accent" : confRank <= 10 ? "bg-yellow-500/15 text-yellow-500" : "bg-bg-hover text-text-secondary"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${confRank <= 6 ? "bg-accent/15 text-accent" : confRank <= 10 ? "bg-accent-amber/15 text-accent-amber" : "bg-bg-hover text-text-secondary"}`}>
                   #{confRank} in {team.conference}
                 </span>
               )}
@@ -242,7 +242,7 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
           {(playoffWins + playoffLosses > 0) && (
             <div className="bg-bg-secondary rounded-lg p-4 text-center">
-              <p className="text-xs text-yellow-500 uppercase">{t.common.playoffs}</p>
+              <p className="text-xs text-accent-amber uppercase">{t.common.playoffs}</p>
               <p className="text-2xl font-bold mt-1">
                 <span className="text-success">{playoffWins}</span>
                 <span className="text-text-secondary mx-1">-</span>
@@ -520,7 +520,7 @@ export default async function TeamPage({ params }: PageProps) {
                 <span className="text-sm text-text-primary flex-1">
                   {g.home ? "vs" : "@"} {g.opponent}
                 </span>
-                <span className="text-sm font-medium tabular-nums">{g.score}</span>
+                <span className="text-sm font-medium font-mono tabular-nums">{g.score}</span>
                 <span className="text-xs text-text-secondary">{g.date.slice(5)}</span>
               </Link>
             ))}

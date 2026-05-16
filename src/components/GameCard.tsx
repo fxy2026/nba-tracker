@@ -38,7 +38,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
 
   return (
     <Link href={`/game/${game.gameId}`} className="block group" aria-label={ariaLabel}>
-      <div className={`game-card bg-bg-card rounded-xl border hover:border-accent/50 transition-colors p-4 ${isLive ? "border-success/40 border-l-2 border-l-success" : "border-border"}`}>
+      <div className={`glass-tile p-4 ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
@@ -88,7 +88,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
               {isLive && <span className="inline-block w-1.5 h-1.5 rounded-full bg-success live-pulse" />}
               {status}
               {isLive && game.gameStatusText.toLowerCase().includes("half") && (
-                <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-yellow-500/15 text-yellow-500 rounded">{t.gameCard.halftime}</span>
+                <span className="ml-1 px-1 py-0.5 text-[9px] font-bold bg-accent-amber/15 text-accent-amber rounded">{t.gameCard.halftime}</span>
               )}
               {isLive && Math.abs(game.homeTeam.score - game.awayTeam.score) <= 5 && game.homeTeam.score + game.awayTeam.score > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-danger/15 text-danger rounded">{t.gameCard.close}</span>
@@ -108,14 +108,14 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                   {game.awayTeam.teamCity} {game.awayTeam.teamName}
                 </p>
                 {game.awayTeam.wins > 0 && (
-                  <p className="text-xs text-text-secondary">
+                  <p className="text-xs text-text-secondary font-mono tabular-nums">
                     {game.awayTeam.wins}-{game.awayTeam.losses}
                     {game.awayTeam.seed > 0 && ` · #${game.awayTeam.seed}`}
                   </p>
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold tabular-nums flex items-center gap-1 ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {game.gameStatus > 1 ? game.awayTeam.score : "-"}
               {awayWon && <span className="text-success text-xs">&#10003;</span>}
             </span>
@@ -132,14 +132,14 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                   {game.homeTeam.teamCity} {game.homeTeam.teamName}
                 </p>
                 {game.homeTeam.wins > 0 && (
-                  <p className="text-xs text-text-secondary">
+                  <p className="text-xs text-text-secondary font-mono tabular-nums">
                     {game.homeTeam.wins}-{game.homeTeam.losses}
                     {game.homeTeam.seed > 0 && ` · #${game.homeTeam.seed}`}
                   </p>
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold tabular-nums flex items-center gap-1 ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {game.gameStatus > 1 ? game.homeTeam.score : "-"}
               {homeWon && <span className="text-success text-xs">&#10003;</span>}
             </span>

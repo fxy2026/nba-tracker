@@ -364,11 +364,11 @@ export default async function H2HPage({ searchParams }: PageProps) {
                       <div className="flex items-center gap-2 flex-1">
                         <TeamLogo teamId={g.awayId} tricode={g.awayTricode} size={20} />
                         <span className={`text-sm font-medium ${!homeWon ? "text-text-primary" : "text-text-secondary"}`}>{g.awayTricode}</span>
-                        <span className={`text-sm font-bold tabular-nums ${!homeWon ? "text-accent" : "text-text-secondary"}`}>{g.awayScore}</span>
+                        <span className={`text-sm font-bold font-mono tabular-nums ${!homeWon ? "text-accent" : "text-text-secondary"}`}>{g.awayScore}</span>
                       </div>
                       <span className="text-text-secondary text-xs">@</span>
                       <div className="flex items-center gap-2 flex-1 justify-end">
-                        <span className={`text-sm font-bold tabular-nums ${homeWon ? "text-accent" : "text-text-secondary"}`}>{g.homeScore}</span>
+                        <span className={`text-sm font-bold font-mono tabular-nums ${homeWon ? "text-accent" : "text-text-secondary"}`}>{g.homeScore}</span>
                         <span className={`text-sm font-medium ${homeWon ? "text-text-primary" : "text-text-secondary"}`}>{g.homeTricode}</span>
                         <TeamLogo teamId={g.homeId} tricode={g.homeTricode} size={20} />
                       </div>

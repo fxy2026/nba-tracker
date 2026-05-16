@@ -280,10 +280,10 @@ export default function AdminPage() {
                   { label: t.admin.adminPassword, ok: adminStats.hasAdminPw as boolean },
                   { label: t.admin.ballDontLieApi, ok: adminStats.hasBdlKey as boolean },
                 ].map(({ label, ok }) => (
-                  <div key={label} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${ok ? "bg-success/10" : "bg-yellow-500/10"}`}>
-                    <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-yellow-500"}`} />
+                  <div key={label} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${ok ? "bg-success/10" : "bg-accent-amber/10"}`}>
+                    <span className={`w-2 h-2 rounded-full ${ok ? "bg-success" : "bg-accent-amber"}`} />
                     <span className="text-text-primary">{label}</span>
-                    <span className={`ml-auto ${ok ? "text-success" : "text-yellow-500"}`}>{ok ? t.admin.set : t.admin.missing}</span>
+                    <span className={`ml-auto ${ok ? "text-success" : "text-accent-amber"}`}>{ok ? t.admin.set : t.admin.missing}</span>
                   </div>
                 ))}
               </div>

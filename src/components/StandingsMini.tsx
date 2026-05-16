@@ -22,12 +22,12 @@ function ConferenceColumn({ title, teams }: { title: string; teams: TeamRecord[]
         const pct = t.wins + t.losses > 0 ? (t.wins / (t.wins + t.losses)) : 0;
         return (
           <div key={t.tricode} className="flex items-center gap-1.5 py-0.5 text-xs">
-            <span className={`w-3 text-right font-medium ${i < 3 ? "text-accent" : "text-text-secondary"}`}>{i + 1}</span>
-            <Link href={`/team/${t.tricode}`} className="font-medium text-text-primary hover:text-accent transition-colors">
+            <span className={`w-3 text-right font-mono tabular-nums ${i < 3 ? "text-accent-amber font-bold" : "text-text-secondary"}`}>{i + 1}</span>
+            <Link href={`/team/${t.tricode}`} className="font-semibold text-text-primary hover:text-accent transition-colors">
               {t.tricode}
             </Link>
-            <span className="text-text-secondary ml-auto tabular-nums">{t.wins}-{t.losses}</span>
-            <span className="text-text-secondary/60 tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
+            <span className="text-text-secondary ml-auto font-mono tabular-nums">{t.wins}-{t.losses}</span>
+            <span className="text-text-secondary/60 font-mono tabular-nums w-8 text-right text-[10px]">{(pct * 100).toFixed(0)}%</span>
           </div>
         );
       })}
@@ -64,13 +64,13 @@ export default function StandingsMini() {
   }, []);
 
   if (loading) {
-    return <div className="bg-bg-card rounded-xl border border-border p-3 mt-4 skeleton-shimmer h-28" />;
+    return <div className="glass-tile p-4 mt-4 skeleton-shimmer h-28" />;
   }
 
   if (east.length === 0 && west.length === 0) return null;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-3 mt-4">
+    <div className="glass-tile p-4 mt-4">
       <div className="grid grid-cols-2 gap-4">
         <ConferenceColumn title={t.standingsMini.east} teams={east} />
         <ConferenceColumn title={t.standingsMini.west} teams={west} />

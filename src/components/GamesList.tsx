@@ -102,7 +102,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       <div className="mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="rounded-xl border border-border p-4 h-[180px]">
+            <div key={i} className="glass-tile p-4 h-[180px]">
               <div className="skeleton-shimmer h-4 w-16 rounded mb-3" />
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -130,7 +130,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
 
   if (error) {
     return (
-      <div className="mt-6 bg-bg-card border border-border rounded-xl p-8 text-center">
+      <div className="glass-tile mt-6 p-8 text-center">
         <p className="text-text-secondary text-sm mb-3">{t.home.failedToLoad}</p>
         <button
           onClick={() => { setError(false); setLoading(true); fetchGames(selectedDate); }}
@@ -169,10 +169,11 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
 
       {/* Game of the Day */}
       {gameOfTheDay && (
-        <Link href={`/game/${gameOfTheDay.gameId}`} className="block mt-6 mb-2 px-4 py-2.5 bg-accent/10 border border-accent/20 rounded-xl hover:bg-accent/15 transition-colors">
-          <p className="text-sm text-center">
+        <Link href={`/game/${gameOfTheDay.gameId}`} className="glass-tile glass-tile-featured block mt-6 mb-2 px-5 py-3 cursor-pointer relative overflow-hidden">
+          <span className="absolute inset-0 bg-gradient-to-r from-accent-amber/10 via-transparent to-accent/10 pointer-events-none" />
+          <p className="text-sm text-center relative">
             <span className="text-accent font-bold">{t.home.gameOfTheDay}</span>
-            <span className="text-text-primary font-medium">
+            <span className="text-text-primary font-semibold">
               {gameOfTheDay.awayTeam.teamTricode} {gameOfTheDay.awayTeam.score} - {gameOfTheDay.homeTeam.score} {gameOfTheDay.homeTeam.teamTricode}
             </span>
             <span className="text-text-secondary ml-1">({t.home.margin}{gameOfTheDay.margin})</span>
@@ -184,12 +185,12 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {games.length > 0 ? (
         <div className="mt-6 mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-text-primary">{games.length} {games.length !== 1 ? t.common.games : t.common.game}</span>
+            <span className="text-sm font-medium text-text-primary"><span className="font-mono tabular-nums">{games.length}</span> {games.length !== 1 ? t.common.games : t.common.game}</span>
             {games.length >= 10 && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{t.home.packedSlate}</span>
             )}
             {games.length > 0 && games.length <= 3 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500 font-medium">{t.home.lightDay}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">{t.home.lightDay}</span>
             )}
             {liveNow.length > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">{liveNow.length}{t.home.liveCount}</span>
@@ -213,7 +214,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {games.length > 0 ? (
         <div className="space-y-6">
           {games.some((g) => g.gameId.startsWith("004")) && (
-            <div className="bg-gradient-to-r from-accent/10 to-yellow-500/10 border border-accent/20 rounded-xl px-4 py-2 text-center">
+            <div className="bg-gradient-to-r from-accent/10 to-accent-amber/10 border border-accent/20 rounded-xl px-4 py-2 text-center">
               <span className="text-xs font-bold text-accent uppercase tracking-wide">{t.home.playoffGamesToday}</span>
             </div>
           )}
@@ -280,7 +281,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             ];
             const idx = new Date(selectedDate).getDate() % facts.length;
             return (
-              <div className="bg-bg-card border border-border rounded-xl p-4 mb-4 max-w-md text-center">
+              <div className="glass-tile p-4 mb-4 max-w-md text-center">
                 <p className="text-[10px] text-text-secondary uppercase font-medium mb-1">{t.home.funFact}</p>
                 <p className="text-xs text-text-primary">{facts[idx]}</p>
               </div>
@@ -319,24 +320,24 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
 
       {/* Day insights */}
       {dayInsights && (
-        <div className="mt-6 bg-bg-card border border-border rounded-xl p-4">
+        <div className="glass-tile mt-6 p-5">
           <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.home.dayInsights}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
             <div>
-              <p className="text-lg font-bold text-accent">{dayInsights.avgScore}</p>
-              <p className="text-text-secondary">{t.home.avgTotalPts}</p>
+              <p className="text-xl font-bold text-accent font-mono tabular-nums">{dayInsights.avgScore}</p>
+              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.avgTotalPts}</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-text-primary">{dayInsights.homeWins}-{dayInsights.awayWins}</p>
-              <p className="text-text-secondary">{t.home.homeAway}</p>
+              <p className="text-xl font-bold text-text-primary font-mono tabular-nums">{dayInsights.homeWins}-{dayInsights.awayWins}</p>
+              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.homeAway}</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-yellow-500">{dayInsights.thrillers}</p>
-              <p className="text-text-secondary">{t.home.thrillers}</p>
+              <p className="text-xl font-bold text-accent-amber font-mono tabular-nums">{dayInsights.thrillers}</p>
+              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.thrillers}</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-danger">{dayInsights.blowouts}</p>
-              <p className="text-text-secondary">{t.home.blowouts}</p>
+              <p className="text-xl font-bold text-danger font-mono tabular-nums">{dayInsights.blowouts}</p>
+              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.blowouts}</p>
             </div>
           </div>
         </div>
