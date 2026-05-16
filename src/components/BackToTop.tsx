@@ -29,10 +29,11 @@ export default memo(function BackToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed bottom-20 sm:bottom-8 right-4 z-40 w-10 h-10 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:bg-accent-hover transition-all"
+      className="fixed bottom-20 sm:bottom-8 right-4 z-40 w-11 h-11 rounded-full bg-accent-gradient text-white shadow-xl shadow-accent/30 ring-1 ring-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer animate-fade-in"
       aria-label="Back to top"
+      title="Back to top (press T)"
     >
-      <ChevronUp size={20} />
+      <ChevronUp size={20} strokeWidth={2.5} />
     </button>
   );
 });

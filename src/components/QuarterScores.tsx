@@ -32,14 +32,14 @@ export default memo(function QuarterScores({ homeTeam, awayTeam }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border text-text-secondary text-xs">
-            <th className="text-left py-2.5 px-3 font-medium min-w-[140px]">{t.common.team}</th>
+          <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
+            <th className="text-left py-2.5 px-3 min-w-[140px]">{t.common.team}</th>
             {homeTeam.periods.map((p, i) => (
-              <th key={i} className={`text-center py-2.5 px-2 font-medium w-12 ${i === bestQuarterIdx ? "text-accent" : ""}`}>
+              <th key={i} className={`text-center py-2.5 px-2 w-12 ${i === bestQuarterIdx ? "text-accent-amber font-bold" : ""}`}>
                 {p.periodType === "OVERTIME" ? `${t.playByPlayComp.overtime}${p.period - 4}` : `${t.playByPlayComp.quarter}${p.period}`}
               </th>
             ))}
-            <th className="text-center py-2.5 px-3 font-bold w-14">{t.gameDetail.total}</th>
+            <th className="text-center py-2.5 px-3 font-bold w-14 text-text-primary">{t.gameDetail.total}</th>
           </tr>
         </thead>
         <tbody>
