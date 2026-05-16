@@ -203,7 +203,7 @@ export default function CalendarPage() {
                   key={i}
                   className={`border-b border-r border-border/50 p-2 min-h-[80px] transition-colors ${
                     cell.day ? "cursor-pointer hover:bg-bg-hover" : ""
-                  } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-green-500/15" : cell.calDay!.gameCount >= 4 ? "bg-green-500/10" : "bg-green-500/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
+                  } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-success/15" : cell.calDay!.gameCount >= 4 ? "bg-success/10" : "bg-success/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
                   onClick={() => {
                     if (cell.date) router.push(`/?date=${cell.date}`);
                   }}

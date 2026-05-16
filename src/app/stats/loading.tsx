@@ -6,7 +6,7 @@ export default function StatsLoading() {
         <div className="h-7 w-40 bg-bg-card rounded skeleton-shimmer" />
       </div>
       <div className="h-10 w-80 bg-bg-card rounded-xl skeleton-shimmer mb-6" />
-      <div className="bg-bg-card rounded-xl border border-border p-4">
+      <div className="glass-tile p-4">
         <div className="space-y-3">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="h-12 bg-bg-secondary rounded-lg skeleton-shimmer" />

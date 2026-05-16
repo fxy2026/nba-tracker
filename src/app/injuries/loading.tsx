@@ -11,7 +11,7 @@ export default function InjuriesLoading() {
       </div>
       <div className="space-y-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div key={i} className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
               <div className="h-4 w-36 bg-bg-secondary rounded skeleton-shimmer" />
             </div>

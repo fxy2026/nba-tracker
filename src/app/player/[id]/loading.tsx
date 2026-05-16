@@ -2,7 +2,7 @@ export default function PlayerLoading() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="h-4 w-24 bg-bg-card rounded skeleton-shimmer" />
-      <div className="bg-bg-card rounded-xl border border-border mt-4 overflow-hidden">
+      <div className="glass-tile mt-4 overflow-hidden">
         <div className="p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <div className="w-32 h-32 rounded-full bg-bg-secondary skeleton-shimmer" />

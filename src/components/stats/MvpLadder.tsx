@@ -95,18 +95,22 @@ export default function MvpLadder() {
         {ranked.map((p, i) => {
           const score = p._score;
           const barPct = (score / topScore) * 100;
+          const isTop3 = i < 3;
+          const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
+            : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
+            : i === 2 ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
+            : "bg-bg-hover text-text-secondary";
+          const barColor = i === 0 ? "bg-[#FFD700]" : i === 1 ? "bg-[#C0C0C0]" : i === 2 ? "bg-[#CD7F32]" : "bg-accent/60";
           return (
             <Link
               key={p.PLAYER_ID}
               href={`/player/${p.PLAYER_ID}`}
-              className="flex items-center gap-3 glass-tile p-3 hover:border-accent/40 transition-colors group"
+              className={`flex items-center gap-3 glass-tile p-3 hover:border-accent/40 transition-all group cursor-pointer ${isTop3 ? "bg-accent-amber/[0.03]" : ""}`}
             >
-              <span className={`text-lg font-bold w-8 text-center shrink-0 ${
-                i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-text-secondary"
-              }`}>
+              <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
                 {i + 1}
               </span>
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
                 <Image
                   src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
                   alt={p.PLAYER}
@@ -120,19 +124,19 @@ export default function MvpLadder() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.PLAYER}</span>
-                  <span className="text-[10px] text-text-secondary">{p.TEAM}</span>
+                  <span className="text-[10px] text-text-secondary font-mono">{p.TEAM}</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[200px]">
-                    <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
+                    <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${barPct}%` }} />
                   </div>
-                  <span className="text-[10px] text-accent font-bold font-mono tabular-nums">{score.toFixed(1)}</span>
+                  <span className={`text-[10px] font-bold font-mono tabular-nums ${isTop3 ? "text-text-primary" : "text-accent"}`}>{score.toFixed(1)}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-xs text-text-secondary shrink-0">
-                <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> PPG</span>
-                <span>{p.REB.toFixed(1)} RPG</span>
-                <span>{p.AST.toFixed(1)} APG</span>
+              <div className="flex items-center gap-3 text-xs text-text-secondary shrink-0 font-mono tabular-nums">
+                <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> <span className="text-[9px]">PPG</span></span>
+                <span>{p.REB.toFixed(1)} <span className="text-[9px]">RPG</span></span>
+                <span>{p.AST.toFixed(1)} <span className="text-[9px]">APG</span></span>
               </div>
             </Link>
           );

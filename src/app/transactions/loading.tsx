@@ -7,7 +7,7 @@ export default function TransactionsLoading() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="skeleton-shimmer">
             <div className="h-4 w-36 bg-bg-card rounded mb-2" />
-            <div className="h-20 bg-bg-card rounded-xl border border-border" />
+            <div className="h-20 glass-tile" />
           </div>
         ))}
       </div>

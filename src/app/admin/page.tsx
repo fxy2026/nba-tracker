@@ -241,7 +241,7 @@ export default function AdminPage() {
                     <Play size={12} className="text-accent shrink-0" />
                     <span className="text-text-primary font-medium truncate flex-1">{link.title}</span>
                     <span className="text-text-secondary shrink-0">{link.game_id}</span>
-                    <span className={`px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-red-500/10 text-red-400" : link.source === "bilibili" ? "bg-blue-400/10 text-blue-400" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
+                    <span className={`px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-danger/10 text-danger" : link.source === "bilibili" ? "bg-blue-400/10 text-accent" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
                     <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline shrink-0"><ExternalLink size={10} /></a>
                   </div>
                 ))}
@@ -414,7 +414,7 @@ export default function AdminPage() {
                             <p className="text-sm font-medium truncate">{link.title}</p>
                             <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-text-secondary hover:text-accent truncate block transition-colors">{link.url}</a>
                           </div>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-red-500/10 text-red-400" : link.source === "bilibili" ? "bg-blue-400/10 text-blue-400" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${link.source === "youtube" ? "bg-danger/10 text-danger" : link.source === "bilibili" ? "bg-blue-400/10 text-accent" : "bg-bg-hover text-text-secondary"}`}>{link.source}</span>
                           <a href={link.url} target="_blank" rel="noopener noreferrer" className="p-1 text-text-secondary hover:text-accent transition-colors shrink-0 opacity-0 group-hover:opacity-100"><ExternalLink size={12} /></a>
                         </div>
                         <button onClick={() => removeLink(link.id)} className="p-1.5 text-text-secondary hover:text-danger transition-colors shrink-0 ml-1"><Trash2 size={14} /></button>

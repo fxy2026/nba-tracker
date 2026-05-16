@@ -64,7 +64,7 @@ function getStatusColor(status: string | undefined): string {
   const s = status.toLowerCase();
   if (s.includes("out")) return "text-danger";
   if (s.includes("day-to-day") || s.includes("questionable")) return "text-yellow-400";
-  if (s.includes("doubtful")) return "text-orange-400";
+  if (s.includes("doubtful")) return "text-accent-amber";
   return "text-text-secondary";
 }
 
@@ -138,7 +138,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
             </span>
             <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-orange-400/10 rounded-lg">
               <span className="w-2 h-2 rounded-full bg-orange-400" />
-              <span className="font-bold text-orange-400">{doubtfulCount}</span>
+              <span className="font-bold text-accent-amber">{doubtfulCount}</span>
               <span className="text-text-secondary text-xs">{t.injuriesPage.doubtful}</span>
             </span>
             <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/10 rounded-lg">

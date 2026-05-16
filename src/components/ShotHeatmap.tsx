@@ -417,7 +417,7 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
                 <p className="font-bold text-text-primary">{hoveredZone}</p>
                 <p className="text-accent text-lg font-bold">{hoveredStat.pct.toFixed(1)}%</p>
                 <p className="text-text-secondary">{hoveredStat.made}/{hoveredStat.total} FG</p>
-                <p className={`text-[10px] mt-1 ${hoveredStat.pct > leagueAvg ? "text-red-400" : hoveredStat.pct < leagueAvg - 5 ? "text-blue-400" : "text-orange-400"}`}>
+                <p className={`text-[10px] mt-1 ${hoveredStat.pct > leagueAvg ? "text-danger" : hoveredStat.pct < leagueAvg - 5 ? "text-accent" : "text-accent-amber"}`}>
                   {hoveredStat.pct > leagueAvg ? "+" : ""}{(hoveredStat.pct - leagueAvg).toFixed(1)}% vs {locale === "zh" ? "联盟均值" : "league avg"}
                 </p>
               </div>

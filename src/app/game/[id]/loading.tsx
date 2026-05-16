@@ -3,7 +3,7 @@ export default function Loading() {
     <div className="max-w-7xl mx-auto px-4 py-6 skeleton-shimmer">
       <div className="h-4 w-24 bg-bg-card rounded mb-4" />
       {/* Scoreboard skeleton */}
-      <div className="bg-bg-card rounded-xl border border-border p-6">
+      <div className="glass-tile p-6">
         <div className="flex items-center justify-center gap-10 py-4">
           <div className="flex flex-col items-center gap-2">
             <div className="w-14 h-14 bg-bg-hover rounded-full" />
@@ -23,7 +23,7 @@ export default function Loading() {
       {/* Table skeleton */}
       <div className="mt-6 space-y-6">
         {[1, 2].map((t) => (
-          <div key={t} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div key={t} className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
               <div className="h-5 w-40 bg-bg-hover rounded" />
             </div>

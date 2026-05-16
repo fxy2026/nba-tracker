@@ -22,7 +22,7 @@ interface PlayerData {
 const COMPARE_STATS = [
   { key: "pts", label: "PPG", color: "text-accent", barColor: "var(--accent)" },
   { key: "reb", label: "RPG", color: "text-success", barColor: "var(--success)" },
-  { key: "ast", label: "APG", color: "text-blue-400", barColor: "#60a5fa" },
+  { key: "ast", label: "APG", color: "text-accent", barColor: "#60a5fa" },
 ] as const;
 
 export default function ComparePage() {

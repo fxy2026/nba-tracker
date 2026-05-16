@@ -7,7 +7,7 @@ export default function StandingsLoading() {
       <div className="h-6 w-48 skeleton-shimmer rounded mb-3" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div key={i} className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
               <div className="h-4 w-20 skeleton-shimmer rounded" />
             </div>
@@ -23,7 +23,7 @@ export default function StandingsLoading() {
       <div className="h-6 w-48 skeleton-shimmer rounded mb-3" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div key={i} className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
               <div className="h-4 w-20 skeleton-shimmer rounded" />
             </div>

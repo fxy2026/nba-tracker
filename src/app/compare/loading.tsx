@@ -6,8 +6,8 @@ export default function CompareLoading() {
         <div className="h-7 w-48 bg-bg-card rounded skeleton-shimmer" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="h-12 bg-bg-card rounded-xl border border-border skeleton-shimmer" />
-        <div className="h-12 bg-bg-card rounded-xl border border-border skeleton-shimmer" />
+        <div className="h-12 glass-tile skeleton-shimmer" />
+        <div className="h-12 glass-tile skeleton-shimmer" />
       </div>
     </div>
   );

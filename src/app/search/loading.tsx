@@ -5,7 +5,7 @@ export default function SearchLoading() {
         <div className="w-6 h-6 bg-bg-card rounded skeleton-shimmer" />
         <div className="h-7 w-36 bg-bg-card rounded skeleton-shimmer" />
       </div>
-      <div className="h-12 w-full bg-bg-card rounded-xl border border-border skeleton-shimmer" />
+      <div className="h-12 w-full glass-tile skeleton-shimmer" />
     </div>
   );
 }

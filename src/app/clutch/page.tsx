@@ -187,7 +187,7 @@ export default function ClutchPage() {
                   return (
                   <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent/5" : ""}`}>
                     <td className="text-center py-2.5 px-2 text-xs font-medium">
-                      {i === 0 ? <span className="text-yellow-400">&#9733;</span> : i === 1 ? <span className="text-gray-400">&#9733;</span> : i === 2 ? <span className="text-amber-600">&#9733;</span> : <span className="text-text-secondary">{i + 1}</span>}
+                      {i === 0 ? <span className="text-yellow-400">&#9733;</span> : i === 1 ? <span className="text-text-secondary">&#9733;</span> : i === 2 ? <span className="text-amber-600">&#9733;</span> : <span className="text-text-secondary">{i + 1}</span>}
                     </td>
                     <td className="py-2.5 px-3">
                       <Link href={`/player/${p.PLAYER_ID}`} className="flex items-center gap-2 hover:text-accent transition-colors">

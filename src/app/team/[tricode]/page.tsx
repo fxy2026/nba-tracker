@@ -181,94 +181,79 @@ export default async function TeamPage({ params }: PageProps) {
     .sort((a, b) => b.winPct - a.winPct);
   const confRank = conferenceRanking.findIndex((tm) => tm.tricode === team.tricode) + 1;
 
+  const last10 = recentGames.slice(0, 10);
+  const w10 = last10.filter((g) => g.won).length;
+  const l10 = last10.length - w10;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <Link href="/stats" className="text-sm text-text-secondary hover:text-accent transition-colors">
-        <ArrowLeft size={14} className="inline mr-1" />
-        {t.teamPage.backToStandings}
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      <Link href="/stats" className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary hover:text-accent transition-colors cursor-pointer">
+        <ArrowLeft size={12} /> {t.teamPage.backToStandings}
       </Link>
 
-      {/* Team color accent */}
-      <div className="team-accent-bar mt-4 mb-6" style={{ background: team.primaryColor }} />
+      {/* ─── Team Hero — Bento with team-color tinting ────── */}
+      <div
+        className="glass-tile glass-tile-featured mt-6 p-6 sm:p-8 relative overflow-hidden"
+        style={{ ["--team-color" as string]: team.primaryColor }}
+      >
+        {/* Team color radial accent on top-left */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 50% 40% at 10% 0%, ${team.primaryColor}66 0%, transparent 70%)` }}
+        />
+        {/* Big team logo watermark on right */}
+        <div className="absolute -right-12 -top-8 opacity-10 pointer-events-none">
+          <TeamLogo teamId={team.teamId} tricode={team.tricode} size={280} />
+        </div>
 
-      {/* Team Header */}
-      <div className="glass-tile p-6">
-        <div className="flex items-center gap-5">
-          <TeamLogo teamId={team.teamId} tricode={team.tricode} size={72} />
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold">{team.city} <span className="text-accent">{team.name}</span></h1>
-              <FavoriteButton type="team" id={team.tricode} />
-            </div>
-            <p className="text-text-secondary text-sm mt-1 flex items-center gap-2 flex-wrap">
-              {team.conference}ern Conference &middot; {team.division} Division
+        <div className="relative flex items-center gap-4 sm:gap-6">
+          <div className="shrink-0">
+            <TeamLogo teamId={team.teamId} tricode={team.tricode} size={88} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: team.primaryColor }} />
+              {team.tricode} · {team.conference}ern · {team.division}
+            </p>
+            <h1 className="leading-[0.9] tracking-[-0.03em] mt-1.5">
+              <span className="block text-sm sm:text-base font-extralight text-text-secondary">{team.city}</span>
+              <span className="block text-3xl sm:text-5xl font-black text-text-primary">{team.name}</span>
+            </h1>
+            <div className="flex items-center gap-3 mt-3 flex-wrap">
               {confRank > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${confRank <= 6 ? "bg-accent/15 text-accent" : confRank <= 10 ? "bg-accent-amber/15 text-accent-amber" : "bg-bg-hover text-text-secondary"}`}>
-                  #{confRank} in {team.conference}
+                <span className={`text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded-full font-bold ${
+                  confRank <= 6 ? "bg-accent-amber/15 text-accent-amber border border-accent-amber/30" :
+                  confRank <= 10 ? "bg-accent/15 text-accent border border-accent/30" :
+                  "bg-bg-hover text-text-secondary border border-border"
+                }`}>
+                  #{confRank} {team.conference}
                 </span>
               )}
-              <Link href={`/schedule?team=${team.tricode}`} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-hover text-text-secondary hover:text-accent transition-colors">
-                {t.teamPage.scheduleLink}
+              <Link href={`/schedule?team=${team.tricode}`} className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors cursor-pointer">
+                → {t.teamPage.scheduleLink}
               </Link>
-            </p>
-          </div>
-        </div>
-
-        {/* Franchise Info Card */}
-        <div className="flex items-center gap-3 mt-4 px-4 py-3 bg-bg-secondary rounded-lg">
-          <span className="w-5 h-5 rounded-full border-2 border-border" style={{ backgroundColor: team.primaryColor }} title="Team color" />
-          <span className="text-xs text-text-secondary">
-            {team.conference}ern Conference
-          </span>
-          <span className="text-xs text-text-secondary">&middot;</span>
-          <span className="text-xs text-text-secondary">
-            {team.division} Division
-          </span>
-        </div>
-
-        {/* Record */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-6">
-          <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">{t.teamPage.record}</p>
-            <p className="text-2xl font-bold mt-1">
-              <span className="text-success">{wins}</span>
-              <span className="text-text-secondary mx-1">-</span>
-              <span className="text-danger">{losses}</span>
-            </p>
-          </div>
-          <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">{t.teamPage.winPct}</p>
-            <p className="text-2xl font-bold text-accent mt-1">{winPct}%</p>
-          </div>
-          {(playoffWins + playoffLosses > 0) && (
-            <div className="bg-bg-secondary rounded-lg p-4 text-center">
-              <p className="text-xs text-accent-amber uppercase">{t.common.playoffs}</p>
-              <p className="text-2xl font-bold mt-1">
-                <span className="text-success">{playoffWins}</span>
-                <span className="text-text-secondary mx-1">-</span>
-                <span className="text-danger">{playoffLosses}</span>
-              </p>
+              <FavoriteButton type="team" id={team.tricode} />
             </div>
+          </div>
+        </div>
+
+        {/* KPI strip — hairline cells, oversized numerals */}
+        <div className="relative grid grid-cols-2 sm:grid-cols-5 mt-8 border-t border-border">
+          <TeamKpiCell label="Record" value={
+            <><span className="text-success">{wins}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{losses}</span></>
+          } />
+          <TeamKpiCell label="Win %" value={<span className="text-accent-amber">{winPct}%</span>} />
+          <TeamKpiCell label={t.teamPage.last10} value={
+            <><span className="text-success">{w10}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{l10}</span></>
+          } />
+          {(playoffWins + playoffLosses > 0) ? (
+            <TeamKpiCell label={t.common.playoffs} value={
+              <><span className="text-success">{playoffWins}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{playoffLosses}</span></>
+            } />
+          ) : (
+            <TeamKpiCell label="Conf" value={<span className="text-text-primary">{team.conference[0]}</span>} />
           )}
-          <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">{t.teamPage.last10}</p>
-            {(() => {
-              const last10 = recentGames.slice(0, 10);
-              const w10 = last10.filter((g) => g.won).length;
-              const l10 = last10.length - w10;
-              return (
-                <p className="text-2xl font-bold mt-1">
-                  <span className="text-success">{w10}</span>
-                  <span className="text-text-secondary mx-1">-</span>
-                  <span className="text-danger">{l10}</span>
-                </p>
-              );
-            })()}
-          </div>
-          <div className="bg-bg-secondary rounded-lg p-4 text-center">
-            <p className="text-xs text-text-secondary uppercase">{t.teamPage.playersCount}</p>
-            <p className="text-2xl font-bold mt-1">{roster.length}</p>
-          </div>
+          <TeamKpiCell label={t.teamPage.playersCount} value={<span className="text-text-primary">{roster.length}</span>} />
         </div>
 
         {/* Season Stats */}
@@ -779,6 +764,17 @@ export default async function TeamPage({ params }: PageProps) {
           </table>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TeamKpiCell({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="relative py-4 sm:py-5 px-3 sm:px-4 [&:not(:first-child)]:before:absolute [&:not(:first-child)]:before:left-0 [&:not(:first-child)]:before:top-3 [&:not(:first-child)]:before:bottom-3 [&:not(:first-child)]:before:w-px [&:not(:first-child)]:before:bg-border [&:not(:first-child)]:before:content-['']">
+      <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{label}</p>
+      <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums mt-1.5 leading-none">
+        {value}
+      </p>
     </div>
   );
 }

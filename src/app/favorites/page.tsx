@@ -69,7 +69,7 @@ export default function FavoritesPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center gap-3 mb-6">
-        <Heart size={24} className="text-red-500" fill="currentColor" />
+        <Heart size={24} className="text-danger" fill="currentColor" />
         <h1 className="text-2xl font-bold">{t.favoritesPage.title}</h1>
         {hasAny && (
           <button
@@ -109,7 +109,7 @@ export default function FavoritesPage() {
           <span className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
             {favTeams.length} {favTeams.length !== 1 ? t.common.teams : t.common.team}
           </span>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/15 text-red-500 font-medium">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-danger/15 text-danger font-medium">
             {favPlayers.length} {favPlayers.length !== 1 ? t.common.players : t.common.player}
           </span>
         </div>
@@ -161,7 +161,7 @@ export default function FavoritesPage() {
                   </Link>
                   <button
                     onClick={() => removeTeam(tricode)}
-                    className="p-1.5 rounded-lg text-red-500 hover:text-red-400 transition-colors"
+                    className="p-1.5 rounded-lg text-danger hover:text-danger transition-colors"
                     title="Remove from favorites"
                   >
                     <Heart size={16} fill="currentColor" />
@@ -204,7 +204,7 @@ export default function FavoritesPage() {
                   </Link>
                   <button
                     onClick={() => removePlayer(playerId)}
-                    className="p-1.5 rounded-lg text-red-500 hover:text-red-400 transition-colors"
+                    className="p-1.5 rounded-lg text-danger hover:text-danger transition-colors"
                     title="Remove from favorites"
                   >
                     <Heart size={16} fill="currentColor" />

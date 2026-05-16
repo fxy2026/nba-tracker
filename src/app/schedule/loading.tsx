@@ -8,7 +8,7 @@ export default function ScheduleLoading() {
             <div className="h-5 w-48 bg-bg-card rounded skeleton-shimmer mb-3" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {Array.from({ length: 4 }).map((_, j) => (
-                <div key={j} className="h-24 bg-bg-card rounded-xl border border-border skeleton-shimmer" />
+                <div key={j} className="h-24 glass-tile skeleton-shimmer" />
               ))}
             </div>
           </div>
