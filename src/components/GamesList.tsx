@@ -9,6 +9,8 @@ import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
 import TodayStars from "./TodayStars";
 import HomeExtra from "./HomeExtra";
+import EmptyState from "./EmptyState";
+import { AlertCircle } from "lucide-react";
 import { formatDate } from "@/lib/api";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -121,14 +123,14 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
 
   if (error) {
     return (
-      <div className="glass-tile mt-6 p-8 text-center">
-        <p className="text-text-secondary text-sm mb-3">{t.home.failedToLoad}</p>
-        <button
-          onClick={() => { setError(false); setLoading(true); fetchGames(selectedDate); }}
-          className="text-xs px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors"
-        >
-          {t.common.retry}
-        </button>
+      <div className="mt-6">
+        <EmptyState
+          icon={AlertCircle}
+          tone="danger"
+          title={t.home.failedToLoad}
+          description="Network may be slow or the data source is temporarily unavailable."
+          action={{ label: t.common.retry, onClick: () => { setError(false); setLoading(true); fetchGames(selectedDate); } }}
+        />
       </div>
     );
   }

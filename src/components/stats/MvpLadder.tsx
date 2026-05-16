@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Trophy } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
+import EmptyState from "@/components/EmptyState";
 
 interface LeaderRow {
   PLAYER_ID: number;
@@ -82,10 +84,11 @@ export default function MvpLadder() {
   }
 
   if (ranked.length === 0) return (
-    <div className="glass-tile p-12 text-center">
-      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mb-2">/ Empty</p>
-      <p className="text-text-secondary text-sm">No data available</p>
-    </div>
+    <EmptyState
+      icon={Trophy}
+      title="No MVP candidates yet"
+      description="The MVP ladder needs players with at least 40 games played. Check back later in the season."
+    />
   );
 
   const topScore = ranked[0]._score;

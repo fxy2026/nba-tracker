@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { AlertCircle } from "lucide-react";
 
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
+import EmptyState from "@/components/EmptyState";
 const STATS_API = "/api/stats";
 
 interface LeaderRow {
@@ -123,10 +125,13 @@ export default function PlayerLeaders() {
           ))}
         </div>
       ) : error ? (
-        <div className="glass-tile p-8 text-center text-danger text-sm" role="alert">
-          <p className="font-mono uppercase tracking-[0.2em] text-[10px] mb-2">Error</p>
-          {t.statsPage.failedToLoad} {error}
-        </div>
+        <EmptyState
+          icon={AlertCircle}
+          tone="danger"
+          title={t.statsPage.failedToLoad}
+          description={String(error)}
+          action={{ label: t.common.retry, onClick: () => load() }}
+        />
       ) : (
         <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">

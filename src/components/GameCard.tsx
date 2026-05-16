@@ -2,12 +2,14 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Play } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import { getGameStatusDisplay } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 import GameCountdown from "./GameCountdown";
 import { useLocale } from "@/components/LocaleProvider";
+import { TEAM_META } from "@/lib/teams";
 
 /** Hook: detect when a score changes and trigger a CSS class for 1.2s */
 function useScoreFlash(score: number): boolean {
@@ -54,11 +56,45 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
 
   const ariaLabel = `${game.awayTeam.teamTricode} ${game.gameStatus > 1 ? game.awayTeam.score : ""} vs ${game.homeTeam.teamTricode} ${game.gameStatus > 1 ? game.homeTeam.score : ""} — ${status}`;
 
+  // Team colors for subtle side tinting on final games
+  const awayColor = TEAM_META[game.awayTeam.teamTricode]?.primaryColor;
+  const homeColor = TEAM_META[game.homeTeam.teamTricode]?.primaryColor;
+
   return (
-    <Link href={`/game/${game.gameId}`} className="block group" aria-label={ariaLabel}>
-      <div className={`glass-tile p-4 ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
+    <Link href={`/game/${game.gameId}`} className="block group cursor-pointer" aria-label={ariaLabel}>
+      <div className={`glass-tile p-4 relative overflow-hidden ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
+        {/* Decorative team-logo watermarks (very subtle) */}
+        <Image
+          src={`https://cdn.nba.com/logos/nba/${game.awayTeam.teamId}/global/L/logo.svg`}
+          alt=""
+          width={140}
+          height={140}
+          unoptimized
+          aria-hidden
+          className="pointer-events-none absolute -left-8 -bottom-8 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
+        />
+        <Image
+          src={`https://cdn.nba.com/logos/nba/${game.homeTeam.teamId}/global/L/logo.svg`}
+          alt=""
+          width={140}
+          height={140}
+          unoptimized
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-8 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
+        />
+        {/* Final games: subtle winner-team-color side glow */}
+        {isFinal && (awayWon || homeWon) && (
+          <div
+            className="absolute inset-y-0 w-16 opacity-30 pointer-events-none"
+            style={{
+              [awayWon ? "left" : "right"]: 0,
+              background: `linear-gradient(${awayWon ? "to right" : "to left"}, ${awayWon ? awayColor : homeColor}33, transparent)`,
+            }}
+          />
+        )}
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="relative flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             {isPlayoffs && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
@@ -116,7 +152,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
         </div>
 
         {/* Teams */}
-        <div className="space-y-2">
+        <div className="relative space-y-2">
           {/* Away */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
