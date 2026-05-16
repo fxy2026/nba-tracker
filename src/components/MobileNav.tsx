@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -57,6 +57,9 @@ export default function MobileNav() {
         { href: "/rookie-watch", label: "Rookies", icon: Sparkles },
         { href: "/draft-classes", label: "Classes", icon: GraduationCap },
         { href: "/by-country", label: "Global", icon: Globe },
+        { href: "/by-position", label: "Position", icon: Users },
+        { href: "/by-college", label: "College", icon: School },
+        { href: "/this-day", label: "This Day", icon: CalendarDays },
         { href: "/favorites", label: t.nav.favorites, icon: Heart },
       ],
     },

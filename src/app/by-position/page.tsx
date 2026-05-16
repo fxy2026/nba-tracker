@@ -1,0 +1,179 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Users } from "lucide-react";
+import { getPlayerIndex } from "@/lib/api";
+import PlayerHeadshot from "@/components/PlayerHeadshot";
+import PageHeader from "@/components/PageHeader";
+import EmptyState from "@/components/EmptyState";
+
+export const metadata: Metadata = {
+  title: "Leaders By Position",
+  description: "Top NBA players grouped by position — guards, forwards, and centers ranked by composite production.",
+};
+
+export const revalidate = 600;
+
+interface PosPlayer {
+  personId: number;
+  firstName: string;
+  lastName: string;
+  teamAbbr: string;
+  position: string;
+  height: string;
+  pts: number;
+  reb: number;
+  ast: number;
+}
+
+interface PosGroup {
+  label: string;
+  eyebrow: string;
+  description: string;
+  color: string;
+  matches: (pos: string) => boolean;
+  emoji: string;
+}
+
+const GROUPS: PosGroup[] = [
+  {
+    label: "Guards",
+    eyebrow: "Backcourt",
+    description: "Point guards and shooting guards — playmakers and scorers",
+    color: "#3B82F6",
+    matches: (pos) => /G/.test(pos) && !/F/.test(pos),
+    emoji: "🎯",
+  },
+  {
+    label: "Wings",
+    eyebrow: "Hybrid",
+    description: "Combo guards/forwards — modern positionless do-it-alls",
+    color: "#A855F7",
+    matches: (pos) => /G/.test(pos) && /F/.test(pos),
+    emoji: "🦅",
+  },
+  {
+    label: "Forwards",
+    eyebrow: "Frontcourt",
+    description: "Small and power forwards — versatile two-way operators",
+    color: "#22C55E",
+    matches: (pos) => /F/.test(pos) && !/G/.test(pos) && !/C/.test(pos),
+    emoji: "⚔️",
+  },
+  {
+    label: "Big Men",
+    eyebrow: "Paint",
+    description: "Centers and forward-centers — interior anchors",
+    color: "#F59E0B",
+    matches: (pos) => /C/.test(pos),
+    emoji: "🗼",
+  },
+];
+
+function score(p: { pts: number; reb: number; ast: number }) {
+  return p.pts + p.reb * 1.2 + p.ast * 1.5;
+}
+
+export default async function ByPositionPage() {
+  const players = await getPlayerIndex().catch(() => []);
+
+  if (players.length === 0) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <PageHeader eyebrow="Players" icon={Users} title="Leaders By Position" />
+        <EmptyState icon={Users} title="No data" description="Could not load player index." />
+      </div>
+    );
+  }
+
+  const byGroup = GROUPS.map((g) => {
+    const list: PosPlayer[] = players
+      .filter((p) => p.position && g.matches(p.position) && p.pts > 0)
+      .map((p) => ({
+        personId: p.personId,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        teamAbbr: p.teamAbbr,
+        position: p.position,
+        height: p.height,
+        pts: p.pts,
+        reb: p.reb,
+        ast: p.ast,
+      }))
+      .sort((a, b) => score(b) - score(a))
+      .slice(0, 10);
+    return { group: g, list };
+  });
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <PageHeader
+        eyebrow="Players"
+        icon={Users}
+        title="Leaders By Position"
+        subtitle="Top 10 active players in each positional bucket · ranked by PPG + RPG×1.2 + APG×1.5"
+      />
+
+      <div className="space-y-6">
+        {byGroup.map(({ group, list }) => {
+          if (list.length === 0) return null;
+          return (
+            <section key={group.label} className="glass-tile p-5 relative overflow-hidden">
+              <div className="absolute inset-y-0 left-0 w-1.5 opacity-80" style={{ background: group.color }} />
+              <div className="relative">
+                <div className="flex items-end justify-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {group.eyebrow}</p>
+                    <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2" style={{ color: group.color }}>
+                      <span className="text-3xl">{group.emoji}</span>
+                      {group.label}
+                    </h2>
+                    <p className="text-xs text-text-secondary mt-1">{group.description}</p>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary tabular-nums">
+                    {list.length} ranked
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {list.map((p, i) => {
+                    const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
+                      : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
+                      : i === 2 ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
+                      : "bg-bg-hover text-text-secondary";
+                    return (
+                      <Link
+                        key={p.personId}
+                        href={`/player/${p.personId}`}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-bg-hover/60 transition-colors group cursor-pointer"
+                      >
+                        <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
+                          {i + 1}
+                        </span>
+                        <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={36} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate text-sm">
+                            {p.firstName} {p.lastName}
+                          </p>
+                          <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
+                            {p.teamAbbr || "—"} · {p.position} · {p.height}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <p className="text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">P/R/A</p>
+                            <p className="text-sm font-mono tabular-nums text-text-primary">
+                              {p.pts.toFixed(1)}/{p.reb.toFixed(1)}/{p.ast.toFixed(1)}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
