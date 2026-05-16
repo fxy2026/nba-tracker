@@ -324,7 +324,7 @@ export default async function StandingsPage() {
             <div className="glass-tile p-3 flex items-center justify-between">
               <div>
                 <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.eastAvgW}</p>
-                <p className="text-lg font-bold text-accent">{eastAvgW.toFixed(1)}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{eastAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-text-secondary">{t.standingsPage.best}</p>
@@ -334,7 +334,7 @@ export default async function StandingsPage() {
             <div className="glass-tile p-3 flex items-center justify-between">
               <div>
                 <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.westAvgW}</p>
-                <p className="text-lg font-bold text-accent">{westAvgW.toFixed(1)}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{westAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-text-secondary">{t.standingsPage.best}</p>

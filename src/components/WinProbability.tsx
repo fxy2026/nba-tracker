@@ -33,7 +33,10 @@ export default memo(function WinProbability({ periods }: Props) {
 
   return (
     <div className="mt-3 pt-3 border-t border-border/50">
-      <p className="text-xs text-text-secondary mb-2 font-medium">{t.winProb.title}</p>
+      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-2 flex items-center gap-2">
+        <span className="w-1 h-3 bg-accent-amber rounded-full" />
+        {t.winProb.title}
+      </p>
       <div className="flex items-end gap-1.5 h-16">
         {diffs.map((d, i) => {
           const heightPct = (Math.abs(d.diff) / maxAbs) * 100;

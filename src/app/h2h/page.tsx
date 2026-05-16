@@ -224,16 +224,16 @@ export default async function H2HPage({ searchParams }: PageProps) {
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="bg-bg-secondary rounded-lg p-3">
                     <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.avgTotal}</p>
-                    <p className="text-lg font-bold text-accent">{avgTotal}</p>
+                    <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{avgTotal}</p>
                   </div>
                   <div className="bg-bg-secondary rounded-lg p-3">
                     <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.highest}</p>
-                    <p className="text-lg font-bold text-success">{highest}</p>
+                    <p className="text-2xl font-light font-mono tabular-nums text-success">{highest}</p>
                     {highGame && <p className="text-[9px] text-text-secondary">{highGame.awayTricode} {highGame.awayScore}-{highGame.homeScore} {highGame.homeTricode}</p>}
                   </div>
                   <div className="bg-bg-secondary rounded-lg p-3">
                     <p className="text-[10px] text-text-secondary uppercase">{t.h2hPage.lowest}</p>
-                    <p className="text-lg font-bold text-danger">{lowest}</p>
+                    <p className="text-2xl font-light font-mono tabular-nums text-danger">{lowest}</p>
                     {lowGame && <p className="text-[9px] text-text-secondary">{lowGame.awayTricode} {lowGame.awayScore}-{lowGame.homeScore} {lowGame.homeTricode}</p>}
                   </div>
                 </div>

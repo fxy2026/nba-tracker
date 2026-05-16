@@ -19,30 +19,26 @@ export default function GameError({
   }, [error]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">
-        {t.common.backToGames}
+    <div className="max-w-2xl mx-auto px-4 py-12" role="alert">
+      <Link href="/" className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary hover:text-accent transition-colors cursor-pointer">
+        ← {t.common.backToGames}
       </Link>
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-14 h-14 rounded-full bg-danger/10 flex items-center justify-center mb-5">
-          <AlertTriangle size={28} className="text-danger" />
+      <div className="glass-tile mt-4 p-10 sm:p-12 text-center">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-3">/ Error</p>
+        <div className="w-16 h-16 rounded-2xl bg-danger/10 flex items-center justify-center mb-5 mx-auto">
+          <AlertTriangle size={26} className="text-danger" />
         </div>
-        <h2 className="text-xl font-bold mb-2">{t.errors.gameLoadError}</h2>
-        <p className="text-text-secondary mb-6 text-sm max-w-sm">
-          {t.errors.gameLoadErrorDesc}
-        </p>
-        <div className="flex gap-3">
+        <h2 className="text-xl font-semibold tracking-tight text-text-primary">{t.errors.gameLoadError}</h2>
+        <p className="text-text-secondary text-sm max-w-sm mx-auto mt-2">{t.errors.gameLoadErrorDesc}</p>
+        <div className="flex gap-3 justify-center mt-6">
           <button
             onClick={() => unstable_retry()}
-            className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-accent-gradient text-white rounded-xl text-xs font-bold uppercase tracking-[0.15em] hover:opacity-90 transition-colors cursor-pointer shadow-lg shadow-accent/30"
           >
             <RotateCcw size={14} />
             {t.common.retry}
           </button>
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-4 py-2 bg-bg-card border border-border text-text-primary rounded-lg text-sm font-medium hover:bg-bg-hover transition-colors"
-          >
+          <Link href="/" className="chip cursor-pointer">
             <ArrowLeft size={14} />
             {t.common.backToHome}
           </Link>

@@ -179,16 +179,19 @@ export default memo(function KeyMoments({ actions }: Props) {
 
   return (
     <div className="glass-tile overflow-hidden mt-6">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent-amber rounded-full" />
-          {t.keyMoments.title}
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{moments.length}</span>
-        </h3>
-        <div className="flex items-center gap-2 text-[9px]">
-          {counts.run > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{counts.run} {t.keyMoments.runs}</span>}
-          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{counts.clutch} {t.keyMoments.clutch}</span>}
-          {counts.lead_change > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{counts.lead_change} {t.keyMoments.leads}</span>}
+      <div className="px-4 py-3 border-b border-border flex items-end justify-between">
+        <div>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Highlights</p>
+          <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+            <span className="w-1 h-4 bg-accent-amber rounded-full" />
+            {t.keyMoments.title}
+            <span className="text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">{moments.length}</span>
+          </h3>
+        </div>
+        <div className="flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.1em]">
+          {counts.run > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success font-bold tabular-nums">{counts.run} <span className="font-normal opacity-80">{t.keyMoments.runs}</span></span>}
+          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-bold tabular-nums">{counts.clutch} <span className="font-normal opacity-80">{t.keyMoments.clutch}</span></span>}
+          {counts.lead_change > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent font-bold tabular-nums">{counts.lead_change} <span className="font-normal opacity-80">{t.keyMoments.leads}</span></span>}
         </div>
       </div>
       <div className="divide-y divide-border/30 max-h-[400px] overflow-y-auto">
@@ -197,14 +200,14 @@ export default memo(function KeyMoments({ actions }: Props) {
             key={idx}
             className={`flex items-start gap-3 px-4 py-3 border-l-2 ${typeColors[moment.type] || "border-l-border"}`}
           >
-            <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-secondary text-text-secondary">
+            <span className="shrink-0 text-[10px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded bg-bg-secondary/60 backdrop-blur-sm text-text-secondary">
               {moment.period <= 4 ? `${t.playByPlayComp.quarter}${moment.period}` : `${t.playByPlayComp.overtime}${moment.period - 4}`}
             </span>
-            <span className="shrink-0 text-xs font-mono text-text-secondary w-16">
+            <span className="shrink-0 text-xs font-mono tabular-nums text-text-secondary w-16">
               {moment.clock?.replace("PT", "").replace("M", ":").replace(/(\d+\.\d+)S/, (_, s) => Math.floor(parseFloat(s)).toString().padStart(2, "0")) || ""}
             </span>
             <p className="flex-1 text-sm text-text-primary">{moment.description}</p>
-            <span className="shrink-0 text-xs font-mono text-text-secondary font-mono tabular-nums">
+            <span className="shrink-0 text-xs font-mono tabular-nums text-text-secondary">
               {moment.scoreAway}-{moment.scoreHome}
             </span>
           </div>

@@ -259,7 +259,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                       <p className="text-[10px] text-text-secondary">
                         {q.period <= 4 ? `${t.playByPlayComp.quarter}${q.period}` : `${t.playByPlayComp.overtime}${q.period - 4}`}
                       </p>
-                      <p className="text-lg font-bold text-accent">{q.pts}</p>
+                      <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{q.pts}</p>
                       <div className="text-[10px] text-text-secondary leading-tight">
                         {q.fg2 > 0 && <span>{q.fg2}×2</span>}
                         {q.fg2 > 0 && (q.fg3 > 0 || q.ft > 0) && <span> </span>}
@@ -271,7 +271,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
                   ))}
                   <div className="flex-1 bg-accent/10 rounded-lg p-2 text-center border border-accent/20">
                     <p className="text-[10px] text-text-secondary">{t.gameDetail.total}</p>
-                    <p className="text-lg font-bold text-accent">
+                    <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">
                       {data.quarterScoring.reduce((sum, q) => sum + q.pts, 0)}
                     </p>
                     <p className="text-[10px] text-text-secondary">pts</p>

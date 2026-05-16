@@ -758,11 +758,11 @@ export default async function GamePage({ params }: PageProps) {
         return (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             <div className="glass-tile p-3 text-center">
-              <p className="text-xl font-bold text-accent">{pace}</p>
+              <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{pace}</p>
               <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.estPace}</p>
             </div>
             <div className="glass-tile p-3 text-center">
-              <p className="text-xl font-bold text-text-primary">{totalPts}</p>
+              <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{totalPts}</p>
               <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.totalPoints}</p>
             </div>
             <div className="glass-tile p-3 text-center">

@@ -44,33 +44,36 @@ export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
 
   return (
     <div className="glass-tile p-5">
-      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-        <span className="w-1 h-4 bg-accent rounded-full" />
-        {t.teamCompare.title}
-      </h3>
-      <div className="flex items-center justify-between mb-4 text-xs font-medium">
-        <span className="text-text-primary">{awayTeam.teamTricode}</span>
-        <span className="text-text-secondary">{t.common.vs}</span>
-        <span className="text-text-primary">{homeTeam.teamTricode}</span>
+      <div className="mb-4">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Comparison</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
+          {t.teamCompare.title}
+        </h3>
+      </div>
+      <div className="flex items-center justify-between mb-4 text-[10px] font-mono uppercase tracking-[0.2em]">
+        <span className="text-text-primary font-bold">{awayTeam.teamTricode}</span>
+        <span className="text-accent-amber">{t.common.vs}</span>
+        <span className="text-text-primary font-bold">{homeTeam.teamTricode}</span>
       </div>
       <div className="space-y-3">
         {rows.map(({ key, label, fmt, hVal, aVal, hBetter, aBetter, max }) => (
           <div key={key}>
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className={`font-medium font-mono tabular-nums ${aBetter ? "text-accent" : "text-text-primary"}`}>{fmt(aVal)}</span>
-              <span className="text-text-secondary">{label}</span>
-              <span className={`font-medium font-mono tabular-nums ${hBetter ? "text-accent" : "text-text-primary"}`}>{fmt(hVal)}</span>
+              <span className={`font-medium font-mono tabular-nums ${aBetter ? "text-accent-amber font-bold" : "text-text-secondary"}`}>{fmt(aVal)}</span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/70">{label}</span>
+              <span className={`font-medium font-mono tabular-nums ${hBetter ? "text-accent-amber font-bold" : "text-text-secondary"}`}>{fmt(hVal)}</span>
             </div>
-            <div className="flex gap-1 h-2">
+            <div className="flex gap-1 h-1.5">
               <div className="flex-1 flex justify-end">
                 <div
-                  className={`h-full rounded-l-full transition-all ${aBetter ? "bg-accent" : "bg-bg-hover"}`}
+                  className={`h-full rounded-l-full transition-all ${aBetter ? "bg-accent-amber" : "bg-bg-hover"}`}
                   style={{ width: `${(aVal / max) * 100}%` }}
                 />
               </div>
               <div className="flex-1">
                 <div
-                  className={`h-full rounded-r-full transition-all ${hBetter ? "bg-accent" : "bg-bg-hover"}`}
+                  className={`h-full rounded-r-full transition-all ${hBetter ? "bg-accent-amber" : "bg-bg-hover"}`}
                   style={{ width: `${(hVal / max) * 100}%` }}
                 />
               </div>
@@ -78,12 +81,12 @@ export default memo(function TeamCompare({ homeTeam, awayTeam }: Props) {
           </div>
         ))}
       </div>
-      <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-        <span className={`font-bold ${awayWins > homeWins ? "text-accent" : "text-text-secondary"}`}>
-          {awayTeam.teamTricode}: {awayWins} categories
+      <div className="mt-5 pt-3 border-t border-border flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.2em]">
+        <span className={`font-bold ${awayWins > homeWins ? "text-accent-amber" : "text-text-secondary"}`}>
+          {awayTeam.teamTricode} <span className="tabular-nums">{awayWins}</span> categories
         </span>
-        <span className={`font-bold ${homeWins > awayWins ? "text-accent" : "text-text-secondary"}`}>
-          {homeTeam.teamTricode}: {homeWins} categories
+        <span className={`font-bold ${homeWins > awayWins ? "text-accent-amber" : "text-text-secondary"}`}>
+          {homeTeam.teamTricode} <span className="tabular-nums">{homeWins}</span> categories
         </span>
       </div>
     </div>
