@@ -39,7 +39,7 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
   };
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+    <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <DollarSign size={14} className="text-success" />
         <h3 className="text-sm font-semibold">{t.playerSalary.title}</h3>

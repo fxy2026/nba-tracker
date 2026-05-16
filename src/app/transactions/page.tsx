@@ -148,7 +148,7 @@ export default function TransactionsPage() {
                   {grouped.get(dateKey)!.map((t, idx) => (
                     <div
                       key={`${dateKey}-${idx}`}
-                      className="bg-bg-card rounded-xl border border-border p-3"
+                      className="glass-tile p-3"
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getTypeColor(t.type)}`}>

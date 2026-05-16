@@ -116,7 +116,7 @@ export default function FavoritesPage() {
       )}
 
       {!hasAny && !loading && (
-        <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
+        <div className="glass-tile p-12 text-center">
           <Heart size={48} className="mx-auto text-text-secondary/30 mb-4" />
           <p className="text-lg font-medium text-text-primary">{t.favoritesPage.noFavorites}</p>
           <p className="text-sm text-text-secondary mt-2 mb-6">
@@ -135,7 +135,7 @@ export default function FavoritesPage() {
 
       {/* Favorite Teams */}
       {favTeams.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden mb-6">
+        <div className="glass-tile overflow-hidden mb-6">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Users size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">{t.favoritesPage.favoriteTeams}</h2>
@@ -175,7 +175,7 @@ export default function FavoritesPage() {
 
       {/* Favorite Players */}
       {favPlayers.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <User size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">{t.favoritesPage.favoritePlayers}</h2>

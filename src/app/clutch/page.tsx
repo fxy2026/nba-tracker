@@ -105,17 +105,17 @@ export default function ClutchPage() {
       {/* Quick Stats Overview */}
       {!loading && overviewStats && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topScorer}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.topScorer.PLAYER?.split(" ").pop()}</p>
             <p className="text-xs text-text-secondary">{overviewStats.topScorer.PTS?.toFixed(1)} PPG</p>
           </div>
-          <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topPlaymaker}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.topAssist.PLAYER?.split(" ").pop()}</p>
             <p className="text-xs text-text-secondary">{overviewStats.topAssist.AST?.toFixed(1)} APG</p>
           </div>
-          <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.mostGames}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.mostGP.PLAYER?.split(" ").pop()}</p>
             <p className="text-xs text-text-secondary">{overviewStats.mostGP.GP}{t.clutchPage.gp}</p>
@@ -145,13 +145,13 @@ export default function ClutchPage() {
       )}
 
       {error && !loading && (
-        <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
+        <div className="glass-tile p-12 text-center">
           <p className="text-text-secondary">{t.clutchPage.failedToLoad}</p>
         </div>
       )}
 
       {!loading && !error && players.length === 0 && (
-        <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
+        <div className="glass-tile p-12 text-center">
           <p className="text-text-secondary">{t.clutchPage.noData}</p>
         </div>
       )}
@@ -165,7 +165,7 @@ export default function ClutchPage() {
         const topVal = Math.max(...players.map(getStatVal), 0.1);
 
         return (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

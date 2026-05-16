@@ -22,7 +22,7 @@ export default memo(function QuarterBars({ homePeriods, awayPeriods, homeTricode
   );
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+    <div className="glass-tile p-4 mt-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
         {t.quarterBars.title}

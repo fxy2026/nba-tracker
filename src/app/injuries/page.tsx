@@ -164,7 +164,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
         if (sorted.length === 0) return null;
         const maxInj = sorted[0].injuries?.length || 1;
         return (
-          <div className="bg-bg-card border border-border rounded-xl p-4 mb-4">
+          <div className="glass-tile p-4 mb-4">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.injuriesPage.mostAffected}</h3>
             <div className="space-y-1.5">
               {sorted.map((team) => (
@@ -201,7 +201,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
       </div>
 
       {teams.length === 0 ? (
-        <div className="bg-bg-card rounded-xl border border-border p-12 text-center">
+        <div className="glass-tile p-12 text-center">
           <AlertTriangle size={32} className="text-text-secondary mx-auto mb-3 opacity-30" />
           <p className="text-text-secondary">{t.injuriesPage.noInjuryData}</p>
           <p className="text-xs text-text-secondary mt-1">{t.injuriesPage.offseasonNote}</p>
@@ -211,7 +211,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
           {teams.map((team) => {
             if (!team.injuries || team.injuries.length === 0) return null;
             return (
-              <div key={team.id || team.displayName} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+              <div key={team.id || team.displayName} className="glass-tile overflow-hidden">
                 <div className="px-4 py-3 border-b border-border flex items-center gap-2">
                   {(() => {
                     const meta = findTeamMeta(team.displayName || "");

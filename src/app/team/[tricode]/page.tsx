@@ -192,7 +192,7 @@ export default async function TeamPage({ params }: PageProps) {
       <div className="team-accent-bar mt-4 mb-6" style={{ background: team.primaryColor }} />
 
       {/* Team Header */}
-      <div className="bg-bg-card rounded-xl border border-border p-6">
+      <div className="glass-tile p-6">
         <div className="flex items-center gap-5">
           <TeamLogo teamId={team.teamId} tricode={team.tricode} size={72} />
           <div>
@@ -330,7 +330,7 @@ export default async function TeamPage({ params }: PageProps) {
         }
         const maxWins = Math.max(...segments.map(s => s.total), 1);
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <div className="glass-tile p-4 mt-6">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.seasonProgression}</h3>
             <div className="flex items-end gap-2 h-28">
               {segments.map((seg, i) => {
@@ -367,7 +367,7 @@ export default async function TeamPage({ params }: PageProps) {
         }
         return (
           <div className="grid grid-cols-2 gap-3 mt-6">
-            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+            <div className="glass-tile p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.vsDivision}</p>
               <p className="text-xl font-bold mt-1">
                 <span className="text-success">{divW}</span>
@@ -375,7 +375,7 @@ export default async function TeamPage({ params }: PageProps) {
                 <span className="text-danger">{divL}</span>
               </p>
             </div>
-            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+            <div className="glass-tile p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">{t.teamPage.vsNonDivision}</p>
               <p className="text-xl font-bold mt-1">
                 <span className="text-success">{nonDivW}</span>
@@ -389,7 +389,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       {/* Recent Opponents */}
       {recentGames.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+        <div className="glass-tile p-4 mt-6">
           <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.recentOpponents}</h3>
           <div className="flex items-center gap-2 overflow-x-auto">
             {recentGames.slice(0, 8).map((g, i) => (
@@ -406,7 +406,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       {/* Offense vs Defense */}
       {gamesPlayed > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+        <div className="glass-tile p-4 mt-6">
           <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.offVsDef}</h3>
           <div className="flex items-end gap-1 h-20">
             <div className="flex-1 flex flex-col items-center gap-1">
@@ -448,7 +448,7 @@ export default async function TeamPage({ params }: PageProps) {
         const chartH = 80;
         const midY = chartH / 2;
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <div className="glass-tile p-4 mt-6">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.pointDiff} ({t.teamPage.lastNGames.replace("%s", String(last15.length))})</h3>
             <svg viewBox={`0 0 100 ${chartH}`} className="w-full" preserveAspectRatio="none">
               <line x1="0" y1={midY} x2="100" y2={midY} stroke="var(--border)" strokeWidth="0.3" />
@@ -491,7 +491,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       {/* Last 10 Games W/L Streak */}
       {recentGames.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+        <div className="glass-tile p-4 mt-6">
           <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.lastNGames.replace("%s", String(Math.min(recentGames.length, 10)))}</h3>
           <div className="flex items-center gap-1">
             {recentGames.slice(0, 10).reverse().map((g, i) => (
@@ -505,7 +505,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Recent Games */}
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Calendar size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">{t.teamPage.recentGames}</h2>
@@ -531,7 +531,7 @@ export default async function TeamPage({ params }: PageProps) {
         </div>
 
         {/* Upcoming Games */}
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Trophy size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">{t.teamPage.upcomingGames}</h2>
@@ -597,7 +597,7 @@ export default async function TeamPage({ params }: PageProps) {
         const months = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
         if (months.length < 2) return null;
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <div className="glass-tile p-4 mt-6">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.monthlyRecord}</h3>
             <div className="flex flex-wrap gap-2">
               {months.map(([month, rec]) => (
@@ -636,7 +636,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       {/* Head-to-Head */}
       {rivalries.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
+        <div className="glass-tile overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Trophy size={16} className="text-accent" />
             <h2 className="font-semibold text-sm">{t.h2hPage.title}</h2>
@@ -705,7 +705,7 @@ export default async function TeamPage({ params }: PageProps) {
           currentAngle += angle;
         }
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+          <div className="glass-tile p-4 mt-6">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.positionBreakdown}</h3>
             <div className="flex items-center gap-6">
               <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -727,7 +727,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       {/* Top Scorers */}
       {roster.length >= 3 && (
-        <div className="bg-bg-card rounded-xl border border-border p-4 mt-6">
+        <div className="glass-tile p-4 mt-6">
           <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.teamPage.topScorers}</h3>
           <div className="grid grid-cols-3 gap-3">
             {roster.slice(0, 3).map((p) => (
@@ -742,7 +742,7 @@ export default async function TeamPage({ params }: PageProps) {
       )}
 
       {/* Roster */}
-      <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
+      <div className="glass-tile overflow-hidden mt-6">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           <Users size={16} className="text-accent" />
           <h2 className="font-semibold text-sm">{t.teamPage.roster}</h2>

@@ -97,7 +97,7 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
   const last = points[points.length - 1];
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+    <div className="glass-tile p-4 mt-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />

@@ -363,19 +363,19 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <div className="mt-6 w-full max-w-lg">
               <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{t.home.noGamesToday}</p>
               <div className="grid grid-cols-2 gap-3">
-                <Link href={`/?date=${(() => { const d = new Date(); d.setDate(d.getDate() - 1); return formatDate(d); })()}`} className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                <Link href={`/?date=${(() => { const d = new Date(); d.setDate(d.getDate() - 1); return formatDate(d); })()}`} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.browseRecent}</span>
                   <span className="text-[10px] text-text-secondary">{t.home.yesterdayResults}</span>
                 </Link>
-                <Link href="/standings" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                <Link href="/standings" className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.checkStandings}</span>
                   <span className="text-[10px] text-text-secondary">{t.home.conferenceRankings}</span>
                 </Link>
-                <Link href="/search" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                <Link href="/search" className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.findPlayer}</span>
                   <span className="text-[10px] text-text-secondary">{t.home.findAnyPlayer}</span>
                 </Link>
-                <Link href="/injuries" className="flex flex-col items-center gap-1.5 p-4 bg-bg-card border border-border rounded-xl hover:border-accent/50 transition-colors">
+                <Link href="/injuries" className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.injuryReport}</span>
                   <span className="text-[10px] text-text-secondary">{t.home.latestInjury}</span>
                 </Link>

@@ -121,7 +121,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
 
       {/* Recent Games */}
       {games && games.length > 0 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <h3 className="text-sm font-semibold">{t.playerStats.recentGames}{CURRENT_SEASON})</h3>
             {(() => {
@@ -216,7 +216,7 @@ const GameTrendChart = memo(function GameTrendChart({ games, t }: { games: GameL
   const avgY = pad.top + plotH - (avgPts / maxPts) * plotH;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-4">
+    <div className="glass-tile p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />
@@ -324,7 +324,7 @@ function CareerStatsTable({ seasons, t }: { seasons: SeasonRow[]; t: Translation
   const currentSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+    <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
         <h3 className="text-sm font-semibold">{t.playerStats.seasonBySeasonStats}</h3>
       </div>

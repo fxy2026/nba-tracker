@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
+import { TEAM_META } from "@/lib/teams";
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
@@ -194,7 +195,7 @@ function ShotChartSection({ shots, homeTricode, awayTricode, allPlayers, t }: {
 }) {
   if (shots.length === 0) return null;
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-4">
+    <div className="glass-tile p-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
         {t.gameDetail.shotChart}
@@ -334,7 +335,7 @@ function GameSummary({ homeTeam, awayTeam, shots, t }: { homeTeam: BoxScoreTeam;
   for (const p of awayTeam.players) if (p.played === "1") awayFouls += p.statistics.foulsPersonal;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+    <div className="glass-tile p-4 mt-4">
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
         <span className="w-1 h-4 bg-accent rounded-full" />
         {t.gameDetail.gameSummary}
@@ -533,77 +534,108 @@ export default async function GamePage({ params }: PageProps) {
     })),
   ];
 
+  // Team colors for hero tinting
+  const awayColor = TEAM_META[boxScore.awayTeam.teamTricode]?.primaryColor || "#3B82F6";
+  const homeColor = TEAM_META[boxScore.homeTeam.teamTricode]?.primaryColor || "#F59E0B";
+  const winnerColor = isFinal ? (homeWon ? homeColor : awayColor) : awayColor;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-text-secondary">
-        <Link href="/" className="hover:text-accent transition-colors">{t.common.home}</Link>
-        <span>/</span>
-        <Link href={`/?date=${backDate}`} className="hover:text-accent transition-colors">{backDate}</Link>
-        <span>/</span>
+      <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] text-text-secondary">
+        <Link href="/" className="hover:text-accent transition-colors cursor-pointer">{t.common.home}</Link>
+        <span className="text-text-secondary/40">/</span>
+        <Link href={`/?date=${backDate}`} className="hover:text-accent transition-colors cursor-pointer">{backDate}</Link>
+        <span className="text-text-secondary/40">/</span>
         <span className="text-text-primary">{boxScore.awayTeam.teamTricode} {t.common.vs} {boxScore.homeTeam.teamTricode}</span>
       </nav>
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
-      {/* Scoreboard — renders immediately */}
-      <div className="bg-bg-card rounded-xl border border-border p-6 mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            {isPlayoffs && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{t.common.playoffs}</span>}
-            {isCloseGame && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger font-medium">{t.gameDetail.thriller}</span>
-            )}
-            {isFinal && scoreDiff >= 20 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">{t.gameDetail.blowout}</span>
-            )}
+      {/* ─── Scoreboard Hero — glass tile + team color tinting + giant scores ─── */}
+      <div
+        className="glass-tile glass-tile-featured p-5 sm:p-6 mt-4 overflow-hidden relative bento-rise"
+        style={{ ["--team-color" as string]: winnerColor }}
+      >
+        {/* Team color split gradient (away on left, home on right) */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            background: `linear-gradient(90deg, ${awayColor}66 0%, transparent 35%, transparent 65%, ${homeColor}66 100%)`,
+          }}
+        />
+
+        {/* Top meta row — editorial */}
+        <div className="relative flex items-center justify-between mb-4 gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">
+            {isPlayoffs && <span className="text-accent-amber font-bold">★ {t.common.playoffs}</span>}
+            {isCloseGame && <span className="text-danger font-bold">● {t.gameDetail.thriller}</span>}
+            {isFinal && scoreDiff >= 20 && <span className="text-accent-amber font-bold">⚡ {t.gameDetail.blowout}</span>}
             {boxScore.homeTeam.periods?.length > 4 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">
-                {boxScore.homeTeam.periods.length - 4}{t.gameDetail.ot}
-              </span>
+              <span className="text-accent-amber font-bold">{boxScore.homeTeam.periods.length - 4}{t.gameDetail.ot}</span>
             )}
-            <span className="text-xs text-text-secondary">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
-            {beijingTime && <span className="text-xs text-text-secondary">&middot; {t.common.beijingTime} {beijingTime}</span>}
+            <span className="text-text-secondary/80">{boxScore.arena.arenaName}, {boxScore.arena.arenaCity}</span>
+            {beijingTime && <span className="text-text-secondary/60">· {beijingTime}</span>}
             {isFinal && (() => {
               const periodsCount = boxScore.homeTeam.periods?.length || 4;
               const otPeriods = Math.max(periodsCount - 4, 0);
-              const durationMin = 150 + otPeriods * 5; // ~2.5h regulation + 5min per OT
+              const durationMin = 150 + otPeriods * 5;
               const hours = Math.floor(durationMin / 60);
               const mins = durationMin % 60;
-              return (
-                <span className="text-xs text-text-secondary">&middot; ~{hours}h{mins > 0 ? `${mins}m` : ""}</span>
-              );
+              return <span className="text-text-secondary/60">· ~{hours}h{mins > 0 ? `${mins}m` : ""}</span>;
             })()}
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${boxScore.gameStatus === 2 ? "bg-success/15 text-success animate-pulse" : "text-text-secondary"}`}>
-              {boxScore.gameStatusText.trim()}
-            </span>
+            {boxScore.gameStatus === 2 && (
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-success flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                </span>
+                {boxScore.gameStatusText.trim()}
+              </span>
+            )}
+            {boxScore.gameStatus !== 2 && (
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">{boxScore.gameStatusText.trim()}</span>
+            )}
             {isFinal && (
               <ShareButton text={`${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${boxScore.homeTeam.teamTricode} | NBA Tracker`} />
             )}
           </div>
         </div>
-        <div className="flex items-center justify-center gap-6 sm:gap-10 py-4">
-          <div className="flex flex-col items-center gap-2">
-            <TeamLogo teamId={boxScore.awayTeam.teamId} tricode={boxScore.awayTeam.teamTricode} size={56} />
-            <Link href={`/team/${boxScore.awayTeam.teamTricode}`} className="font-semibold text-sm text-center hover:text-accent transition-colors">
-              {boxScore.awayTeam.teamCity}<br/>{boxScore.awayTeam.teamName}
+
+        {/* Main score row */}
+        <div className="relative flex items-center justify-center gap-6 sm:gap-10 py-4">
+          {/* Away */}
+          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+            <TeamLogo teamId={boxScore.awayTeam.teamId} tricode={boxScore.awayTeam.teamTricode} size={64} />
+            <Link href={`/team/${boxScore.awayTeam.teamTricode}`} className="text-center hover:text-accent transition-colors cursor-pointer">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Away</p>
+              <p className="font-bold text-sm">{boxScore.awayTeam.teamCity}</p>
+              <p className="font-bold text-sm">{boxScore.awayTeam.teamName}</p>
             </Link>
+            {isFinal && !homeWon && <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-accent-amber font-bold">★ Winner</span>}
           </div>
-          <div className="flex items-center gap-3 sm:gap-5">
-            <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+
+          {/* Score */}
+          <div className="flex items-center gap-3 sm:gap-5 shrink-0">
+            <span className={`text-5xl sm:text-7xl font-light font-mono tabular-nums leading-none tracking-tight ${isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {boxScore.awayTeam.score}
             </span>
-            <span className="text-text-secondary text-2xl">-</span>
-            <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${isFinal && homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className="text-text-secondary/30 text-3xl sm:text-4xl font-extralight">–</span>
+            <span className={`text-5xl sm:text-7xl font-light font-mono tabular-nums leading-none tracking-tight ${isFinal && homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
               {boxScore.homeTeam.score}
             </span>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <TeamLogo teamId={boxScore.homeTeam.teamId} tricode={boxScore.homeTeam.teamTricode} size={56} />
-            <Link href={`/team/${boxScore.homeTeam.teamTricode}`} className="font-semibold text-sm text-center hover:text-accent transition-colors">
-              {boxScore.homeTeam.teamCity}<br/>{boxScore.homeTeam.teamName}
+
+          {/* Home */}
+          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+            <TeamLogo teamId={boxScore.homeTeam.teamId} tricode={boxScore.homeTeam.teamTricode} size={64} />
+            <Link href={`/team/${boxScore.homeTeam.teamTricode}`} className="text-center hover:text-accent transition-colors cursor-pointer">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Home</p>
+              <p className="font-bold text-sm">{boxScore.homeTeam.teamCity}</p>
+              <p className="font-bold text-sm">{boxScore.homeTeam.teamName}</p>
             </Link>
+            {isFinal && homeWon && <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-accent-amber font-bold">★ Winner</span>}
           </div>
         </div>
         {boxScore.homeTeam.periods?.length > 0 && (
@@ -724,15 +756,15 @@ export default async function GamePage({ params }: PageProps) {
 
         return (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+            <div className="glass-tile p-3 text-center">
               <p className="text-xl font-bold text-accent">{pace}</p>
               <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.estPace}</p>
             </div>
-            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+            <div className="glass-tile p-3 text-center">
               <p className="text-xl font-bold text-text-primary">{totalPts}</p>
               <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.totalPoints}</p>
             </div>
-            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+            <div className="glass-tile p-3 text-center">
               <p className="text-sm font-bold">
                 <span className="text-text-secondary">{boxScore.awayTeam.teamTricode}</span>{" "}
                 <span className="text-accent">{awayBench}</span>
@@ -742,7 +774,7 @@ export default async function GamePage({ params }: PageProps) {
               </p>
               <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.benchPoints}</p>
             </div>
-            <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+            <div className="glass-tile p-3 text-center">
               <p className="text-sm font-bold">
                 <span className="text-text-secondary">{boxScore.awayTeam.teamTricode}</span>{" "}
                 <span className={awayFTA > homeFTA ? "text-accent" : "text-text-primary"}>{awayFTA}</span>
@@ -774,7 +806,7 @@ export default async function GamePage({ params }: PageProps) {
         }).sort((a, b) => b.gameScore - a.gameScore).slice(0, 5);
         if (scored.length === 0) return null;
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
+          <div className="glass-tile p-4 mt-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
               <span className="w-1 h-4 bg-accent rounded-full" />
               {t.gameDetail.playerRatings}
@@ -811,7 +843,7 @@ export default async function GamePage({ params }: PageProps) {
         const hStats = boxScore.homeTeam.statistics as Record<string, number>;
         const aStats = boxScore.awayTeam.statistics as Record<string, number>;
         return (
-          <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
+          <div className="mt-6 glass-tile p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
               {t.gameDetail.statsRadar}
@@ -844,7 +876,7 @@ export default async function GamePage({ params }: PageProps) {
           { label: "FT%", home: (hStats.freeThrowsPercentage ?? 0) * 100, away: (aStats.freeThrowsPercentage ?? 0) * 100 },
         ];
         return (
-          <div className="mt-6 bg-bg-card rounded-xl border border-border p-5">
+          <div className="mt-6 glass-tile p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
               {t.gameDetail.shootingEfficiency}
@@ -890,7 +922,7 @@ export default async function GamePage({ params }: PageProps) {
 
         {/* Box Score Tables — immediate */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center gap-2">
               <TeamLogo teamId={boxScore.awayTeam.teamId} tricode={boxScore.awayTeam.teamTricode} size={24} />
               <h2 className="font-semibold">{boxScore.awayTeam.teamCity} {boxScore.awayTeam.teamName}</h2>
@@ -898,7 +930,7 @@ export default async function GamePage({ params }: PageProps) {
             </div>
             <StatsTable players={boxScore.awayTeam.players} shots={shots} playerInfoMap={playerInfoMap} t={t} />
           </div>
-          <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <div className="glass-tile overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center gap-2">
               <TeamLogo teamId={boxScore.homeTeam.teamId} tricode={boxScore.homeTeam.teamTricode} size={24} />
               <h2 className="font-semibold">{boxScore.homeTeam.teamCity} {boxScore.homeTeam.teamName}</h2>

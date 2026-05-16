@@ -139,7 +139,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder={t.nav.searchPlaceholder}
           aria-label={t.nav.searchPlaceholder}
-          className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
+          className="w-full glass-tile pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
           autoFocus
         />
         {query && (
@@ -174,7 +174,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       )}
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
+        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
           {/* Feature 10: Result count */}
           <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50" aria-live="polite">
             <span className="text-xs text-text-secondary font-medium">{results.length} {results.length !== 1 ? t.common.players : t.common.player}</span>
@@ -219,7 +219,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       )}
 
       {showDropdown && results.length === 0 && query.length >= 2 && !loading && (
-        <div className="absolute z-50 top-full mt-2 w-full bg-bg-card border border-border rounded-xl shadow-2xl p-6 text-center">
+        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl p-6 text-center">
           <svg viewBox="0 0 80 80" className="w-16 h-16 mx-auto mb-3 opacity-20">
             <circle cx="40" cy="40" r="28" fill="none" stroke="currentColor" strokeWidth="2.5" />
             <line x1="40" y1="12" x2="40" y2="68" stroke="currentColor" strokeWidth="1.5" />

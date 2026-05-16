@@ -88,7 +88,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
       {t1 && t2 && t1 !== t2 && TEAM_META[t1] && TEAM_META[t2] && (
         <>
           {/* Score Summary */}
-          <div className="bg-bg-card rounded-xl border border-border p-6 mb-6">
+          <div className="glass-tile p-6 mb-6">
             <div className="flex items-center justify-center gap-8">
               <div className="flex flex-col items-center gap-2">
                 <TeamLogo teamId={TEAM_META[t1].teamId} tricode={t1} size={48} />
@@ -173,7 +173,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             return (
               <>
                 {(t1Blowouts + t2Blowouts > 0) && (
-                  <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                  <div className="glass-tile p-4 mb-6">
                     <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.blowoutWins}</h3>
                     <div className="flex items-center justify-center gap-6">
                       <div className="text-center">
@@ -189,7 +189,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
                   </div>
                 )}
                 {(t1Best.game || t2Best.game) && (
-                  <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+                  <div className="glass-tile p-4 mb-6">
                     <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.biggestWins}</h3>
                     <div className="grid grid-cols-2 gap-4">
                       {t1Best.game && (
@@ -222,7 +222,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             const highGame = games.find(g => g.homeScore + g.awayScore === highest);
             const lowGame = games.find(g => g.homeScore + g.awayScore === lowest);
             return (
-              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+              <div className="glass-tile p-4 mb-6">
                 <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.scoringDist}</h3>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="bg-bg-secondary rounded-lg p-3">
@@ -257,7 +257,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
               }
             }
             return (
-              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+              <div className="glass-tile p-4 mb-6">
                 <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.homeAwaySplit}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -329,7 +329,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             }));
             const polyline = points.map(p => `${p.x},${p.y}`).join(" ");
             return (
-              <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+              <div className="glass-tile p-4 mb-6">
                 <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.h2hPage.pointDiffTrend} ({t1})</h3>
                 <svg viewBox={`0 0 ${w} ${h}`} className="w-full max-w-md" preserveAspectRatio="xMidYMid meet">
                   <line x1={padX} y1={midY} x2={w - padX} y2={midY} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 2" />
@@ -351,7 +351,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
 
           {/* Game List */}
           {games.length > 0 && (
-            <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+            <div className="glass-tile overflow-hidden">
               <div className="px-4 py-3 border-b border-border">
                 <h3 className="text-sm font-semibold">{t.h2hPage.gameResults}</h3>
               </div>

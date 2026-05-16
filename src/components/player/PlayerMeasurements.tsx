@@ -67,7 +67,7 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
   if (!data || !draftYear) return null;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+    <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Ruler size={14} className="text-accent" />
         <h3 className="text-sm font-semibold">{t.playerMeasurements.title} ({draftYear})</h3>

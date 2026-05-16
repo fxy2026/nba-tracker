@@ -103,7 +103,9 @@ export default async function RootLayout({
             }}
           />
           <Navbar />
-          <main id="main-content" className="flex-1">
+          <main id="main-content" className="flex-1 relative">
+            {/* Global aurora mesh — visible behind every page, gives glass tiles something to refract */}
+            <div className="fixed inset-x-0 top-0 h-[70vh] bg-mesh-aurora pointer-events-none -z-10" />
             <ViewTransition>{children}</ViewTransition>
           </main>
           <footer className="border-t border-border py-6 text-center text-xs text-text-secondary hidden sm:block">

@@ -99,7 +99,7 @@ export default function MvpLadder() {
             <Link
               key={p.PLAYER_ID}
               href={`/player/${p.PLAYER_ID}`}
-              className="flex items-center gap-3 bg-bg-card border border-border rounded-xl p-3 hover:border-accent/40 transition-colors group"
+              className="flex items-center gap-3 glass-tile p-3 hover:border-accent/40 transition-colors group"
             >
               <span className={`text-lg font-bold w-8 text-center shrink-0 ${
                 i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-text-secondary"

@@ -96,13 +96,14 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 h-12 sm:h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-accent rounded-lg flex items-center justify-center group-hover:bg-accent-hover transition-colors">
-            <Trophy size={18} className="text-white" />
+        <Link href="/" className="flex items-center gap-2 group cursor-pointer">
+          <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-accent-gradient flex items-center justify-center transition-transform group-hover:scale-105 shadow-lg shadow-accent/30">
+            <Trophy size={17} className="text-white" />
+            <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
           </div>
           <span className="text-base sm:text-lg font-bold tracking-tight">
             NBA<span className="text-accent">Tracker</span>
-            <span className="text-[10px] text-text-secondary font-normal ml-1.5 hidden sm:inline">by FXY</span>
+            <span className="text-[10px] text-text-secondary font-normal ml-1.5 hidden sm:inline font-mono uppercase tracking-[0.15em]">by FXY</span>
           </span>
         </Link>
 
@@ -132,10 +133,10 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.more}</span>
             </button>
             {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-bg-card border border-border rounded-xl shadow-2xl p-1.5 z-50">
+              <div className="absolute right-0 top-full mt-2 w-52 glass-tile p-1.5 z-50 animate-fade-in">
                 {moreLinks.map(({ href, label, icon: Icon }) => (
                   <Link key={href} href={href} onClick={() => setMoreOpen(false)}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                       pathname === href ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
                     }`}>
                     <Icon size={14} />
@@ -160,14 +161,14 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.teams}</span>
             </button>
             {teamsOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[90vw] bg-bg-card border border-border rounded-xl shadow-2xl p-3 z-50">
+              <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[90vw] glass-tile p-3 z-50 animate-fade-in">
                 <div className="grid grid-cols-5 gap-1.5">
                   {TEAMS.map((tm) => (
                     <Link
                       key={tm.tricode}
                       href={`/team/${tm.tricode}`}
                       onClick={() => setTeamsOpen(false)}
-                      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group"
+                      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
                       title={`${tm.city} ${tm.name}`}
                     >
                       <Image
@@ -177,7 +178,7 @@ export default function Navbar() {
                         height={28}
                         unoptimized
                       />
-                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors">{tm.tricode}</span>
+                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
                     </Link>
                   ))}
                 </div>
@@ -207,7 +208,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t.nav.searchPlaceholder}
                   aria-label={t.nav.search}
-                  className="w-48 bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
+                  className="w-48 bg-bg-card/70 backdrop-blur-md border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent/60 focus:bg-bg-card transition-colors"
                   onBlur={() => { setTimeout(() => { if (!searchQuery) setSearchOpen(false); }, 150); }}
                 />
               </form>

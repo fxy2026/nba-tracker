@@ -77,7 +77,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
               <Link
                 key={p.id}
                 href={`/player/${p.id}`}
-                className="flex items-center gap-2 bg-bg-card border border-border rounded-xl px-3 py-2.5 hover:border-accent/50 transition-colors group"
+                className="flex items-center gap-2 glass-tile px-3 py-2.5 hover:border-accent/50 transition-colors group"
               >
                 <PlayerHeadshot personId={p.id} name={p.name} size={28} />
                 <div className="min-w-0">

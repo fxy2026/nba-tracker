@@ -169,7 +169,7 @@ export default function AdminPage() {
   if (!authenticated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <form onSubmit={handleLogin} className="bg-bg-card rounded-xl border border-border p-8 w-full max-w-sm">
+        <form onSubmit={handleLogin} className="glass-tile p-8 w-full max-w-sm">
           <div className="flex justify-center mb-6">
             <div className="w-14 h-14 bg-accent/15 rounded-full flex items-center justify-center">
               <Lock size={24} className="text-accent" />
@@ -212,19 +212,19 @@ export default function AdminPage() {
           {/* Data Overview */}
           {adminStats ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <div className="glass-tile p-4 text-center">
                 <p className="text-2xl font-bold text-accent">{String(adminStats.replayCount ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.replayLinks}</p>
               </div>
-              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <div className="glass-tile p-4 text-center">
                 <p className="text-2xl font-bold text-text-primary">{String(adminStats.replayGames ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.gamesWithReplay}</p>
               </div>
-              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <div className="glass-tile p-4 text-center">
                 <p className="text-2xl font-bold text-success">{String(adminStats.finishedGames ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.finishedGames}</p>
               </div>
-              <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+              <div className="glass-tile p-4 text-center">
                 <p className="text-2xl font-bold text-text-primary">{String(adminStats.playerCount ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.playersIndexed}</p>
               </div>
@@ -233,7 +233,7 @@ export default function AdminPage() {
 
           {/* Recent Replay Links */}
           {adminStats?.recentLinks && (adminStats.recentLinks as ReplayLink[]).length > 0 ? (
-            <div className="bg-bg-card rounded-xl border border-border p-4">
+            <div className="glass-tile p-4">
               <h2 className="text-sm font-semibold mb-3">{t.admin.recentlyAdded}</h2>
               <div className="space-y-2">
                 {(adminStats.recentLinks as ReplayLink[]).map((link) => (
@@ -250,7 +250,7 @@ export default function AdminPage() {
           ) : null}
 
           {/* API Health */}
-          <div className="bg-bg-card rounded-xl border border-border p-4">
+          <div className="glass-tile p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">API Health Check</h2>
               <button onClick={checkAPIHealth} disabled={checkingHealth}
@@ -272,7 +272,7 @@ export default function AdminPage() {
 
           {/* Environment Config */}
           {adminStats ? (
-            <div className="bg-bg-card rounded-xl border border-border p-4">
+            <div className="glass-tile p-4">
               <h2 className="text-sm font-semibold mb-3">{t.admin.environment}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {[
@@ -295,24 +295,24 @@ export default function AdminPage() {
 
           {/* System Info + Quick Links */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+            <div className="glass-tile p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">{t.admin.dataSources}</p>
               <p className="text-sm font-bold text-text-primary mt-1">{t.admin.nbaCdnEspn}</p>
               <p className="text-[10px] text-text-secondary mt-1">{t.admin.scheduleScores}</p>
             </div>
-            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+            <div className="glass-tile p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">{t.admin.replayStorage}</p>
               <p className="text-sm font-bold text-text-primary mt-1">{t.admin.supabase}</p>
               <p className="text-[10px] text-text-secondary mt-1">{t.admin.postgresql}</p>
             </div>
-            <div className="bg-bg-card rounded-xl border border-border p-4 text-center">
+            <div className="glass-tile p-4 text-center">
               <p className="text-[10px] text-text-secondary uppercase">{t.admin.hosting}</p>
               <p className="text-sm font-bold text-text-primary mt-1">Vercel</p>
               <p className="text-[10px] text-text-secondary mt-1">nba.xpy.me</p>
             </div>
           </div>
 
-          <div className="bg-bg-card rounded-xl border border-border p-4">
+          <div className="glass-tile p-4">
             <h2 className="text-sm font-semibold mb-3">{t.admin.quickLinks}</h2>
             <div className="flex flex-wrap gap-2">
               {[
@@ -340,7 +340,7 @@ export default function AdminPage() {
       {/* ===== Replay Links ===== */}
       {tab === "replays" && (
         <>
-          <div className="bg-bg-card rounded-xl border border-border p-4 mb-6">
+          <div className="glass-tile p-4 mb-6">
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={() => offsetDate(-1)} className="p-2 rounded-lg bg-bg-hover hover:bg-accent/10 text-text-secondary hover:text-accent transition-colors"><ChevronLeft size={16} /></button>
               <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)}
@@ -424,7 +424,7 @@ export default function AdminPage() {
                       <div className="text-center py-6 text-text-secondary"><Play size={24} className="mx-auto mb-2 opacity-20" /><p className="text-sm">{t.admin.noReplayLinks}</p></div>
                     )}
                   </div>
-                  <form onSubmit={addLink} className="bg-bg-card rounded-xl border border-border p-4 space-y-3">
+                  <form onSubmit={addLink} className="glass-tile p-4 space-y-3">
                     <h3 className="text-sm font-medium flex items-center gap-1.5"><Plus size={14} className="text-accent" />{t.admin.addReplayLink}</h3>
                     <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t.admin.titlePlaceholder}
                       className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent" required />

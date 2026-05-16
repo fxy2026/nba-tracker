@@ -131,7 +131,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
       </div>
 
       {/* Court SVG - vertical full court */}
-      <div className="bg-bg-card rounded-xl border border-border p-2 overflow-hidden">
+      <div className="glass-tile p-2 overflow-hidden">
         <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full" style={{ maxHeight: 600 }}>
           {/* Court background */}
           <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#1a1a1a" rx="8" />

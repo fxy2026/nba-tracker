@@ -178,7 +178,7 @@ export default memo(function KeyMoments({ actions }: Props) {
   for (const m of moments) counts[m.type]++;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
+    <div className="glass-tile overflow-hidden mt-6">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="w-1 h-4 bg-accent rounded-full" />

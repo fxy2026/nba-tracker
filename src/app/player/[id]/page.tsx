@@ -88,10 +88,7 @@ export default async function PlayerPage({ params }: PageProps) {
   const astCtx = statContext("ast", apg);
 
   return (
-    <div className="relative max-w-6xl mx-auto px-4 py-6">
-      {/* Aurora mesh backdrop — vibrant for glass tiles to refract */}
-      <div className="absolute inset-0 bg-mesh-aurora pointer-events-none -z-10" />
-
+    <div className="max-w-6xl mx-auto px-4 py-6">
       <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors inline-flex items-center gap-1 cursor-pointer">
         ← {t.common.backToSearch}
       </Link>

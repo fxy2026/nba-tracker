@@ -74,19 +74,19 @@ export default async function HistoryPage() {
 
       {/* Quick Facts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+        <div className="glass-tile p-3 text-center">
           <p className="text-2xl font-bold text-accent">{sweeps.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.sweeps}</p>
         </div>
-        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+        <div className="glass-tile p-3 text-center">
           <p className="text-2xl font-bold text-accent">{game7s.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.game7s}</p>
         </div>
-        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+        <div className="glass-tile p-3 text-center">
           <p className="text-2xl font-bold text-accent">{repeats.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.repeatChamps}</p>
         </div>
-        <div className="bg-bg-card border border-border rounded-xl p-3 text-center">
+        <div className="glass-tile p-3 text-center">
           <p className="text-2xl font-bold text-accent">{topFmvps.length > 0 ? topFmvps[0][1] : 0}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.mostFmvps}</p>
           {topFmvps.length > 0 && <p className="text-[10px] text-accent mt-0.5">{topFmvps[0][0]}</p>}
@@ -104,7 +104,7 @@ export default async function HistoryPage() {
         </div>
       )}
 
-      <div className="bg-bg-card border border-border rounded-xl overflow-hidden">
+      <div className="glass-tile overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -149,7 +149,7 @@ export default async function HistoryPage() {
       </div>
 
       {/* Championships by Franchise */}
-      <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
+      <div className="glass-tile overflow-hidden mt-8 p-4">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <Trophy size={16} className="text-accent" />
           {t.historyPage.championshipsByFranchise}
@@ -179,7 +179,7 @@ export default async function HistoryPage() {
 
       {/* Dynasties Section */}
       {repeats.length > 0 && (
-        <div className="bg-bg-card border border-border rounded-xl overflow-hidden mt-8 p-4">
+        <div className="glass-tile overflow-hidden mt-8 p-4">
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Trophy size={16} className="text-accent-amber" />
             {t.historyPage.dynastyWatch}

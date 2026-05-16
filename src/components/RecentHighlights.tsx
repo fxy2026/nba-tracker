@@ -34,7 +34,7 @@ export default memo(function RecentHighlights({ games }: Props) {
             <Link
               key={game.gameId}
               href={`/game/${game.gameId}`}
-              className="game-card bg-bg-card rounded-xl border border-border hover:border-accent/40 transition-colors p-3 group"
+              className="game-card glass-tile hover:border-accent/40 transition-colors p-3 group"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-text-secondary">{dateStr}</span>

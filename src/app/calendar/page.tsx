@@ -172,7 +172,7 @@ export default function CalendarPage() {
       })()}
 
       {/* Calendar Grid */}
-      <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+      <div className="glass-tile overflow-hidden">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border">
           {DAYS_OF_WEEK.map((d, idx) => (

@@ -73,10 +73,10 @@ export default function ComparePage() {
             value={player1 ? `${player1.firstName} ${player1.lastName}` : query1}
             onChange={(e) => { setQuery1(e.target.value); setPlayer1(null); }}
             placeholder={t.comparePage.searchPlayer1}
-            className="w-full bg-bg-card border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
+            className="w-full glass-tile px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
           />
           {results1.length > 0 && !player1 && (
-            <div className="absolute z-50 top-full mt-1 w-full bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+            <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
               {results1.map((p) => (
                 <button key={p.personId} onClick={() => { setPlayer1(p); setResults1([]); setQuery1(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
@@ -113,10 +113,10 @@ export default function ComparePage() {
             value={player2 ? `${player2.firstName} ${player2.lastName}` : query2}
             onChange={(e) => { setQuery2(e.target.value); setPlayer2(null); }}
             placeholder={t.comparePage.searchPlayer2}
-            className="w-full bg-bg-card border border-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
+            className="w-full glass-tile px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
           />
           {results2.length > 0 && !player2 && (
-            <div className="absolute z-50 top-full mt-1 w-full bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+            <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
               {results2.map((p) => (
                 <button key={p.personId} onClick={() => { setPlayer2(p); setResults2([]); setQuery2(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
@@ -151,7 +151,7 @@ export default function ComparePage() {
 
       {/* Comparison display */}
       {player1 && player2 && (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           {/* Headers */}
           <div className="grid grid-cols-[1fr_auto_1fr] p-6 border-b border-border">
             <div className="flex flex-col items-center gap-3">
@@ -351,7 +351,7 @@ export default function ComparePage() {
         const score1 = player1.pts + 1.2 * player1.reb + 1.5 * player1.ast;
         const score2 = player2.pts + 1.2 * player2.reb + 1.5 * player2.ast;
         return (
-          <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
+          <div className="glass-tile p-4 mt-4">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">{t.comparePage.overallScore}</h3>
             <p className="text-[9px] text-text-secondary text-center mb-3">{t.comparePage.scoreFormula}</p>
             <div className="flex items-center gap-4">

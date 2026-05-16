@@ -59,7 +59,7 @@ export default function TeamStandings() {
           ))}
         </div>
       ) : (
-        <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm stats-table">
               <thead>

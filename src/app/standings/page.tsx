@@ -63,7 +63,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
   const leaderLosses = leader?.losses || 0;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+    <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-bg-secondary/50">
         <h3 className="text-sm font-semibold">{division}</h3>
       </div>
@@ -145,7 +145,7 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
   const leaderDiff = leader ? leader.wins - leader.losses : 0;
 
   return (
-    <div className="bg-bg-card rounded-xl border border-border overflow-hidden">
+    <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-bg-secondary/50 flex items-center justify-between">
         <h3 className="text-sm font-semibold">{title}</h3>
         {leader && (
@@ -302,7 +302,7 @@ export default async function StandingsPage() {
         const westBest = westTeams[0];
         return (
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
+            <div className="glass-tile p-3 flex items-center justify-between">
               <div>
                 <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.eastAvgW}</p>
                 <p className="text-lg font-bold text-accent">{eastAvgW.toFixed(1)}</p>
@@ -312,7 +312,7 @@ export default async function StandingsPage() {
                 <p className="text-xs font-medium text-text-primary">{eastBest.tricode} ({eastBest.wins}-{eastBest.losses})</p>
               </div>
             </div>
-            <div className="bg-bg-card border border-border rounded-xl p-3 flex items-center justify-between">
+            <div className="glass-tile p-3 flex items-center justify-between">
               <div>
                 <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.westAvgW}</p>
                 <p className="text-lg font-bold text-accent">{westAvgW.toFixed(1)}</p>
@@ -371,7 +371,7 @@ export default async function StandingsPage() {
         const total = eastWins + westWins || 1;
         const eastPct = (eastWins / total) * 100;
         return (
-          <div className="bg-bg-card rounded-xl border border-border p-4 mb-8">
+          <div className="glass-tile p-4 mb-8">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.standingsPage.eastVsWest}</h3>
             <div className="flex items-center gap-4 mb-2">
               <span className="text-sm font-bold text-accent">East {eastWins}{t.common.wins}</span>
