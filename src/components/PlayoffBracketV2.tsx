@@ -58,7 +58,7 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
   const winner = finished ? (t1Leading ? s.team1 : s.team2) : null;
 
   return (
-    <div className={`bg-bg-card rounded-lg border p-2.5 ${finished ? "border-accent/40" : "border-border"}`}>
+    <div className={`glass-tile p-2.5 ${finished ? "border-accent-amber/40 bg-accent-amber/[0.03]" : ""}`}>
       {/* Team 1 */}
       <div className={`flex items-center gap-2 py-1 ${winner && winner.tricode === s.team1.tricode ? "opacity-100" : winner ? "opacity-50" : ""}`}>
         <TeamLogo teamId={s.team1.teamId} tricode={s.team1.tricode} size={20} />
@@ -70,7 +70,7 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
             </span>
           </div>
         </div>
-        <span className={`text-sm font-bold font-mono tabular-nums ${t1Leading ? "text-accent" : "text-text-secondary"}`}>
+        <span className={`text-sm font-bold font-mono tabular-nums ${t1Leading ? "text-accent-amber" : "text-text-secondary"}`}>
           {s.team1.wins}
         </span>
       </div>
@@ -85,7 +85,7 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
             </span>
           </div>
         </div>
-        <span className={`text-sm font-bold font-mono tabular-nums ${t2Leading ? "text-accent" : "text-text-secondary"}`}>
+        <span className={`text-sm font-bold font-mono tabular-nums ${t2Leading ? "text-accent-amber" : "text-text-secondary"}`}>
           {s.team2.wins}
         </span>
       </div>
@@ -106,11 +106,11 @@ function SeriesCard({ s, t }: { s: Series; t: import("@/locales/types").Translat
       </div>
       {/* Status */}
       {finished ? (
-        <div className="text-[10px] text-center text-accent mt-1">
-          {winner?.tricode} wins {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}
+        <div className="text-[9px] font-mono uppercase tracking-[0.15em] text-center text-accent-amber mt-1.5 font-bold">
+          ★ {winner?.tricode} wins {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}
         </div>
       ) : s.totalGames > 0 ? (
-        <div className="text-[10px] text-center text-text-secondary mt-0.5">
+        <div className="text-[9px] font-mono uppercase tracking-[0.15em] text-center text-text-secondary mt-1">
           {t.common.game} {s.totalGames + 1}
         </div>
       ) : null}
@@ -129,11 +129,11 @@ function BracketColumn({ series, title, t, roundLabels }: { series: Series[]; ti
 
   return (
     <div className="flex-1 min-w-0">
-      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3 text-center">{title}</h3>
+      <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary mb-3 text-center">{title}</h3>
       <div className="flex gap-2 items-stretch">
         {rounds.map((round) => (
           <div key={round} className="flex-1 flex flex-col gap-2">
-            <p className="text-[10px] text-text-secondary text-center mb-1">{roundLabels[round]}</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/70 text-center mb-1">{roundLabels[round]}</p>
             {byRound.get(round)!.map((s) => (
               <SeriesCard key={`${s.team1.tricode}-${s.team2.tricode}`} s={s} t={t} />
             ))}

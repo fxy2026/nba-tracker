@@ -76,21 +76,21 @@ export default memo(function PlayByPlay({ actions }: Props) {
   return (
     <div className="glass-tile overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent rounded-full" />
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
           {t.playByPlayComp.title}
         </h3>
-        <div className="flex rounded-lg overflow-hidden border border-border">
+        <div className="glass-tile flex overflow-hidden p-1">
           {periods.map((p) => (
             <button
               key={p}
               onClick={() => setSelectedPeriod(p)}
-              className={`px-3 py-1 text-xs font-medium transition-colors ${
-                selectedPeriod === p ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"
+              className={`px-3 py-1 text-xs font-medium font-mono rounded-md transition-all cursor-pointer ${
+                selectedPeriod === p ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}
             >
               {p <= 4 ? `${t.playByPlayComp.quarter}${p}` : `${t.playByPlayComp.overtime}${p - 4}`}
-              <span className="text-[8px] opacity-60 ml-0.5">
+              <span className="text-[8px] opacity-60 ml-0.5 tabular-nums">
                 ({actions.filter((a) => a.period === p && a.description).length})
               </span>
             </button>

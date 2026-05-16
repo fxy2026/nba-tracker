@@ -218,8 +218,8 @@ const GameTrendChart = memo(function GameTrendChart({ games, t }: { games: GameL
   return (
     <div className="glass-tile p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent rounded-full" />
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
           {t.playerStats.scoringTrend.replace("%s", String(data.length))}
         </h3>
         <div className="flex items-center gap-3 text-[10px]">

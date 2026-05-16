@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -67,27 +68,24 @@ export default async function HistoryPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Trophy size={20} className="text-accent" />
-        <h1 className="text-xl font-bold">{t.historyPage.title}</h1>
-      </div>
+      <PageHeader eyebrow="History" icon={Trophy} title={t.historyPage.title} />
 
       {/* Quick Facts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="glass-tile p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{sweeps.length}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{sweeps.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.sweeps}</p>
         </div>
         <div className="glass-tile p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{game7s.length}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{game7s.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.game7s}</p>
         </div>
         <div className="glass-tile p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{repeats.length}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{repeats.length}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.repeatChamps}</p>
         </div>
         <div className="glass-tile p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{topFmvps.length > 0 ? topFmvps[0][1] : 0}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{topFmvps.length > 0 ? topFmvps[0][1] : 0}</p>
           <p className="text-[10px] text-text-secondary uppercase">{t.historyPage.mostFmvps}</p>
           {topFmvps.length > 0 && <p className="text-[10px] text-accent mt-0.5">{topFmvps[0][0]}</p>}
         </div>
@@ -97,8 +95,8 @@ export default async function HistoryPage() {
       {topFmvps.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
           {topFmvps.map(([name, count]) => (
-            <span key={name} className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
-              {name}: {count}x FMVP
+            <span key={name} className="chip chip-active" style={{ color: "var(--accent-amber)", borderColor: "rgba(245,158,11,0.4)", background: "color-mix(in srgb, var(--accent-amber) 12%, transparent)" }}>
+              {name} · <span className="font-mono tabular-nums font-bold">{count}x FMVP</span>
             </span>
           ))}
         </div>
@@ -107,13 +105,13 @@ export default async function HistoryPage() {
       <div className="glass-tile overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-bg-secondary">
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.year}</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.champion}</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.finalsMvp}</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.runnerUp}</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">{t.historyPage.series}</th>
+            <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+              <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
+                <th className="text-left py-3 px-4">{t.historyPage.year}</th>
+                <th className="text-left py-3 px-4">{t.historyPage.champion}</th>
+                <th className="text-left py-3 px-4">{t.historyPage.finalsMvp}</th>
+                <th className="text-left py-3 px-4">{t.historyPage.runnerUp}</th>
+                <th className="text-left py-3 px-4">{t.historyPage.series}</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +121,7 @@ export default async function HistoryPage() {
                 const isRepeat = i > 0 && row.champion !== "TBD" && row.champion === champions[i - 1].champion;
                 return (
                   <tr key={row.year} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${row.champion === "TBD" ? "opacity-50" : ""}`}>
-                    <td className="py-3 px-4 font-bold text-accent">{row.year}</td>
+                    <td className="py-3 px-4 font-bold text-accent-amber font-mono tabular-nums">{row.year}</td>
                     <td className="py-3 px-4 font-medium text-text-primary">
                       {row.champion}
                       {isRepeat && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent-amber/15 text-accent-amber font-bold">{t.historyPage.repeat}</span>}

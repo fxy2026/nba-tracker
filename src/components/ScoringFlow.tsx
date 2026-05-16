@@ -99,8 +99,8 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
   return (
     <div className="glass-tile p-4 mt-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent rounded-full" />
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
           {t.scoringFlow.title}
           {isDetailed && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-normal">{points.length} plays</span>}
         </h3>

@@ -32,11 +32,13 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+      className="p-2 rounded-lg text-text-secondary hover:text-accent-amber hover:bg-bg-hover transition-all cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
       title={theme === "dark" ? t.theme.switchToLight : t.theme.switchToDark}
       aria-label={theme === "dark" ? t.theme.switchToLight : t.theme.switchToDark}
     >
-      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+      <span className="relative transition-transform hover:rotate-12">
+        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+      </span>
     </button>
   );
 }

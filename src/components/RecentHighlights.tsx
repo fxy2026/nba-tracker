@@ -15,10 +15,13 @@ export default memo(function RecentHighlights({ games }: Props) {
   const { t } = useLocale();
   return (
     <section>
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-        <span className="w-1 h-5 bg-accent rounded-full" />
-        {t.recentHighlights.title}
-      </h2>
+      <div className="mb-4">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Recent</p>
+        <h2 className="text-base font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
+          {t.recentHighlights.title}
+        </h2>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {games.map((game) => {
           const homeWon = game.homeTeam.score > game.awayTeam.score;
@@ -34,10 +37,10 @@ export default memo(function RecentHighlights({ games }: Props) {
             <Link
               key={game.gameId}
               href={`/game/${game.gameId}`}
-              className="game-card glass-tile hover:border-accent/40 transition-colors p-3 group"
+              className="game-card glass-tile hover:border-accent/40 transition-colors p-3 group cursor-pointer"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-text-secondary">{dateStr}</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/70">{dateStr}</span>
                 <div className="flex items-center gap-1">
                   {isClose && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-danger/15 text-danger">

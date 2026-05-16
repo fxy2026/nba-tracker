@@ -42,9 +42,9 @@ export default memo(function GameCountdown({ gameTimeUTC }: { gameTimeUTC: strin
   if (!timeLeft) return null;
 
   return (
-    <span className="flex items-center gap-1 text-[10px] text-accent">
+    <span className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.15em] text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full border border-accent-amber/30">
       <Clock size={10} />
-      <span className="font-mono tabular-nums">{timeLeft}</span>
+      <span className="tabular-nums font-bold">{timeLeft}</span>
     </span>
   );
 });

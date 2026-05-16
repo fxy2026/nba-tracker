@@ -180,8 +180,8 @@ export default memo(function KeyMoments({ actions }: Props) {
   return (
     <div className="glass-tile overflow-hidden mt-6">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent rounded-full" />
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent-amber rounded-full" />
           {t.keyMoments.title}
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{moments.length}</span>
         </h3>

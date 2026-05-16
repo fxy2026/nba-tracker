@@ -13,13 +13,13 @@ export default function LocaleToggle() {
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors text-xs font-medium"
+      className="p-2 rounded-lg text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors text-xs font-medium cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
       title={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
       aria-label={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
     >
-      <span className="flex items-center gap-1">
-        <Globe size={16} />
-        <span>{locale === "zh" ? "EN" : "中"}</span>
+      <span className="flex items-center gap-1.5">
+        <Globe size={15} />
+        <span className="font-mono font-bold">{locale === "zh" ? "EN" : "中"}</span>
       </span>
     </button>
   );

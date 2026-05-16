@@ -76,32 +76,35 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-2">
-        <TrendingUp size={14} className="text-accent" />
-        {t.playerAdvanced.title}
-      </h3>
+      <div className="mb-3">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Advanced</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <TrendingUp size={14} className="text-accent-amber" />
+          {t.playerAdvanced.title}
+        </h3>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.TS_PCT != null && (
-          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.tsPct}</p>
-            <p className="text-xl font-bold mt-1 text-accent">{(stats.TS_PCT * 100).toFixed(1)}%</p>
+            <p className="text-2xl font-light font-mono tabular-nums mt-1 text-accent">{(stats.TS_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.trueShooting}</p>
             {stats.TS_PCT >= 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">{t.playerAdvanced.elite}</span>}
             {stats.TS_PCT >= 0.55 && stats.TS_PCT < 0.6 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold mt-1 inline-block">{t.playerAdvanced.aboveAvg}</span>}
           </div>
         )}
         {stats.EFG_PCT != null && (
-          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.efgPct}</p>
-            <p className="text-xl font-bold mt-1 text-text-primary">{(stats.EFG_PCT * 100).toFixed(1)}%</p>
+            <p className="text-2xl font-light font-mono tabular-nums mt-1 text-text-primary">{(stats.EFG_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.effectiveFg}</p>
             {stats.EFG_PCT >= 0.55 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/15 text-success font-bold mt-1 inline-block">{t.playerAdvanced.elite}</span>}
           </div>
         )}
         {stats.USG_PCT != null && (
-          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
+          <div className="glass-tile p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.usgPct}</p>
-            <p className="text-xl font-bold mt-1 text-text-primary">{(stats.USG_PCT * 100).toFixed(1)}%</p>
+            <p className="text-2xl font-light font-mono tabular-nums mt-1 text-text-primary">{(stats.USG_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.usageRate}</p>
           </div>
         )}
