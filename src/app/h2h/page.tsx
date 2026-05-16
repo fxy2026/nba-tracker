@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "@/components/TeamLogo";
+import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
 import { Swords } from "lucide-react";
 import { getLocale } from "@/lib/locale";
@@ -71,11 +72,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
-        <Swords size={24} className="text-accent" />
-        {t.h2hPage.title}
-      </h1>
-      <p className="text-sm text-text-secondary mb-6">{t.h2hPage.selectHint}</p>
+      <PageHeader eyebrow="Tool" icon={Swords} title={t.h2hPage.title} subtitle={t.h2hPage.selectHint} />
 
       {/* Team Selectors */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
@@ -289,7 +286,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
             const homeWon = lastGame.homeScore > lastGame.awayScore;
             const winner = homeWon ? lastGame.homeTricode : lastGame.awayTricode;
             return (
-              <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6">
+              <div className="glass-tile glass-tile-featured p-4 mb-6">
                 <h3 className="text-xs font-medium text-accent uppercase mb-2">{t.h2hPage.lastMeeting}</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -399,9 +396,7 @@ function TeamSelector({ teams, selected, paramName, other }: {
             <Link
               key={t.tricode}
               href={href}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
-                isSelected ? "bg-accent/20 text-accent border border-accent/30" : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary hover:text-text-primary"
-              }`}
+              className={`chip font-mono ${isSelected ? "chip-active" : ""}`}
             >
               <TeamLogo teamId={t.teamId} tricode={t.tricode} size={16} />
               {t.tricode}

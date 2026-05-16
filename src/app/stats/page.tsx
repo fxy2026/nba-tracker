@@ -3,6 +3,7 @@
 import { useState, Suspense, lazy } from "react";
 import { BarChart3, Users, Trophy, Crown, Medal } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
+import PageHeader from "@/components/PageHeader";
 
 const PlayerLeaders = lazy(() => import("@/components/stats/PlayerLeaders"));
 const TeamStandings = lazy(() => import("@/components/stats/TeamStandings"));
@@ -33,22 +34,19 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Crown size={24} className="text-accent" />
-          Stats & Rankings
-        </h1>
-        <span className="text-[10px] text-text-secondary px-2.5 py-1 rounded-full bg-bg-card border border-border">
-          {CURRENT_SEASON} Season
-        </span>
-      </div>
-      <div className="flex gap-1 mb-6 bg-bg-card rounded-xl p-1 border border-border w-fit">
+      <PageHeader
+        eyebrow="League"
+        icon={Crown}
+        title="Stats & Rankings"
+        action={<span className="chip font-mono">{CURRENT_SEASON} Season</span>}
+      />
+      <div className="flex gap-1 mb-6 glass-tile p-1 w-fit">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === key ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              tab === key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
             }`}
           >
             <Icon size={15} />

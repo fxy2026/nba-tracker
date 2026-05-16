@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { Target, Loader2 } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayerRow {
@@ -90,17 +91,12 @@ export default function ClutchPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-          <Target size={20} className="text-accent" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">{t.clutchPage.title}</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
-            {CURRENT_SEASON} {t.clutchPage.subtitle}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={`${CURRENT_SEASON} Playoffs`}
+        icon={Target}
+        title={t.clutchPage.title}
+        subtitle={t.clutchPage.subtitle}
+      />
 
       {/* Quick Stats Overview */}
       {!loading && overviewStats && (

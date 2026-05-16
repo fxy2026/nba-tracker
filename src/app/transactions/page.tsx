@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 interface Transaction {
   date: string;
@@ -61,14 +62,15 @@ export default function TransactionsPage() {
         Back to home
       </Link>
 
-      <div className="flex items-center justify-between mt-4 mb-6">
-        <h1 className="text-2xl font-bold">NBA Transactions</h1>
-        {!loading && transactions.length > 0 && (
-          <span className="text-xs text-text-secondary px-2.5 py-1 rounded-full bg-bg-card border border-border">
-            {transactions.length} recent
-          </span>
-        )}
-      </div>
+      <PageHeader
+        eyebrow="League"
+        icon={ArrowLeftRight}
+        title="NBA Transactions"
+        action={!loading && transactions.length > 0 ? (
+          <span className="chip font-mono"><span className="tabular-nums">{transactions.length}</span> recent</span>
+        ) : undefined}
+        className="mt-4"
+      />
 
       {loading && (
         <div className="space-y-4">

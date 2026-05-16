@@ -42,10 +42,10 @@ export default function TeamStandings() {
   return (
     <div>
       <div className="flex gap-2 mb-4">
-        <div className="flex rounded-lg overflow-hidden border border-border">
+        <div className="glass-tile flex overflow-hidden p-1">
           {(["all","east","west"] as const).map((c) => (
             <button key={c} onClick={() => setConf(c)}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${conf === c ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"}`}>
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${conf === c ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"}`}>
               {c === "all" ? t.statsPage.all : c === "east" ? t.statsPage.eastern : t.statsPage.western}
             </button>
           ))}
@@ -55,16 +55,16 @@ export default function TeamStandings() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-11 bg-bg-card rounded-lg skeleton-shimmer" />
+            <div key={i} className="glass-tile h-11 skeleton-shimmer" />
           ))}
         </div>
       ) : (
         <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm stats-table">
-              <thead>
-                <tr className="border-b border-border text-text-secondary text-xs">
-                  <th className="text-left py-3 px-3 w-8">#</th>
+              <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+                <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
+                  <th className="text-left py-3 px-3 w-12">Rank</th>
                   <th className="text-left py-3 px-2">{t.common.team}</th>
                   <th className="text-center py-3 px-2">{t.common.wins}</th>
                   <th className="text-center py-3 px-2">{t.common.losses}</th>
@@ -77,10 +77,23 @@ export default function TeamStandings() {
                   const pct = tm.wins + tm.losses > 0 ? tm.wins / (tm.wins + tm.losses) : 0;
                   const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
                   const logoUrl = `https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`;
+                  const isTop3 = i < 3;
+                  const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
+                    : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
+                    : i === 2 ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
+                    : "";
                   return (
                     <React.Fragment key={tm.tricode}>
-                    <tr className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i < 6 ? "bg-accent/5" : i < 10 ? "bg-accent-amber/5" : ""}`}>
-                      <td className="py-2.5 px-3 text-text-secondary font-medium">{i + 1}</td>
+                    <tr className={`border-b border-border/40 hover:bg-bg-hover/50 transition-colors ${i < 6 ? "bg-accent/[0.03]" : i < 10 ? "bg-accent-amber/[0.03]" : ""}`}>
+                      <td className="py-2.5 px-3">
+                        {isTop3 ? (
+                          <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold font-mono tabular-nums ${medalBg}`}>
+                            {i + 1}
+                          </span>
+                        ) : (
+                          <span className="text-text-secondary font-mono tabular-nums text-xs ml-1">{i + 1}</span>
+                        )}
+                      </td>
                       <td className="py-2.5 px-2">
                         <Link href={`/team/${tm.tricode}`} className="flex items-center gap-2 hover:text-accent transition-colors">
                           <Image src={logoUrl} alt={tm.tricode} width={24} height={24} unoptimized
@@ -89,13 +102,13 @@ export default function TeamStandings() {
                           <span className="text-text-secondary text-xs">{tm.tricode}</span>
                         </Link>
                       </td>
-                      <td className="py-2.5 px-2 text-center text-success font-medium">{tm.wins}</td>
-                      <td className="py-2.5 px-2 text-center text-danger font-medium">{tm.losses}</td>
+                      <td className="py-2.5 px-2 text-center text-success font-medium font-mono tabular-nums">{tm.wins}</td>
+                      <td className="py-2.5 px-2 text-center text-danger font-medium font-mono tabular-nums">{tm.losses}</td>
                       <td className="py-2.5 px-2 text-center">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-accent font-mono tabular-nums min-w-[40px]">{(pct * 100).toFixed(1)}%</span>
+                          <span className={`font-medium font-mono tabular-nums min-w-[40px] ${isTop3 ? "text-text-primary" : "text-accent"}`}>{(pct * 100).toFixed(1)}%</span>
                           <div className="w-12 h-1.5 bg-bg-hover rounded-full overflow-hidden">
-                            <div className="h-full bg-accent/60 rounded-full" style={{ width: `${pct * 100}%` }} />
+                            <div className={`h-full rounded-full ${i === 0 ? "bg-[#FFD700]" : i === 1 ? "bg-[#C0C0C0]" : i === 2 ? "bg-[#CD7F32]" : "bg-accent/60"}`} style={{ width: `${pct * 100}%` }} />
                           </div>
                         </div>
                       </td>

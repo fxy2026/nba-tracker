@@ -3,6 +3,7 @@ import { Search, Flame } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
+import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -37,30 +38,19 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Search size={24} className="text-accent" />
-        {t.searchPage.title}
-      </h1>
+      <PageHeader eyebrow="Tool" icon={Search} title={t.searchPage.title} />
       <SearchInput initialQuery={q || ""} />
 
-      {/* Quick filters */}
+      {/* Quick filters — chips */}
       <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
         {([["Guard", t.searchPage.guard], ["Forward", t.searchPage.forward], ["Center", t.searchPage.center]] as const).map(([pos, label]) => (
-          <a
-            key={pos}
-            href={`/search?q=${pos}`}
-            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
-          >
+          <a key={pos} href={`/search?q=${pos}`} className="chip">
             {label}
           </a>
         ))}
-        <span className="text-border mx-1">|</span>
+        <span className="text-text-secondary/40 mx-1">·</span>
         {["Lakers", "Celtics", "Warriors", "Nuggets"].map((team) => (
-          <a
-            key={team}
-            href={`/search?q=${team}`}
-            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-full hover:border-accent/50 text-text-secondary hover:text-accent transition-colors"
-          >
+          <a key={team} href={`/search?q=${team}`} className="chip">
             {team}
           </a>
         ))}
@@ -68,21 +58,26 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
       {!q && (
         <div className="mt-8">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <Flame size={14} className="text-accent" />
-            {t.searchPage.popularPlayers}
-          </h2>
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ 01</p>
+              <h2 className="text-base font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+                <Flame size={14} className="text-accent-amber" />
+                {t.searchPage.popularPlayers}
+              </h2>
+            </div>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {POPULAR_PLAYERS.map((p) => (
               <Link
                 key={p.id}
                 href={`/player/${p.id}`}
-                className="flex items-center gap-2 glass-tile px-3 py-2.5 hover:border-accent/50 transition-colors group"
+                className="flex items-center gap-2.5 glass-tile px-3 py-2.5 hover:border-accent/50 transition-colors group cursor-pointer"
               >
-                <PlayerHeadshot personId={p.id} name={p.name} size={28} />
+                <PlayerHeadshot personId={p.id} name={p.name} size={32} />
                 <div className="min-w-0">
                   <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors truncate block">{p.name}</span>
-                  <span className="text-[10px] text-text-secondary">{p.team}</span>
+                  <span className="text-[10px] text-text-secondary font-mono uppercase tracking-[0.15em]">{p.team}</span>
                 </div>
               </Link>
             ))}
@@ -91,11 +86,11 @@ export default async function SearchPage({ searchParams }: PageProps) {
       )}
 
       {/* Quick Search Tips */}
-      <div className="mt-6 text-center space-y-1">
-        <p className="text-xs text-text-secondary">
+      <div className="mt-8 text-center space-y-1">
+        <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">
           {t.searchPage.searchHint}
         </p>
-        <p className="text-[10px] text-text-secondary/70">
+        <p className="text-[10px] text-text-secondary/50">
           {t.searchPage.tip}
         </p>
       </div>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
@@ -105,30 +106,30 @@ export default function CalendarPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t.calendarPage.seasonCalendar}</h1>
-          <p className="text-xs text-text-secondary mt-0.5">{CURRENT_SEASON} {t.calendarPage.nbaSeason}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={goToPrevMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">
-            <ChevronLeft size={18} />
-          </button>
-          <span className="text-sm font-medium min-w-[140px] text-center">{monthLabel}</span>
-          <button onClick={goToNextMonth} className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover transition-colors">
-            <ChevronRight size={18} />
-          </button>
-          {(year !== now.getFullYear() || month !== now.getMonth()) && (
-            <button
-              onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
-              className="px-3 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium hover:bg-accent/25 transition-colors"
-            >
-              {t.common.today}
+      <PageHeader
+        eyebrow={`${CURRENT_SEASON} ${t.calendarPage.nbaSeason}`}
+        icon={CalendarDays}
+        title={t.calendarPage.seasonCalendar}
+        action={
+          <div className="flex items-center gap-2">
+            <button onClick={goToPrevMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
+              <ChevronLeft size={18} />
             </button>
-          )}
-        </div>
-      </div>
-
+            <span className="text-sm font-medium font-mono tabular-nums min-w-[140px] text-center">{monthLabel}</span>
+            <button onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
+              <ChevronRight size={18} />
+            </button>
+            {(year !== now.getFullYear() || month !== now.getMonth()) && (
+              <button
+                onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
+                className="chip chip-active cursor-pointer"
+              >
+                {t.common.today}
+              </button>
+            )}
+          </div>
+        }
+      />
       {/* Season Phase Label */}
       {(() => {
         // Approximate NBA season phases based on month

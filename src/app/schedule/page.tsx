@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CalendarDays, CalendarX } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
 import DateJumper from "@/components/DateJumper";
+import PageHeader from "@/components/PageHeader";
+import EmptyState from "@/components/EmptyState";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -71,59 +74,46 @@ export default async function SchedulePage({ searchParams }: PageProps) {
 
   const teamsList = Object.values(TEAM_META).sort((a, b) => a.city.localeCompare(b.city));
 
+  const totalGames = recentDates.reduce((s, d) => s + d.games.length, 0);
+  const finishedGames = recentDates.reduce((s, d) => s + d.games.filter(g => g.gameStatus === 3).length, 0);
+  const upcomingGames = totalGames - finishedGames;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-2">{t.schedulePage.recentSchedule}</h1>
-      {/* Quick stats */}
-      {recentDates.length > 0 && (() => {
-        const totalGames = recentDates.reduce((s, d) => s + d.games.length, 0);
-        const finishedGames = recentDates.reduce((s, d) => s + d.games.filter(g => g.gameStatus === 3).length, 0);
-        const upcomingGames = totalGames - finishedGames;
-        return (
-          <div className="flex items-center gap-3 mb-4 text-xs">
-            <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
-              {recentDates.length} {t.schedulePage.days}
+      <PageHeader eyebrow="Schedule" icon={CalendarDays} title={t.schedulePage.recentSchedule} />
+
+      {/* Quick stats — chip strip */}
+      {recentDates.length > 0 && (
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <span className="chip">{recentDates.length} {t.schedulePage.days}</span>
+          <span className="chip"><span className="font-mono tabular-nums">{totalGames}</span> {t.common.games}</span>
+          {finishedGames > 0 && (
+            <span className="chip chip-active" style={{ borderColor: "var(--success)", color: "var(--success)", background: "color-mix(in srgb, var(--success) 12%, transparent)" }}>
+              <span className="font-mono tabular-nums">{finishedGames}</span> {t.schedulePage.completed}
             </span>
-            <span className="px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
-              {totalGames} {t.common.games}
+          )}
+          {upcomingGames > 0 && (
+            <span className="chip chip-active">
+              <span className="font-mono tabular-nums">{upcomingGames}</span> {t.common.upcoming}
             </span>
-            {finishedGames > 0 && (
-              <span className="px-2.5 py-1 rounded-full bg-success/15 text-success font-medium">
-                {finishedGames} {t.schedulePage.completed}
-              </span>
-            )}
-            {upcomingGames > 0 && (
-              <span className="px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">
-                {upcomingGames} {t.common.upcoming}
-              </span>
-            )}
-          </div>
-        );
-      })()}
+          )}
+        </div>
+      )}
 
       {/* Date jump */}
       <DateJumper />
 
       {/* Team filter */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <span className="text-xs text-text-secondary font-medium">{t.schedulePage.filterByTeam}</span>
-        <Link
-          href="/schedule"
-          className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
-            !filterTeam ? "bg-accent/20 text-accent border border-accent/30" : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
-          }`}
-        >
+      <div className="mb-6 flex flex-wrap items-center gap-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary/70 mr-2">{t.schedulePage.filterByTeam}</span>
+        <Link href="/schedule" className={`chip ${!filterTeam ? "chip-active" : ""}`}>
           {t.schedulePage.all}
         </Link>
         {teamsList.map((t_team) => (
           <Link
             key={t_team.tricode}
             href={`/schedule?team=${t_team.tricode}`}
-            className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
-              filterTeam === t_team.tricode
-                ? "bg-accent/20 text-accent border border-accent/30"
-                : "bg-bg-card border border-border hover:bg-bg-hover text-text-secondary"
-            }`}
+            className={`chip font-mono ${filterTeam === t_team.tricode ? "chip-active" : ""}`}
           >
             {t_team.tricode}
           </Link>
@@ -134,16 +124,15 @@ export default async function SchedulePage({ searchParams }: PageProps) {
         <div className="space-y-8">
           {recentDates.map(({ dateStr, displayDate, games }) => (
             <div key={dateStr} className="schedule-section">
-              <h2 className="text-sm font-medium text-text-secondary mb-3 sticky top-16 bg-bg-primary py-2 z-10">
-                {displayDate}
-                {" "}
-                <span className="text-xs text-accent font-medium">
-                  {new Date(dateStr).toLocaleDateString("en-US", { weekday: "long" })}
+              <div className="sticky top-16 bg-bg-primary/85 backdrop-blur-md py-2 z-10 mb-3 flex items-center gap-3">
+                <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary">
+                  {displayDate}
+                </h2>
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
+                  {games.length} {t.common.games}
                 </span>
-                <span className="ml-2 text-xs text-text-secondary/60">
-                  ({games.length} {t.common.games})
-                </span>
-              </h2>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {games.map((game) => (
                   <GameCard key={game.gameId} game={game} />
@@ -153,9 +142,12 @@ export default async function SchedulePage({ searchParams }: PageProps) {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-24 text-text-secondary">
-          <p className="text-lg">{t.schedulePage.noGamesFound}{filterTeam ? ` ${filterTeam}` : ""}</p>
-        </div>
+        <EmptyState
+          icon={CalendarX}
+          title={`${t.schedulePage.noGamesFound}${filterTeam ? ` ${filterTeam}` : ""}`}
+          description="Try clearing the team filter or jumping to a different date."
+          action={filterTeam ? { label: "Clear filter", href: "/schedule" } : { label: "Go to today", href: "/" }}
+        />
       )}
     </div>
   );

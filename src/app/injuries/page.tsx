@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { TEAM_META } from "@/lib/teams";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
@@ -100,22 +101,18 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
         {t.common.backToHome}
       </Link>
 
-      <div className="flex items-center justify-between mt-4 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
-            <AlertTriangle size={20} className="text-danger" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">{t.injuriesPage.title}</h1>
-            <p className="text-xs text-text-secondary">
-              {t.injuriesPage.dataSource}{new Date().toLocaleString(locale === "zh" ? "zh-CN" : "en-US", { timeZone: "Asia/Shanghai", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} ({t.common.beijing})
-            </p>
-          </div>
-        </div>
-        {totalInjured > 0 && (
-          <span className="text-sm text-text-secondary">{totalInjured} {t.common.players} &middot; {allTeams.length} {t.common.teams}</span>
-        )}
-      </div>
+      <PageHeader
+        eyebrow="League"
+        icon={AlertTriangle}
+        title={t.injuriesPage.title}
+        subtitle={`${t.injuriesPage.dataSource}${new Date().toLocaleString(locale === "zh" ? "zh-CN" : "en-US", { timeZone: "Asia/Shanghai", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} (${t.common.beijing})`}
+        action={totalInjured > 0 ? (
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">
+            <span className="text-text-primary font-bold tabular-nums">{totalInjured}</span> {t.common.players} · <span className="text-text-primary font-bold tabular-nums">{allTeams.length}</span> {t.common.teams}
+          </span>
+        ) : undefined}
+        className="mt-4"
+      />
 
       {/* Feature 6: Injury status summary */}
       {totalInjured > 0 && (() => {

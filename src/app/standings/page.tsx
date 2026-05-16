@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ListOrdered } from "lucide-react";
 import { TEAM_META } from "@/lib/teams";
 import ExportStandings from "@/components/ExportStandings";
+import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import type { Translations } from "@/locales";
@@ -289,13 +291,13 @@ export default async function StandingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-2xl font-bold">{t.standingsPage.divisionStandings}</h1>
-          <p className="text-sm text-text-secondary">{t.standingsPage.top6Hint}</p>
-        </div>
-        <ExportStandings east={eastTeams} west={westTeams} />
-      </div>
+      <PageHeader
+        eyebrow="League"
+        icon={ListOrdered}
+        title={t.standingsPage.divisionStandings}
+        subtitle={t.standingsPage.top6Hint}
+        action={<ExportStandings east={eastTeams} west={westTeams} />}
+      />
       {/* Conference comparison */}
       {eastTeams.length > 0 && westTeams.length > 0 && (() => {
         const eastBest = eastTeams[0];
@@ -325,16 +327,19 @@ export default async function StandingsPage() {
           </div>
         );
       })()}
-      <div className="flex items-center gap-4 text-xs text-text-secondary mb-6">
+      <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary mb-6">
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent rounded" /> {t.standingsPage.playoff} (1-6)</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent-amber rounded" /> {t.standingsPage.playIn} (7-10)</span>
       </div>
 
       {/* Eastern Conference */}
-      <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-accent rounded-full" />
-        {t.standingsPage.eastConference}
-      </h2>
+      <div className="mb-3 flex items-center gap-3">
+        <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
+          <span className="w-1 h-3 bg-accent rounded-full" />
+          {t.standingsPage.eastConference}
+        </h2>
+        <span className="h-px flex-1 bg-border" />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         {EAST_DIVISIONS.map((div) => (
           <DivisionCard
@@ -349,10 +354,13 @@ export default async function StandingsPage() {
       </div>
 
       {/* Western Conference */}
-      <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-accent rounded-full" />
-        {t.standingsPage.westConference}
-      </h2>
+      <div className="mb-3 flex items-center gap-3">
+        <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
+          <span className="w-1 h-3 bg-accent rounded-full" />
+          {t.standingsPage.westConference}
+        </h2>
+        <span className="h-px flex-1 bg-border" />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
         {WEST_DIVISIONS.map((div) => (
           <DivisionCard
@@ -400,10 +408,13 @@ export default async function StandingsPage() {
       })()}
 
       {/* Full Conference Rankings */}
-      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-accent rounded-full" />
-        {t.standingsPage.fullRankings}
-      </h2>
+      <div className="mb-4 flex items-center gap-3">
+        <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
+          <span className="w-1 h-3 bg-accent-amber rounded-full" />
+          {t.standingsPage.fullRankings}
+        </h2>
+        <span className="h-px flex-1 bg-border" />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ConferenceTable title={t.standingsPage.eastConference} teams={eastTeams} t={t} />
         <ConferenceTable title={t.standingsPage.westConference} teams={westTeams} t={t} />

@@ -7,6 +7,7 @@ import { Heart, Users, User, Copy, Check } from "lucide-react";
 import { getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
 import { useLocale } from "@/components/LocaleProvider";
+import PageHeader from "@/components/PageHeader";
 
 interface PlayerInfo {
   personId: number;
@@ -68,9 +69,31 @@ export default function FavoritesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Heart size={24} className="text-danger" fill="currentColor" />
-        <h1 className="text-2xl font-bold">{t.favoritesPage.title}</h1>
+      <PageHeader eyebrow="You" icon={Heart} title={t.favoritesPage.title} action={
+        hasAny ? (<button
+            onClick={() => {
+              const lines: string[] = ["My NBA Favorites", ""];
+              if (favTeams.length > 0) {
+                lines.push("Teams:");
+                for (const tc of favTeams) {
+                  const t = TEAM_META[tc];
+                  lines.push(t ? `  - ${t.city} ${t.name}` : `  - ${tc}`);
+                }
+                lines.push("");
+              }
+              if (favPlayers.length > 0) {
+                lines.push("Players:");
+                for (const pid of favPlayers) {
+                  const p = playerDetails.get(pid);
+                  lines.push(`  - ${p?.firstName || ""} ${p?.lastName || pid}`);
+                }
+              }
+              navigator.clipboard?.writeText(lines.join("\n"));
+            }}
+            className="chip cursor-pointer"
+          >Copy list</button>) : undefined
+      } />
+      <div className="hidden">{/* legacy spacer */}
         {hasAny && (
           <button
             onClick={() => {
