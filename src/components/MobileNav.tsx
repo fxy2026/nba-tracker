@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -40,14 +40,16 @@ export default function MobileNav() {
         { href: "/streaks", label: "Streaks", icon: Flame },
         { href: "/power-rankings", label: "Power", icon: Crown },
         { href: "/tier-list", label: "Tiers", icon: Layers },
+        { href: "/divisions", label: "Divisions", icon: MapIcon },
         { href: "/awards-race", label: "Awards", icon: Award },
         { href: "/game-predictor", label: "Predictor", icon: Zap },
         { href: "/scoring-output", label: "Output", icon: Shield },
         { href: "/home-vs-road", label: "Splits", icon: Home },
+        { href: "/momentum", label: "Momentum", icon: TrendingUp },
+        { href: "/clutch-teams", label: "Clutch", icon: Target },
         { href: "/rivalries", label: "Rivalries", icon: Swords },
         { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
         { href: "/h2h", label: t.nav.h2h, icon: Swords },
-        { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
       ],
     },
     {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -96,6 +96,9 @@ export default function Navbar() {
     { href: "/scoring-output", label: "Scoring Output", icon: Shield },
     { href: "/rivalries", label: "Rivalries", icon: Swords },
     { href: "/back-to-back", label: "Back-to-Backs", icon: Repeat },
+    { href: "/divisions", label: "Divisions", icon: MapIcon },
+    { href: "/clutch-teams", label: "Clutch Teams", icon: Target },
+    { href: "/momentum", label: "Momentum", icon: TrendingUp },
     { href: "/quiz", label: "NBA Quiz", icon: HelpCircle },
     { href: "/glossary", label: "Glossary", icon: Book },
     { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },

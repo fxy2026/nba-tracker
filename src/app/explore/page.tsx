@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, type LucideIcon } from "lucide-react";
+import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 
 export const metadata: Metadata = {
@@ -44,9 +44,12 @@ const CATEGORIES: FeatureCategory[] = [
     features: [
       { href: "/standings", label: "Standings", description: "Conference standings with W-L records", icon: ListOrdered },
       { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-6, 7-10 play-in, 11-15 lottery", icon: Trophy },
+      { href: "/divisions", label: "Divisions", description: "Six division mini-standings within each conference", icon: MapIcon },
       { href: "/power-rankings", label: "Power Rankings", description: "Composite team strength · 1-30", icon: Crown },
       { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
       { href: "/streaks", label: "Streaks", description: "Hottest and coldest teams · L10 form dots", icon: Flame },
+      { href: "/momentum", label: "Momentum", description: "Teams trending up or down · L5 vs prior 10", icon: TrendingUp },
+      { href: "/clutch-teams", label: "Clutch Teams", description: "Records in close games and overtime", icon: Target },
       { href: "/scoring-output", label: "Scoring Output", description: "Offense, defense, and net point differential", icon: Shield },
       { href: "/home-vs-road", label: "Home vs Road", description: "Best home fortresses and road warriors", icon: Home },
       { href: "/rivalries", label: "Rivalries", description: "Most-played and tightest matchups", icon: Swords },
