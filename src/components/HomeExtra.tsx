@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ScheduleGame } from "@/lib/api";
-import PlayoffBracketV2 from "./PlayoffBracketV2";
+import BracketTree from "./BracketTree";
 import RecentHighlights from "./RecentHighlights";
 
 export default function HomeExtra() {
@@ -42,7 +42,7 @@ export default function HomeExtra() {
 
   return (
     <div className="mt-10 space-y-10 content-visibility-auto" style={{ containIntrinsicSize: "auto 400px" }}>
-      {data.playoffs.length > 0 && <PlayoffBracketV2 games={data.playoffs} />}
+      {data.playoffs.length > 0 && <BracketTree games={data.playoffs} />}
       {data.recent.length > 0 && <RecentHighlights games={data.recent} />}
     </div>
   );
