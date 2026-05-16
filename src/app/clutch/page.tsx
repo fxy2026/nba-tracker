@@ -102,36 +102,38 @@ export default function ClutchPage() {
       {!loading && overviewStats && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="glass-tile p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topScorer}</p>
-            <p className="text-sm font-bold text-accent mt-1">{overviewStats.topScorer.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary">{overviewStats.topScorer.PTS?.toFixed(1)} PPG</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.topScorer}</p>
+            <p className="text-sm font-bold text-accent-amber mt-1">{overviewStats.topScorer.PLAYER?.split(" ").pop()}</p>
+            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.topScorer.PTS?.toFixed(1)} <span className="text-[9px]">PPG</span></p>
           </div>
           <div className="glass-tile p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.topPlaymaker}</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.topPlaymaker}</p>
             <p className="text-sm font-bold text-accent mt-1">{overviewStats.topAssist.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary">{overviewStats.topAssist.AST?.toFixed(1)} APG</p>
+            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.topAssist.AST?.toFixed(1)} <span className="text-[9px]">APG</span></p>
           </div>
           <div className="glass-tile p-3 text-center">
-            <p className="text-[10px] text-text-secondary uppercase">{t.clutchPage.mostGames}</p>
-            <p className="text-sm font-bold text-accent mt-1">{overviewStats.mostGP.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary">{overviewStats.mostGP.GP}{t.clutchPage.gp}</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.mostGames}</p>
+            <p className="text-sm font-bold text-text-primary mt-1">{overviewStats.mostGP.PLAYER?.split(" ").pop()}</p>
+            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.mostGP.GP}{t.clutchPage.gp}</p>
           </div>
         </div>
       )}
 
-      {/* Category tabs */}
+      {/* Category tabs — glass pill bar */}
       <div className="flex flex-wrap gap-1 mb-4">
-        {categories.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => setCategory(c.key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              category === c.key ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+        <div className="glass-tile flex flex-wrap overflow-hidden p-1">
+          {categories.map((c) => (
+            <button
+              key={c.key}
+              onClick={() => setCategory(c.key)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                category === c.key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && (
@@ -164,13 +166,13 @@ export default function ClutchPage() {
         <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-text-secondary text-xs">
-                  <th className="text-center py-3 px-2 w-10">#</th>
+              <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+                <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
+                  <th className="text-center py-3 px-2 w-12">Rank</th>
                   <th className="text-left py-3 px-3">Player</th>
                   <th className="text-center py-3 px-2">Team</th>
                   <th className="text-center py-3 px-2">GP</th>
-                  <th className="text-center py-3 px-2 text-accent font-bold">{categories.find(c => c.key === category)?.label}</th>
+                  <th className="text-center py-3 px-2 text-accent-amber font-bold">{categories.find(c => c.key === category)?.label}</th>
                   <th className="text-center py-3 px-2">PTS</th>
                   <th className="text-center py-3 px-2">AST</th>
                   <th className="text-center py-3 px-2">STL</th>
@@ -181,9 +183,17 @@ export default function ClutchPage() {
                   const statVal = getStatVal(p);
                   const barPct = topVal > 0 ? (statVal / topVal) * 100 : 0;
                   return (
-                  <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent/5" : ""}`}>
-                    <td className="text-center py-2.5 px-2 text-xs font-medium">
-                      {i === 0 ? <span className="text-accent-amber">&#9733;</span> : i === 1 ? <span className="text-text-secondary">&#9733;</span> : i === 2 ? <span className="text-[#CD7F32]">&#9733;</span> : <span className="text-text-secondary">{i + 1}</span>}
+                  <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent-amber/[0.03]" : ""}`}>
+                    <td className="text-center py-2.5 px-2">
+                      {i === 0 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700] font-bold font-mono tabular-nums text-[11px]">1</span>
+                      ) : i === 1 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0] font-bold font-mono tabular-nums text-[11px]">2</span>
+                      ) : i === 2 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32] font-bold font-mono tabular-nums text-[11px]">3</span>
+                      ) : (
+                        <span className="text-text-secondary font-mono tabular-nums text-xs">{i + 1}</span>
+                      )}
                     </td>
                     <td className="py-2.5 px-3">
                       <Link href={`/player/${p.PLAYER_ID}`} className="flex items-center gap-2 hover:text-accent transition-colors">
