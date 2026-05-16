@@ -2,6 +2,16 @@
 // Court: x = 0-100 along 94ft, y = 0-100 along 50ft
 // Basket at approximately (5.59, 50) for near-side
 
+import {
+  BASKET_PCT_X,
+  COURT_LENGTH_FT,
+  COURT_WIDTH_FT,
+  RESTRICTED_AREA_FT,
+  THREE_PT_DISTANCE_FT,
+  CORNER_3_DISTANCE_FT,
+  CORNER_3_DEPTH_FT,
+} from "./court";
+
 export type ShotZone =
   | "Restricted Area"      // within 4ft of basket
   | "Paint"                // paint (non-RA), inside the key
@@ -21,36 +31,23 @@ export interface ZoneStats {
   pct: number; // 0-100
 }
 
-// Basket position in percentage coordinates
-const BASKET_X = 5.59;
+// Basket Y in percentage coords (sideline center)
 const BASKET_Y = 50;
-
-// Court dimensions: 94ft x 50ft
-const COURT_LENGTH = 94;
-const COURT_WIDTH = 50;
 
 // Convert percentage coords to feet from basket
 function distFtFromBasket(x: number, y: number): number {
-  const dx = ((x - BASKET_X) / 100) * COURT_LENGTH;
-  const dy = ((y - BASKET_Y) / 100) * COURT_WIDTH;
+  const dx = ((x - BASKET_PCT_X) / 100) * COURT_LENGTH_FT;
+  const dy = ((y - BASKET_Y) / 100) * COURT_WIDTH_FT;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-// Thresholds (feet)
-const RESTRICTED_FT = 4;
-const THREE_PT_FT = 23.75;
-const CORNER_3_FT = 22;
-
-// Paint: extends to free-throw line (15ft from basket)
+// Paint extends to free-throw line (15ft from basket).
 const PAINT_DEPTH_FT = 15;
-
-// Corner 3 extends 14ft from baseline. Basket is 5.25ft from baseline → 8.75ft from basket
-const CORNER_DEPTH_FT = 14 - 5.25; // = 8.75ft from basket
 
 // Angle from basket: 0° = straight ahead, 90° = sideline
 function angleDeg(x: number, y: number): number {
-  const dx = ((x - BASKET_X) / 100) * COURT_LENGTH;
-  const dy = ((y - BASKET_Y) / 100) * COURT_WIDTH;
+  const dx = ((x - BASKET_PCT_X) / 100) * COURT_LENGTH_FT;
+  const dy = ((y - BASKET_Y) / 100) * COURT_WIDTH_FT;
   if (dx === 0 && dy === 0) return 0;
   return Math.atan2(Math.abs(dy), dx) * (180 / Math.PI);
 }
@@ -58,11 +55,11 @@ function angleDeg(x: number, y: number): number {
 export function classifyShotZone(shot: { x: number; y: number; shotDistance: number }): ShotZone {
   const dist = shot.shotDistance > 0 ? shot.shotDistance : distFtFromBasket(shot.x, shot.y);
   const isLeft = shot.y < BASKET_Y;
-  const baselineDist = ((shot.x - BASKET_X) / 100) * COURT_LENGTH; // feet from basket along court
-  const lateralDist = Math.abs(((shot.y - BASKET_Y) / 100) * COURT_WIDTH); // feet from center
+  const baselineDist = ((shot.x - BASKET_PCT_X) / 100) * COURT_LENGTH_FT; // feet from basket along court
+  const lateralDist = Math.abs(((shot.y - BASKET_Y) / 100) * COURT_WIDTH_FT); // feet from center
 
   // 1. Restricted Area (within 4ft)
-  if (dist <= RESTRICTED_FT) {
+  if (dist <= RESTRICTED_AREA_FT) {
     return "Restricted Area";
   }
 
@@ -73,12 +70,12 @@ export function classifyShotZone(shot: { x: number; y: number; shotDistance: num
 
   // 3. Three-point territory
   // Corner 3: close to baseline AND beyond corner 3 distance
-  const isCornerArea = baselineDist <= CORNER_DEPTH_FT;
-  if (isCornerArea && dist >= CORNER_3_FT) {
+  const isCornerArea = baselineDist <= CORNER_3_DEPTH_FT;
+  if (isCornerArea && dist >= CORNER_3_DISTANCE_FT) {
     return isLeft ? "Corner 3 (Left)" : "Corner 3 (Right)";
   }
   // Above-break 3: beyond the standard 3pt arc
-  if (dist > THREE_PT_FT) {
+  if (dist > THREE_PT_DISTANCE_FT) {
     const angle = angleDeg(shot.x, shot.y);
     if (angle >= 25) return isLeft ? "Above Break 3 (Left)" : "Above Break 3 (Right)";
     return "Above Break 3 (Center)";

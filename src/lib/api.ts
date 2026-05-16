@@ -226,10 +226,24 @@ export async function getGamesByDate(dateStr: string): Promise<ScheduleGame[]> {
 }
 
 // Box score / play-by-play in-memory cache.
-// Final games (gameStatus === 3) never change — pinned indefinitely.
+// Final games (gameStatus === 3) never change — pinned indefinitely (up to LRU cap).
 // Live games revalidated by Next's fetch cache TTL (30s / 60s).
+// Cap prevents unbounded growth on long-running lambdas; LRU via Map insertion order.
+const GAME_CACHE_MAX = 200;
 const boxScoreCache = new Map<string, BoxScore>();
 const pbpCache = new Map<string, ShotAction[]>();
+
+function lruSet<V>(cache: Map<string, V>, key: string, value: V): void {
+  // Refresh insertion order so this entry is most-recently used.
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, value);
+  // Evict oldest if over cap.
+  while (cache.size > GAME_CACHE_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
 
 export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   const cached = boxScoreCache.get(gameId);
@@ -241,7 +255,7 @@ export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   if (!res.ok) return cached ?? null;
   const data = await res.json();
   const game: BoxScore | null = data.game || null;
-  if (game) boxScoreCache.set(gameId, game);
+  if (game) lruSet(boxScoreCache, gameId, game);
   return game;
 }
 
@@ -273,7 +287,7 @@ export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
       shotDistance: a.shotDistance,
       description: a.description,
     }));
-  pbpCache.set(gameId, shots);
+  lruSet(pbpCache, gameId, shots);
   return shots;
 }
 

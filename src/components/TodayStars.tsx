@@ -47,23 +47,30 @@ export default function TodayStars() {
         const allStars: StarPlayer[] = [];
         for (const box of boxes) {
           if (!box) continue;
-          const allPlayers = [...(box.homeTeam?.players || []), ...(box.awayTeam?.players || [])];
+          // Track team alongside the best player so we don't need a follow-up .includes() lookup.
           let best = null;
           let bestPts = 0;
-          for (const p of allPlayers) {
-            if (p.played !== "1") continue;
-            const pts = p.statistics?.points || 0;
-            if (pts > bestPts) { bestPts = pts; best = p; }
-          }
-          if (best) {
-            const team = box.homeTeam.players.includes(best) ? box.homeTeam : box.awayTeam;
+          let bestTeam = null;
+          const scan = (players: { played: string; statistics?: { points?: number } }[] | undefined, team: { teamTricode: string }) => {
+            if (!players) return;
+            for (const p of players) {
+              if (p.played !== "1") continue;
+              const pts = p.statistics?.points || 0;
+              if (pts > bestPts) { bestPts = pts; best = p; bestTeam = team; }
+            }
+          };
+          scan(box.homeTeam?.players, box.homeTeam);
+          scan(box.awayTeam?.players, box.awayTeam);
+          if (best && bestTeam) {
+            const b = best as { personId: number; nameI?: string; name?: string; statistics: { points: number; reboundsTotal: number; assists: number } };
+            const team = bestTeam as { teamTricode: string };
             allStars.push({
-              personId: best.personId,
-              name: best.nameI || best.name,
+              personId: b.personId,
+              name: b.nameI || b.name || "",
               teamTricode: team.teamTricode,
-              pts: best.statistics.points,
-              reb: best.statistics.reboundsTotal,
-              ast: best.statistics.assists,
+              pts: b.statistics.points,
+              reb: b.statistics.reboundsTotal,
+              ast: b.statistics.assists,
               gameId: box.gameId,
             });
           }

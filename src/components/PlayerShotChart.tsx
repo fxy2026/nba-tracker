@@ -4,6 +4,17 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { getPlayerHeadshotUrl, type ShotAction, type PlayerInfo } from "@/lib/api";
+import {
+  BASKET_PCT_X,
+  FT_LINE_PCT_X,
+  PAINT_WIDTH_PCT,
+  CORNER_3_PCT_Y,
+  CORNER_3_EXT_PCT_X,
+  THREE_PT_ARC_PCT,
+  FT_CIRCLE_FT,
+  RESTRICTED_AREA_FT,
+  COURT_WIDTH_FT,
+} from "@/lib/court";
 import { X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -14,16 +25,17 @@ interface Props {
   playerInfo?: PlayerInfo | null;
 }
 
-/* ── Court constants (computed once) ── */
+/* ── Court constants (computed once, mapped from shared lib/court NBA facts) ── */
 const CW_TOTAL = 370, CH_TOTAL = 700, PAD = 20;
 const CW = CW_TOTAL - PAD * 2, CH = CH_TOTAL - PAD * 2;
 const CCX = PAD + CW / 2, MID_Y = PAD + CH / 2;
 const toSvgX = (pctY: number) => PAD + (pctY / 100) * CW;
 const toSvgY = (pctX: number) => PAD + (pctX / 100) * CH;
-const BASKET_X = 5.59, FT_X = 19.15, PAINT_W = 32;
-const FT_R = (6 / 50) * CW, RESTRICTED_R = (4 / 50) * CW;
-const CENTER_R = (6 / 50) * CW, RIM_R = 5;
-const C3_Y = 6.3, C3_EXT_X = 14.89;
+const BASKET_X = BASKET_PCT_X, FT_X = FT_LINE_PCT_X, PAINT_W = PAINT_WIDTH_PCT;
+const FT_R = (FT_CIRCLE_FT / COURT_WIDTH_FT) * CW;
+const RESTRICTED_R = (RESTRICTED_AREA_FT / COURT_WIDTH_FT) * CW;
+const CENTER_R = (FT_CIRCLE_FT / COURT_WIDTH_FT) * CW, RIM_R = 5;
+const C3_Y = CORNER_3_PCT_Y, C3_EXT_X = CORNER_3_EXT_PCT_X;
 
 /* Static court SVG elements – never re-rendered */
 function CourtLines() {
@@ -35,7 +47,7 @@ function CourtLines() {
     const paintHW = (PAINT_W / 100) * CW / 2;
     const c3x1 = toSvgX(C3_Y), c3x2 = toSvgX(100 - C3_Y);
     const c3y = toSvgY(top ? C3_EXT_X : 100 - C3_EXT_X);
-    const arcY = toSvgY(top ? BASKET_X + 25.26 : 100 - BASKET_X - 25.26);
+    const arcY = toSvgY(top ? BASKET_X + THREE_PT_ARC_PCT : 100 - BASKET_X - THREE_PT_ARC_PCT);
     const bbY = top ? basketY - 5 : basketY + 5;
     const paintTop = top ? PAD : ftLineY;
     const paintH = top ? ftLineY - PAD : PAD + CH - ftLineY;

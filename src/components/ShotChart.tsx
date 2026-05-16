@@ -2,6 +2,17 @@
 
 import { useState, useMemo, memo } from "react";
 import type { ShotAction } from "@/lib/api";
+import {
+  BASKET_PCT_X,
+  FT_LINE_PCT_X,
+  PAINT_WIDTH_PCT,
+  CORNER_3_PCT_Y,
+  CORNER_3_EXT_PCT_X,
+  THREE_PT_ARC_PCT,
+  FT_CIRCLE_FT,
+  RESTRICTED_AREA_FT,
+  COURT_WIDTH_FT,
+} from "@/lib/court";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
@@ -65,18 +76,17 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
   const toSvgX = (pctY: number) => pad + (pctY / 100) * cw;
   const toSvgY = (pctX: number) => pad + (pctX / 100) * ch;
 
-  // Key positions in API percentage coordinates
-  const basketPctX = 5.59;           // basket center from baseline
-  const ftLinePctX = 19.15;          // free throw line = 19ft from baseline / 94 * 100
-  const paintWidthPct = 32;          // paint is 16ft wide / 50ft * 100
-  const ftCircleR = (6 / 50) * cw;  // 6ft radius in SVG
-  const restrictedR = (4 / 50) * cw; // 4ft restricted arc
-  const centerCircleR = (6 / 50) * cw;
+  // Key positions in API percentage coordinates (sourced from lib/court)
+  const basketPctX = BASKET_PCT_X;
+  const ftLinePctX = FT_LINE_PCT_X;
+  const paintWidthPct = PAINT_WIDTH_PCT;
+  const ftCircleR = (FT_CIRCLE_FT / COURT_WIDTH_FT) * cw;
+  const restrictedR = (RESTRICTED_AREA_FT / COURT_WIDTH_FT) * cw;
+  const centerCircleR = (FT_CIRCLE_FT / COURT_WIDTH_FT) * cw;
   const rimR = 5;
 
-  // 3-point line: 23.75ft from basket center, corner 3 at 22ft, corner extends 14ft from baseline
-  const corner3PctY = 6.3;          // 3.15ft from sideline / 50 * 100
-  const corner3ExtPctX = 14.89;     // 14ft from baseline / 94 * 100
+  const corner3PctY = CORNER_3_PCT_Y;
+  const corner3ExtPctX = CORNER_3_EXT_PCT_X;
 
   return (
     <div>
@@ -141,7 +151,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             const corner3X1 = toSvgX(corner3PctY);
             const corner3X2 = toSvgX(100 - corner3PctY);
             const corner3Y = toSvgY(corner3ExtPctX);
-            const arcPeakY = toSvgY(basketPctX + 25.26); // 23.75ft/94*100 = 25.26%
+            const arcPeakY = toSvgY(basketPctX + THREE_PT_ARC_PCT);
             return (
               <>
                 <rect x={svgCx - paintHalfW} y={pad} width={paintHalfW * 2} height={ftLineY - pad} fill="none" stroke="#333" strokeWidth="1.5" />
@@ -162,7 +172,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             const corner3X1 = toSvgX(corner3PctY);
             const corner3X2 = toSvgX(100 - corner3PctY);
             const corner3Y = toSvgY(100 - corner3ExtPctX);
-            const arcPeakY = toSvgY(100 - basketPctX - 25.26);
+            const arcPeakY = toSvgY(100 - basketPctX - THREE_PT_ARC_PCT);
             return (
               <>
                 <rect x={svgCx - paintHalfW} y={ftLineY} width={paintHalfW * 2} height={pad + ch - ftLineY} fill="none" stroke="#333" strokeWidth="1.5" />

@@ -52,9 +52,20 @@ export default async function TeamPage({ params }: PageProps) {
   let playoffWins = 0, playoffLosses = 0;
   const recentGames: { gameId: string; date: string; opponent: string; opponentId: number; score: string; won: boolean; home: boolean }[] = [];
   const upcomingGames: { gameId: string; date: string; opponent: string; opponentId: number; home: boolean }[] = [];
+  // Build league-wide W/L map in the same pass (used later for conference ranking).
+  const teamRecordMap: Record<string, { w: number; l: number }> = {};
 
   for (const gd of schedule) {
     for (const g of gd.games) {
+      if (g.gameStatus === 3 && g.gameId.startsWith("002")) {
+        const ht = g.homeTeam.teamTricode;
+        const at = g.awayTeam.teamTricode;
+        if (!teamRecordMap[ht]) teamRecordMap[ht] = { w: 0, l: 0 };
+        if (!teamRecordMap[at]) teamRecordMap[at] = { w: 0, l: 0 };
+        if (g.homeTeam.score > g.awayTeam.score) { teamRecordMap[ht].w++; teamRecordMap[at].l++; }
+        else { teamRecordMap[at].w++; teamRecordMap[ht].l++; }
+      }
+
       const isHome = g.homeTeam.teamTricode === team.tricode;
       const isAway = g.awayTeam.teamTricode === team.tricode;
       if (!isHome && !isAway) continue;
@@ -159,23 +170,9 @@ export default async function TeamPage({ params }: PageProps) {
 
   const winPct = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : "0.0";
 
-  // Compute conference ranking by sorting all conference teams by win%
+  // Compute conference ranking by sorting all conference teams by win% (uses
+  // teamRecordMap built in the schedule pass above — no extra iteration).
   const conferenceTeams = Object.values(TEAM_META).filter((tm) => tm.conference === team.conference);
-  // Build a map of tricode -> {wins, losses} for all teams
-  const teamRecordMap: Record<string, { w: number; l: number }> = {};
-  for (const gd of schedule) {
-    for (const g of gd.games) {
-      if (g.gameStatus !== 3) continue;
-      // Only count regular season games for standings
-      if (!g.gameId.startsWith("002")) continue;
-      const ht = g.homeTeam.teamTricode;
-      const at = g.awayTeam.teamTricode;
-      if (!teamRecordMap[ht]) teamRecordMap[ht] = { w: 0, l: 0 };
-      if (!teamRecordMap[at]) teamRecordMap[at] = { w: 0, l: 0 };
-      if (g.homeTeam.score > g.awayTeam.score) { teamRecordMap[ht].w++; teamRecordMap[at].l++; }
-      else { teamRecordMap[at].w++; teamRecordMap[ht].l++; }
-    }
-  }
   const conferenceRanking = conferenceTeams
     .map((tm) => {
       const rec = teamRecordMap[tm.tricode] || { w: 0, l: 0 };

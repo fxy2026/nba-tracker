@@ -10,42 +10,35 @@ export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarCh
   const cx = 150, cy = 150, r = 110;
   const n = stats.length;
 
-  const getPoint = (i: number, value: number, max: number) => {
+  // Precompute trig once per axis — used by rings, axis lines, dots, labels.
+  const cos: number[] = new Array(n);
+  const sin: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
     const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    const ratio = Math.min(value / max, 1);
-    return {
-      x: cx + r * ratio * Math.cos(angle),
-      y: cy + r * ratio * Math.sin(angle),
-    };
-  };
+    cos[i] = Math.cos(angle);
+    sin[i] = Math.sin(angle);
+  }
 
-  const getLabelPoint = (i: number) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    return {
-      x: cx + (r + 22) * Math.cos(angle),
-      y: cy + (r + 22) * Math.sin(angle),
-    };
-  };
-
-  // Grid rings
   const rings = [0.25, 0.5, 0.75, 1];
   const gridRings = rings.map((scale) => {
-    const points = Array.from({ length: n }, (_, i) => {
-      const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-      return `${cx + r * scale * Math.cos(angle)},${cy + r * scale * Math.sin(angle)}`;
-    });
-    return points.join(" ");
+    const parts: string[] = [];
+    for (let i = 0; i < n; i++) parts.push(`${cx + r * scale * cos[i]},${cy + r * scale * sin[i]}`);
+    return parts.join(" ");
   });
 
-  // Axis lines
-  const axes = Array.from({ length: n }, (_, i) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    return { x2: cx + r * Math.cos(angle), y2: cy + r * Math.sin(angle) };
-  });
-
-  // Data polygons
-  const homePoints = stats.map((s, i) => getPoint(i, s.home, s.max));
-  const awayPoints = stats.map((s, i) => getPoint(i, s.away, s.max));
+  // Axis lines + data dots + label positions, all derived from cos/sin arrays.
+  const axes: { x2: number; y2: number }[] = new Array(n);
+  const homePoints: { x: number; y: number }[] = new Array(n);
+  const awayPoints: { x: number; y: number }[] = new Array(n);
+  const labelPoints: { x: number; y: number }[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    axes[i] = { x2: cx + r * cos[i], y2: cy + r * sin[i] };
+    const hRatio = Math.min(stats[i].home / stats[i].max, 1);
+    const aRatio = Math.min(stats[i].away / stats[i].max, 1);
+    homePoints[i] = { x: cx + r * hRatio * cos[i], y: cy + r * hRatio * sin[i] };
+    awayPoints[i] = { x: cx + r * aRatio * cos[i], y: cy + r * aRatio * sin[i] };
+    labelPoints[i] = { x: cx + (r + 22) * cos[i], y: cy + (r + 22) * sin[i] };
+  }
   const homePolygon = homePoints.map((p) => `${p.x},${p.y}`).join(" ");
   const awayPolygon = awayPoints.map((p) => `${p.x},${p.y}`).join(" ");
 
@@ -72,15 +65,12 @@ export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarCh
           <circle key={`a${i}`} cx={p.x} cy={p.y} r={3} fill="var(--success)" />
         ))}
         {/* Labels */}
-        {stats.map((s, i) => {
-          const lp = getLabelPoint(i);
-          return (
-            <text key={i} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="central"
-              fill="var(--text-secondary)" fontSize={10} fontWeight={500}>
-              {s.label}
-            </text>
-          );
-        })}
+        {stats.map((s, i) => (
+          <text key={i} x={labelPoints[i].x} y={labelPoints[i].y} textAnchor="middle" dominantBaseline="central"
+            fill="var(--text-secondary)" fontSize={10} fontWeight={500}>
+            {s.label}
+          </text>
+        ))}
       </svg>
       {/* Legend */}
       <div className="flex items-center justify-center gap-6 mt-2 text-xs">

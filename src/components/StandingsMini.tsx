@@ -47,8 +47,16 @@ export default function StandingsMini() {
       .then((r) => r.json())
       .then((json) => {
         const teams: TeamRecord[] = json.data || [];
-        setEast(teams.filter((t) => TEAM_META[t.tricode]?.conference === "East").slice(0, 6));
-        setWest(teams.filter((t) => TEAM_META[t.tricode]?.conference === "West").slice(0, 6));
+        const eastBuf: TeamRecord[] = [];
+        const westBuf: TeamRecord[] = [];
+        for (const t of teams) {
+          const conf = TEAM_META[t.tricode]?.conference;
+          if (conf === "East" && eastBuf.length < 6) eastBuf.push(t);
+          else if (conf === "West" && westBuf.length < 6) westBuf.push(t);
+          if (eastBuf.length === 6 && westBuf.length === 6) break;
+        }
+        setEast(eastBuf);
+        setWest(westBuf);
       })
       .catch(() => {})
       .finally(() => setLoading(false));

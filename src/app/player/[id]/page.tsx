@@ -424,19 +424,18 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Similar Players */}
         {player.pts > 0 && (() => {
-          // Multi-stat similarity: weighted distance across PTS, REB, AST
-          const similar = allPlayers
-            .filter((p) => p.personId !== personId && p.pts > 0 && p.position === player.position)
-            .map((p) => ({
-              ...p,
-              distance: Math.sqrt(
-                Math.pow(p.pts - player.pts, 2) +
-                Math.pow((p.reb - player.reb) * 1.5, 2) +
-                Math.pow((p.ast - player.ast) * 1.5, 2)
-              ),
-            }))
-            .sort((a, b) => a.distance - b.distance)
-            .slice(0, 5);
+          // Multi-stat similarity: weighted distance across PTS, REB, AST.
+          // Single pass: filter + distance, then sort by distance (no spread per row).
+          const candidates: { p: typeof allPlayers[number]; distance: number }[] = [];
+          for (const p of allPlayers) {
+            if (p.personId === personId || p.pts <= 0 || p.position !== player.position) continue;
+            const dPts = p.pts - player.pts;
+            const dReb = (p.reb - player.reb) * 1.5;
+            const dAst = (p.ast - player.ast) * 1.5;
+            candidates.push({ p, distance: Math.sqrt(dPts * dPts + dReb * dReb + dAst * dAst) });
+          }
+          candidates.sort((a, b) => a.distance - b.distance);
+          const similar = candidates.slice(0, 5);
           if (similar.length === 0) return null;
           return (
             <div className="p-6 border-t border-border">
@@ -445,7 +444,7 @@ export default async function PlayerPage({ params }: PageProps) {
                 {t.playerDetail.similarPlayers}
               </h2>
               <div className="space-y-2">
-                {similar.map((s) => (
+                {similar.map(({ p: s, distance }) => (
                   <Link key={s.personId} href={`/player/${s.personId}`}
                     className="flex items-center gap-3 px-3 py-2.5 bg-bg-secondary rounded-lg hover:bg-bg-hover transition-colors group">
                     <PlayerHeadshot personId={s.personId} name={`${s.firstName} ${s.lastName}`} size={28} />
@@ -454,7 +453,7 @@ export default async function PlayerPage({ params }: PageProps) {
                     <span className="text-xs text-accent font-bold">{s.pts}</span>
                     <span className="text-xs text-text-secondary">{s.reb}</span>
                     <span className="text-xs text-text-secondary">{s.ast}</span>
-                    <span className="text-[9px] text-text-secondary/50 tabular-nums w-10 text-right">Δ{s.distance.toFixed(1)}</span>
+                    <span className="text-[9px] text-text-secondary/50 tabular-nums w-10 text-right">Δ{distance.toFixed(1)}</span>
                   </Link>
                 ))}
               </div>
