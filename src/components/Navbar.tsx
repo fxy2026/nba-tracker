@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -76,7 +76,12 @@ export default function Navbar() {
   const moreLinks = useMemo(() => [
     { href: "/streaks", label: "Streaks", icon: Flame },
     { href: "/power-rankings", label: "Power Rankings", icon: Crown },
+    { href: "/tier-list", label: "Tier List", icon: Layers },
     { href: "/awards-race", label: "Awards Race", icon: Award },
+    { href: "/best-games", label: "Best Games", icon: Flame },
+    { href: "/game-predictor", label: "Game Predictor", icon: Zap },
+    { href: "/all-time-leaders", label: "All-Time Leaders", icon: Crown },
+    { href: "/milestones", label: "Milestones", icon: TrendingUp },
     { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
     { href: "/h2h", label: t.nav.h2h, icon: Swords },
     { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },

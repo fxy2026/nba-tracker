@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -33,17 +33,27 @@ export default function MobileNav() {
       items: [
         { href: "/streaks", label: "Streaks", icon: Flame },
         { href: "/power-rankings", label: "Power", icon: Crown },
+        { href: "/tier-list", label: "Tiers", icon: Layers },
         { href: "/awards-race", label: "Awards", icon: Award },
+        { href: "/game-predictor", label: "Predictor", icon: Zap },
         { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
         { href: "/h2h", label: t.nav.h2h, icon: Swords },
         { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
       ],
     },
     {
+      title: "History",
+      items: [
+        { href: "/best-games", label: "Best Games", icon: Flame },
+        { href: "/all-time-leaders", label: "All-Time", icon: Crown },
+        { href: "/milestones", label: "Milestones", icon: TrendingUp },
+        { href: "/history", label: t.nav.champions, icon: History },
+      ],
+    },
+    {
       title: t.nav.more,
       items: [
         { href: "/favorites", label: t.nav.favorites, icon: Heart },
-        { href: "/history", label: t.nav.champions, icon: History },
       ],
     },
   ], [t]);
