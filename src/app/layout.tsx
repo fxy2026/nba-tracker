@@ -108,7 +108,7 @@ export default async function RootLayout({
             <div className="fixed inset-x-0 top-0 h-[70vh] bg-mesh-aurora pointer-events-none -z-10" />
             <ViewTransition>{children}</ViewTransition>
           </main>
-          <footer className="border-t border-border py-6 text-center text-xs text-text-secondary hidden sm:block">
+          <footer className="border-t border-border py-8 text-center text-xs text-text-secondary hidden sm:block relative">
             <span>{t.footer.madeWith}</span>
             <a href="https://www.xpy.me" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover transition-colors">FXY</a>
             <span> &middot; {t.footer.dataFrom}</span>
@@ -116,9 +116,9 @@ export default async function RootLayout({
             <span className="text-text-secondary/50 text-[10px]">
               {t.footer.openSource}<a href="https://github.com/fxy2026/nba-tracker" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">{t.footer.github}</a>
               {" "}&middot;{" "}
-              {t.footer.shortcuts}<kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">←→</kbd>{t.footer.dates}
-              {" "}<kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">⌘K</kbd>{t.footer.searchKey}
-              {" "}<kbd className="px-1 py-0.5 bg-bg-card border border-border rounded text-[9px]">T</kbd>{t.footer.top}
+              {t.footer.shortcuts}<kbd className="px-1.5 py-0.5 bg-bg-card/70 backdrop-blur-md border border-border rounded text-[9px] font-mono uppercase">←→</kbd>{t.footer.dates}
+              {" "}<kbd className="px-1.5 py-0.5 bg-bg-card/70 backdrop-blur-md border border-border rounded text-[9px] font-mono uppercase">⌘K</kbd>{t.footer.searchKey}
+              {" "}<kbd className="px-1.5 py-0.5 bg-bg-card/70 backdrop-blur-md border border-border rounded text-[9px] font-mono uppercase">T</kbd>{t.footer.top}
             </span>
           </footer>
           <MobileNav />

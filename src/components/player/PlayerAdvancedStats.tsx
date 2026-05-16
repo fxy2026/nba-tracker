@@ -65,7 +65,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
 
   if (loading) {
     return (
-      <div className="h-20 bg-bg-secondary rounded-lg skeleton-shimmer" />
+      <div className="h-20 bg-bg-secondary/60 rounded-lg skeleton-shimmer" />
     );
   }
 
@@ -82,7 +82,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.TS_PCT != null && (
-          <div className="bg-bg-secondary rounded-lg p-3 text-center">
+          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.tsPct}</p>
             <p className="text-xl font-bold mt-1 text-accent">{(stats.TS_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.trueShooting}</p>
@@ -91,7 +91,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
           </div>
         )}
         {stats.EFG_PCT != null && (
-          <div className="bg-bg-secondary rounded-lg p-3 text-center">
+          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.efgPct}</p>
             <p className="text-xl font-bold mt-1 text-text-primary">{(stats.EFG_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.effectiveFg}</p>
@@ -99,7 +99,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
           </div>
         )}
         {stats.USG_PCT != null && (
-          <div className="bg-bg-secondary rounded-lg p-3 text-center">
+          <div className="bg-bg-secondary/60 rounded-lg p-3 text-center">
             <p className="text-[10px] text-text-secondary uppercase tracking-wide">{t.playerAdvanced.usgPct}</p>
             <p className="text-xl font-bold mt-1 text-text-primary">{(stats.USG_PCT * 100).toFixed(1)}%</p>
             <p className="text-[9px] text-text-secondary">{t.playerAdvanced.usageRate}</p>

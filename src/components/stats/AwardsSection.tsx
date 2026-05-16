@@ -22,10 +22,10 @@ export default function AwardsSection() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="flex flex-wrap rounded-lg overflow-hidden border border-border">
+        <div className="glass-tile flex flex-wrap overflow-hidden p-1">
           {AWARD_CATS.map((a) => (
             <button key={a.key} onClick={() => setCat(a.key)}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${cat === a.key ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"}`}>
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${cat === a.key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"}`}>
               {a.label}
             </button>
           ))}
@@ -52,8 +52,8 @@ export default function AwardsSection() {
       <div className="glass-tile overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-text-secondary text-xs">
+            <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+              <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
                 <th className="text-left py-3 px-4">{t.common.season}</th>
                 <th className="text-left py-3 px-2">{t.common.player}</th>
                 <th className="text-left py-3 px-2">{t.common.team}</th>
@@ -61,10 +61,12 @@ export default function AwardsSection() {
             </thead>
             <tbody>
               {entries.map((e, i) => (
-                <tr key={i} className={`border-b border-border/50 hover:bg-bg-hover transition-colors ${i === 0 ? "bg-accent/5" : ""}`}>
-                  <td className="py-3 px-4 text-accent font-medium">{e.season}</td>
-                  <td className="py-3 px-2 font-medium text-text-primary">{e.player}</td>
-                  <td className="py-3 px-2 text-text-secondary">{e.team}</td>
+                <tr key={i} className={`border-b border-border/40 hover:bg-bg-hover/50 transition-colors ${i === 0 ? "bg-accent-amber/[0.04]" : ""}`}>
+                  <td className="py-2.5 px-4 font-mono tabular-nums">
+                    {i === 0 ? <span className="text-[#FFD700] font-bold">{e.season}</span> : <span className="text-accent">{e.season}</span>}
+                  </td>
+                  <td className="py-2.5 px-2 font-medium text-text-primary">{e.player}</td>
+                  <td className="py-2.5 px-2 text-text-secondary font-mono">{e.team}</td>
                 </tr>
               ))}
             </tbody>

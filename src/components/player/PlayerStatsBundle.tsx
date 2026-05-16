@@ -80,7 +80,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
     return (
       <div className="space-y-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-bg-secondary rounded-lg skeleton-shimmer" />
+          <div key={i} className="h-10 bg-bg-secondary/60 rounded-lg skeleton-shimmer" />
         ))}
       </div>
     );
@@ -89,7 +89,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   if (error) {
     const encodedName = encodeURIComponent(playerName || "");
     return (
-      <div className="bg-bg-secondary rounded-xl p-4 text-center space-y-3">
+      <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
         <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
