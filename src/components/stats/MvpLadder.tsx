@@ -81,7 +81,12 @@ export default function MvpLadder() {
     );
   }
 
-  if (ranked.length === 0) return <p className="text-center text-text-secondary py-12">No data available</p>;
+  if (ranked.length === 0) return (
+    <div className="glass-tile p-12 text-center">
+      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mb-2">/ Empty</p>
+      <p className="text-text-secondary text-sm">No data available</p>
+    </div>
+  );
 
   const topScore = ranked[0]._score;
 

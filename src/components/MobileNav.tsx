@@ -52,9 +52,9 @@ export default function MobileNav() {
     <>
       {/* More menu overlay */}
       {moreOpen && (
-        <div className="sm:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMoreOpen(false)}>
+        <div className="sm:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-14 left-0 right-0 bg-bg-card border-t border-border rounded-t-2xl p-4 pb-2 safe-area-bottom animate-fade-in"
+            className="absolute bottom-14 left-0 right-0 bg-bg-card/95 backdrop-blur-xl border-t border-border rounded-t-2xl p-4 pb-2 safe-area-bottom shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle bar */}
@@ -62,15 +62,15 @@ export default function MobileNav() {
 
             {moreGroups.map((group) => (
               <div key={group.title} className="mb-3">
-                <p className="text-[10px] text-text-secondary uppercase font-semibold tracking-wider mb-1.5 px-1">{group.title}</p>
-                <div className="grid grid-cols-3 gap-1.5">
+                <p className="text-[9px] font-mono text-text-secondary uppercase font-semibold tracking-[0.25em] mb-2 px-1">/ {group.title}</p>
+                <div className="grid grid-cols-3 gap-2">
                   {group.items.map(({ href, label, icon: Icon }) => (
                     <Link
                       key={href}
                       href={href}
                       onClick={() => setMoreOpen(false)}
-                      className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-center transition-colors ${
-                        pathname === href ? "bg-accent/15 text-accent" : "bg-bg-hover/60 text-text-secondary active:bg-bg-hover"
+                      className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center transition-colors min-h-[60px] cursor-pointer ${
+                        pathname === href ? "bg-accent/15 text-accent ring-1 ring-accent/30" : "bg-bg-hover/60 text-text-secondary active:bg-bg-hover"
                       }`}
                     >
                       <Icon size={18} />
@@ -85,7 +85,7 @@ export default function MobileNav() {
       )}
 
       {/* Bottom nav bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-secondary/95 backdrop-blur-md border-t border-border safe-area-bottom" role="navigation" aria-label="Mobile navigation">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-secondary/85 backdrop-blur-xl border-t border-border safe-area-bottom" role="navigation" aria-label="Mobile navigation">
         <div className="flex items-center justify-around h-14">
           {mainLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
@@ -93,10 +93,11 @@ export default function MobileNav() {
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center gap-0.5 min-w-[48px] py-1 rounded-lg transition-colors ${
+                className={`flex flex-col items-center gap-0.5 min-w-[48px] min-h-[44px] justify-center px-2 py-1 rounded-lg transition-colors cursor-pointer relative ${
                   active ? "text-accent" : "text-text-secondary"
                 }`}
               >
+                {active && <span className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />}
                 <Icon size={20} strokeWidth={active ? 2.5 : 2} />
                 <span className={`text-[9px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
               </Link>
@@ -104,10 +105,11 @@ export default function MobileNav() {
           })}
           <button
             onClick={() => setMoreOpen(!moreOpen)}
-            className={`flex flex-col items-center gap-0.5 min-w-[48px] py-1 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-0.5 min-w-[48px] min-h-[44px] justify-center px-2 py-1 rounded-lg transition-colors cursor-pointer relative ${
               moreOpen || isMoreActive ? "text-accent" : "text-text-secondary"
             }`}
           >
+            {(moreOpen || isMoreActive) && <span className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />}
             <MoreHorizontal size={20} strokeWidth={moreOpen || isMoreActive ? 2.5 : 2} />
             <span className={`text-[9px] ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>{t.nav.more}</span>
           </button>

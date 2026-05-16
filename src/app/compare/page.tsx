@@ -58,11 +58,15 @@ export default function ComparePage() {
   const headshotUrl = (id: number) => `https://cdn.nba.com/headshots/nba/latest/1040x760/${id}.png`;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <GitCompareArrows size={24} className="text-accent" />
-        {t.comparePage.title}
-      </h1>
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* Editorial page header */}
+      <div className="mb-6">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Tool</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2 mt-1">
+          <GitCompareArrows size={20} className="text-accent-amber" />
+          {t.comparePage.title}
+        </h1>
+      </div>
 
       {/* Player selection */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 mb-8 items-start">
@@ -99,7 +103,7 @@ export default function ComparePage() {
               setPlayer2(tempP);
               setQuery2(tempQ);
             }}
-            className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-hover hover:border-accent/50 transition-colors text-text-secondary hover:text-accent"
+            className="p-2.5 rounded-xl glass-tile hover:border-accent/50 transition-colors text-text-secondary hover:text-accent cursor-pointer"
             title={t.comparePage.swapPlayers}
           >
             <ArrowLeftRight size={18} />
@@ -141,7 +145,7 @@ export default function ComparePage() {
             <button
               key={preset.label}
               onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); setPlayer1(null); setPlayer2(null); }}
-              className="px-3 py-1.5 bg-bg-card border border-border rounded-lg text-xs text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
+              className="px-3 py-1.5 glass-tile text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer"
             >
               {preset.label}
             </button>
@@ -373,9 +377,12 @@ export default function ComparePage() {
       })()}
 
       {!player1 && !player2 && (
-        <div className="text-center py-16 text-text-secondary">
-          <GitCompareArrows size={48} className="mx-auto mb-4 opacity-30" />
-          <p>{t.comparePage.selectHint}</p>
+        <div className="glass-tile p-12 text-center mt-6">
+          <div className="w-16 h-16 rounded-2xl bg-accent-amber/10 flex items-center justify-center mx-auto mb-4">
+            <GitCompareArrows size={28} className="text-accent-amber" />
+          </div>
+          <p className="text-base font-medium text-text-primary">{t.comparePage.selectHint}</p>
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary mt-2">Start by typing two player names above</p>
         </div>
       )}
     </div>
