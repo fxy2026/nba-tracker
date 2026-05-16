@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
+import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
@@ -106,7 +107,7 @@ export default async function PlayerPage({ params }: PageProps) {
           }}
         >
           {/* Top: photo area — fixed height, image properly centered on face */}
-          <div className="relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary">
+          <div className="relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary kenburns-parent">
             {/* Team color gradient backdrop */}
             <div
               className="absolute inset-0 opacity-50"
@@ -119,7 +120,7 @@ export default async function PlayerPage({ params }: PageProps) {
               height={234}
               priority
               unoptimized
-              className="relative w-full h-full object-cover"
+              className="kenburns relative w-full h-full object-cover"
               style={{ objectPosition: "50% 15%" }}
             />
             {/* Vignette at edges + bottom fade for text legibility */}
@@ -169,7 +170,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <div>
               <div className="flex items-baseline gap-3">
                 <p className="text-[clamp(3rem,8vw,6rem)] font-light font-mono tabular-nums leading-none text-accent-amber">
-                  {ppg > 0 ? ppg.toFixed(1).replace(/\.0$/, "") : "—"}
+                  {ppg > 0 ? <CountUpNumber value={ppg} decimals={1} stripTrailingZero durationMs={1100} /> : "—"}
                 </p>
                 {ppg > 0 && ptsCtx.leagueAvg > 0 && (
                   <span className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded ${
@@ -677,7 +678,7 @@ function DataStatTile({ label, value, ctx, delayMs = 0 }: {
       <div>
         <div className="flex items-baseline gap-1.5">
           <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums leading-none text-text-primary">
-            {value > 0 ? value.toFixed(1).replace(/\.0$/, "") : "—"}
+            {value > 0 ? <CountUpNumber value={value} decimals={1} stripTrailingZero durationMs={900} /> : "—"}
           </p>
           {value > 0 && ctx.leagueAvg > 0 && (
             <span className={`text-[9px] font-mono tabular-nums ${ctx.delta >= 0 ? "text-success" : "text-danger"}`}>

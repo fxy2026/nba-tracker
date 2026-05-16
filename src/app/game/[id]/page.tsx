@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import CountUpNumber from "@/components/CountUpNumber";
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
@@ -619,11 +620,11 @@ export default async function GamePage({ params }: PageProps) {
           {/* Score */}
           <div className="flex items-center gap-3 sm:gap-5 shrink-0">
             <span className={`text-5xl sm:text-7xl font-light font-mono tabular-nums leading-none tracking-tight ${isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
-              {boxScore.awayTeam.score}
+              {boxScore.gameStatus > 1 ? <CountUpNumber value={boxScore.awayTeam.score} durationMs={1200} /> : "—"}
             </span>
             <span className="text-text-secondary/30 text-3xl sm:text-4xl font-extralight">–</span>
             <span className={`text-5xl sm:text-7xl font-light font-mono tabular-nums leading-none tracking-tight ${isFinal && homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
-              {boxScore.homeTeam.score}
+              {boxScore.gameStatus > 1 ? <CountUpNumber value={boxScore.homeTeam.score} durationMs={1200} /> : "—"}
             </span>
           </div>
 

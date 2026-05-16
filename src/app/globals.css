@@ -438,6 +438,75 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
   .bento-rise { animation: none; opacity: 1; }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Score flash — for live game score updates
+   ───────────────────────────────────────────────────────────── */
+@keyframes score-flash {
+  0% { color: var(--accent-amber); text-shadow: 0 0 14px rgba(245,158,11,0.7); transform: scale(1.08); }
+  100% { color: inherit; text-shadow: none; transform: scale(1); }
+}
+.score-flash {
+  animation: score-flash 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Ken-burns photo hover (player headshots) */
+.kenburns {
+  transition: transform 4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.kenburns-parent:hover .kenburns {
+  transform: scale(1.06);
+}
+
+/* Subtle aurora hue rotation — adds life to backgrounds */
+@keyframes aurora-drift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(8deg); }
+}
+.bg-mesh-aurora {
+  animation: aurora-drift 30s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-mesh-aurora { animation: none; }
+}
+
+/* Numeric count-up — applied via React state, fall-through animation */
+@keyframes count-flash {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+.count-flash {
+  animation: count-flash 0.4s ease-out;
+}
+
+/* Soft UI Evolution focus ring — bigger, more visible */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Navbar scroll state — applies via JS `data-scrolled` */
+nav.sticky[data-scrolled="true"] {
+  background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+  border-bottom-color: var(--border-strong);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* DateNav sticky helper — clean shadow under sticky element */
+.sticky-nav-shadow {
+  position: relative;
+}
+.sticky-nav-shadow::after {
+  content: "";
+  position: absolute;
+  inset-x: 0;
+  bottom: -8px;
+  height: 8px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg-primary) 100%, transparent), transparent);
+  pointer-events: none;
+}
+
 @keyframes stat-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }

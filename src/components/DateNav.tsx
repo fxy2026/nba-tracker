@@ -83,10 +83,14 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   const nextDate = offsetDate(selectedDate, 1);
 
   return (
-    <div className="flex items-center justify-center gap-1" role="navigation" aria-label="Date navigation">
+    <div
+      className="sticky top-12 sm:top-16 z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary/85 backdrop-blur-xl border-b border-border/60"
+      role="navigation"
+      aria-label="Date navigation"
+    >
       <button
         onClick={() => navigate(prevDate)}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label="Previous day"
       >
         <ChevronLeft size={20} />
@@ -101,16 +105,19 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
               key={day.date}
               onClick={() => navigate(day.date)}
               aria-current={isSelected ? "date" : undefined}
-              className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors min-w-[56px] ${
+              className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-all min-w-[56px] cursor-pointer relative ${
                 isSelected
-                  ? "bg-accent text-white"
+                  ? "bg-accent-gradient text-white shadow-md shadow-accent/30"
                   : isToday
-                  ? "bg-accent/15 text-accent hover:bg-accent/25"
+                  ? "bg-accent/10 text-accent hover:bg-accent/20"
                   : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}
             >
-              <span>{day.weekday}</span>
-              <span className="text-sm mt-0.5">{day.label}</span>
+              <span className="font-mono uppercase tracking-[0.1em] text-[10px]">{day.weekday}</span>
+              <span className="text-sm mt-0.5 font-mono tabular-nums">{day.label}</span>
+              {isToday && !isSelected && (
+                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-amber" />
+              )}
             </button>
           );
         })}
@@ -118,7 +125,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
 
       <button
         onClick={() => navigate(nextDate)}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label="Next day"
       >
         <ChevronRight size={20} />
@@ -127,7 +134,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
       {selectedDate !== today && (
         <button
           onClick={() => navigate(today)}
-          className="ml-2 px-3 py-1.5 text-xs bg-bg-card border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-accent/50 transition-colors"
+          className="ml-2 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] glass-tile text-text-secondary hover:text-accent transition-colors cursor-pointer"
         >
           {t.dateNav.today}
         </button>

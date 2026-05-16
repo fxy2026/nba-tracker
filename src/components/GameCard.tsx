@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
@@ -8,6 +8,21 @@ import { getGameStatusDisplay } from "@/lib/api";
 import TeamLogo from "./TeamLogo";
 import GameCountdown from "./GameCountdown";
 import { useLocale } from "@/components/LocaleProvider";
+
+/** Hook: detect when a score changes and trigger a CSS class for 1.2s */
+function useScoreFlash(score: number): boolean {
+  const [flash, setFlash] = useState(false);
+  const prev = useRef(score);
+  useEffect(() => {
+    if (prev.current !== score) {
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), 1200);
+      prev.current = score;
+      return () => clearTimeout(t);
+    }
+  }, [score]);
+  return flash;
+}
 
 interface GameCardProps {
   game: ScheduleGame;
@@ -21,6 +36,9 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   const isFinal = game.gameStatus === 3;
   const homeWon = isFinal && game.homeTeam.score > game.awayTeam.score;
   const awayWon = isFinal && game.awayTeam.score > game.homeTeam.score;
+  // Live games only — flash when scores update
+  const awayFlash = useScoreFlash(isLive ? game.awayTeam.score : 0);
+  const homeFlash = useScoreFlash(isLive ? game.homeTeam.score : 0);
   const isPlayoffs = game.gameId.startsWith("004");
   const isScheduled = game.gameStatus === 1;
 
@@ -115,7 +133,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 transition-colors ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"} ${awayFlash ? "score-flash" : ""}`}>
               {game.gameStatus > 1 ? game.awayTeam.score : "-"}
               {awayWon && <span className="text-success text-xs">&#10003;</span>}
             </span>
@@ -139,7 +157,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                 )}
               </div>
             </div>
-            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
+            <span className={`text-xl font-bold font-mono tabular-nums flex items-center gap-1 transition-colors ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"} ${homeFlash ? "score-flash" : ""}`}>
               {game.gameStatus > 1 ? game.homeTeam.score : "-"}
               {homeWon && <span className="text-success text-xs">&#10003;</span>}
             </span>

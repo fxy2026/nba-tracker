@@ -23,13 +23,16 @@ export default function Navbar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const teamsRef = useRef<HTMLDivElement>(null);
 
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     function handleScroll() {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       setScrollPct(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
+      setScrolled(scrollTop > 8);
     }
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -93,7 +96,12 @@ export default function Navbar() {
   }, [moreOpen]);
 
   return (
-    <nav className="sticky top-0 z-50 bg-bg-secondary/90 backdrop-blur-md border-b border-border safe-area-top" role="navigation" aria-label="Main navigation">
+    <nav
+      data-scrolled={scrolled ? "true" : "false"}
+      className="sticky top-0 z-50 bg-bg-secondary/75 backdrop-blur-md border-b border-border safe-area-top transition-all duration-300"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 h-12 sm:h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group cursor-pointer">
