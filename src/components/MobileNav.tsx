@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -45,14 +45,18 @@ export default function MobileNav() {
       title: "History",
       items: [
         { href: "/best-games", label: "Best Games", icon: Flame },
+        { href: "/records", label: "Records", icon: BookOpen },
         { href: "/all-time-leaders", label: "All-Time", icon: Crown },
         { href: "/milestones", label: "Milestones", icon: TrendingUp },
         { href: "/history", label: t.nav.champions, icon: History },
       ],
     },
     {
-      title: t.nav.more,
+      title: "Players",
       items: [
+        { href: "/rookie-watch", label: "Rookies", icon: Sparkles },
+        { href: "/draft-classes", label: "Classes", icon: GraduationCap },
+        { href: "/by-country", label: "Global", icon: Globe },
         { href: "/favorites", label: t.nav.favorites, icon: Heart },
       ],
     },

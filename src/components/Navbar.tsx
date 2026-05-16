@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -79,9 +79,13 @@ export default function Navbar() {
     { href: "/tier-list", label: "Tier List", icon: Layers },
     { href: "/awards-race", label: "Awards Race", icon: Award },
     { href: "/best-games", label: "Best Games", icon: Flame },
+    { href: "/records", label: "Season Records", icon: BookOpen },
     { href: "/game-predictor", label: "Game Predictor", icon: Zap },
     { href: "/all-time-leaders", label: "All-Time Leaders", icon: Crown },
     { href: "/milestones", label: "Milestones", icon: TrendingUp },
+    { href: "/rookie-watch", label: "Rookie Watch", icon: Sparkles },
+    { href: "/draft-classes", label: "Draft Classes", icon: GraduationCap },
+    { href: "/by-country", label: "By Country", icon: Globe },
     { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
     { href: "/h2h", label: t.nav.h2h, icon: Swords },
     { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
