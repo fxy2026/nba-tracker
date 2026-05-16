@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Crown, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Power Rankings",
@@ -331,6 +332,17 @@ export default async function PowerRankingsPage() {
           <span className="font-mono tabular-nums">+{hottestPointDiff.pointDiff.toFixed(1)}</span> per game over last 10.
         </p>
       </div>
+
+      <RelatedPages
+        pages={[
+          { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
+          { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-15 per side", icon: Trophy },
+          { href: "/streaks", label: "Streaks", description: "Active win/loss runs", icon: Flame },
+          { href: "/momentum", label: "Momentum", description: "Trending up or down · L5 vs prior 10", icon: TrendingUp },
+          { href: "/clutch-teams", label: "Clutch Teams", description: "Records in close games and OT", icon: Target },
+          { href: "/scoring-output", label: "Scoring Output", description: "Off/def per-game rankings", icon: Crown },
+        ]}
+      />
     </div>
   );
 }

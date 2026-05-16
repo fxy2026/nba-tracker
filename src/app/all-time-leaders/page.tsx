@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Crown } from "lucide-react";
+import { Crown, TrendingUp, Sparkles, GraduationCap, Award, Users } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 interface PlayerInfo {
   personId: number;
@@ -179,6 +180,16 @@ export default function AllTimeLeadersPage() {
           <Link href="/milestones" className="text-accent hover:underline">milestones</Link>.
         </p>
       </div>
+
+      <RelatedPages
+        pages={[
+          { href: "/milestones", label: "Career Milestones", description: "Active players chasing thresholds", icon: TrendingUp },
+          { href: "/awards-race", label: "Awards Race", description: "MVP, ROY, DPOY, 6MOY, MIP", icon: Award },
+          { href: "/rookie-watch", label: "Rookie Watch", description: "Top first-year players", icon: Sparkles },
+          { href: "/by-position", label: "Leaders By Position", description: "Top by G/F/C", icon: Users },
+          { href: "/draft-classes", label: "Draft Classes", description: "Players grouped by draft year", icon: GraduationCap },
+        ]}
+      />
     </div>
   );
 }

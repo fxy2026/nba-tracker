@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Flame, Zap, Target, Clock, type LucideIcon } from "lucide-react";
+import { Flame, Zap, Target, Clock, BookOpen, CalendarDays, Crown, type LucideIcon } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Best Games",
@@ -228,6 +229,15 @@ export default async function BestGamesPage() {
           badgeFor={(g) => (g.otCount > 0 ? `${g.otCount}OT` : "OT")}
         />
       )}
+
+      <RelatedPages
+        pages={[
+          { href: "/records", label: "Season Records", description: "Single-game highs and lows", icon: BookOpen },
+          { href: "/this-day", label: "On This Day", description: "Historical games on today's date", icon: CalendarDays },
+          { href: "/game-predictor", label: "Game Predictor", description: "Win probabilities for next 7 days", icon: Zap },
+          { href: "/rivalries", label: "Rivalries", description: "Tightest team-vs-team matchups", icon: Crown },
+        ]}
+      />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Flame, Snowflake, TrendingDown, TrendingUp } from "lucide-react";
+import { Flame, Snowflake, TrendingDown, TrendingUp, Crown, Target, Layers } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Streaks",
@@ -305,6 +306,15 @@ export default async function StreaksPage() {
           description="No teams currently riding multi-game streaks. Check back after the next slate."
         />
       )}
+
+      <RelatedPages
+        pages={[
+          { href: "/momentum", label: "Momentum", description: "L5 vs prior 10 win % trends", icon: TrendingUp },
+          { href: "/power-rankings", label: "Power Rankings", description: "Composite team strength 1-30", icon: Crown },
+          { href: "/clutch-teams", label: "Clutch Teams", description: "Close-game and OT records", icon: Target },
+          { href: "/tier-list", label: "Tier List", description: "Bucketed S/A/B/C/D", icon: Layers },
+        ]}
+      />
     </div>
   );
 }
