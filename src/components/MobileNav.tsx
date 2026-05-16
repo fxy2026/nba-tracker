@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -22,8 +22,11 @@ export default function MobileNav() {
     {
       title: t.nav.explore,
       items: [
+        { href: "/explore", label: "Explore", icon: Compass },
         { href: "/standings", label: t.nav.standings, icon: ListOrdered },
+        { href: "/conference-race", label: "Conference", icon: Trophy },
         { href: "/schedule", label: t.nav.schedule, icon: Clock },
+        { href: "/schedule-heatmap", label: "Heatmap", icon: Activity },
         { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
         { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
       ],

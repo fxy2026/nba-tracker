@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -74,8 +74,10 @@ export default function Navbar() {
 
   // Secondary nav — inside "More" dropdown
   const moreLinks = useMemo(() => [
+    { href: "/explore", label: "Explore (All)", icon: Compass },
     { href: "/streaks", label: "Streaks", icon: Flame },
     { href: "/power-rankings", label: "Power Rankings", icon: Crown },
+    { href: "/conference-race", label: "Conference Race", icon: Trophy },
     { href: "/tier-list", label: "Tier List", icon: Layers },
     { href: "/awards-race", label: "Awards Race", icon: Award },
     { href: "/best-games", label: "Best Games", icon: Flame },
@@ -89,6 +91,7 @@ export default function Navbar() {
     { href: "/by-position", label: "By Position", icon: Users },
     { href: "/by-college", label: "By College", icon: School },
     { href: "/this-day", label: "On This Day", icon: CalendarDays },
+    { href: "/schedule-heatmap", label: "Schedule Heatmap", icon: Activity },
     { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
     { href: "/h2h", label: t.nav.h2h, icon: Swords },
     { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
