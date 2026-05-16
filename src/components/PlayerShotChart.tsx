@@ -224,7 +224,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
         {data.hasShots && (
           <>
             <div className="px-5 pt-2 pb-1">
-              <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">{t.playerShotChart.thisGame}</h4>
+              <h4 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary tracking-wide">{t.playerShotChart.thisGame}</h4>
             </div>
             <div className="grid grid-cols-4 gap-2 px-5 pb-3">
               <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
@@ -252,7 +252,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             {/* Per-quarter scoring */}
             {data.quarterScoring.length > 0 && (
               <div className="px-5 pb-3">
-                <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">{t.gameDetail.scoringPerQ}</h4>
+                <h4 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary tracking-wide mb-2">{t.gameDetail.scoringPerQ}</h4>
                 <div className="flex gap-2">
                   {data.quarterScoring.map((q) => (
                     <div key={q.period} className="flex-1 bg-bg-card rounded-lg p-2 text-center">

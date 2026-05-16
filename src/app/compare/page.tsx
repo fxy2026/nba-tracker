@@ -356,7 +356,7 @@ export default function ComparePage() {
         const score2 = player2.pts + 1.2 * player2.reb + 1.5 * player2.ast;
         return (
           <div className="glass-tile p-4 mt-4">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">{t.comparePage.overallScore}</h3>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3 text-center">{t.comparePage.overallScore}</h3>
             <p className="text-[9px] text-text-secondary text-center mb-3">{t.comparePage.scoreFormula}</p>
             <div className="flex items-center gap-4">
               <div className="flex-1 text-right">

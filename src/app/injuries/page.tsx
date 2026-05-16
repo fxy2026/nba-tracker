@@ -162,7 +162,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
         const maxInj = sorted[0].injuries?.length || 1;
         return (
           <div className="glass-tile p-4 mb-4">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.injuriesPage.mostAffected}</h3>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3">{t.injuriesPage.mostAffected}</h3>
             <div className="space-y-1.5">
               {sorted.map((team) => (
                 <div key={team.id || team.displayName} className="flex items-center gap-2">

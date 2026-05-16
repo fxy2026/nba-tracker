@@ -393,7 +393,7 @@ export default async function StandingsPage() {
         const eastPct = (eastWins / total) * 100;
         return (
           <div className="glass-tile p-4 mb-8">
-            <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.standingsPage.eastVsWest}</h3>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3">{t.standingsPage.eastVsWest}</h3>
             <div className="flex items-center gap-4 mb-2">
               <span className="text-sm font-bold text-accent">East {eastWins}{t.common.wins}</span>
               <div className="flex-1 h-3 bg-bg-hover rounded-full overflow-hidden">
