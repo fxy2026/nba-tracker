@@ -62,7 +62,6 @@ function winnerOf(s: Series): SeriesTeam | null {
 }
 
 function isOnChampionPath(s: Series, allSeries: Series[]): boolean {
-  // A series is on the champion path if its winner ultimately won the title.
   const champion = allSeries.find((x) => x.conference === "Finals" && winnerOf(x));
   if (!champion) return false;
   const championTri = winnerOf(champion)!.tricode;
@@ -73,19 +72,13 @@ function isOnChampionPath(s: Series, allSeries: Series[]): boolean {
 function ProgressDots({ results, total }: { results: ("T1" | "T2")[]; total: number }) {
   const slots = Array.from({ length: 7 });
   return (
-    <div className="flex items-center justify-center gap-[3px] mt-2">
+    <div className="flex items-center justify-center gap-[3px] mt-1.5">
       {slots.map((_, i) => {
         const r = results[i];
         const filled = r === "T1" ? "bg-accent" : r === "T2" ? "bg-success" : "bg-bg-hover";
-        return (
-          <div
-            key={i}
-            className={`w-1.5 h-1.5 rounded-full ${filled}`}
-            title={r ? `Game ${i + 1}` : `Game ${i + 1} not played`}
-          />
-        );
+        return <div key={i} className={`w-1.5 h-1.5 rounded-full ${filled}`} />;
       })}
-      <span className="ml-1 text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 tabular-nums">
+      <span className="ml-1.5 text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 tabular-nums">
         {total}/7
       </span>
     </div>
@@ -109,52 +102,14 @@ function TeamRow({
   size: "sm" | "md" | "lg";
   align: "left" | "right";
 }) {
-  const logoSize = size === "lg" ? 32 : size === "md" ? 24 : 20;
-  const triSize = size === "lg" ? "text-lg" : size === "md" ? "text-sm" : "text-xs";
+  const logoSize = size === "lg" ? 32 : size === "md" ? 26 : 22;
+  const triSize = size === "lg" ? "text-base" : size === "md" ? "text-sm" : "text-xs";
   const winSize = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-base";
-  const pad = size === "lg" ? "py-2" : "py-1";
-
-  const inner = (
-    <>
-      {align === "left" ? (
-        <>
-          <TeamLogo teamId={team.teamId} tricode={team.tricode} size={logoSize} />
-          <div className="flex-1 min-w-0 flex items-center gap-1.5">
-            {team.seed > 0 && (
-              <span className="text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
-            )}
-            <span className={`${triSize} font-bold font-mono ${leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
-              {team.tricode}
-            </span>
-            {isWinner && <Crown size={size === "lg" ? 16 : 12} className="text-[#FFD700] shrink-0" />}
-          </div>
-          <span className={`${winSize} font-light font-mono tabular-nums shrink-0 ${leading ? "text-accent-amber" : "text-text-secondary"}`}>
-            {team.wins}
-          </span>
-        </>
-      ) : (
-        <>
-          <span className={`${winSize} font-light font-mono tabular-nums shrink-0 ${leading ? "text-accent-amber" : "text-text-secondary"}`}>
-            {team.wins}
-          </span>
-          <div className="flex-1 min-w-0 flex items-center justify-end gap-1.5">
-            {isWinner && <Crown size={size === "lg" ? 16 : 12} className="text-[#FFD700] shrink-0" />}
-            <span className={`${triSize} font-bold font-mono ${leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
-              {team.tricode}
-            </span>
-            {team.seed > 0 && (
-              <span className="text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
-            )}
-          </div>
-          <TeamLogo teamId={team.teamId} tricode={team.tricode} size={logoSize} />
-        </>
-      )}
-    </>
-  );
+  const pad = size === "lg" ? "py-2" : size === "md" ? "py-1.5" : "py-1";
 
   return (
     <div
-      className={`flex items-center gap-2 ${pad} ${isLoser ? "opacity-40" : ""} relative`}
+      className={`flex items-center gap-2 ${pad} ${isLoser ? "opacity-40" : ""} relative ${align === "right" ? "flex-row-reverse" : ""}`}
       style={
         primaryColor && leading
           ? align === "left"
@@ -163,7 +118,19 @@ function TeamRow({
           : undefined
       }
     >
-      {inner}
+      <TeamLogo teamId={team.teamId} tricode={team.tricode} size={logoSize} />
+      <div className={`flex-1 min-w-0 flex items-center gap-1.5 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        {team.seed > 0 && (
+          <span className="text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
+        )}
+        <span className={`${triSize} font-bold font-mono ${leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
+          {team.tricode}
+        </span>
+        {isWinner && <Crown size={size === "lg" ? 16 : 12} className="text-[#FFD700] shrink-0" />}
+      </div>
+      <span className={`${winSize} font-light font-mono tabular-nums shrink-0 ${leading ? "text-accent-amber" : "text-text-secondary"}`}>
+        {team.wins}
+      </span>
     </div>
   );
 }
@@ -188,15 +155,15 @@ function SeriesCard({
 
   const padClass = size === "lg" ? "p-4" : size === "md" ? "p-3" : "p-2.5";
   const ring = onPath
-    ? "ring-1 ring-[#FFD700]/40 shadow-[0_0_20px_-4px_rgba(255,215,0,0.3)]"
+    ? "ring-1 ring-[#FFD700]/50 shadow-[0_0_24px_-4px_rgba(255,215,0,0.35)]"
     : finished
-    ? "ring-1 ring-text-secondary/20"
+    ? "ring-1 ring-text-secondary/15"
     : "";
 
   return (
-    <div className={`glass-tile relative overflow-hidden ${padClass} ${ring}`}>
+    <div className={`glass-tile relative overflow-hidden w-full ${padClass} ${ring}`}>
       {onPath && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/[0.04] to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/[0.06] to-transparent pointer-events-none" />
       )}
       <div className="relative">
         <TeamRow
@@ -208,6 +175,7 @@ function SeriesCard({
           size={size}
           align={align}
         />
+        <div className="h-px bg-border/40 my-0.5" />
         <TeamRow
           team={s.team2}
           leading={t2Leading}
@@ -229,49 +197,33 @@ function SeriesCard({
   );
 }
 
-/**
- * Bracket connector: ┐ + ┘ converging into → going to next round
- * Drawn as overlay using positioned divs with borders.
- *
- * For each pair of feeder matches (top, bottom), we draw:
- *   - top: line right from card, then bend DOWN to converge point
- *   - bottom: line right from card, then bend UP to converge point
- *   - center: horizontal line from converge point to next round card
- */
+// Connector: bracket lines connecting two feeder rounds to one target round.
+// Drawn as full-cell SVG with viewBox 0 0 100 100 so it stretches to fit any size.
 function Connector({
-  topPercent,
-  bottomPercent,
   side,
   highlight,
 }: {
-  topPercent: number; // y position of top feeder's center, as % of grid
-  bottomPercent: number; // y position of bottom feeder's center, as % of grid
   side: "left" | "right";
   highlight?: boolean;
 }) {
-  const midY = (topPercent + bottomPercent) / 2;
-  const color = highlight ? "stroke-[#FFD700]" : "stroke-border-strong";
-  const opacity = highlight ? "opacity-90" : "opacity-50";
-
-  // We draw 3 path segments: top-feeder L, bottom-feeder L, and exit to next round
-  // SVG viewBox: 100×100 with preserveAspectRatio: none for full stretch
-  const leftEdge = side === "left" ? 0 : 100;
-  const rightEdge = side === "left" ? 100 : 0;
+  const enterX = side === "left" ? 5 : 95;
   const turnX = side === "left" ? 50 : 50;
-  const exitX = rightEdge;
+  const exitX = side === "left" ? 95 : 5;
+  const strokeColor = highlight ? "#FFD700" : "rgba(148,163,184,0.45)";
+  const strokeW = highlight ? 2 : 1.5;
 
   return (
     <svg
-      className={`absolute inset-0 w-full h-full pointer-events-none ${opacity}`}
+      className="absolute inset-0 w-full h-full pointer-events-none"
       preserveAspectRatio="none"
       viewBox="0 0 100 100"
     >
       <path
-        d={`M ${leftEdge} ${topPercent} L ${turnX} ${topPercent} L ${turnX} ${midY} M ${leftEdge} ${bottomPercent} L ${turnX} ${bottomPercent} L ${turnX} ${midY} M ${turnX} ${midY} L ${exitX} ${midY}`}
+        d={`M ${enterX} 25 L ${turnX} 25 L ${turnX} 50 M ${enterX} 75 L ${turnX} 75 L ${turnX} 50 M ${turnX} 50 L ${exitX} 50`}
         fill="none"
-        strokeWidth="1.5"
+        strokeWidth={strokeW}
         vectorEffect="non-scaling-stroke"
-        className={color}
+        stroke={strokeColor}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -279,17 +231,36 @@ function Connector({
   );
 }
 
+interface RoundLabelProps {
+  label: string;
+  sub: string;
+  color: string;
+  count: number;
+}
+
+function RoundLabel({ label, sub, color, count }: RoundLabelProps) {
+  return (
+    <div className="text-center mb-3 pb-2 border-b border-border/40">
+      <p className="text-[8px] font-mono uppercase tracking-[0.25em] text-text-secondary/50">/ {sub}</p>
+      <p className="text-xs font-bold font-mono uppercase tracking-[0.18em] mt-0.5" style={{ color }}>{label}</p>
+      <p className="text-[9px] font-mono tabular-nums text-text-secondary/60 mt-0.5">{count} series</p>
+    </div>
+  );
+}
+
 /**
- * Render one half of the bracket (East or West) with cards and connectors.
- *
- * Layout: CSS Grid 3-column for [R1, gutter1, R2, gutter2, R3] or mirrored for West.
- * Each conference uses 8 grid rows; R1 cards span 2 rows, R2 span 4, R3 spans 8.
+ * Render one half of the bracket using CSS Grid:
+ * 5 columns: [R1 cards] [R1→R2 connector] [R2 cards] [R2→R3 connector] [R3 card]
+ * For West (right side), the order is flipped so the bracket flows inward.
+ * 8 rows; R1 cards span 2 rows each, R2 spans 4, R3 spans 8.
  */
 function ConfHalf({
   r1, r2, r3,
   side,
   championPath,
   conferenceColor,
+  conferenceLabel,
+  roundLabels,
 }: {
   r1: Series[];
   r2: Series[];
@@ -297,137 +268,142 @@ function ConfHalf({
   side: "left" | "right";
   championPath: Set<string>;
   conferenceColor: string;
+  conferenceLabel: string;
+  roundLabels: Record<number, string>;
 }) {
   const isLeft = side === "left";
 
-  // Sort r1 so the pairing matches: r1[0]+r1[1] feed r2[0], r1[2]+r1[3] feed r2[1]
-  // Best-effort: seed-based ordering (1v8, 4v5, 3v6, 2v7 pairing)
   const sortedR1 = [...r1].sort((a, b) => {
     const aSeed = Math.min(a.team1.seed || 99, a.team2.seed || 99);
     const bSeed = Math.min(b.team1.seed || 99, b.team2.seed || 99);
     return aSeed - bSeed;
   });
-  // Standard NBA bracket pairing by top seed: [1, 4, 3, 2]
-  // Convert to display order: r1[0]=1seed, r1[1]=8seed... order to standard top→bottom: 1,8,4,5,3,6,2,7
-  // but we only have 4 series; standard pairing is [1v8, 4v5] -> top half; [3v6, 2v7] -> bottom half
-  // We'll just trust the seed sort and pair adjacents.
-  const displayR1 = sortedR1.length === 4
-    ? [sortedR1[0], sortedR1[1], sortedR1[2], sortedR1[3]]
-    : sortedR1;
+  const displayR1 = sortedR1;
+
+  // Column widths: cards columns wide, gutters narrow. 5-col template.
+  // Each round's column has a clear width so labels can sit above.
+  const gridCols = isLeft
+    ? "minmax(0, 1fr) 56px minmax(0, 1.05fr) 56px minmax(0, 1.1fr)"
+    : "minmax(0, 1.1fr) 56px minmax(0, 1.05fr) 56px minmax(0, 1fr)";
+
+  const cardWrap = "flex items-center px-1";
 
   return (
-    <div className="relative grid gap-x-1" style={{
-      gridTemplateColumns: isLeft
-        ? "minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1.05fr)"
-        : "minmax(0, 1.05fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr)",
-      gridTemplateRows: "repeat(8, minmax(70px, auto))",
-    }}>
-      {/* R1 cards — 4 cards, each spans 2 rows */}
-      {displayR1.map((s, i) => (
-        <div
-          key={s.id}
-          className="flex items-center"
+    <div className="relative">
+      {/* Conference badge */}
+      <div className={`mb-3 ${isLeft ? "" : "text-right"}`}>
+        <span
+          className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.25em] px-2.5 py-1 rounded-md border"
           style={{
-            gridColumn: isLeft ? "1 / 2" : "5 / 6",
-            gridRow: `${i * 2 + 1} / ${i * 2 + 3}`,
+            background: `color-mix(in srgb, ${conferenceColor} 10%, transparent)`,
+            borderColor: `color-mix(in srgb, ${conferenceColor} 30%, transparent)`,
+            color: conferenceColor,
           }}
         >
-          <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
-        </div>
-      ))}
+          {isLeft && <span className="w-1.5 h-1.5 rounded-full" style={{ background: conferenceColor }} />}
+          {conferenceLabel}
+          {!isLeft && <span className="w-1.5 h-1.5 rounded-full" style={{ background: conferenceColor }} />}
+        </span>
+      </div>
 
-      {/* R1 → R2 connectors */}
-      {r2.length > 0 && displayR1.length === 4 && [0, 1].map((pairIdx) => {
-        const r2Match = r2[pairIdx];
-        const highlight = r2Match && championPath.has(r2Match.id);
-        return (
-          <div
-            key={`r1r2-conn-${pairIdx}`}
-            className="relative"
-            style={{
-              gridColumn: isLeft ? "2 / 3" : "4 / 5",
-              gridRow: pairIdx === 0 ? "1 / 5" : "5 / 9",
-            }}
-          >
-            <Connector
-              topPercent={pairIdx === 0 ? 25 : 25}
-              bottomPercent={pairIdx === 0 ? 75 : 75}
-              side={side}
-              highlight={highlight}
-            />
-          </div>
-        );
-      })}
-
-      {/* R2 cards — 2 cards, each spans 4 rows */}
-      {r2.map((s, i) => (
-        <div
-          key={s.id}
-          className="flex items-center"
-          style={{
-            gridColumn: isLeft ? "3 / 4" : "3 / 4",
-            gridRow: `${i * 4 + 1} / ${i * 4 + 5}`,
-          }}
-        >
-          <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
-        </div>
-      ))}
-
-      {/* R2 → R3 connector */}
-      {r3.length > 0 && r2.length === 2 && (
-        <div
-          className="relative"
-          style={{
-            gridColumn: isLeft ? "4 / 5" : "2 / 3",
-            gridRow: "1 / 9",
-          }}
-        >
-          <Connector
-            topPercent={25}
-            bottomPercent={75}
-            side={side}
-            highlight={championPath.has(r3[0].id)}
-          />
-        </div>
-      )}
-
-      {/* R3 card — spans full 8 rows */}
-      {r3.map((s) => (
-        <div
-          key={s.id}
-          className="flex items-center"
-          style={{
-            gridColumn: isLeft ? "5 / 6" : "1 / 2",
-            gridRow: "1 / 9",
-          }}
-        >
-          <SeriesCard s={s} size="md" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
-        </div>
-      ))}
-
-      {/* Round labels at top */}
-      <div className="absolute inset-x-0 -top-7 grid gap-x-1 pointer-events-none" style={{
-        gridTemplateColumns: isLeft
-          ? "minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1.05fr)"
-          : "minmax(0, 1.05fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr)",
-      }}>
+      {/* Round headers (sit above the grid) */}
+      <div className="grid gap-x-2 mb-2" style={{ gridTemplateColumns: gridCols }}>
         {isLeft ? (
           <>
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 text-center" style={{ gridColumn: "1 / 2" }}>R1</div>
+            <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
             <div />
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 text-center" style={{ gridColumn: "3 / 4" }}>R2</div>
+            <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
             <div />
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-center font-semibold" style={{ gridColumn: "5 / 6", color: conferenceColor }}>CONF · FINAL</div>
+            <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
           </>
         ) : (
           <>
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-center font-semibold" style={{ gridColumn: "1 / 2", color: conferenceColor }}>CONF · FINAL</div>
+            <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
             <div />
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 text-center" style={{ gridColumn: "3 / 4" }}>R2</div>
+            <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
             <div />
-            <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 text-center" style={{ gridColumn: "5 / 6" }}>R1</div>
+            <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
           </>
         )}
+      </div>
+
+      {/* Bracket grid */}
+      <div className="grid gap-x-2" style={{
+        gridTemplateColumns: gridCols,
+        gridTemplateRows: "repeat(8, minmax(64px, auto))",
+      }}>
+        {/* R1 cards */}
+        {displayR1.map((s, i) => (
+          <div
+            key={s.id}
+            className={cardWrap}
+            style={{
+              gridColumn: isLeft ? "1 / 2" : "5 / 6",
+              gridRow: `${i * 2 + 1} / ${i * 2 + 3}`,
+            }}
+          >
+            <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
+          </div>
+        ))}
+
+        {/* R1 → R2 connectors */}
+        {r2.length > 0 && displayR1.length === 4 && [0, 1].map((pairIdx) => {
+          const r2Match = r2[pairIdx];
+          const highlight = r2Match && championPath.has(r2Match.id);
+          return (
+            <div
+              key={`r1r2-${pairIdx}`}
+              className="relative"
+              style={{
+                gridColumn: isLeft ? "2 / 3" : "4 / 5",
+                gridRow: pairIdx === 0 ? "1 / 5" : "5 / 9",
+              }}
+            >
+              <Connector side={side} highlight={highlight} />
+            </div>
+          );
+        })}
+
+        {/* R2 cards */}
+        {r2.map((s, i) => (
+          <div
+            key={s.id}
+            className={cardWrap}
+            style={{
+              gridColumn: "3 / 4",
+              gridRow: `${i * 4 + 1} / ${i * 4 + 5}`,
+            }}
+          >
+            <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
+          </div>
+        ))}
+
+        {/* R2 → R3 connector */}
+        {r3.length > 0 && r2.length === 2 && (
+          <div
+            className="relative"
+            style={{
+              gridColumn: isLeft ? "4 / 5" : "2 / 3",
+              gridRow: "1 / 9",
+            }}
+          >
+            <Connector side={side} highlight={championPath.has(r3[0].id)} />
+          </div>
+        )}
+
+        {/* R3 card */}
+        {r3.map((s) => (
+          <div
+            key={s.id}
+            className={cardWrap}
+            style={{
+              gridColumn: isLeft ? "5 / 6" : "1 / 2",
+              gridRow: "1 / 9",
+            }}
+          >
+            <SeriesCard s={s} size="md" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -436,7 +412,6 @@ function ConfHalf({
 export default memo(function BracketTree({ games }: Props) {
   const { t } = useLocale();
 
-  // Build series from games
   const sortedGames = [...games].sort((a, b) =>
     (a.gameCode || a.gameId).localeCompare(b.gameCode || b.gameId)
   );
@@ -493,7 +468,6 @@ export default memo(function BracketTree({ games }: Props) {
   const west = allSeries.filter((s) => s.conference === "West");
   const finals = allSeries.filter((s) => s.conference === "Finals");
 
-  // Champion path — series whose winner ended up champion
   const championPath = new Set<string>();
   for (const s of allSeries) {
     if (isOnChampionPath(s, allSeries)) championPath.add(s.id);
@@ -505,6 +479,13 @@ export default memo(function BracketTree({ games }: Props) {
   const completed = allSeries.filter((s) => winnerOf(s)).length;
   const active = allSeries.filter((s) => !winnerOf(s) && s.totalGames > 0).length;
 
+  const roundLabels: Record<number, string> = {
+    1: t.playoffBracket.firstRound,
+    2: t.playoffBracket.confSemis,
+    3: t.playoffBracket.confFinals,
+    4: t.playoffBracket.finals,
+  };
+
   const eastR1 = east.filter((s) => s.round === 1);
   const eastR2 = east.filter((s) => s.round === 2);
   const eastR3 = east.filter((s) => s.round === 3);
@@ -514,7 +495,7 @@ export default memo(function BracketTree({ games }: Props) {
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
         <h2 className="text-lg font-bold flex items-center gap-2.5">
           <Trophy size={18} className="text-accent-amber" />
           {t.playoffBracket.title}
@@ -538,105 +519,89 @@ export default memo(function BracketTree({ games }: Props) {
         </div>
       </div>
 
-      {/* Desktop tree */}
-      <div className="hidden lg:block">
-        <div className="relative pt-8">
-          <div className="grid items-stretch gap-x-3" style={{
-            gridTemplateColumns: "minmax(0, 1fr) 200px minmax(0, 1fr)",
-          }}>
-            {/* East half */}
-            <div className="relative">
-              {eastR1.length > 0 ? (
-                <ConfHalf
-                  r1={eastR1}
-                  r2={eastR2}
-                  r3={eastR3}
-                  side="left"
-                  championPath={championPath}
-                  conferenceColor="#3B82F6"
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-xs text-text-secondary font-mono uppercase tracking-[0.15em]">East bracket TBD</div>
-              )}
+      {/* Desktop tree (xl+) */}
+      <div className="hidden xl:block">
+        <div className="grid items-stretch gap-x-4" style={{
+          gridTemplateColumns: "minmax(0, 1fr) 240px minmax(0, 1fr)",
+        }}>
+          {/* East half */}
+          <div className="relative">
+            {eastR1.length > 0 ? (
+              <ConfHalf
+                r1={eastR1}
+                r2={eastR2}
+                r3={eastR3}
+                side="left"
+                championPath={championPath}
+                conferenceColor="#3B82F6"
+                conferenceLabel={t.playoffBracket.eastConference}
+                roundLabels={roundLabels}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-text-secondary font-mono uppercase tracking-[0.15em]">East TBD</div>
+            )}
+          </div>
+
+          {/* Finals center column */}
+          <div className="relative flex flex-col items-center">
+            {/* Finals label header */}
+            <div className="text-center mb-3 pb-2 border-b border-[#FFD700]/30 w-full">
+              <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-text-secondary/50">/ NBA</p>
+              <p className="text-sm font-bold font-mono uppercase tracking-[0.25em] text-[#FFD700] mt-0.5 flex items-center justify-center gap-1.5">
+                <Trophy size={14} /> {t.playoffBracket.finals}
+              </p>
+              <p className="text-[9px] font-mono text-text-secondary/60 mt-0.5">championship</p>
             </div>
 
-            {/* Finals center */}
-            <div className="relative flex flex-col items-center justify-center px-2">
-              {/* Glow */}
-              <div className="absolute inset-0 bg-[#FFD700]/10 blur-3xl rounded-3xl pointer-events-none" />
-
-              {/* Trophy header */}
-              <div className="relative text-center mb-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30">
-                  <Trophy size={14} className="text-[#FFD700]" />
-                  <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#FFD700] font-bold">{t.playoffBracket.finals}</span>
-                </div>
-              </div>
-
-              {/* Finals card */}
+            {/* Centered Finals card */}
+            <div className="relative flex-1 w-full flex items-center justify-center">
+              <div className="absolute inset-0 bg-[#FFD700]/8 blur-3xl rounded-3xl pointer-events-none" />
               {finals.length > 0 ? (
                 <div className="relative w-full">
                   <SeriesCard s={finals[0]} size="lg" onPath align="left" />
                 </div>
               ) : (
-                <div className="relative w-full glass-tile p-6 text-center bg-[#FFD700]/[0.02]">
-                  <Trophy size={28} className="mx-auto text-text-secondary/40 mb-2" />
+                <div className="relative w-full glass-tile p-6 text-center bg-[#FFD700]/[0.02] ring-1 ring-[#FFD700]/20">
+                  <Trophy size={32} className="mx-auto text-text-secondary/40 mb-2" />
                   <p className="text-xs font-mono uppercase tracking-[0.2em] text-text-secondary/60">Finals TBD</p>
-                  <p className="text-[10px] font-mono text-text-secondary/40 mt-1">East champion vs West champion</p>
+                  <p className="text-[10px] font-mono text-text-secondary/40 mt-1">East champion<br />vs<br />West champion</p>
                 </div>
-              )}
-            </div>
-
-            {/* West half (mirrored) */}
-            <div className="relative">
-              {westR1.length > 0 ? (
-                <ConfHalf
-                  r1={westR1}
-                  r2={westR2}
-                  r3={westR3}
-                  side="right"
-                  championPath={championPath}
-                  conferenceColor="#F59E0B"
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-xs text-text-secondary font-mono uppercase tracking-[0.15em]">West bracket TBD</div>
               )}
             </div>
           </div>
 
-          {/* Conference badges below */}
-          <div className="grid mt-4 gap-x-3" style={{
-            gridTemplateColumns: "minmax(0, 1fr) 200px minmax(0, 1fr)",
-          }}>
-            <div className="text-left">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.25em] text-accent px-2 py-1 rounded-md bg-accent/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                {t.playoffBracket.eastConference}
-              </span>
-            </div>
-            <div />
-            <div className="text-right">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.25em] text-accent-amber px-2 py-1 rounded-md bg-accent-amber/10">
-                {t.playoffBracket.westConference}
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-amber" />
-              </span>
-            </div>
+          {/* West half */}
+          <div className="relative">
+            {westR1.length > 0 ? (
+              <ConfHalf
+                r1={westR1}
+                r2={westR2}
+                r3={westR3}
+                side="right"
+                championPath={championPath}
+                conferenceColor="#F59E0B"
+                conferenceLabel={t.playoffBracket.westConference}
+                roundLabels={roundLabels}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-text-secondary font-mono uppercase tracking-[0.15em]">West TBD</div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Tablet/Mobile: vertical stacked */}
-      <div className="lg:hidden space-y-5">
+      {/* Tablet/Mobile (< xl): vertical stacked, round-grouped */}
+      <div className="xl:hidden space-y-5">
         {/* Finals on top */}
         {finals.length > 0 && (
           <div className="glass-tile p-4 bg-[#FFD700]/[0.04] ring-1 ring-[#FFD700]/20 relative overflow-hidden">
             <div className="absolute inset-0 bg-[#FFD700]/5 blur-2xl pointer-events-none" />
             <div className="relative">
-              <div className="text-center mb-3">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30">
-                  <Trophy size={12} className="text-[#FFD700]" />
-                  <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#FFD700] font-bold">{t.playoffBracket.finals}</span>
-                </span>
+              <div className="text-center mb-3 pb-2 border-b border-[#FFD700]/20">
+                <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-text-secondary/50">/ NBA</p>
+                <p className="text-sm font-bold font-mono uppercase tracking-[0.25em] text-[#FFD700] mt-0.5 flex items-center justify-center gap-1.5">
+                  <Trophy size={14} /> {t.playoffBracket.finals}
+                </p>
               </div>
               <div className="max-w-sm mx-auto">
                 <SeriesCard s={finals[0]} size="lg" onPath align="left" />
@@ -645,27 +610,32 @@ export default memo(function BracketTree({ games }: Props) {
           </div>
         )}
 
-        {/* East/West sections */}
+        {/* East/West sections — each with all rounds clearly separated */}
         {[
           { label: t.playoffBracket.eastConference, series: east, color: "#3B82F6", bg: "bg-accent/[0.04]" },
           { label: t.playoffBracket.westConference, series: west, color: "#F59E0B", bg: "bg-accent-amber/[0.04]" },
         ].map((conf) => {
           if (conf.series.length === 0) return null;
           const rounds = [
-            { num: 3, label: t.playoffBracket.confFinals, list: conf.series.filter((s) => s.round === 3) },
-            { num: 2, label: t.playoffBracket.confSemis, list: conf.series.filter((s) => s.round === 2) },
-            { num: 1, label: t.playoffBracket.firstRound, list: conf.series.filter((s) => s.round === 1) },
+            { num: 3, label: roundLabels[3], sub: "Conference Final", list: conf.series.filter((s) => s.round === 3) },
+            { num: 2, label: roundLabels[2], sub: "Round 2", list: conf.series.filter((s) => s.round === 2) },
+            { num: 1, label: roundLabels[1], sub: "Round 1", list: conf.series.filter((s) => s.round === 1) },
           ];
           return (
             <div key={conf.label} className={`glass-tile p-4 ${conf.bg}`}>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/40">
                 <span className="w-2 h-2 rounded-full" style={{ background: conf.color }} />
-                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em]" style={{ color: conf.color }}>{conf.label}</h3>
+                <h3 className="text-sm font-bold font-mono uppercase tracking-[0.2em]" style={{ color: conf.color }}>{conf.label}</h3>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {rounds.map((r) => r.list.length > 0 && (
                   <div key={r.num}>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60 mb-1.5">/ {r.label}</p>
+                    <div className="flex items-baseline justify-between mb-2">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
+                        / <span className="text-text-secondary/60">{r.sub}</span> · <span className="text-text-primary">{r.label}</span>
+                      </p>
+                      <span className="text-[9px] font-mono tabular-nums text-text-secondary/60">{r.list.length} series</span>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {r.list.map((s) => (
                         <SeriesCard key={s.id} s={s} size="sm" onPath={championPath.has(s.id)} align="left" />
