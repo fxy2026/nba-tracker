@@ -1,0 +1,240 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Trophy, Star, Shield, Sparkles, TrendingUp, Award } from "lucide-react";
+import { CURRENT_SEASON } from "@/lib/constants";
+import PageHeader from "@/components/PageHeader";
+import EmptyState from "@/components/EmptyState";
+import { useLocale } from "@/components/LocaleProvider";
+
+interface PlayerRow {
+  PLAYER_ID: number;
+  PLAYER: string;
+  TEAM: string;
+  GP: number;
+  MIN: number;
+  PTS: number;
+  REB: number;
+  AST: number;
+  STL: number;
+  BLK: number;
+  FG_PCT: number;
+  FG3_PCT: number;
+  EFF: number;
+}
+
+type RaceKey = "mvp" | "roy" | "dpoy" | "smoy" | "mip";
+
+const RACES: { key: RaceKey; label: string; icon: typeof Trophy; eyebrow: string; description: string; color: string }[] = [
+  { key: "mvp", label: "MVP", icon: Trophy, eyebrow: "Most Valuable", description: "Best overall — composite of scoring, playmaking, and impact", color: "#FFD700" },
+  { key: "roy", label: "ROY", icon: Sparkles, eyebrow: "Rookie of the Year", description: "Top first-year players by production", color: "#3B82F6" },
+  { key: "dpoy", label: "DPOY", icon: Shield, eyebrow: "Defensive POY", description: "Steals + blocks + minutes weighted", color: "#22C55E" },
+  { key: "smoy", label: "6MOY", icon: Star, eyebrow: "Sixth Man", description: "Best off the bench (low GS, high impact)", color: "#A855F7" },
+  { key: "mip", label: "MIP", icon: TrendingUp, eyebrow: "Most Improved", description: "Highest PER/min above expected", color: "#F59E0B" },
+];
+
+function scoreForRace(p: PlayerRow, race: RaceKey): number {
+  switch (race) {
+    case "mvp":
+      // PTS×1.0 + REB×0.7 + AST×1.0 + STL×1.5 + BLK×1.2 + EFF×0.3 + GP×0.1
+      return p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+    case "dpoy":
+      return p.STL * 2.5 + p.BLK * 2.5 + p.REB * 0.4 + p.MIN * 0.1;
+    case "smoy":
+      return p.PTS * 0.8 + p.AST * 0.6 + p.EFF * 0.4;
+    case "mip":
+      return p.EFF * 0.6 + p.PTS * 0.5 + p.FG_PCT * 20;
+    case "roy":
+      return p.PTS + p.REB * 0.6 + p.AST * 0.8 + p.GP * 0.1;
+  }
+}
+
+export default function AwardsRacePage() {
+  const { t } = useLocale();
+  const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeRace, setActiveRace] = useState<RaceKey>("mvp");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const qs = new URLSearchParams({
+          endpoint: "leagueleaders",
+          LeagueID: "00",
+          PerMode: "PerGame",
+          Scope: "S",
+          Season: CURRENT_SEASON,
+          SeasonType: "Regular Season",
+          StatCategory: "EFF",
+        });
+        const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const rs = data.resultSet;
+        if (!rs) throw new Error("No data");
+        const headers: string[] = rs.headers;
+        const parsed = rs.rowSet.slice(0, 100).map((row: unknown[]) => {
+          const obj: Record<string, unknown> = {};
+          headers.forEach((h, i) => { obj[h] = row[i]; });
+          return obj;
+        }) as unknown as PlayerRow[];
+        if (!controller.signal.aborted) setAllPlayers(parsed);
+      } catch { /* ignore */ }
+      if (!controller.signal.aborted) setLoading(false);
+    })();
+    return () => controller.abort();
+  }, []);
+
+  // Compute scored leaders for active race
+  const ranked = useMemo(() => {
+    if (allPlayers.length === 0) return [];
+    let pool = allPlayers.filter((p) => p.GP >= 20);
+    if (activeRace === "smoy") {
+      // Sixth Man: heuristic — high PTS but lower minutes (suggesting bench role)
+      pool = pool.filter((p) => p.MIN < 28);
+    }
+    const scored = pool.map((p) => ({ ...p, _score: scoreForRace(p, activeRace) }));
+    scored.sort((a, b) => b._score - a._score);
+    return scored.slice(0, 10);
+  }, [allPlayers, activeRace]);
+
+  const topScore = ranked[0]?._score || 1;
+  const activeRaceMeta = RACES.find((r) => r.key === activeRace)!;
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <PageHeader
+        eyebrow={`${CURRENT_SEASON} Season`}
+        icon={Award}
+        title="Awards Race"
+        subtitle="MVP · ROY · DPOY · 6MOY · MIP — all in one place"
+      />
+
+      {/* Race selector tabs — glass pill bar */}
+      <div className="glass-tile flex flex-wrap overflow-hidden p-1 mb-6 w-fit">
+        {RACES.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setActiveRace(key)}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-all cursor-pointer ${
+              activeRace === key
+                ? "bg-accent text-white shadow-md"
+                : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+            }`}
+          >
+            <Icon size={14} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Active race header */}
+      <div className="glass-tile p-5 mb-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 50% 50% at 10% 0%, ${activeRaceMeta.color}66 0%, transparent 60%)` }}
+        />
+        <div className="relative flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: `${activeRaceMeta.color}22`, boxShadow: `inset 0 0 0 1px ${activeRaceMeta.color}44` }}
+          >
+            <activeRaceMeta.icon size={24} style={{ color: activeRaceMeta.color }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {activeRaceMeta.eyebrow}</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-text-primary">{activeRaceMeta.label} Race</h2>
+            <p className="text-xs text-text-secondary mt-1 font-mono">{activeRaceMeta.description}</p>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="glass-tile h-16 skeleton-shimmer" />
+          ))}
+        </div>
+      ) : ranked.length === 0 ? (
+        <EmptyState
+          icon={Award}
+          title="No qualifying players yet"
+          description="Need at least 20 games played for awards eligibility. Try again later in the season."
+        />
+      ) : (
+        <div className="space-y-2">
+          {ranked.map((p, i) => {
+            const isTop3 = i < 3;
+            const medalBg = i === 0
+              ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
+              : i === 1
+              ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
+              : i === 2
+              ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
+              : "bg-bg-hover text-text-secondary";
+            const barPct = topScore > 0 ? (p._score / topScore) * 100 : 0;
+            const barColor = i === 0 ? "bg-[#FFD700]" : i === 1 ? "bg-[#C0C0C0]" : i === 2 ? "bg-[#CD7F32]" : "bg-accent/60";
+
+            return (
+              <Link
+                key={p.PLAYER_ID}
+                href={`/player/${p.PLAYER_ID}`}
+                className={`glass-tile flex items-center gap-3 p-3 group cursor-pointer ${isTop3 ? "bg-accent-amber/[0.03]" : ""}`}
+              >
+                <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
+                  {i + 1}
+                </span>
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
+                  <Image
+                    src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
+                    alt={p.PLAYER}
+                    width={40}
+                    height={40}
+                    unoptimized
+                    className="w-full h-full object-cover object-top"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.PLAYER}</p>
+                    <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{p.TEAM}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[280px]">
+                      <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${barPct}%` }} />
+                    </div>
+                    <span className={`text-[10px] font-mono tabular-nums font-bold ${isTop3 ? "text-text-primary" : "text-accent"}`}>
+                      {p._score.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                <div className="hidden sm:flex items-center gap-3 text-xs text-text-secondary font-mono tabular-nums shrink-0">
+                  <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> <span className="text-[9px]">PPG</span></span>
+                  <span>{p.REB.toFixed(1)} <span className="text-[9px]">RPG</span></span>
+                  <span>{p.AST.toFixed(1)} <span className="text-[9px]">APG</span></span>
+                  {activeRace === "dpoy" && <span>{p.STL.toFixed(1)} <span className="text-[9px]">STL</span></span>}
+                  {activeRace === "dpoy" && <span>{p.BLK.toFixed(1)} <span className="text-[9px]">BLK</span></span>}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Formula footer */}
+      <div className="mt-8 glass-tile p-4">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Methodology</p>
+        <p className="text-xs text-text-secondary leading-relaxed">
+          {t.statsPage.mvpRankingNote || "Custom composite ranking — combines per-game production weighted by category. Minimum 20 GP required. Refreshed from official NBA stats."}
+        </p>
+        <p className="text-[10px] text-text-secondary/50 mt-2 font-mono">
+          Note: These are computed projections, not official voting. Real awards involve voter sentiment and team narrative.
+        </p>
+      </div>
+    </div>
+  );
+}

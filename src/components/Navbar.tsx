@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -74,6 +74,8 @@ export default function Navbar() {
 
   // Secondary nav — inside "More" dropdown
   const moreLinks = useMemo(() => [
+    { href: "/streaks", label: "Streaks", icon: Flame },
+    { href: "/awards-race", label: "Awards Race", icon: Award },
     { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
     { href: "/h2h", label: t.nav.h2h, icon: Swords },
     { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },

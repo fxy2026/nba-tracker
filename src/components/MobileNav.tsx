@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -31,6 +31,8 @@ export default function MobileNav() {
     {
       title: t.nav.analysis,
       items: [
+        { href: "/streaks", label: "Streaks", icon: Flame },
+        { href: "/awards-race", label: "Awards", icon: Award },
         { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
         { href: "/h2h", label: t.nav.h2h, icon: Swords },
         { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
