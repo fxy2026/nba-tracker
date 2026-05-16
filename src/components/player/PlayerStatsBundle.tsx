@@ -170,7 +170,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
                     <td className="text-center py-2 px-2 text-text-secondary">{g.MIN}</td>
                     <td className="text-center py-2 px-2 font-bold text-accent">
                       {g.PTS}
-                      {g.PTS >= 40 && <span className="ml-0.5 text-[8px] text-yellow-400">&#9733;</span>}
+                      {g.PTS >= 40 && <span className="ml-0.5 text-[8px] text-accent-amber">&#9733;</span>}
                     </td>
                     <td className="text-center py-2 px-2">{g.REB}</td>
                     <td className="text-center py-2 px-2">{g.AST}</td>
@@ -354,7 +354,7 @@ function CareerStatsTable({ seasons, t }: { seasons: SeasonRow[]; t: Translation
               >
                 <td className={`py-2 px-3 font-medium sticky left-0 whitespace-nowrap ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
                   {s.SEASON_ID}
-                  {i === bestIdx && <span className="ml-1 text-yellow-400 text-[10px]" title={t.playerStats.bestSeason}>★</span>}
+                  {i === bestIdx && <span className="ml-1 text-accent-amber text-[10px]" title={t.playerStats.bestSeason}>★</span>}
                 </td>
                 <td className="py-2 px-2 text-text-secondary">{s.TEAM_ABBREVIATION}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{s.GP}</td>

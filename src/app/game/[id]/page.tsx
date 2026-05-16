@@ -328,7 +328,7 @@ function GameSummary({ homeTeam, awayTeam, shots, t }: { homeTeam: BoxScoreTeam;
   const numPeriods = Math.max(homeTeam.periods?.length || 4, 4);
   const pacePerQ = numPeriods > 0 ? totalPoints / numPeriods : 0;
   const paceLabel = pacePerQ > 55 ? "Fast Pace" : pacePerQ < 45 ? "Slow" : "Normal";
-  const paceColor = pacePerQ > 55 ? "text-success bg-success/10" : pacePerQ < 45 ? "text-yellow-400 bg-yellow-400/10" : "text-text-secondary bg-bg-hover";
+  const paceColor = pacePerQ > 55 ? "text-success bg-success/10" : pacePerQ < 45 ? "text-accent-amber bg-accent-amber/10" : "text-text-secondary bg-bg-hover";
 
   // Feature 7: Team foul comparison (single-pass sum, no intermediate arrays)
   let homeFouls = 0, awayFouls = 0;

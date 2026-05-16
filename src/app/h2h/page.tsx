@@ -174,12 +174,12 @@ export default async function H2HPage({ searchParams }: PageProps) {
                     <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3 flex items-center gap-2"><span className="w-1 h-3 bg-accent-amber rounded-full" />{t.h2hPage.blowoutWins}</h3>
                     <div className="flex items-center justify-center gap-6">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-accent">{t1Blowouts}</p>
+                        <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{t1Blowouts}</p>
                         <p className="text-xs text-text-secondary">{t1}</p>
                       </div>
                       <span className="text-text-secondary">-</span>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-accent">{t2Blowouts}</p>
+                        <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{t2Blowouts}</p>
                         <p className="text-xs text-text-secondary">{t2}</p>
                       </div>
                     </div>
@@ -192,14 +192,14 @@ export default async function H2HPage({ searchParams }: PageProps) {
                       {t1Best.game && (
                         <div className="bg-bg-secondary/60 backdrop-blur-sm rounded-lg p-3 text-center">
                           <p className="text-xs text-text-secondary">{t1}</p>
-                          <p className="text-2xl font-bold text-accent">+{t1Best.diff}</p>
+                          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">+{t1Best.diff}</p>
                           <p className="text-[10px] text-text-secondary">{t1Best.game.awayTricode} {t1Best.game.awayScore}-{t1Best.game.homeScore} {t1Best.game.homeTricode}</p>
                         </div>
                       )}
                       {t2Best.game && (
                         <div className="bg-bg-secondary/60 backdrop-blur-sm rounded-lg p-3 text-center">
                           <p className="text-xs text-text-secondary">{t2}</p>
-                          <p className="text-2xl font-bold text-accent">+{t2Best.diff}</p>
+                          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">+{t2Best.diff}</p>
                           <p className="text-[10px] text-text-secondary">{t2Best.game.awayTricode} {t2Best.game.awayScore}-{t2Best.game.homeScore} {t2Best.game.homeTricode}</p>
                         </div>
                       )}

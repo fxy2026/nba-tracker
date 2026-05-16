@@ -64,7 +64,7 @@ function getStatusColor(status: string | undefined): string {
   if (!status) return "text-text-secondary";
   const s = status.toLowerCase();
   if (s.includes("out")) return "text-danger";
-  if (s.includes("day-to-day") || s.includes("questionable")) return "text-yellow-400";
+  if (s.includes("day-to-day") || s.includes("questionable")) return "text-accent-amber";
   if (s.includes("doubtful")) return "text-accent-amber";
   return "text-text-secondary";
 }
@@ -73,8 +73,8 @@ function getStatusBg(status: string | undefined): string {
   if (!status) return "bg-text-secondary/10";
   const s = status.toLowerCase();
   if (s.includes("out")) return "bg-danger/10";
-  if (s.includes("day-to-day") || s.includes("questionable")) return "bg-yellow-400/10";
-  if (s.includes("doubtful")) return "bg-orange-400/10";
+  if (s.includes("day-to-day") || s.includes("questionable")) return "bg-accent-amber/10";
+  if (s.includes("doubtful")) return "bg-accent-amber/10";
   return "bg-text-secondary/10";
 }
 
@@ -133,19 +133,19 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
               <span className="font-bold text-danger">{outCount}</span>
               <span className="text-text-secondary text-xs">{t.injuriesPage.out}</span>
             </span>
-            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-orange-400/10 rounded-lg">
-              <span className="w-2 h-2 rounded-full bg-orange-400" />
+            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-accent-amber/10 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-accent-amber" />
               <span className="font-bold text-accent-amber">{doubtfulCount}</span>
               <span className="text-text-secondary text-xs">{t.injuriesPage.doubtful}</span>
             </span>
-            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/10 rounded-lg">
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="font-bold text-yellow-400">{dtdCount}</span>
+            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-accent-amber/10 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-accent-amber" />
+              <span className="font-bold text-accent-amber">{dtdCount}</span>
               <span className="text-text-secondary text-xs">{t.injuriesPage.dayToDay}</span>
             </span>
-            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/10 rounded-lg">
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="font-bold text-yellow-400">{questionableCount}</span>
+            <span className="text-sm flex items-center gap-1.5 px-3 py-1.5 bg-accent-amber/10 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-accent-amber" />
+              <span className="font-bold text-accent-amber">{questionableCount}</span>
               <span className="text-text-secondary text-xs">{t.injuriesPage.questionable}</span>
             </span>
           </div>
@@ -236,8 +236,8 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                       <div className="flex items-center gap-3 min-w-[180px]">
                         <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
                           inj.status?.toLowerCase().includes("out") ? "bg-danger" :
-                          inj.status?.toLowerCase().includes("doubtful") ? "bg-orange-400" :
-                          inj.status?.toLowerCase().includes("day-to-day") || inj.status?.toLowerCase().includes("questionable") ? "bg-yellow-400" :
+                          inj.status?.toLowerCase().includes("doubtful") ? "bg-accent-amber" :
+                          inj.status?.toLowerCase().includes("day-to-day") || inj.status?.toLowerCase().includes("questionable") ? "bg-accent-amber" :
                           "bg-text-secondary/50"
                         }`} />
                         <span className="font-medium text-sm text-text-primary">

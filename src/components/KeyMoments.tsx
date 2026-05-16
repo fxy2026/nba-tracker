@@ -170,7 +170,7 @@ export default memo(function KeyMoments({ actions }: Props) {
   const typeColors: Record<string, string> = {
     run: "bg-success/15 text-success border-l-success",
     lead_change: "bg-accent/10 text-accent border-l-accent",
-    clutch: "bg-accent-amber/10 text-yellow-400 border-l-accent-amber",
+    clutch: "bg-accent-amber/10 text-accent-amber border-l-accent-amber",
     swing: "bg-danger/10 text-danger border-l-danger",
   };
 
@@ -187,7 +187,7 @@ export default memo(function KeyMoments({ actions }: Props) {
         </h3>
         <div className="flex items-center gap-2 text-[9px]">
           {counts.run > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{counts.run} {t.keyMoments.runs}</span>}
-          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-yellow-400">{counts.clutch} {t.keyMoments.clutch}</span>}
+          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{counts.clutch} {t.keyMoments.clutch}</span>}
           {counts.lead_change > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{counts.lead_change} {t.keyMoments.leads}</span>}
         </div>
       </div>

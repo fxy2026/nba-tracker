@@ -213,19 +213,19 @@ export default function AdminPage() {
           {adminStats ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="glass-tile p-4 text-center">
-                <p className="text-2xl font-bold text-accent">{String(adminStats.replayCount ?? "—")}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{String(adminStats.replayCount ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.replayLinks}</p>
               </div>
               <div className="glass-tile p-4 text-center">
-                <p className="text-2xl font-bold text-text-primary">{String(adminStats.replayGames ?? "—")}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{String(adminStats.replayGames ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.gamesWithReplay}</p>
               </div>
               <div className="glass-tile p-4 text-center">
-                <p className="text-2xl font-bold text-success">{String(adminStats.finishedGames ?? "—")}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-success">{String(adminStats.finishedGames ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.finishedGames}</p>
               </div>
               <div className="glass-tile p-4 text-center">
-                <p className="text-2xl font-bold text-text-primary">{String(adminStats.playerCount ?? "—")}</p>
+                <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{String(adminStats.playerCount ?? "—")}</p>
                 <p className="text-[10px] text-text-secondary uppercase mt-1">{t.admin.playersIndexed}</p>
               </div>
             </div>

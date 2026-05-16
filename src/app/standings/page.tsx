@@ -66,12 +66,13 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50">
-        <h3 className="text-sm font-semibold">{division}</h3>
+      <div className="px-4 py-3 border-b border-border bg-bg-secondary/30">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Division</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight mt-0.5">{division}</h3>
       </div>
       <div className="divide-y divide-border/30">
         {/* Header row */}
-        <div className="grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] uppercase text-text-secondary font-medium">
+        <div className="grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
           <span className="w-5">#</span>
           <span>{t.common.team}</span>
           <span className="text-center">{t.common.wins}</span>
@@ -148,16 +149,19 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-bg-secondary/50 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">{title}</h3>
+      <div className="px-4 py-3 border-b border-border bg-bg-secondary/30 flex items-end justify-between">
+        <div>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Conference</p>
+          <h3 className="text-sm font-semibold text-text-primary tracking-tight mt-0.5">{title}</h3>
+        </div>
         {leader && (
-          <span className="text-[10px] text-accent">{t.standingsPage.best}{leader.tricode} ({leader.wins}-{leader.losses})</span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-accent-amber">★ {t.standingsPage.best}{leader.tricode} <span className="tabular-nums">({leader.wins}-{leader.losses})</span></span>
         )}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-text-secondary text-xs">
+          <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+            <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
               <th className="text-center py-2.5 px-2 w-8">#</th>
               <th className="text-left py-2.5 px-3">{t.common.team}</th>
               <th className="text-center py-2.5 px-2">{t.common.wins}</th>

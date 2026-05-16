@@ -144,7 +144,7 @@ export default function CalendarPage() {
         else if (m >= 6 && m <= 8) phase = t.common.offseason; // Jul-Sep
         const phaseColor = phase === t.common.playoffs || phase === t.common.nbaFinals ? "text-accent bg-accent/10" :
           phase === t.common.regularSeason || phase === t.common.allStarBreak ? "text-success bg-success/10" :
-          phase === t.common.preseason ? "text-yellow-400 bg-yellow-400/10" :
+          phase === t.common.preseason ? "text-accent-amber bg-accent-amber/10" :
           "text-text-secondary bg-bg-hover";
         return (
           <div className="mb-4">
