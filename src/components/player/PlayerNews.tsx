@@ -34,9 +34,12 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
   if (loading) {
     return (
       <div className="glass-tile p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Newspaper size={14} className="text-accent" />
-          <h3 className="text-sm font-semibold">{t.playerNews.title}</h3>
+        <div className="mb-3">
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ News</p>
+          <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+            <Newspaper size={14} className="text-accent-amber" />
+            {t.playerNews.title}
+          </h3>
         </div>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -51,9 +54,12 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <Newspaper size={14} className="text-accent" />
-        <h3 className="text-sm font-semibold">Latest News</h3>
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ News</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <Newspaper size={14} className="text-accent-amber" />
+          Latest News
+        </h3>
       </div>
       <div className="divide-y divide-border/50">
         {news.map((item, i) => (
@@ -62,7 +68,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
             href={item.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex gap-3 px-4 py-3 hover:bg-bg-hover transition-colors"
+            className="flex gap-3 px-4 py-3 hover:bg-bg-hover transition-colors cursor-pointer group"
           >
             {item.image && (
               <div className="w-16 h-12 rounded-lg overflow-hidden bg-bg-secondary shrink-0">
@@ -71,8 +77,8 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary line-clamp-2">{item.headline}</p>
-              <p className="text-xs text-text-secondary mt-0.5">{item.published}</p>
+              <p className="text-sm font-medium text-text-primary line-clamp-2 group-hover:text-accent transition-colors">{item.headline}</p>
+              <p className="text-[10px] text-text-secondary mt-1 font-mono uppercase tracking-[0.15em]">{item.published}</p>
             </div>
           </a>
         ))}

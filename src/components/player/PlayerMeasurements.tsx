@@ -68,9 +68,12 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <Ruler size={14} className="text-accent" />
-        <h3 className="text-sm font-semibold">{t.playerMeasurements.title} ({draftYear})</h3>
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Combine {draftYear}</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <Ruler size={14} className="text-accent-amber" />
+          {t.playerMeasurements.title}
+        </h3>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-px bg-border">
         <MeasureCell label={t.playerMeasurements.wingspan} value={data.wingspan} />
@@ -90,8 +93,8 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
 function MeasureCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-bg-card p-3 text-center">
-      <p className="text-[10px] text-text-secondary uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-bold text-text-primary mt-1">{value}</p>
+      <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
+      <p className="text-base font-light font-mono tabular-nums text-text-primary mt-1">{value}</p>
     </div>
   );
 }

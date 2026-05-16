@@ -19,32 +19,33 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center text-center">
-      <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center mb-6">
-        <AlertTriangle size={32} className="text-danger" />
-      </div>
-      <h2 className="text-2xl font-bold mb-2">{t.errors.pageError}</h2>
-      <p className="text-text-secondary mb-6 max-w-md">
-        {t.errors.pageErrorDesc}
-      </p>
-      {error.digest && (
-        <p className="text-[10px] text-text-secondary/50 mb-4 font-mono">{t.errors.errorId}{error.digest}</p>
-      )}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => unstable_retry()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors touch-target"
-        >
-          <RotateCcw size={16} />
-          {t.common.retry}
-        </button>
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-5 py-2.5 bg-bg-card border border-border text-text-primary rounded-lg hover:bg-bg-hover transition-colors font-medium touch-target"
-        >
-          <Home size={16} />
-          {t.common.home}
-        </Link>
+    <div className="max-w-2xl mx-auto px-4 py-20" role="alert">
+      <div className="glass-tile p-10 sm:p-12 text-center">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-3">/ Error</p>
+        <div className="w-16 h-16 rounded-2xl bg-danger/10 flex items-center justify-center mb-5 mx-auto">
+          <AlertTriangle size={26} className="text-danger" />
+        </div>
+        <h2 className="text-2xl font-semibold tracking-tight text-text-primary mb-2">{t.errors.pageError}</h2>
+        <p className="text-text-secondary max-w-md mx-auto">{t.errors.pageErrorDesc}</p>
+        {error.digest && (
+          <p className="text-[10px] text-text-secondary/50 mt-3 font-mono uppercase tracking-[0.15em]">{t.errors.errorId} {error.digest}</p>
+        )}
+        <div className="flex items-center gap-3 justify-center mt-6">
+          <button
+            onClick={() => unstable_retry()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-accent-gradient text-white rounded-xl text-xs font-bold uppercase tracking-[0.15em] hover:opacity-90 transition-colors touch-target cursor-pointer shadow-lg shadow-accent/30"
+          >
+            <RotateCcw size={14} />
+            {t.common.retry}
+          </button>
+          <Link
+            href="/"
+            className="chip cursor-pointer"
+          >
+            <Home size={14} />
+            {t.common.home}
+          </Link>
+        </div>
       </div>
     </div>
   );

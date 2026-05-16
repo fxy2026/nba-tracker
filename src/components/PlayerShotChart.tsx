@@ -195,21 +195,21 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
         {info && (
           <div className="px-5 pb-3">
             <div className="grid grid-cols-4 gap-2">
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
-                <p className="text-[10px] text-text-secondary uppercase tracking-wide">Seasons</p>
-                <p className="text-lg font-bold text-text-primary">{info.toYear && info.fromYear ? parseInt(info.toYear) - parseInt(info.fromYear) + 1 : "-"}</p>
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">Seasons</p>
+                <p className="text-lg font-light font-mono tabular-nums text-text-primary mt-0.5">{info.toYear && info.fromYear ? parseInt(info.toYear) - parseInt(info.fromYear) + 1 : "-"}</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
-                <p className="text-[10px] text-text-secondary uppercase tracking-wide">PPG</p>
-                <p className="text-lg font-bold text-accent">{info.pts}</p>
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">PPG</p>
+                <p className="text-lg font-light font-mono tabular-nums text-accent-amber mt-0.5">{info.pts}</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
-                <p className="text-[10px] text-text-secondary uppercase tracking-wide">RPG</p>
-                <p className="text-lg font-bold text-text-primary">{info.reb}</p>
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">RPG</p>
+                <p className="text-lg font-light font-mono tabular-nums text-text-primary mt-0.5">{info.reb}</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
-                <p className="text-[10px] text-text-secondary uppercase tracking-wide">APG</p>
-                <p className="text-lg font-bold text-text-primary">{info.ast}</p>
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">APG</p>
+                <p className="text-lg font-light font-mono tabular-nums text-text-primary mt-0.5">{info.ast}</p>
               </div>
             </div>
             {info.college && (
@@ -227,22 +227,22 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
               <h4 className="text-xs font-medium text-text-secondary uppercase tracking-wide">{t.playerShotChart.thisGame}</h4>
             </div>
             <div className="grid grid-cols-4 gap-2 px-5 pb-3">
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">{t.playerShotChart.totalFg}</p>
                 <p className="text-lg font-bold">{data.madeCount}/{data.fieldGoalTotal}</p>
                 <p className="text-xs text-accent">{data.fieldGoalTotal > 0 ? ((data.madeCount / data.fieldGoalTotal) * 100).toFixed(1) : "0"}%</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">2PT</p>
                 <p className="text-lg font-bold">{data.twosMade}/{data.twos}</p>
                 <p className="text-xs text-accent">{data.twos > 0 ? ((data.twosMade / data.twos) * 100).toFixed(1) : "0"}%</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">3PT</p>
                 <p className="text-lg font-bold">{data.threesMade}/{data.threes}</p>
                 <p className="text-xs text-accent">{data.threes > 0 ? ((data.threesMade / data.threes) * 100).toFixed(1) : "0"}%</p>
               </div>
-              <div className="bg-bg-card rounded-lg p-2.5 text-center">
+              <div className="bg-bg-card/80 backdrop-blur-md rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">FT</p>
                 <p className="text-lg font-bold">{data.ftsMade}/{data.fts}</p>
                 <p className="text-xs text-accent">{data.fts > 0 ? ((data.ftsMade / data.fts) * 100).toFixed(1) : "0"}%</p>

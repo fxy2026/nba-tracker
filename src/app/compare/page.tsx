@@ -171,7 +171,7 @@ export default function ComparePage() {
             </div>
             <div className="flex flex-col items-center justify-center gap-2 px-4">
               <div className="w-px h-8 bg-border" />
-              <span className="text-2xl font-bold text-text-secondary">{t.common.vs}</span>
+              <span className="text-xl font-light font-mono uppercase tracking-[0.2em] text-accent-amber">{t.common.vs}</span>
               <div className="w-px h-8 bg-border" />
             </div>
             <div className="flex flex-col items-center gap-3">

@@ -40,25 +40,28 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <DollarSign size={14} className="text-success" />
-        <h3 className="text-sm font-semibold">{t.playerSalary.title}</h3>
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Contract</p>
+        <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
+          <DollarSign size={14} className="text-success" />
+          {t.playerSalary.title}
+        </h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border text-text-secondary">
+          <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+            <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
               <th className="text-left py-2.5 px-4">{t.playerSalary.seasonCol}</th>
               <th className="text-right py-2.5 px-4">{t.playerSalary.baseSalary}</th>
               <th className="text-right py-2.5 px-4">{t.playerSalary.capHit}</th>
             </tr>
           </thead>
           <tbody>
-            {contracts.map((c) => (
-              <tr key={c.season} className="border-b border-border/30 hover:bg-bg-hover/50">
-                <td className="py-2.5 px-4 font-medium text-text-primary">{c.season}-{String(c.season + 1).slice(2)}</td>
-                <td className="py-2.5 px-4 text-right font-medium text-success">{formatSalary(c.base_salary)}</td>
-                <td className="py-2.5 px-4 text-right text-text-secondary">{formatSalary(c.cap_hit)}</td>
+            {contracts.map((c, i) => (
+              <tr key={c.season} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i === 0 ? "bg-success/[0.03]" : ""}`}>
+                <td className="py-2.5 px-4 font-medium text-text-primary font-mono tabular-nums">{c.season}-{String(c.season + 1).slice(2)}</td>
+                <td className="py-2.5 px-4 text-right font-bold text-success font-mono tabular-nums">{formatSalary(c.base_salary)}</td>
+                <td className="py-2.5 px-4 text-right text-text-secondary font-mono tabular-nums">{formatSalary(c.cap_hit)}</td>
               </tr>
             ))}
           </tbody>

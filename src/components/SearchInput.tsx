@@ -165,7 +165,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
             <button
               key={q}
               onMouseDown={(e) => { e.preventDefault(); setQuery(q); }}
-              className="text-xs px-2.5 py-1 rounded-full bg-bg-card border border-border text-text-secondary hover:text-accent hover:border-accent/50 transition-colors"
+              className="chip cursor-pointer"
             >
               {q}
             </button>
@@ -174,10 +174,10 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       )}
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
-          {/* Feature 10: Result count */}
-          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/50" aria-live="polite">
-            <span className="text-xs text-text-secondary font-medium">{results.length} {results.length !== 1 ? t.common.players : t.common.player}</span>
+        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto animate-fade-in">
+          {/* Result count */}
+          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/40" aria-live="polite">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary"><span className="text-text-primary font-bold tabular-nums">{results.length}</span> {results.length !== 1 ? t.common.players : t.common.player}</span>
           </div>
           {results.map((p, idx) => (
             <Link
