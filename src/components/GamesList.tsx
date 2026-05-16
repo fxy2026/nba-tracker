@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { ScheduleGame } from "@/lib/api";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
@@ -84,18 +85,8 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     return { ...closest, margin };
   }, [final]);
 
-  const dayInsights = useMemo(() => {
-    if (final.length === 0) return null;
-    const avgScore = (final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0) / final.length).toFixed(0);
-    let blowouts = 0, thrillers = 0, homeWins = 0;
-    for (const g of final) {
-      const diff = Math.abs(g.homeTeam.score - g.awayTeam.score);
-      if (diff >= 20) blowouts++;
-      if (diff <= 5) thrillers++;
-      if (g.homeTeam.score > g.awayTeam.score) homeWins++;
-    }
-    return { avgScore, blowouts, thrillers, homeWins, awayWins: final.length - homeWins };
-  }, [final]);
+  // Date breakdown for hero display — must run before any early return (rules-of-hooks)
+  const dateObj = useMemo(() => new Date(selectedDate + "T12:00:00"), [selectedDate]);
 
   if (loading) {
     return (
@@ -142,9 +133,16 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     );
   }
 
+  // Compact editorial summary line — no padding tiles
+  const monthShort = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+  const weekday = dateObj.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
+  const dayNum = dateObj.getDate();
+
   return (
     <>
-      {/* Live score ticker */}
+      <LiveScoreRefresher hasLiveGames={hasLiveGames} />
+
+      {/* Live score ticker (only when live games — high-signal real-time element) */}
       {hasLiveGames && (
         <ScoreTicker
           games={liveNow.map((g) => ({
@@ -158,104 +156,173 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         />
       )}
 
-      <LiveScoreRefresher hasLiveGames={hasLiveGames} />
-
-      {/* Last updated */}
-      {isToday && games.length > 0 && (
-        <p className="text-[10px] text-text-secondary text-right mt-4">
-          {t.common.updated}{new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit" })} ({t.common.beijing})
-        </p>
+      {/* Editorial status line — minimal, only when games exist */}
+      {games.length > 0 && (
+        <div className="mt-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] text-text-secondary">
+          <span>{weekday} {monthShort} {dayNum}</span>
+          <span className="h-px flex-1 bg-border" />
+          <span>
+            <span className="text-text-primary font-semibold tabular-nums">{games.length}</span> games
+          </span>
+          {hasLiveGames && (
+            <span className="flex items-center gap-1.5 text-success">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
+              </span>
+              <span className="font-bold tabular-nums">{liveNow.length}</span> live
+            </span>
+          )}
+        </div>
       )}
 
-      {/* Game of the Day */}
+      {/* ─── Game of the Day featured tile ─────────────────── */}
       {gameOfTheDay && (
-        <Link href={`/game/${gameOfTheDay.gameId}`} className="glass-tile glass-tile-featured block mt-6 mb-2 px-5 py-3 cursor-pointer relative overflow-hidden">
-          <span className="absolute inset-0 bg-gradient-to-r from-accent-amber/10 via-transparent to-accent/10 pointer-events-none" />
-          <p className="text-sm text-center relative">
-            <span className="text-accent font-bold">{t.home.gameOfTheDay}</span>
-            <span className="text-text-primary font-semibold">
-              {gameOfTheDay.awayTeam.teamTricode} {gameOfTheDay.awayTeam.score} - {gameOfTheDay.homeTeam.score} {gameOfTheDay.homeTeam.teamTricode}
-            </span>
-            <span className="text-text-secondary ml-1">({t.home.margin}{gameOfTheDay.margin})</span>
-          </p>
+        <Link
+          href={`/game/${gameOfTheDay.gameId}`}
+          className="glass-tile glass-tile-featured block mt-5 cursor-pointer relative overflow-hidden group"
+        >
+          {/* Background watermark logos — both teams faintly behind */}
+          <Image
+            src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.awayTeam.teamId}/global/L/logo.svg`}
+            alt=""
+            width={280}
+            height={280}
+            unoptimized
+            className="absolute -left-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
+          />
+          <Image
+            src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.homeTeam.teamId}/global/L/logo.svg`}
+            alt=""
+            width={280}
+            height={280}
+            unoptimized
+            className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent-amber/10 pointer-events-none" />
+
+          <div className="relative p-5 sm:p-6 flex items-center gap-4 sm:gap-6">
+            {/* Away team */}
+            <div className="flex-1 flex items-center gap-3">
+              <Image
+                src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.awayTeam.teamId}/global/L/logo.svg`}
+                alt={gameOfTheDay.awayTeam.teamTricode}
+                width={48}
+                height={48}
+                unoptimized
+                className="shrink-0"
+              />
+              <div className="min-w-0">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary truncate">Away</p>
+                <p className="text-sm font-bold text-text-primary truncate">{gameOfTheDay.awayTeam.teamTricode}</p>
+              </div>
+            </div>
+
+            {/* Center: Score + label */}
+            <div className="text-center shrink-0">
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-accent-amber mb-1 flex items-center justify-center gap-1">
+                <span>★</span> {t.home.gameOfTheDay} <span>★</span>
+              </p>
+              <p className="text-3xl sm:text-4xl font-light font-mono tabular-nums leading-none tracking-tight text-text-primary">
+                {gameOfTheDay.awayTeam.score}
+                <span className="text-text-secondary/40 mx-2 font-extralight">–</span>
+                {gameOfTheDay.homeTeam.score}
+              </p>
+              <p className="text-[10px] font-mono tabular-nums text-text-secondary mt-1.5">
+                <span className="text-accent-amber font-bold">{gameOfTheDay.margin}</span> pt margin
+              </p>
+            </div>
+
+            {/* Home team */}
+            <div className="flex-1 flex items-center gap-3 justify-end">
+              <div className="min-w-0 text-right">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary truncate">Home</p>
+                <p className="text-sm font-bold text-text-primary truncate">{gameOfTheDay.homeTeam.teamTricode}</p>
+              </div>
+              <Image
+                src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.homeTeam.teamId}/global/L/logo.svg`}
+                alt={gameOfTheDay.homeTeam.teamTricode}
+                width={48}
+                height={48}
+                unoptimized
+                className="shrink-0"
+              />
+            </div>
+          </div>
         </Link>
       )}
 
-      {/* Games count */}
+      {/* Game cards by status — each group is its own section divider */}
       {games.length > 0 ? (
-        <div className="mt-6 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-text-primary"><span className="font-mono tabular-nums">{games.length}</span> {games.length !== 1 ? t.common.games : t.common.game}</span>
-            {games.length >= 10 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{t.home.packedSlate}</span>
-            )}
-            {games.length > 0 && games.length <= 3 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber font-medium">{t.home.lightDay}</span>
-            )}
-            {liveNow.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">{liveNow.length}{t.home.liveCount}</span>
-            )}
-            {final.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-text-secondary/10 text-text-secondary">{final.length}{t.home.finalCount}</span>
-            )}
-          </div>
-          {final.length > 0 && (() => {
-            const totalPts = final.reduce((s, g) => s + g.homeTeam.score + g.awayTeam.score, 0);
-            return (
-              <p className="text-xs text-text-secondary mt-1">
-                {t.home.totalPoints}<span className="font-bold text-accent">{totalPts}</span> {t.home.across} {final.length} {final.length !== 1 ? t.home.finishedGames : t.home.finishedGame}
-              </p>
-            );
-          })()}
-        </div>
-      ) : null}
-
-      {/* Game cards by status */}
-      {games.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-6 mt-6">
           {games.some((g) => g.gameId.startsWith("004")) && (
-            <div className="bg-gradient-to-r from-accent/10 to-accent-amber/10 border border-accent/20 rounded-xl px-4 py-2 text-center">
-              <span className="text-xs font-bold text-accent uppercase tracking-wide">{t.home.playoffGamesToday}</span>
+            <div className="glass-tile glass-tile-featured px-4 py-2 text-center">
+              <span className="text-xs font-bold text-accent-amber uppercase tracking-[0.25em]">★ {t.home.playoffGamesToday}</span>
             </div>
           )}
+
           {liveNow.length > 0 && (
-            <>
-              <h2 className="text-sm font-semibold text-success flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
-                {t.home.liveNow}
-              </h2>
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-success flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                  </span>
+                  Live Now
+                </h3>
+                <span className="h-px flex-1 bg-success/30" />
+                <span className="text-[10px] font-mono tabular-nums text-success/80">
+                  {liveNow.length} {liveNow.length === 1 ? "game" : "games"}
+                  {isToday && <span className="text-text-secondary/60 ml-2">· auto</span>}
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {liveNow.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
-            </>
+            </div>
           )}
+
           {upcoming.length > 0 && (
-            <>
-              <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/50" />
-                {t.common.upcoming}
-              </h2>
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
+                  Upcoming
+                </h3>
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
+                  {upcoming.length} {upcoming.length === 1 ? "game" : "games"}
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcoming.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
-            </>
+            </div>
           )}
+
           {final.length > 0 && (
-            <>
-              <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-text-secondary/30" />
-                {t.common.final}
-              </h2>
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-text-secondary/50" />
+                  Final
+                </h3>
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
+                  {final.length} {final.length === 1 ? "game" : "games"}
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {final.map((game) => (
                   <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
       ) : (
@@ -315,31 +382,6 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Day insights */}
-      {dayInsights && (
-        <div className="glass-tile mt-6 p-5">
-          <h3 className="text-xs font-medium text-text-secondary uppercase mb-3">{t.home.dayInsights}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-            <div>
-              <p className="text-xl font-bold text-accent font-mono tabular-nums">{dayInsights.avgScore}</p>
-              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.avgTotalPts}</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-text-primary font-mono tabular-nums">{dayInsights.homeWins}-{dayInsights.awayWins}</p>
-              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.homeAway}</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-accent-amber font-mono tabular-nums">{dayInsights.thrillers}</p>
-              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.thrillers}</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-danger font-mono tabular-nums">{dayInsights.blowouts}</p>
-              <p className="text-[10px] uppercase tracking-wide text-text-secondary">{t.home.blowouts}</p>
-            </div>
-          </div>
         </div>
       )}
 

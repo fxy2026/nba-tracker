@@ -27,15 +27,27 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
         const yStr = formatDate(yesterday);
         return (
           <div className="mt-1 mb-1">
-            <button onClick={() => setSelectedDate(yStr)} className="text-xs text-text-secondary hover:text-accent transition-colors">
+            <button onClick={() => setSelectedDate(yStr)} className="text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer">
               {t.home.yesterdayLink}{yStr})
             </button>
           </div>
         );
       })()}
-      <SeasonProgress />
-      <StandingsMini />
       <GamesList selectedDate={selectedDate} />
+
+      {/* Bottom rail — Standings + Season Progress side-by-side */}
+      <div className="mt-10 mb-4">
+        <div className="mb-3">
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ 02</p>
+          <h2 className="text-base font-semibold text-text-primary tracking-tight">League Pulse</h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <StandingsMini />
+          </div>
+          <SeasonProgress />
+        </div>
+      </div>
     </>
   );
 }

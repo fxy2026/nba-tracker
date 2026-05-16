@@ -64,13 +64,13 @@ export default function StandingsMini() {
   }, []);
 
   if (loading) {
-    return <div className="glass-tile p-4 mt-4 skeleton-shimmer h-28" />;
+    return <div className="glass-tile p-4 skeleton-shimmer h-28" />;
   }
 
   if (east.length === 0 && west.length === 0) return null;
 
   return (
-    <div className="glass-tile p-4 mt-4">
+    <div className="glass-tile p-4 h-full">
       <div className="grid grid-cols-2 gap-4">
         <ConferenceColumn title={t.standingsMini.east} teams={east} />
         <ConferenceColumn title={t.standingsMini.west} teams={west} />

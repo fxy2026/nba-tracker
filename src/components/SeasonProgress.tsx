@@ -46,7 +46,7 @@ export default function SeasonProgress() {
   }
 
   return (
-    <div className="glass-tile p-3 mt-4">
+    <div className="glass-tile p-4 h-full flex flex-col justify-center">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase text-text-secondary font-semibold flex items-center gap-1">
           <Calendar size={10} />
