@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, ListOrdered, Clock, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, Compass, Activity, Home, Shield } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -39,6 +39,9 @@ export default function MobileNav() {
         { href: "/tier-list", label: "Tiers", icon: Layers },
         { href: "/awards-race", label: "Awards", icon: Award },
         { href: "/game-predictor", label: "Predictor", icon: Zap },
+        { href: "/scoring-output", label: "Output", icon: Shield },
+        { href: "/home-vs-road", label: "Splits", icon: Home },
+        { href: "/rivalries", label: "Rivalries", icon: Swords },
         { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
         { href: "/h2h", label: t.nav.h2h, icon: Swords },
         { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
