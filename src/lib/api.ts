@@ -139,6 +139,7 @@ export interface ScheduleGame {
     seed: number;
   };
   seriesText?: string;
+  ifNecessary?: boolean;
 }
 
 export interface ScheduleDate {
@@ -156,7 +157,11 @@ export async function getTodayScoreboard(): Promise<NbaGame[]> {
   );
   if (!res.ok) return [];
   const data = await res.json();
-  return data.scoreboard?.games || [];
+  const games: NbaGame[] = data.scoreboard?.games || [];
+  // Filter out "if necessary" playoff games that are no longer needed.
+  // These show up with ifNecessary=true, gameStatus=1, and gameStatusText="TBD"
+  // even after the series is decided — they are ghost games and should not display.
+  return games.filter((g) => !(g.ifNecessary === true && g.gameStatus === 1 && /tbd/i.test(g.gameStatusText || "")));
 }
 
 // In-memory cache for the 11MB schedule — extended TTL + stale-while-revalidate
@@ -219,7 +224,9 @@ export async function getGamesByDate(dateStr: string): Promise<ScheduleGame[]> {
 
   for (const gd of schedule) {
     if (gd.gameDate.startsWith(scheduleDate)) {
-      return gd.games;
+      // Filter out unplayed "if necessary" playoff games (ghost games from
+      // series that ended early — they remain on the schedule as TBD placeholders).
+      return gd.games.filter((g) => !(g.ifNecessary === true && g.gameStatus === 1 && /tbd/i.test(g.gameStatusText || "")));
     }
   }
   return [];

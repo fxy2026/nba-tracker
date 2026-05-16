@@ -240,7 +240,7 @@ interface RoundLabelProps {
 
 function RoundLabel({ label, sub, color, count }: RoundLabelProps) {
   return (
-    <div className="text-center mb-3 pb-2 border-b border-border/40">
+    <div className="text-center pb-2 mb-2 border-b border-border/40">
       <p className="text-[8px] font-mono uppercase tracking-[0.25em] text-text-secondary/50">/ {sub}</p>
       <p className="text-xs font-bold font-mono uppercase tracking-[0.18em] mt-0.5" style={{ color }}>{label}</p>
       <p className="text-[9px] font-mono tabular-nums text-text-secondary/60 mt-0.5">{count} series</p>
@@ -249,10 +249,16 @@ function RoundLabel({ label, sub, color, count }: RoundLabelProps) {
 }
 
 /**
- * Render one half of the bracket using CSS Grid:
+ * Render one half of the bracket using a SINGLE CSS Grid:
  * 5 columns: [R1 cards] [R1→R2 connector] [R2 cards] [R2→R3 connector] [R3 card]
- * For West (right side), the order is flipped so the bracket flows inward.
- * 8 rows; R1 cards span 2 rows each, R2 spans 4, R3 spans 8.
+ * Row 1: round headers (so columns are guaranteed wide enough for labels).
+ * Rows 2-9 (8 rows): R1 cards span 2 rows each, R2 spans 4, R3 spans 8.
+ *
+ * For West (right side), card order is flipped (R3 on left, R1 on right) so the
+ * bracket flows inward toward the centered Finals card.
+ *
+ * Card columns use minmax(170px, 1fr) so they never collapse; the whole bracket
+ * sits inside an overflow-x-auto wrapper with min-width so it always renders.
  */
 function ConfHalf({
   r1, r2, r3,
@@ -280,13 +286,12 @@ function ConfHalf({
   });
   const displayR1 = sortedR1;
 
-  // Column widths: cards columns wide, gutters narrow. 5-col template.
-  // Each round's column has a clear width so labels can sit above.
+  // Fixed minimum widths prevent column collapse. Gutters wider so they're obvious.
   const gridCols = isLeft
-    ? "minmax(0, 1fr) 56px minmax(0, 1.05fr) 56px minmax(0, 1.1fr)"
-    : "minmax(0, 1.1fr) 56px minmax(0, 1.05fr) 56px minmax(0, 1fr)";
+    ? "minmax(170px, 1fr) 60px minmax(180px, 1fr) 60px minmax(190px, 1fr)"
+    : "minmax(190px, 1fr) 60px minmax(180px, 1fr) 60px minmax(170px, 1fr)";
 
-  const cardWrap = "flex items-center px-1";
+  const cardWrap = "flex items-center";
 
   return (
     <div className="relative">
@@ -306,40 +311,46 @@ function ConfHalf({
         </span>
       </div>
 
-      {/* Round headers (sit above the grid) */}
-      <div className="grid gap-x-2 mb-2" style={{ gridTemplateColumns: gridCols }}>
+      {/* Single unified grid — headers in row 1, cards/connectors in rows 2-9 */}
+      <div className="grid gap-x-2" style={{
+        gridTemplateColumns: gridCols,
+        gridTemplateRows: "auto repeat(8, minmax(64px, auto))",
+      }}>
+        {/* Round headers — row 1 */}
         {isLeft ? (
           <>
-            <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
-            <div />
-            <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
-            <div />
-            <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
+            <div style={{ gridColumn: "1 / 2", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
+            </div>
+            <div style={{ gridColumn: "3 / 4", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
+            </div>
+            <div style={{ gridColumn: "5 / 6", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
+            </div>
           </>
         ) : (
           <>
-            <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
-            <div />
-            <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
-            <div />
-            <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
+            <div style={{ gridColumn: "1 / 2", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[3]} sub="Conference Final" color={conferenceColor} count={r3.length} />
+            </div>
+            <div style={{ gridColumn: "3 / 4", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[2]} sub="Round 2" color="#94A3B8" count={r2.length} />
+            </div>
+            <div style={{ gridColumn: "5 / 6", gridRow: "1 / 2" }}>
+              <RoundLabel label={roundLabels[1]} sub="Round 1" color="#94A3B8" count={displayR1.length} />
+            </div>
           </>
         )}
-      </div>
 
-      {/* Bracket grid */}
-      <div className="grid gap-x-2" style={{
-        gridTemplateColumns: gridCols,
-        gridTemplateRows: "repeat(8, minmax(64px, auto))",
-      }}>
-        {/* R1 cards */}
+        {/* R1 cards — rows 2-9, each spans 2 rows */}
         {displayR1.map((s, i) => (
           <div
             key={s.id}
             className={cardWrap}
             style={{
               gridColumn: isLeft ? "1 / 2" : "5 / 6",
-              gridRow: `${i * 2 + 1} / ${i * 2 + 3}`,
+              gridRow: `${i * 2 + 2} / ${i * 2 + 4}`,
             }}
           >
             <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
@@ -356,7 +367,7 @@ function ConfHalf({
               className="relative"
               style={{
                 gridColumn: isLeft ? "2 / 3" : "4 / 5",
-                gridRow: pairIdx === 0 ? "1 / 5" : "5 / 9",
+                gridRow: pairIdx === 0 ? "2 / 6" : "6 / 10",
               }}
             >
               <Connector side={side} highlight={highlight} />
@@ -371,7 +382,7 @@ function ConfHalf({
             className={cardWrap}
             style={{
               gridColumn: "3 / 4",
-              gridRow: `${i * 4 + 1} / ${i * 4 + 5}`,
+              gridRow: `${i * 4 + 2} / ${i * 4 + 6}`,
             }}
           >
             <SeriesCard s={s} size="sm" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
@@ -384,7 +395,7 @@ function ConfHalf({
             className="relative"
             style={{
               gridColumn: isLeft ? "4 / 5" : "2 / 3",
-              gridRow: "1 / 9",
+              gridRow: "2 / 10",
             }}
           >
             <Connector side={side} highlight={championPath.has(r3[0].id)} />
@@ -398,7 +409,7 @@ function ConfHalf({
             className={cardWrap}
             style={{
               gridColumn: isLeft ? "5 / 6" : "1 / 2",
-              gridRow: "1 / 9",
+              gridRow: "2 / 10",
             }}
           >
             <SeriesCard s={s} size="md" onPath={championPath.has(s.id)} align={isLeft ? "left" : "right"} />
@@ -519,9 +530,9 @@ export default memo(function BracketTree({ games }: Props) {
         </div>
       </div>
 
-      {/* Desktop tree (xl+) */}
-      <div className="hidden xl:block">
-        <div className="grid items-stretch gap-x-4" style={{
+      {/* Desktop tree (md+) — horizontal scroll on narrow screens */}
+      <div className="hidden md:block overflow-x-auto pb-3 -mx-4 px-4">
+        <div className="grid items-stretch gap-x-4 min-w-[1280px]" style={{
           gridTemplateColumns: "minmax(0, 1fr) 240px minmax(0, 1fr)",
         }}>
           {/* East half */}
@@ -590,8 +601,8 @@ export default memo(function BracketTree({ games }: Props) {
         </div>
       </div>
 
-      {/* Tablet/Mobile (< xl): vertical stacked, round-grouped */}
-      <div className="xl:hidden space-y-5">
+      {/* Mobile (< md): vertical stacked, round-grouped */}
+      <div className="md:hidden space-y-5">
         {/* Finals on top */}
         {finals.length > 0 && (
           <div className="glass-tile p-4 bg-[#FFD700]/[0.04] ring-1 ring-[#FFD700]/20 relative overflow-hidden">
