@@ -51,7 +51,9 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Hydration: search history from localStorage.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchHistory(getSearchHistory());
   }, []);
 
@@ -65,8 +67,9 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Reset selected index when results change
+  // Reset selected index when results change.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex(-1);
   }, [results]);
 
@@ -86,10 +89,13 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
     }
   };
 
+  // Debounced search — clearing results below the threshold and setting them
+  // post-fetch are intentional state syncs for an external input.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (query.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setShowDropdown(false);
       return;

@@ -328,9 +328,10 @@ function GameSummary({ homeTeam, awayTeam, shots, t }: { homeTeam: BoxScoreTeam;
   const paceLabel = pacePerQ > 55 ? "Fast Pace" : pacePerQ < 45 ? "Slow" : "Normal";
   const paceColor = pacePerQ > 55 ? "text-success bg-success/10" : pacePerQ < 45 ? "text-yellow-400 bg-yellow-400/10" : "text-text-secondary bg-bg-hover";
 
-  // Feature 7: Team foul comparison
-  const homeFouls = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
-  const awayFouls = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.foulsPersonal, 0);
+  // Feature 7: Team foul comparison (single-pass sum, no intermediate arrays)
+  let homeFouls = 0, awayFouls = 0;
+  for (const p of homeTeam.players) if (p.played === "1") homeFouls += p.statistics.foulsPersonal;
+  for (const p of awayTeam.players) if (p.played === "1") awayFouls += p.statistics.foulsPersonal;
 
   return (
     <div className="bg-bg-card rounded-xl border border-border p-4 mt-4">
@@ -374,10 +375,17 @@ function GameSummary({ homeTeam, awayTeam, shots, t }: { homeTeam: BoxScoreTeam;
         )}
         {/* AST/TO Ratio */}
         {(() => {
-          const awayAST = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.assists, 0);
-          const awayTO = awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.turnovers, 0);
-          const homeAST = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.assists, 0);
-          const homeTO = homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.turnovers, 0);
+          let awayAST = 0, awayTO = 0, homeAST = 0, homeTO = 0;
+          for (const p of awayTeam.players) {
+            if (p.played !== "1") continue;
+            awayAST += p.statistics.assists;
+            awayTO += p.statistics.turnovers;
+          }
+          for (const p of homeTeam.players) {
+            if (p.played !== "1") continue;
+            homeAST += p.statistics.assists;
+            homeTO += p.statistics.turnovers;
+          }
           const awayRatio = awayTO > 0 ? (awayAST / awayTO).toFixed(2) : "-";
           const homeRatio = homeTO > 0 ? (homeAST / homeTO).toFixed(2) : "-";
           return (
@@ -701,14 +709,18 @@ export default async function GamePage({ params }: PageProps) {
         const otPeriods = Math.max(periodsCount - 4, 0);
         const pace = Math.round(totalPts / (48 + otPeriods * 5) * 48); // normalize to 48 min
 
-        const benchPts = (team: BoxScoreTeam) =>
-          team.players.filter((p) => p.starter !== "1" && p.played === "1")
-            .reduce((s, p) => s + p.statistics.points, 0);
-        const homeBench = benchPts(boxScore.homeTeam);
-        const awayBench = benchPts(boxScore.awayTeam);
-
-        const homeFTA = boxScore.homeTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.freeThrowsAttempted, 0);
-        const awayFTA = boxScore.awayTeam.players.filter(p => p.played === "1").reduce((s, p) => s + p.statistics.freeThrowsAttempted, 0);
+        // Single-pass sums: bench points + FTA per team
+        let homeBench = 0, awayBench = 0, homeFTA = 0, awayFTA = 0;
+        for (const p of boxScore.homeTeam.players) {
+          if (p.played !== "1") continue;
+          homeFTA += p.statistics.freeThrowsAttempted;
+          if (p.starter !== "1") homeBench += p.statistics.points;
+        }
+        for (const p of boxScore.awayTeam.players) {
+          if (p.played !== "1") continue;
+          awayFTA += p.statistics.freeThrowsAttempted;
+          if (p.starter !== "1") awayBench += p.statistics.points;
+        }
 
         return (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">

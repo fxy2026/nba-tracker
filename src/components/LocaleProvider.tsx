@@ -28,13 +28,16 @@ export function LocaleProvider({
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
-  // Sync from localStorage on mount (in case cookie and localStorage diverge)
+  // Hydration: server SSR'd with cookie-derived initialLocale; localStorage is
+  // the source of truth on the client. Runs once and only when divergence exists.
   useEffect(() => {
     const stored = localStorage.getItem("locale");
     if (stored === "en" || stored === "zh") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored !== locale) setLocaleState(stored);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setLocale = (next: Locale) => {
     setLocaleState(next);

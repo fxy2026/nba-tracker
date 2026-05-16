@@ -350,7 +350,6 @@ export default function ComparePage() {
         // Simple production score: PTS + 1.2*REB + 1.5*AST
         const score1 = player1.pts + 1.2 * player1.reb + 1.5 * player1.ast;
         const score2 = player2.pts + 1.2 * player2.reb + 1.5 * player2.ast;
-        const max = Math.max(score1, score2, 0.1);
         return (
           <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
             <h3 className="text-xs font-medium text-text-secondary uppercase mb-3 text-center">{t.comparePage.overallScore}</h3>

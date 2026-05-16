@@ -393,7 +393,7 @@ export default async function PlayerPage({ params }: PageProps) {
           {/* Stats bundle first — most important for basketball fans */}
           <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
           <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-          <ShotHeatmap playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
+          <ShotHeatmap playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
           <PlayerMeasurements draftYear={player.draftYear} />
           <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
           <PlayerNews playerName={fullName} />

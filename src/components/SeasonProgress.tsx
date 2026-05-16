@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Calendar } from "lucide-react";
 import { CURRENT_SEASON, SEASON_START, SEASON_END, PLAYOFFS_END } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
@@ -9,7 +10,9 @@ export default function SeasonProgress() {
   const regularStart = new Date(SEASON_START).getTime();
   const regularEnd = new Date(SEASON_END).getTime();
   const playoffsEnd = new Date(PLAYOFFS_END).getTime();
-  const now = Date.now();
+  // Snapshot "now" once on mount so the component is pure (rule: components-must-be-pure).
+  // The season-progress bar doesn't need second-by-second updates.
+  const [now] = useState(() => Date.now());
 
   const isRegularSeason = now >= regularStart && now <= regularEnd;
   const isPlayoffs = now > regularEnd && now <= playoffsEnd;

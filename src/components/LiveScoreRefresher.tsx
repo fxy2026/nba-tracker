@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -11,8 +11,6 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
   const { t } = useLocale();
   const router = useRouter();
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
-  const routerRef = useRef(router);
-  routerRef.current = router;
 
   useEffect(() => {
     if (!hasLiveGames) return;
@@ -26,14 +24,14 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
       remaining--;
       setCountdown(remaining);
       if (remaining <= 0) {
-        routerRef.current.refresh();
+        router.refresh();
         remaining = interval;
         setCountdown(remaining);
       }
     }, 1000);
 
     return () => clearInterval(tick);
-  }, [hasLiveGames]);
+  }, [hasLiveGames, router]);
 
   if (!hasLiveGames) return null;
 
@@ -43,7 +41,7 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
       <span>{t.liveScore.autoRefreshing}</span>
       <button
         onClick={() => {
-          routerRef.current.refresh();
+          router.refresh();
           setCountdown(REFRESH_INTERVAL);
         }}
         className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"

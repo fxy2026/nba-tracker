@@ -37,9 +37,10 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
   const [stats, setStats] = useState<AdvancedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
 
+  // Loading state reset on playerId change — intentional dep-change refetch pattern.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(false);
     const controller = new AbortController();
@@ -60,7 +61,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
       if (!controller.signal.aborted) setLoading(false);
     })();
     return () => { controller.abort(); clearTimeout(timeout); };
-  }, [playerId, retryKey]);
+  }, [playerId, playerName, teamTricode]);
 
   if (loading) {
     return (

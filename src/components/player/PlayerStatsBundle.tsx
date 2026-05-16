@@ -47,7 +47,9 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
+  // Loading state reset on playerId/retry change — intentional dep-change refetch pattern.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(false);
     const controller = new AbortController();
@@ -72,7 +74,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
       if (!controller.signal.aborted) setLoading(false);
     })();
     return () => { controller.abort(); clearTimeout(timeout); };
-  }, [playerId, retryKey]);
+  }, [playerId, playerName, teamTricode, retryKey]);
 
   if (loading) {
     return (
@@ -132,7 +134,6 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
                 x: i * step,
                 y: h - (g.PTS / maxPts) * (h - 2) - 1,
               }));
-              const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
               return (
                 <svg width={w} height={h} className="shrink-0">
                   <polyline points={pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getFullSchedule, formatDate } from "@/lib/api";
+import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import TeamLogo from "@/components/TeamLogo";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
   const teams = Object.values(TEAM_META).sort((a, b) => a.city.localeCompare(b.city));
 
   // If both teams selected, compute h2h data
-  let games: { gameId: string; date: string; homeTricode: string; awayTricode: string; homeScore: number; awayScore: number; homeId: number; awayId: number }[] = [];
+  const games: { gameId: string; date: string; homeTricode: string; awayTricode: string; homeScore: number; awayScore: number; homeId: number; awayId: number }[] = [];
   let t1Wins = 0, t2Wins = 0;
 
   if (t1 && t2 && t1 !== t2 && TEAM_META[t1] && TEAM_META[t2]) {

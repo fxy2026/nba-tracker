@@ -41,9 +41,8 @@ const RESTRICTED_FT = 4;
 const THREE_PT_FT = 23.75;
 const CORNER_3_FT = 22;
 
-// Paint: 16ft wide (8ft each side of basket), extends to free-throw line (15ft from basket)
-const PAINT_HALF_WIDTH_PCT = (8 / COURT_WIDTH) * 100; // 8ft = 16% of court width
-const PAINT_DEPTH_FT = 15; // free-throw line distance from basket
+// Paint: extends to free-throw line (15ft from basket)
+const PAINT_DEPTH_FT = 15;
 
 // Corner 3 extends 14ft from baseline. Basket is 5.25ft from baseline → 8.75ft from basket
 const CORNER_DEPTH_FT = 14 - 5.25; // = 8.75ft from basket
@@ -97,22 +96,23 @@ export function aggregateZoneStats(
 ): ZoneStats[] {
   if (shots.length === 0) return [];
 
-  const map = new Map<ShotZone, { made: number; total: number }>();
-
+  const totals = new Map<ShotZone, { made: number; total: number }>();
   for (const shot of shots) {
     const zone = classifyShotZone(shot);
-    const entry = map.get(zone) || { made: 0, total: 0 };
+    let entry = totals.get(zone);
+    if (!entry) {
+      entry = { made: 0, total: 0 };
+      totals.set(zone, entry);
+    }
     entry.total++;
     if (shot.shotResult === "Made") entry.made++;
-    map.set(zone, entry);
   }
 
-  return Array.from(map.entries()).map(([zone, { made, total }]) => ({
-    zone,
-    made,
-    total,
-    pct: (made / total) * 100,
-  }));
+  const out: ZoneStats[] = [];
+  totals.forEach(({ made, total }, zone) => {
+    out.push({ zone, made, total, pct: (made / total) * 100 });
+  });
+  return out;
 }
 
 // Map a shooting percentage to a color relative to league average

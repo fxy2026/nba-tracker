@@ -174,6 +174,9 @@ export default memo(function KeyMoments({ actions }: Props) {
     swing: "bg-danger/10 text-danger border-l-danger",
   };
 
+  const counts = { run: 0, clutch: 0, lead_change: 0, swing: 0 };
+  for (const m of moments) counts[m.type]++;
+
   return (
     <div className="bg-bg-card rounded-xl border border-border overflow-hidden mt-6">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
@@ -183,9 +186,9 @@ export default memo(function KeyMoments({ actions }: Props) {
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">{moments.length}</span>
         </h3>
         <div className="flex items-center gap-2 text-[9px]">
-          {moments.filter(m => m.type === "run").length > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{moments.filter(m => m.type === "run").length} {t.keyMoments.runs}</span>}
-          {moments.filter(m => m.type === "clutch").length > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{moments.filter(m => m.type === "clutch").length} {t.keyMoments.clutch}</span>}
-          {moments.filter(m => m.type === "lead_change").length > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{moments.filter(m => m.type === "lead_change").length} {t.keyMoments.leads}</span>}
+          {counts.run > 0 && <span className="px-1.5 py-0.5 rounded bg-success/15 text-success">{counts.run} {t.keyMoments.runs}</span>}
+          {counts.clutch > 0 && <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">{counts.clutch} {t.keyMoments.clutch}</span>}
+          {counts.lead_change > 0 && <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{counts.lead_change} {t.keyMoments.leads}</span>}
         </div>
       </div>
       <div className="divide-y divide-border/30 max-h-[400px] overflow-y-auto">

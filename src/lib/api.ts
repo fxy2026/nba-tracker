@@ -162,20 +162,21 @@ export async function getTodayScoreboard(): Promise<NbaGame[]> {
 // In-memory cache for the 11MB schedule — extended TTL + stale-while-revalidate
 let scheduleCache: { data: ScheduleDate[]; ts: number } | null = null;
 const SCHEDULE_TTL = 2 * 60 * 60 * 1000; // 2 hours (data changes infrequently)
-let scheduleFetching = false;
+let scheduleInflight: Promise<ScheduleDate[]> | null = null;
+let scheduleRevalidating = false;
 
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
   // Serve from cache immediately if available (even if stale)
   if (scheduleCache) {
-    // Background revalidate if past TTL
-    if (Date.now() - scheduleCache.ts > SCHEDULE_TTL && !scheduleFetching) {
-      scheduleFetching = true;
+    if (Date.now() - scheduleCache.ts > SCHEDULE_TTL && !scheduleRevalidating) {
+      scheduleRevalidating = true;
       fetchScheduleInBackground();
     }
     return scheduleCache.data;
   }
-  // Cold start: must fetch
-  return fetchScheduleBlocking();
+  // Cold start: dedup concurrent callers behind a single fetch promise.
+  if (!scheduleInflight) scheduleInflight = fetchScheduleBlocking();
+  return scheduleInflight;
 }
 
 async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
@@ -191,6 +192,8 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
     return dates;
   } catch {
     return scheduleCache?.data || [];
+  } finally {
+    scheduleInflight = null;
   }
 }
 
@@ -204,7 +207,7 @@ function fetchScheduleInBackground() {
       }
     })
     .catch(() => {})
-    .finally(() => { scheduleFetching = false; });
+    .finally(() => { scheduleRevalidating = false; });
 }
 
 // Get games for a specific date from the schedule
@@ -222,27 +225,39 @@ export async function getGamesByDate(dateStr: string): Promise<ScheduleGame[]> {
   return [];
 }
 
-// Get box score for a specific game
+// Box score / play-by-play in-memory cache.
+// Final games (gameStatus === 3) never change — pinned indefinitely.
+// Live games revalidated by Next's fetch cache TTL (30s / 60s).
+const boxScoreCache = new Map<string, BoxScore>();
+const pbpCache = new Map<string, ShotAction[]>();
+
 export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
+  const cached = boxScoreCache.get(gameId);
+  if (cached && cached.gameStatus === 3) return cached;
   const res = await fetch(
     `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
     { headers: HEADERS, next: { revalidate: 30 } }
   );
-  if (!res.ok) return null;
+  if (!res.ok) return cached ?? null;
   const data = await res.json();
-  return data.game || null;
+  const game: BoxScore | null = data.game || null;
+  if (game) boxScoreCache.set(gameId, game);
+  return game;
 }
 
 // Get play-by-play (for shot chart)
 export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
+  const cached = pbpCache.get(gameId);
+  // Final-game check piggybacks on box score cache (cheap lookup).
+  if (cached && boxScoreCache.get(gameId)?.gameStatus === 3) return cached;
   const res = await fetch(
     `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
     { headers: HEADERS, next: { revalidate: 60 } }
   );
-  if (!res.ok) return [];
+  if (!res.ok) return cached ?? [];
   const data = await res.json();
   const actions = data.game?.actions || [];
-  return actions
+  const shots: ShotAction[] = actions
     .filter((a: Record<string, unknown>) => a.shotResult)
     .map((a: Record<string, unknown>) => ({
       personId: a.personId,
@@ -258,6 +273,8 @@ export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
       shotDistance: a.shotDistance,
       description: a.description,
     }));
+  pbpCache.set(gameId, shots);
+  return shots;
 }
 
 // Player info types

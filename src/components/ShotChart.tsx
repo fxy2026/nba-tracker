@@ -16,17 +16,27 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
-  const { filtered, made, total, pct } = useMemo(() => {
-    const f = shots.filter((s) => {
-      if (s.actionType === "freethrow") return false;
-      if (filter === "home" && s.teamTricode !== homeTricode) return false;
-      if (filter === "away" && s.teamTricode !== awayTricode) return false;
-      if (selectedPlayer && s.personId !== selectedPlayer) return false;
-      return true;
-    });
-    const m = f.filter((s) => s.shotResult === "Made").length;
+  const { filtered, made, total, pct, twosMade, twosTotal, threesMade, threesTotal } = useMemo(() => {
+    const f: ShotAction[] = [];
+    let m = 0, twosM = 0, twosT = 0, threesM = 0, threesT = 0;
+    for (const s of shots) {
+      if (s.actionType === "freethrow") continue;
+      if (filter === "home" && s.teamTricode !== homeTricode) continue;
+      if (filter === "away" && s.teamTricode !== awayTricode) continue;
+      if (selectedPlayer && s.personId !== selectedPlayer) continue;
+      f.push(s);
+      const isMade = s.shotResult === "Made";
+      const is3 = s.shotDistance > 22 || !!s.subType?.toLowerCase().includes("3pt");
+      if (isMade) m++;
+      if (is3) { threesT++; if (isMade) threesM++; }
+      else { twosT++; if (isMade) twosM++; }
+    }
     const t = f.length;
-    return { filtered: f, made: m, total: t, pct: t > 0 ? ((m / t) * 100).toFixed(1) : "0" };
+    return {
+      filtered: f, made: m, total: t,
+      pct: t > 0 ? ((m / t) * 100).toFixed(1) : "0",
+      twosMade: twosM, twosTotal: twosT, threesMade: threesM, threesTotal: threesT,
+    };
   }, [shots, filter, selectedPlayer, homeTricode, awayTricode]);
 
   // Get unique players for filter
@@ -101,19 +111,12 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
 
         <span className="text-xs text-text-secondary ml-auto flex items-center gap-2">
           <span>{made}/{total} {t.shotChartComp.fg} ({pct}%)</span>
-          {(() => {
-            const threes = filtered.filter((s) => s.shotDistance > 22 || s.subType?.toLowerCase().includes("3pt"));
-            const threesMade = threes.filter((s) => s.shotResult === "Made").length;
-            const twos = filtered.filter((s) => !(s.shotDistance > 22 || s.subType?.toLowerCase().includes("3pt")));
-            const twosMade = twos.filter((s) => s.shotResult === "Made").length;
-            if (total === 0) return null;
-            return (
-              <>
-                <span className="text-accent">{t.shotChartComp.twoPoint} {twosMade}/{twos.length}</span>
-                <span className="text-success">{t.shotChartComp.threePoint} {threesMade}/{threes.length}</span>
-              </>
-            );
-          })()}
+          {total > 0 && (
+            <>
+              <span className="text-accent">{t.shotChartComp.twoPoint} {twosMade}/{twosTotal}</span>
+              <span className="text-success">{t.shotChartComp.threePoint} {threesMade}/{threesTotal}</span>
+            </>
+          )}
         </span>
       </div>
 
@@ -223,17 +226,25 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
 
       {/* Shot Zone Breakdown */}
       {filtered.length > 0 && (() => {
-        const zones = [
-          { name: t.shotChartComp.restrictedArea, test: (s: ShotAction) => s.shotDistance <= 4 },
-          { name: t.shotChartComp.paintNonRa, test: (s: ShotAction) => s.shotDistance > 4 && s.shotDistance <= 14 && !(s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22) },
-          { name: t.shotChartComp.midRange, test: (s: ShotAction) => s.shotDistance > 14 && s.shotDistance <= 22 && !s.subType?.toLowerCase().includes("3pt") },
-          { name: "3-Point", test: (s: ShotAction) => s.subType?.toLowerCase().includes("3pt") || s.shotDistance > 22 },
+        const buckets = [
+          { name: t.shotChartComp.restrictedArea, made: 0, total: 0 },
+          { name: t.shotChartComp.paintNonRa, made: 0, total: 0 },
+          { name: t.shotChartComp.midRange, made: 0, total: 0 },
+          { name: "3-Point", made: 0, total: 0 },
         ];
-        const zoneStats = zones.map(({ name, test }) => {
-          const zoneShots = filtered.filter(test);
-          const made = zoneShots.filter((s) => s.shotResult === "Made").length;
-          return { name, made, total: zoneShots.length, pct: zoneShots.length > 0 ? (made / zoneShots.length) * 100 : 0 };
-        }).filter((z) => z.total > 0);
+        for (const s of filtered) {
+          const is3 = s.shotDistance > 22 || !!s.subType?.toLowerCase().includes("3pt");
+          let idx: number;
+          if (is3) idx = 3;
+          else if (s.shotDistance <= 4) idx = 0;
+          else if (s.shotDistance <= 14) idx = 1;
+          else idx = 2;
+          buckets[idx].total++;
+          if (s.shotResult === "Made") buckets[idx].made++;
+        }
+        const zoneStats = buckets
+          .filter((z) => z.total > 0)
+          .map((z) => ({ ...z, pct: (z.made / z.total) * 100 }));
         if (zoneStats.length === 0) return null;
         return (
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">

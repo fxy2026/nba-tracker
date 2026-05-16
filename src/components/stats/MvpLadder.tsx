@@ -61,6 +61,16 @@ export default function MvpLadder() {
     return () => controller.abort();
   }, []);
 
+  const ranked = useMemo(() => {
+    const scored: (LeaderRow & { _score: number })[] = [];
+    for (const p of players) {
+      if (p.GP < 40) continue;
+      scored.push({ ...p, _score: mvpScore(p) });
+    }
+    scored.sort((a, b) => b._score - a._score);
+    return scored.slice(0, 15);
+  }, [players]);
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -71,14 +81,9 @@ export default function MvpLadder() {
     );
   }
 
-  const ranked = useMemo(() =>
-    [...players].filter((p) => p.GP >= 40).sort((a, b) => mvpScore(b) - mvpScore(a)).slice(0, 15),
-    [players]
-  );
-
   if (ranked.length === 0) return <p className="text-center text-text-secondary py-12">No data available</p>;
 
-  const topScore = mvpScore(ranked[0]);
+  const topScore = ranked[0]._score;
 
   return (
     <div>
@@ -88,7 +93,7 @@ export default function MvpLadder() {
       </p>
       <div className="space-y-2">
         {ranked.map((p, i) => {
-          const score = mvpScore(p);
+          const score = p._score;
           const barPct = (score / topScore) * 100;
           return (
             <Link

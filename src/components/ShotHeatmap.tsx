@@ -6,7 +6,6 @@ import { aggregateZoneStats, getZoneColor, type ShotZone, type ZoneStats } from 
 
 interface Props {
   playerId: number;
-  playerName: string;
   teamTricode: string;
   fromYear: string;
   toYear: string;
@@ -102,12 +101,6 @@ function CourtLines() {
     </>
   );
 }
-
-// ---- Zone boundary lines (straight lines from basket at WING_A angle) ----
-// These lines divide mid-range and above-break-3 into left/center/right
-// Extend from FT area to court edge
-const WING_L = arcPt(-WING_A); // left wing point on 3pt arc
-const WING_R = arcPt(WING_A);  // right wing point on 3pt arc
 
 // Extend wing lines from 3pt arc to court boundary, clipped to court rect
 function clipWingToCourtTop(aDeg: number): [number, number] {
@@ -266,8 +259,18 @@ function zoneLabel(zone: ShotZone): [number, number] {
   }
 }
 
+// Geometry is fully static — precompute paths & labels once at module load.
+const ZONE_PATHS: Record<ShotZone, string> = RENDER_ORDER.reduce((acc, z) => {
+  acc[z] = zonePath(z);
+  return acc;
+}, {} as Record<ShotZone, string>);
+const ZONE_LABELS: Record<ShotZone, [number, number]> = RENDER_ORDER.reduce((acc, z) => {
+  acc[z] = zoneLabel(z);
+  return acc;
+}, {} as Record<ShotZone, [number, number]>);
+
 // ---- Main component ----
-export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYear, toYear }: Props) {
+export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }: Props) {
   const { t, locale } = useLocale();
   const currentSeason = `${toYear}-${String(parseInt(toYear) + 1).slice(2)}`;
   const [season, setSeason] = useState(currentSeason);
@@ -291,47 +294,16 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
     setError("");
     setGamesInfo({ loaded: 0, total: 0 });
     try {
-      if (s === currentSeason) {
-        // Current season: CDN schedule + PBP (always works)
-        const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-        const res = await fetch(`/api/player-shots?${params}`);
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        setShots(data.shots || []);
-        setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
-        if ((data.shots || []).length === 0) {
-          setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
-        }
-      } else {
-        // Historical: try browser → stats.nba.com for game IDs → server CDN PBP
-        const types = st === "all" ? ["Regular+Season", "Playoffs"] : [st === "regular" ? "Regular+Season" : "Playoffs"];
-        const gameIds: string[] = [];
-        for (const stype of types) {
-          try {
-            const url = `https://stats.nba.com/stats/playergamelog?PlayerID=${playerId}&Season=${s}&SeasonType=${stype}`;
-            const res = await fetch(url, { headers: { Accept: "application/json", Referer: "https://www.nba.com/" } });
-            if (!res.ok) continue;
-            const data = await res.json();
-            const rs = data.resultSets?.[0];
-            if (!rs?.rowSet) continue;
-            const gi = rs.headers.indexOf("Game_ID");
-            for (const row of rs.rowSet) gameIds.push(row[gi] as string);
-          } catch { /* CORS or network */ }
-        }
-        if (gameIds.length === 0) {
-          setShots([]);
-          setError(locale === "zh" ? "历史赛季数据暂不可用（需要访问 stats.nba.com）" : "Historical data unavailable (requires access to stats.nba.com)");
-          return;
-        }
-        const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st, gameIds: gameIds.join(",") });
-        const res = await fetch(`/api/player-shots?${params}`);
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        setShots(data.shots || []);
-        setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
-        if ((data.shots || []).length === 0) {
-          setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
-        }
+      const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
+      // Historical seasons go through stats.nba.com proxied server-side (CORS-safe).
+      if (s !== currentSeason) params.set("season", s);
+      const res = await fetch(`/api/player-shots?${params}`);
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      setShots(data.shots || []);
+      setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
+      if ((data.shots || []).length === 0) {
+        setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
       }
     } catch {
       setError(locale === "zh" ? "加载投篮数据失败" : "Failed to load shot data");
@@ -340,7 +312,11 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
     }
   }, [playerId, teamTricode, currentSeason, locale]);
 
-  useEffect(() => { fetchShots(season, seasonType); }, [season, seasonType, fetchShots]);
+  useEffect(() => {
+    // fetchShots internally toggles loading state — intentional dep-change refetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchShots(season, seasonType);
+  }, [season, seasonType, fetchShots]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
   const statsMap = useMemo(() => {
@@ -406,11 +382,12 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
+                const isHover = hoveredZone === zone;
                 const color = stat ? getZoneColor(stat.pct, leagueAvg) : "#1e1e1e";
-                const opacity = stat ? (hoveredZone === zone ? 0.9 : 0.6) : 0.15;
+                const opacity = stat ? (isHover ? 0.9 : 0.6) : 0.15;
                 return (
-                  <path key={zone} d={zonePath(zone)} fill={color} fillOpacity={opacity}
-                    stroke={hoveredZone === zone ? "#fff" : "none"} strokeWidth={hoveredZone === zone ? 2 : 0}
+                  <path key={zone} d={ZONE_PATHS[zone]} fill={color} fillOpacity={opacity}
+                    stroke={isHover ? "#fff" : "none"} strokeWidth={isHover ? 2 : 0}
                     className="cursor-pointer transition-opacity"
                     onMouseEnter={() => setHoveredZone(zone)} onMouseLeave={() => setHoveredZone(null)} />
                 );
@@ -425,7 +402,7 @@ export default function ShotHeatmap({ playerId, playerName, teamTricode, fromYea
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
                 if (!stat) return null;
-                const [lx, ly] = zoneLabel(zone);
+                const [lx, ly] = ZONE_LABELS[zone];
                 return (
                   <g key={`lbl-${zone}`} className="pointer-events-none">
                     <text x={lx} y={ly - 2} textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">{stat.pct.toFixed(1)}%</text>

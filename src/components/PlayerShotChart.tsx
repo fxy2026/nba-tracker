@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import type { ShotAction, PlayerInfo } from "@/lib/api";
+import { getPlayerHeadshotUrl, type ShotAction, type PlayerInfo } from "@/lib/api";
 import { X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -84,33 +84,51 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const data = useMemo(() => {
     if (!open) return null;
 
-    const playerShots = shots.filter((s) => s.personId === playerId);
-    const fieldGoalShots = playerShots.filter((s) => s.actionType === "2pt" || s.actionType === "3pt");
-    const made = fieldGoalShots.filter((s) => s.shotResult === "Made");
-    const threes = playerShots.filter((s) => s.actionType === "3pt");
-    const threesMade = threes.filter((s) => s.shotResult === "Made");
-    const twos = playerShots.filter((s) => s.actionType === "2pt");
-    const twosMade = twos.filter((s) => s.shotResult === "Made");
-    const fts = playerShots.filter((s) => s.actionType === "freethrow");
-    const ftsMade = fts.filter((s) => s.shotResult === "Made");
+    const playerShots: typeof shots = [];
+    const fieldGoalShots: typeof shots = [];
+    let madeCount = 0, threes = 0, threesMade = 0, twos = 0, twosMade = 0, fts = 0, ftsMade = 0;
+    const perPeriod = new Map<number, { fg2: number; fg3: number; ft: number }>();
 
-    const periods = [...new Set(playerShots.map((s) => s.period))].sort((a, b) => a - b);
-    const quarterScoring = periods.map((period) => {
-      const qs = playerShots.filter((s) => s.period === period && s.shotResult === "Made");
-      const fg2 = qs.filter((s) => s.actionType === "2pt").length;
-      const fg3 = qs.filter((s) => s.actionType === "3pt").length;
-      const ft = qs.filter((s) => s.actionType === "freethrow").length;
-      return { period, pts: fg2 * 2 + fg3 * 3 + ft, fg2, fg3, ft };
-    });
+    for (const s of shots) {
+      if (s.personId !== playerId) continue;
+      playerShots.push(s);
+      const isMade = s.shotResult === "Made";
+      if (s.actionType === "2pt") {
+        twos++; fieldGoalShots.push(s);
+        if (isMade) { twosMade++; madeCount++; }
+      } else if (s.actionType === "3pt") {
+        threes++; fieldGoalShots.push(s);
+        if (isMade) { threesMade++; madeCount++; }
+      } else if (s.actionType === "freethrow") {
+        fts++;
+        if (isMade) ftsMade++;
+      }
+      if (isMade) {
+        const q = perPeriod.get(s.period) || { fg2: 0, fg3: 0, ft: 0 };
+        if (s.actionType === "2pt") q.fg2++;
+        else if (s.actionType === "3pt") q.fg3++;
+        else if (s.actionType === "freethrow") q.ft++;
+        perPeriod.set(s.period, q);
+      }
+    }
+
+    const quarterScoring = Array.from(perPeriod.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([period, q]) => ({ period, pts: q.fg2 * 2 + q.fg3 * 3 + q.ft, ...q }));
 
     return {
-      playerShots, fieldGoalShots, made, threes, threesMade, twos, twosMade,
-      fts, ftsMade, quarterScoring, hasShots: playerShots.length > 0,
+      playerShots,
+      fieldGoalShots,
+      madeCount,
+      fieldGoalTotal: twos + threes,
+      threes, threesMade, twos, twosMade, fts, ftsMade,
+      quarterScoring,
+      hasShots: playerShots.length > 0,
     };
   }, [open, shots, playerId]);
 
   const info = playerInfo;
-  const headshotUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`;
+  const headshotUrl = getPlayerHeadshotUrl(playerId);
 
   const modal = open && mounted && data ? createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" onClick={() => setOpen(false)}>
@@ -199,23 +217,23 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
             <div className="grid grid-cols-4 gap-2 px-5 pb-3">
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">{t.playerShotChart.totalFg}</p>
-                <p className="text-lg font-bold">{data.made.length}/{data.fieldGoalShots.length}</p>
-                <p className="text-xs text-accent">{data.fieldGoalShots.length > 0 ? ((data.made.length / data.fieldGoalShots.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.madeCount}/{data.fieldGoalTotal}</p>
+                <p className="text-xs text-accent">{data.fieldGoalTotal > 0 ? ((data.madeCount / data.fieldGoalTotal) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">2PT</p>
-                <p className="text-lg font-bold">{data.twosMade.length}/{data.twos.length}</p>
-                <p className="text-xs text-accent">{data.twos.length > 0 ? ((data.twosMade.length / data.twos.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.twosMade}/{data.twos}</p>
+                <p className="text-xs text-accent">{data.twos > 0 ? ((data.twosMade / data.twos) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">3PT</p>
-                <p className="text-lg font-bold">{data.threesMade.length}/{data.threes.length}</p>
-                <p className="text-xs text-accent">{data.threes.length > 0 ? ((data.threesMade.length / data.threes.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.threesMade}/{data.threes}</p>
+                <p className="text-xs text-accent">{data.threes > 0 ? ((data.threesMade / data.threes) * 100).toFixed(1) : "0"}%</p>
               </div>
               <div className="bg-bg-card rounded-lg p-2.5 text-center">
                 <p className="text-[10px] text-text-secondary">FT</p>
-                <p className="text-lg font-bold">{data.ftsMade.length}/{data.fts.length}</p>
-                <p className="text-xs text-accent">{data.fts.length > 0 ? ((data.ftsMade.length / data.fts.length) * 100).toFixed(1) : "0"}%</p>
+                <p className="text-lg font-bold">{data.ftsMade}/{data.fts}</p>
+                <p className="text-xs text-accent">{data.fts > 0 ? ((data.ftsMade / data.fts) * 100).toFixed(1) : "0"}%</p>
               </div>
             </div>
 

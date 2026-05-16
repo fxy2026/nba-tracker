@@ -35,7 +35,7 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
   if (homePeriods.length === 0) return null;
 
   // Build data points: use play-by-play if available, else quarter-level
-  let points: { t: number; home: number; away: number }[] = [];
+  const points: { t: number; home: number; away: number }[] = [];
   const numPeriods = homePeriods.length;
   const totalMinutes = Math.min(numPeriods, 4) * 12 + Math.max(numPeriods - 4, 0) * 5;
 

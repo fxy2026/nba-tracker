@@ -35,7 +35,12 @@ interface Props {
 export default memo(function PlayByPlay({ actions }: Props) {
   const { t } = useLocale();
   const periods = useMemo(() => {
-    const ps = [...new Set(actions.map((a) => a.period))].sort((a, b) => a - b);
+    // PBP actions arrive in chronological order, but be defensive: track max period
+    // and emit 1..max — covers all observed periods including OT without a Set+sort.
+    let max = 0;
+    for (const a of actions) if (a.period > max) max = a.period;
+    const ps: number[] = [];
+    for (let p = 1; p <= max; p++) ps.push(p);
     return ps;
   }, [actions]);
 

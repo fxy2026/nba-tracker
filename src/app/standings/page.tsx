@@ -263,8 +263,19 @@ export default async function StandingsPage() {
   const westTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "West");
 
   const conferenceRanks = new Map<string, number>();
-  eastTeams.forEach((t, i) => conferenceRanks.set(t.tricode, i + 1));
-  westTeams.forEach((t, i) => conferenceRanks.set(t.tricode, i + 1));
+  let eastWins = 0, eastLosses = 0, westWins = 0, westLosses = 0;
+  eastTeams.forEach((t, i) => {
+    conferenceRanks.set(t.tricode, i + 1);
+    eastWins += t.wins;
+    eastLosses += t.losses;
+  });
+  westTeams.forEach((t, i) => {
+    conferenceRanks.set(t.tricode, i + 1);
+    westWins += t.wins;
+    westLosses += t.losses;
+  });
+  const eastAvgW = eastTeams.length > 0 ? eastWins / eastTeams.length : 0;
+  const westAvgW = westTeams.length > 0 ? westWins / westTeams.length : 0;
 
   // Group by division
   const byDivision = new Map<string, TeamRecord[]>();
@@ -287,8 +298,6 @@ export default async function StandingsPage() {
       </div>
       {/* Conference comparison */}
       {eastTeams.length > 0 && westTeams.length > 0 && (() => {
-        const eastAvgW = eastTeams.reduce((s, t) => s + t.wins, 0) / eastTeams.length;
-        const westAvgW = westTeams.reduce((s, t) => s + t.wins, 0) / westTeams.length;
         const eastBest = eastTeams[0];
         const westBest = westTeams[0];
         return (
@@ -359,8 +368,6 @@ export default async function StandingsPage() {
 
       {/* Feature 4: East vs West Comparison */}
       {eastTeams.length > 0 && westTeams.length > 0 && (() => {
-        const eastWins = eastTeams.reduce((s, t) => s + t.wins, 0);
-        const westWins = westTeams.reduce((s, t) => s + t.wins, 0);
         const total = eastWins + westWins || 1;
         const eastPct = (eastWins / total) * 100;
         return (
@@ -377,14 +384,12 @@ export default async function StandingsPage() {
               {eastWins > westWins ? `${t.standingsPage.eastLeads} ${eastWins - westWins} ${t.common.wins}` : westWins > eastWins ? `${t.standingsPage.westLeads} ${westWins - eastWins} ${t.common.wins}` : t.common.tied}
             </p>
             {(() => {
-              const eastTotalGames = eastTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
-              const westTotalGames = westTeams.reduce((s, t) => s + t.wins + t.losses, 0) / 2;
-              const totalGames = eastTotalGames + westTotalGames;
+              // Games are double-counted (each appears in 2 teams), so divide by 2.
+              const totalGames = (eastWins + eastLosses + westWins + westLosses) / 2;
               const eastTeamCount = eastTeams.length || 15;
               const westTeamCount = westTeams.length || 15;
               const interConferenceGames = Math.round(totalGames - (eastTeamCount * (eastTeamCount - 1)) - (westTeamCount * (westTeamCount - 1)));
-              const estInterGames = Math.max(interConferenceGames, 0);
-              return estInterGames > 0 ? (
+              return interConferenceGames > 0 ? (
                 <p className="text-[10px] text-text-secondary text-center mt-1">
                   {t.standingsPage.totalGames.replace("%s", String(Math.round(totalGames))).replace("%s", String(eastTeams.length + westTeams.length))}
                 </p>

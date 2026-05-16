@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Search, TrendingUp, Flame } from "lucide-react";
+import { Search, Flame } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import PlayerHeadshot from "@/components/PlayerHeadshot";

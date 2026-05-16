@@ -30,6 +30,8 @@ export default function GlobalError({
             {retryText}
           </button>
           <br />
+          {/* Intentional hard reload — global-error means the React tree is broken; next/link would carry the bad state forward. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/" style={{ display: "inline-block", marginTop: "12px", fontSize: "12px", color: "#888" }}>{backHome}</a>
         </div>
       </body>

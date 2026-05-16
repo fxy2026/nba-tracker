@@ -45,7 +45,7 @@ export default function AdminPage() {
   const [apiHealth, setApiHealth] = useState<Record<string, boolean>>({});
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [adminStats, setAdminStats] = useState<Record<string, unknown> | null>(null);
-  const [loadingStats, setLoadingStats] = useState(false);
+  const [, setLoadingStats] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -70,7 +70,7 @@ export default function AdminPage() {
         const data = await res.json().catch(() => ({}));
         setAuthError(data.error || "Password incorrect");
       }
-    } catch (err) {
+    } catch {
       setAuthError("Network error — check connection");
     }
     setLoginLoading(false);
@@ -154,8 +154,14 @@ export default function AdminPage() {
     setLoadingStats(false);
   }
 
+  // Auth-triggered admin data fetch — those functions setState internally.
   useEffect(() => {
-    if (authenticated) { searchGames(); checkAPIHealth(); loadAdminStats(); }
+    if (authenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      searchGames();
+      checkAPIHealth();
+      loadAdminStats();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 

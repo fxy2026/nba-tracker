@@ -81,16 +81,20 @@ export default function PlayerLeaders() {
     setLoading(false);
   }, [cat, seasonType]);
 
+  // load() internally calls setLoading(true) → intentional dep-change refetch.
   useEffect(() => {
     const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(controller.signal);
     return () => controller.abort();
   }, [load]);
 
-  const fmtVal = (r: LeaderRow, key: string) => {
-    const v = r[key as keyof LeaderRow] as number;
-    if (key.includes("PCT")) return (v * 100).toFixed(1) + "%";
-    return v.toFixed(1);
+  // topVal & label only depend on rows[0] + cat → compute once per render, not per row.
+  const topVal = rows.length > 0 ? (rows[0][cat as keyof LeaderRow] as number) : 1;
+  const isPctCat = cat.includes("PCT");
+  const fmtVal = (r: LeaderRow) => {
+    const v = r[cat as keyof LeaderRow] as number;
+    return isPctCat ? (v * 100).toFixed(1) + "%" : v.toFixed(1);
   };
 
   return (
@@ -139,7 +143,6 @@ export default function PlayerLeaders() {
               </thead>
               <tbody>
                 {rows.slice(0, 50).map((r, i) => {
-                  const topVal = rows.length > 0 ? (rows[0][cat as keyof LeaderRow] as number) : 1;
                   const curVal = r[cat as keyof LeaderRow] as number;
                   const barPct = topVal > 0 ? (curVal / topVal) * 100 : 0;
                   return (
@@ -161,7 +164,7 @@ export default function PlayerLeaders() {
                     <td className="py-2.5 px-2 text-center text-text-secondary">{r.GP}</td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-accent tabular-nums min-w-[45px] text-center">{fmtVal(r, cat)}</span>
+                        <span className="font-bold text-accent tabular-nums min-w-[45px] text-center">{fmtVal(r)}</span>
                         <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[80px]">
                           <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
                         </div>

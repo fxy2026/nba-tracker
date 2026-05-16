@@ -47,7 +47,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         const rJson = await replayRes.json();
         setReplayIds(rJson.ids || []);
       }
-    } catch (e) {
+    } catch {
       if (!signal?.aborted) setError(true);
     }
     setLoading(false);

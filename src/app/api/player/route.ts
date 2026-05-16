@@ -20,6 +20,18 @@ async function fetchSafe(url: string, headers: HeadersInit, revalidate: number):
   } catch { return null; }
 }
 
+// Map a stats.nba.com resultSet (parallel arrays: headers + rowSet) into objects.
+function parseResultSet(rs: { headers: string[]; rowSet: unknown[][] } | undefined, limit?: number): Record<string, unknown>[] | null {
+  if (!rs?.rowSet) return null;
+  const { headers, rowSet } = rs;
+  const rows = limit ? rowSet.slice(0, limit) : rowSet;
+  return rows.map((row) => {
+    const obj: Record<string, unknown> = {};
+    for (let i = 0; i < headers.length; i++) obj[headers[i]] = row[i];
+    return obj;
+  });
+}
+
 // Try NBA Stats API (may be blocked on some hosts)
 async function fetchFromNBAStats(playerId: string) {
   const [careerRes, gameLogRes] = await Promise.all([
@@ -27,36 +39,22 @@ async function fetchFromNBAStats(playerId: string) {
     fetchSafe(`${NBA_STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${CURRENT_SEASON}&SeasonType=Regular+Season`, NBA_HEADERS, 300),
   ]);
 
-  let careerSeasons = null;
-  let recentGames = null;
+  // Use `unknown[]` so the ESPN fallback in the caller can substitute its own shape.
+  let careerSeasons: unknown[] | null = null;
+  let recentGames: unknown[] | null = null;
 
   if (careerRes?.ok) {
     try {
       const data = await careerRes.json();
       const rs = data.resultSets?.find((r: { name: string }) => r.name === "SeasonTotalsRegularSeason");
-      if (rs) {
-        const headers: string[] = rs.headers;
-        careerSeasons = rs.rowSet.map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((h, i) => { obj[h] = row[i]; });
-          return obj;
-        });
-      }
+      careerSeasons = parseResultSet(rs);
     } catch { /* ignore */ }
   }
 
   if (gameLogRes?.ok) {
     try {
       const data = await gameLogRes.json();
-      const rs = data.resultSets?.[0];
-      if (rs) {
-        const headers: string[] = rs.headers;
-        recentGames = rs.rowSet.slice(0, 10).map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((h, i) => { obj[h] = row[i]; });
-          return obj;
-        });
-      }
+      recentGames = parseResultSet(data.resultSets?.[0], 10);
     } catch { /* ignore */ }
   }
 

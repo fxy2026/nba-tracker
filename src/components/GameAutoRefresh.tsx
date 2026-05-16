@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -9,8 +9,6 @@ const INTERVAL = 15;
 
 export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   const router = useRouter();
-  const routerRef = useRef(router);
-  routerRef.current = router;
   const [countdown, setCountdown] = useState(INTERVAL);
   const { t } = useLocale();
 
@@ -23,7 +21,7 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
       setCountdown(remaining);
       if (remaining <= 0) {
         if (typeof navigator === "undefined" || navigator.onLine !== false) {
-          routerRef.current.refresh();
+          router.refresh();
         }
         remaining = INTERVAL;
         setCountdown(remaining);
@@ -31,7 +29,7 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
     }, 1000);
 
     return () => clearInterval(tick);
-  }, [isLive]);
+  }, [isLive, router]);
 
   if (!isLive) return null;
   return (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import DateNav from "./DateNav";
 import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";

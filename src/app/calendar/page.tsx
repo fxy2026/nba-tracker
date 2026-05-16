@@ -53,8 +53,11 @@ export default function CalendarPage() {
     t.calendarPage.sat,
   ];
 
+  // Data fetch with loading reset on dep change. Initial render already has loading=true,
+  // so the setLoading(true) only fires on subsequent month changes (intentional).
   useEffect(() => {
     const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/calendar?month=${getMonthStr(year, month)}`, { signal: controller.signal })
       .then((r) => r.ok ? r.json() : null)

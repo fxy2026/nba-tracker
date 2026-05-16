@@ -23,10 +23,12 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  // Hydration: localStorage favorites + optional async detail fetch.
   useEffect(() => {
     const controller = new AbortController();
     const teams = getFavoriteTeams();
     const players = getFavoritePlayers();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFavTeams(teams);
     setFavPlayers(players);
 

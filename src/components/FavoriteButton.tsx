@@ -19,12 +19,14 @@ export default function FavoriteButton({ type, id }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
   const { t } = useLocale();
 
+  // Hydration: sync isFav from localStorage on mount and on prop change.
   useEffect(() => {
-    if (type === "team") {
-      setIsFav(getFavoriteTeams().includes(id as string));
-    } else {
-      setIsFav(getFavoritePlayers().includes(id as number));
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsFav(
+      type === "team"
+        ? getFavoriteTeams().includes(id as string)
+        : getFavoritePlayers().includes(id as number)
+    );
   }, [type, id]);
 
   const handleToggle = () => {
