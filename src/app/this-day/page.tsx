@@ -5,6 +5,7 @@ import { CalendarDays } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "On This Day",
@@ -68,16 +69,18 @@ async function compute(): Promise<{ games: DayGame[]; today: string; }> {
 }
 
 export default async function ThisDayPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const { games, today } = await compute();
 
   if (games.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="History" icon={CalendarDays} title={`On This Day · ${today}`} />
+        <PageHeader eyebrow="History" icon={CalendarDays} title={isZh ? `历史上的今天 · ${today}` : `On This Day · ${today}`} />
         <EmptyState
           icon={CalendarDays}
-          title="No archive matches"
-          description={`The current schedule cache has no historical games for ${today}. The NBA CDN schedule mostly contains the current season — earlier seasons aren't fully indexed.`}
+          title={isZh ? "暂无历史比赛" : "No archive matches"}
+          description={isZh ? `当前赛程缓存中没有 ${today} 的历史比赛。NBA CDN 赛程主要包含当前赛季 — 早期赛季未完整索引。` : `The current schedule cache has no historical games for ${today}. The NBA CDN schedule mostly contains the current season — earlier seasons aren't fully indexed.`}
         />
       </div>
     );
@@ -97,8 +100,8 @@ export default async function ThisDayPage() {
       <PageHeader
         eyebrow="History"
         icon={CalendarDays}
-        title={`On This Day · ${today}`}
-        subtitle={`${games.length} historical game${games.length === 1 ? "" : "s"} from past seasons on this calendar date`}
+        title={isZh ? `历史上的今天 · ${today}` : `On This Day · ${today}`}
+        subtitle={isZh ? `NBA 历史上同一天发生过的比赛 — 重温过往对决。共 ${games.length} 场。` : `${games.length} historical game${games.length === 1 ? "" : "s"} from past seasons on this calendar date`}
       />
 
       <div className="space-y-8">
@@ -109,10 +112,10 @@ export default async function ThisDayPage() {
               <div className="mb-3 flex items-baseline gap-3">
                 <span className="text-3xl font-light font-mono tabular-nums text-text-primary">{yrs}</span>
                 <span className="text-xs font-mono uppercase tracking-[0.2em] text-text-secondary">
-                  year{yrs === 1 ? "" : "s"} ago
+                  {isZh ? "年前" : `year${yrs === 1 ? "" : "s"} ago`}
                 </span>
                 <span className="h-px flex-1 bg-border" />
-                <span className="text-[10px] font-mono tabular-nums text-text-secondary">{list.length} game{list.length === 1 ? "" : "s"}</span>
+                <span className="text-[10px] font-mono tabular-nums text-text-secondary">{list.length} {isZh ? "场比赛" : `game${list.length === 1 ? "" : "s"}`}</span>
               </div>
               <div className="space-y-2">
                 {list.map((dg) => {

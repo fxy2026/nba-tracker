@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Layers } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -88,6 +89,22 @@ const TIERS: Tier[] = [
   { label: "Lottery", eyebrow: "D Tier", description: "Trending toward the draft lottery", color: "#94A3B8", bgClass: "bg-bg-hover/40", minPower: 0 },
 ];
 
+const TIER_LABEL_ZH: Record<string, string> = {
+  Elite: "顶级",
+  Contenders: "争冠",
+  Mid: "中游",
+  Bubble: "边缘",
+  Lottery: "乐透",
+};
+
+const TIER_DESC_ZH: Record<string, string> = {
+  Elite: "夺冠热门 · 明确的总冠军争夺者",
+  Contenders: "有真实的深入季后赛机会",
+  Mid: "稳定的季后赛球队 · 能制造冷门",
+  Bubble: "附加赛区 · 争夺第10种子",
+  Lottery: "正向乐透抽签滑落",
+};
+
 function bucketize(teams: TeamScore[]): Map<string, TeamScore[]> {
   const buckets = new Map<string, TeamScore[]>();
   for (const tier of TIERS) buckets.set(tier.label, []);
@@ -126,16 +143,18 @@ function TeamChip({ team }: { team: TeamScore }) {
 }
 
 export default async function TierListPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const teams = await rankTeams();
 
   if (teams.length === 0 || teams.every((t) => t.power === 0)) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="League" icon={Layers} title="Team Tier List" />
+        <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={Layers} title={isZh ? "等级表" : "Team Tier List"} />
         <EmptyState
           icon={Layers}
-          title="No data yet"
-          description="Teams will be bucketed once the season has produced finished games."
+          title={isZh ? "暂无数据" : "No data yet"}
+          description={isZh ? "等本赛季产生已结束的比赛后,球队将被分入各档。" : "Teams will be bucketed once the season has produced finished games."}
         />
       </div>
     );
@@ -146,10 +165,10 @@ export default async function TierListPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={Layers}
-        title="Team Tier List"
-        subtitle="All 30 teams bucketed by composite power score · S to D"
+        title={isZh ? "等级表" : "Team Tier List"}
+        subtitle={isZh ? "30 支球队按综合战力分分档 · S 到 D" : "All 30 teams bucketed by composite power score · S to D"}
       />
 
       <div className="space-y-5">
@@ -168,12 +187,12 @@ export default async function TierListPage() {
                   <div>
                     <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {tier.eyebrow}</p>
                     <h2 className="text-2xl font-semibold tracking-tight" style={{ color: tier.color }}>
-                      {tier.label}
+                      {isZh ? TIER_LABEL_ZH[tier.label] ?? tier.label : tier.label}
                     </h2>
-                    <p className="text-xs text-text-secondary mt-1 max-w-md">{tier.description}</p>
+                    <p className="text-xs text-text-secondary mt-1 max-w-md">{isZh ? TIER_DESC_ZH[tier.label] ?? tier.description : tier.description}</p>
                   </div>
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary tabular-nums">
-                    {tierTeams.length} teams
+                    {tierTeams.length} {isZh ? "支球队" : "teams"}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
@@ -186,13 +205,25 @@ export default async function TierListPage() {
       </div>
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">{isZh ? "/ 方法" : "/ Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Tiers are computed from a power score: 35% overall win % + 35% last-10 form + 30% per-game point
-          differential. Thresholds: <span className="font-mono tabular-nums">62+ Elite</span> /
-          <span className="font-mono tabular-nums"> 52+ Contender</span> /
-          <span className="font-mono tabular-nums"> 42+ Mid</span> /
-          <span className="font-mono tabular-nums"> 32+ Bubble</span> / below Lottery.
+          {isZh ? (
+            <>
+              分档基于战力分: 35% 总胜率 + 35% 近10场状态 + 30% 场均净胜分。门槛:{" "}
+              <span className="font-mono tabular-nums">62+ 顶级</span> /
+              <span className="font-mono tabular-nums"> 52+ 争冠</span> /
+              <span className="font-mono tabular-nums"> 42+ 中游</span> /
+              <span className="font-mono tabular-nums"> 32+ 边缘</span> / 以下为乐透。
+            </>
+          ) : (
+            <>
+              Tiers are computed from a power score: 35% overall win % + 35% last-10 form + 30% per-game point
+              differential. Thresholds: <span className="font-mono tabular-nums">62+ Elite</span> /
+              <span className="font-mono tabular-nums"> 52+ Contender</span> /
+              <span className="font-mono tabular-nums"> 42+ Mid</span> /
+              <span className="font-mono tabular-nums"> 32+ Bubble</span> / below Lottery.
+            </>
+          )}
         </p>
       </div>
     </div>

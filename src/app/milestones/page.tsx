@@ -5,6 +5,7 @@ import { getPlayerIndex } from "@/lib/api";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Career Milestones",
@@ -87,7 +88,7 @@ function findChasing(players: MilestoneCandidate[], tiers: Threshold[], current:
   return out.slice(0, 12);
 }
 
-function MilestoneCard({ m, color, eyebrow }: { m: ChasingMilestone; color: string; eyebrow: string }) {
+function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color: string; eyebrow: string; isZh: boolean }) {
   const pct = m.threshold.value > 0 ? Math.min((m.current / m.threshold.value) * 100, 100) : 0;
   return (
     <Link
@@ -117,7 +118,7 @@ function MilestoneCard({ m, color, eyebrow }: { m: ChasingMilestone; color: stri
       </div>
 
       <div className="hidden sm:flex flex-col items-end shrink-0 text-right">
-        <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">Needs</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "还需" : "Needs"}</p>
         <p className="text-lg font-light font-mono tabular-nums" style={{ color }}>
           {m.needed.toLocaleString()}
         </p>
@@ -128,12 +129,14 @@ function MilestoneCard({ m, color, eyebrow }: { m: ChasingMilestone; color: stri
 }
 
 export default async function MilestonesPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const players = await getPlayerIndex().catch(() => []);
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Players" icon={Trophy} title="Career Milestones" />
+        <PageHeader eyebrow="Players" icon={Trophy} title={isZh ? "生涯里程碑" : "Career Milestones"} />
         <EmptyState
           icon={Trophy}
           title="No player data"
@@ -171,8 +174,8 @@ export default async function MilestonesPage() {
       <PageHeader
         eyebrow="Players"
         icon={Trophy}
-        title="Career Milestones"
-        subtitle="Active players approaching historic thresholds · estimated from per-game averages × ~70 GP/season"
+        title={isZh ? "生涯里程碑" : "Career Milestones"}
+        subtitle={isZh ? "接近生涯得分、篮板、助攻里程碑的球员 — 根据场均数据估算。" : "Active players approaching historic thresholds · estimated from per-game averages × ~70 GP/season"}
       />
 
       {scoringChase.length > 0 && (
@@ -180,10 +183,10 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent-amber flex items-center gap-2">
               <Trophy size={14} className="text-accent-amber" />
-              Scoring milestones
+              {isZh ? "得分里程碑" : "Scoring milestones"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{scoringChase.length} chasing</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{scoringChase.length} {isZh ? "追逐中" : "chasing"}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {scoringChase.map((m, i) => (
@@ -192,6 +195,7 @@ export default async function MilestonesPage() {
                 m={m}
                 color="#FFD700"
                 eyebrow={`Toward ${m.threshold.label}`}
+                isZh={isZh}
               />
             ))}
           </div>
@@ -203,10 +207,10 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-success flex items-center gap-2">
               <Target size={14} className="text-success" />
-              Rebounding milestones
+              {isZh ? "篮板里程碑" : "Rebounding milestones"}
             </h2>
             <span className="h-px flex-1 bg-success/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{reboundChase.length} chasing</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{reboundChase.length} {isZh ? "追逐中" : "chasing"}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {reboundChase.map((m, i) => (
@@ -215,6 +219,7 @@ export default async function MilestonesPage() {
                 m={m}
                 color="#22C55E"
                 eyebrow={`Toward ${m.threshold.label}`}
+                isZh={isZh}
               />
             ))}
           </div>
@@ -226,10 +231,10 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent flex items-center gap-2">
               <Award size={14} className="text-accent" />
-              Assist milestones
+              {isZh ? "助攻里程碑" : "Assist milestones"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{assistChase.length} chasing</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{assistChase.length} {isZh ? "追逐中" : "chasing"}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {assistChase.map((m, i) => (
@@ -238,6 +243,7 @@ export default async function MilestonesPage() {
                 m={m}
                 color="#3B82F6"
                 eyebrow={`Toward ${m.threshold.label}`}
+                isZh={isZh}
               />
             ))}
           </div>
@@ -245,11 +251,11 @@ export default async function MilestonesPage() {
       )}
 
       <div className="glass-tile p-4 mt-2">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Career totals are estimated: per-game average × ~70 games per season × seasons played. Real career totals
-          may differ due to injuries, partial seasons, and rest. Players within ~2.5 seasons (at current pace) of
-          their next tier are shown. This is a watchlist, not an official record book.
+          {isZh
+            ? "生涯总数据为估算值：每场均数 × ~70场/赛季 × 出场赛季。实际生涯总数可能因伤病、半赛季、轮休而不同。展示按当前速度 ~2.5 赛季内能达成下一档的球员。这是观察清单，不是官方纪录册。"
+            : "Career totals are estimated: per-game average × ~70 games per season × seasons played. Real career totals may differ due to injuries, partial seasons, and rest. Players within ~2.5 seasons (at current pace) of their next tier are shown. This is a watchlist, not an official record book."}
         </p>
       </div>
     </div>

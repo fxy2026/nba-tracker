@@ -27,13 +27,54 @@ interface PlayerRow {
 
 type RaceKey = "mvp" | "roy" | "dpoy" | "smoy" | "mip";
 
-const RACES: { key: RaceKey; label: string; icon: typeof Trophy; eyebrow: string; description: string; color: string }[] = [
-  { key: "mvp", label: "MVP", icon: Trophy, eyebrow: "Most Valuable", description: "Best overall — composite of scoring, playmaking, and impact", color: "#FFD700" },
-  { key: "roy", label: "ROY", icon: Sparkles, eyebrow: "Rookie of the Year", description: "Top first-year players by production", color: "#3B82F6" },
-  { key: "dpoy", label: "DPOY", icon: Shield, eyebrow: "Defensive POY", description: "Steals + blocks + minutes weighted", color: "#22C55E" },
-  { key: "smoy", label: "6MOY", icon: Star, eyebrow: "Sixth Man", description: "Best off the bench (low GS, high impact)", color: "#A855F7" },
-  { key: "mip", label: "MIP", icon: TrendingUp, eyebrow: "Most Improved", description: "Highest PER/min above expected", color: "#F59E0B" },
-];
+type RaceMeta = { key: RaceKey; label: string; icon: typeof Trophy; eyebrow: string; description: string; color: string };
+
+function buildRaces(isZh: boolean): RaceMeta[] {
+  return [
+    {
+      key: "mvp",
+      label: "MVP",
+      icon: Trophy,
+      eyebrow: isZh ? "最有价值球员" : "Most Valuable",
+      description: isZh
+        ? "综合最佳 — 得分、组织与影响力的综合衡量"
+        : "Best overall — composite of scoring, playmaking, and impact",
+      color: "#FFD700",
+    },
+    {
+      key: "roy",
+      label: "ROY",
+      icon: Sparkles,
+      eyebrow: isZh ? "年度最佳新秀" : "Rookie of the Year",
+      description: isZh ? "按产出排名的最佳一年级球员" : "Top first-year players by production",
+      color: "#3B82F6",
+    },
+    {
+      key: "dpoy",
+      label: "DPOY",
+      icon: Shield,
+      eyebrow: isZh ? "年度最佳防守球员" : "Defensive POY",
+      description: isZh ? "抢断 + 盖帽 + 上场时间加权" : "Steals + blocks + minutes weighted",
+      color: "#22C55E",
+    },
+    {
+      key: "smoy",
+      label: "6MOY",
+      icon: Star,
+      eyebrow: isZh ? "年度最佳第六人" : "Sixth Man",
+      description: isZh ? "最佳替补 (首发少、影响大)" : "Best off the bench (low GS, high impact)",
+      color: "#A855F7",
+    },
+    {
+      key: "mip",
+      label: "MIP",
+      icon: TrendingUp,
+      eyebrow: isZh ? "进步最快球员" : "Most Improved",
+      description: isZh ? "每分钟效率超出预期最多" : "Highest PER/min above expected",
+      color: "#F59E0B",
+    },
+  ];
+}
 
 function scoreForRace(p: PlayerRow, race: RaceKey): number {
   switch (race) {
@@ -52,7 +93,8 @@ function scoreForRace(p: PlayerRow, race: RaceKey): number {
 }
 
 export default function AwardsRacePage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeRace, setActiveRace] = useState<RaceKey>("mvp");
@@ -102,20 +144,21 @@ export default function AwardsRacePage() {
   }, [allPlayers, activeRace]);
 
   const topScore = ranked[0]?._score || 1;
-  const activeRaceMeta = RACES.find((r) => r.key === activeRace)!;
+  const races = useMemo(() => buildRaces(isZh), [isZh]);
+  const activeRaceMeta = races.find((r) => r.key === activeRace)!;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow={`${CURRENT_SEASON} Season`}
+        eyebrow={isZh ? `${CURRENT_SEASON} 赛季` : `${CURRENT_SEASON} Season`}
         icon={Award}
-        title="Awards Race"
-        subtitle="MVP · ROY · DPOY · 6MOY · MIP — all in one place"
+        title={isZh ? "奖项竞争" : "Awards Race"}
+        subtitle={isZh ? "MVP · ROY · DPOY · 6MOY · MIP — 一站式呈现" : "MVP · ROY · DPOY · 6MOY · MIP — all in one place"}
       />
 
       {/* Race selector tabs — glass pill bar */}
       <div className="glass-tile flex flex-wrap overflow-hidden p-1 mb-6 w-fit">
-        {RACES.map(({ key, label, icon: Icon }) => (
+        {races.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveRace(key)}
@@ -146,7 +189,7 @@ export default function AwardsRacePage() {
           </div>
           <div className="flex-1">
             <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {activeRaceMeta.eyebrow}</p>
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary">{activeRaceMeta.label} Race</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-text-primary">{activeRaceMeta.label} {isZh ? "竞争" : "Race"}</h2>
             <p className="text-xs text-text-secondary mt-1 font-mono">{activeRaceMeta.description}</p>
           </div>
         </div>
@@ -161,8 +204,8 @@ export default function AwardsRacePage() {
       ) : ranked.length === 0 ? (
         <EmptyState
           icon={Award}
-          title="No qualifying players yet"
-          description="Need at least 20 games played for awards eligibility. Try again later in the season."
+          title={isZh ? "暂无符合条件的球员" : "No qualifying players yet"}
+          description={isZh ? "至少需要出场 20 场比赛才具备奖项资格。请稍后再试。" : "Need at least 20 games played for awards eligibility. Try again later in the season."}
         />
       ) : (
         <div className="space-y-2">
@@ -227,12 +270,16 @@ export default function AwardsRacePage() {
 
       {/* Formula footer */}
       <div className="mt-8 glass-tile p-4">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Methodology</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法论" : "Methodology"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          {t.statsPage.mvpRankingNote || "Custom composite ranking — combines per-game production weighted by category. Minimum 20 GP required. Refreshed from official NBA stats."}
+          {t.statsPage.mvpRankingNote || (isZh
+            ? "自定义综合排名 — 按类别加权场均产出。最少 20 场出场要求。数据来源于 NBA 官方统计。"
+            : "Custom composite ranking — combines per-game production weighted by category. Minimum 20 GP required. Refreshed from official NBA stats.")}
         </p>
         <p className="text-[10px] text-text-secondary/50 mt-2 font-mono">
-          Note: These are computed projections, not official voting. Real awards involve voter sentiment and team narrative.
+          {isZh
+            ? "注: 这些为计算预测，并非官方投票。真实奖项受投票者倾向与球队故事影响。"
+            : "Note: These are computed projections, not official voting. Real awards involve voter sentiment and team narrative."}
         </p>
       </div>
     </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
@@ -112,12 +113,12 @@ async function computeMetrics(): Promise<TeamMetrics[]> {
   return metrics;
 }
 
-function TrendIcon({ trend }: { trend: TeamMetrics["trend"] }) {
+function TrendIcon({ trend, isZh }: { trend: TeamMetrics["trend"]; isZh: boolean }) {
   if (trend === "up") {
     return (
       <span className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.15em] text-success">
         <TrendingUp size={11} />
-        Rising
+        {isZh ? "上升" : "Rising"}
       </span>
     );
   }
@@ -125,19 +126,19 @@ function TrendIcon({ trend }: { trend: TeamMetrics["trend"] }) {
     return (
       <span className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.15em] text-danger">
         <TrendingDown size={11} />
-        Falling
+        {isZh ? "下降" : "Falling"}
       </span>
     );
   }
   return (
     <span className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
       <Minus size={11} />
-      Steady
+      {isZh ? "平稳" : "Steady"}
     </span>
   );
 }
 
-function TeamRow({ m, rank, topPower }: { m: TeamMetrics; rank: number; topPower: number }) {
+function TeamRow({ m, rank, topPower, isZh }: { m: TeamMetrics; rank: number; topPower: number; isZh: boolean }) {
   const meta = TEAM_META[m.tricode];
   const teamColor = meta?.primaryColor || "#3B82F6";
   const isTop3 = rank <= 3;
@@ -191,7 +192,7 @@ function TeamRow({ m, rank, topPower }: { m: TeamMetrics; rank: number; topPower
               <span className="text-danger tabular-nums">{m.losses}</span>
             </span>
             <span className="text-text-secondary/40">·</span>
-            <TrendIcon trend={m.trend} />
+            <TrendIcon trend={m.trend} isZh={isZh} />
           </div>
         </div>
       </div>
@@ -243,16 +244,18 @@ function TeamRow({ m, rank, topPower }: { m: TeamMetrics; rank: number; topPower
 }
 
 export default async function PowerRankingsPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const metrics = await computeMetrics();
 
   if (metrics.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="League" icon={Crown} title="Power Rankings" />
+        <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={Crown} title={isZh ? "战力榜" : "Power Rankings"} />
         <EmptyState
           icon={Crown}
-          title="No ranking data yet"
-          description="Power rankings need at least one finished game per team. Try later in the season."
+          title={isZh ? "暂无排名数据" : "No ranking data yet"}
+          description={isZh ? "战力榜需要每支球队至少打完一场比赛。请在赛季稍晚再来。" : "Power rankings need at least one finished game per team. Try later in the season."}
         />
       </div>
     );
@@ -268,10 +271,10 @@ export default async function PowerRankingsPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={Crown}
-        title="Power Rankings"
-        subtitle="Composite ranking · 35% overall win % + 35% last-10 form + 30% point differential"
+        title={isZh ? "战力榜" : "Power Rankings"}
+        subtitle={isZh ? "综合排名 · 35% 总胜率 + 35% 近10场状态 + 30% 净胜分" : "Composite ranking · 35% overall win % + 35% last-10 form + 30% point differential"}
       />
 
       {/* Insight cards */}
@@ -281,12 +284,12 @@ export default async function PowerRankingsPage() {
             <Crown size={18} className="text-[#FFD700]" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">#1 Overall</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "总榜第1" : "#1 Overall"}</p>
             <p className="text-sm font-bold text-text-primary">
               {TEAM_META[metrics[0].tricode]?.city} {TEAM_META[metrics[0].tricode]?.name}
             </p>
             <p className="text-[10px] font-mono tabular-nums text-[#FFD700]">
-              Power score · {(metrics[0].power * 100).toFixed(0)}
+              {isZh ? "战力分" : "Power score"} · {(metrics[0].power * 100).toFixed(0)}
             </p>
           </div>
         </div>
@@ -295,9 +298,9 @@ export default async function PowerRankingsPage() {
             <TrendingUp size={18} className="text-success" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Rising · Last 5</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "上升 · 近5场" : "Rising · Last 5"}</p>
             <p className="text-2xl font-light font-mono tabular-nums text-success">{rising}</p>
-            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">teams trending up</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "支球队上升" : "teams trending up"}</p>
           </div>
         </div>
         <div className="glass-tile p-4 flex items-center gap-3">
@@ -305,9 +308,9 @@ export default async function PowerRankingsPage() {
             <TrendingDown size={18} className="text-danger" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Falling · Last 5</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "下降 · 近5场" : "Falling · Last 5"}</p>
             <p className="text-2xl font-light font-mono tabular-nums text-danger">{falling}</p>
-            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">teams trending down</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "支球队下滑" : "teams trending down"}</p>
           </div>
         </div>
       </div>
@@ -315,21 +318,21 @@ export default async function PowerRankingsPage() {
       {/* Rankings list */}
       <div className="space-y-2 mb-8">
         {metrics.map((m, i) => (
-          <TeamRow key={m.tricode} m={m} rank={i + 1} topPower={topPower} />
+          <TeamRow key={m.tricode} m={m} rank={i + 1} topPower={topPower} isZh={isZh} />
         ))}
       </div>
 
       {/* Methodology */}
       <div className="glass-tile p-4 mb-4">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Methodology</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">{isZh ? "/ 计算方法" : "/ Methodology"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Power score is a composite — 35% weight on full-season win %, 35% on last-10 win %, 30% on average
-          point differential (scaled, ±15 maps to 0–1). Trend indicator compares last 5 games to games 6–10:
-          delta &gt; +20% = Rising, &lt; -20% = Falling, else Steady.
+          {isZh
+            ? "战力分为综合得分 — 35% 全季胜率,35% 近10场胜率,30% 场均净胜分(标准化, ±15 映射至 0–1)。趋势指标对比近5场与第6-10场: 增幅 > +20% = 上升, < -20% = 下降, 否则平稳。"
+            : "Power score is a composite — 35% weight on full-season win %, 35% on last-10 win %, 30% on average point differential (scaled, ±15 maps to 0–1). Trend indicator compares last 5 games to games 6–10: delta > +20% = Rising, < -20% = Falling, else Steady."}
         </p>
         <p className="text-[10px] text-text-secondary/50 mt-2 font-mono">
-          Hottest point differential: <span className="text-success">{TEAM_META[hottestPointDiff.tricode]?.tricode}</span> at{" "}
-          <span className="font-mono tabular-nums">+{hottestPointDiff.pointDiff.toFixed(1)}</span> per game over last 10.
+          {isZh ? "最佳净胜分: " : "Hottest point differential: "}<span className="text-success">{TEAM_META[hottestPointDiff.tricode]?.tricode}</span>{isZh ? " 近10场场均 " : " at "}
+          <span className="font-mono tabular-nums">+{hottestPointDiff.pointDiff.toFixed(1)}</span>{isZh ? "。" : " per game over last 10."}
         </p>
       </div>
 

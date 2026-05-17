@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Flame, Zap, Target, Clock, BookOpen, CalendarDays, Crown, type LucideIcon } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
@@ -166,16 +167,18 @@ function Section({
 }
 
 export default async function BestGamesPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const { closest, blowouts, highestScoring, overtime, totalAnalyzed } = await fetchAndCategorize();
 
   if (totalAnalyzed === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Season" icon={Flame} title="Best Games" />
+        <PageHeader eyebrow={isZh ? "赛季" : "Season"} icon={Flame} title={isZh ? "最佳比赛" : "Best Games"} />
         <EmptyState
           icon={Flame}
-          title="No finished games yet"
-          description="Best games will appear here once the season has produced a few finished games."
+          title={isZh ? "暂无已结束比赛" : "No finished games yet"}
+          description={isZh ? "本赛季产生若干已结束比赛后，最佳比赛会显示在这里。" : "Best games will appear here once the season has produced a few finished games."}
         />
       </div>
     );
@@ -184,17 +187,19 @@ export default async function BestGamesPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Season"
+        eyebrow={isZh ? "赛季" : "Season"}
         icon={Flame}
-        title="Best Games"
-        subtitle={`Most memorable games across ${totalAnalyzed} finished games this season`}
+        title={isZh ? "最佳比赛" : "Best Games"}
+        subtitle={isZh
+          ? `本赛季 ${totalAnalyzed} 场已结束比赛中最令人难忘的对决`
+          : `Most memorable games across ${totalAnalyzed} finished games this season`}
       />
 
       <Section
         icon={Target}
-        eyebrow="Buzzer Beaters"
-        title="Closest Games"
-        description="Smallest point margin — won by a basket"
+        eyebrow={isZh ? "压哨绝杀" : "Buzzer Beaters"}
+        title={isZh ? "焦点之战" : "Closest Games"}
+        description={isZh ? "最小分差 — 一球胜负" : "Smallest point margin — won by a basket"}
         color="#DF1B41"
         games={closest}
         badgeFor={(g) => `+${g.margin}`}
@@ -202,9 +207,9 @@ export default async function BestGamesPage() {
 
       <Section
         icon={Zap}
-        eyebrow="Curb Stompings"
-        title="Biggest Blowouts"
-        description="Largest point margins — total dominations"
+        eyebrow={isZh ? "屠杀场" : "Curb Stompings"}
+        title={isZh ? "最大胜差" : "Biggest Blowouts"}
+        description={isZh ? "最大分差 — 全面碾压" : "Largest point margins — total dominations"}
         color="#F59E0B"
         games={blowouts}
         badgeFor={(g) => `+${g.margin}`}
@@ -212,9 +217,9 @@ export default async function BestGamesPage() {
 
       <Section
         icon={Flame}
-        eyebrow="Shootouts"
-        title="Highest Scoring"
-        description="Combined points exceeding 240+"
+        eyebrow={isZh ? "对攻战" : "Shootouts"}
+        title={isZh ? "最高得分" : "Highest Scoring"}
+        description={isZh ? "两队总得分超过 240+" : "Combined points exceeding 240+"}
         color="#22C55E"
         games={highestScoring}
         badgeFor={(g) => String(g.totalScore)}
@@ -223,9 +228,9 @@ export default async function BestGamesPage() {
       {overtime.length > 0 && (
         <Section
           icon={Clock}
-          eyebrow="Bonus Basketball"
-          title="Overtime Thrillers"
-          description="Games that needed extra periods to settle"
+          eyebrow={isZh ? "额外篮球" : "Bonus Basketball"}
+          title={isZh ? "加时大战" : "Overtime Thrillers"}
+          description={isZh ? "需要加时才能决出胜负的比赛" : "Games that needed extra periods to settle"}
           color="#3B82F6"
           games={overtime}
           badgeFor={(g) => (g.otCount > 0 ? `${g.otCount}OT` : "OT")}
@@ -234,10 +239,10 @@ export default async function BestGamesPage() {
 
       <RelatedPages
         pages={[
-          { href: "/records", label: "Season Records", description: "Single-game highs and lows", icon: BookOpen },
-          { href: "/this-day", label: "On This Day", description: "Historical games on today's date", icon: CalendarDays },
-          { href: "/game-predictor", label: "Game Predictor", description: "Win probabilities for next 7 days", icon: Zap },
-          { href: "/rivalries", label: "Rivalries", description: "Tightest team-vs-team matchups", icon: Crown },
+          { href: "/records", label: isZh ? "赛季纪录" : "Season Records", description: isZh ? "单场最高与最低" : "Single-game highs and lows", icon: BookOpen },
+          { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", description: isZh ? "今日的历史比赛" : "Historical games on today's date", icon: CalendarDays },
+          { href: "/game-predictor", label: isZh ? "比赛预测器" : "Game Predictor", description: isZh ? "未来 7 天胜率预测" : "Win probabilities for next 7 days", icon: Zap },
+          { href: "/rivalries", label: isZh ? "宿敌对决" : "Rivalries", description: isZh ? "最胶着的队伍对位" : "Tightest team-vs-team matchups", icon: Crown },
         ]}
       />
     </div>

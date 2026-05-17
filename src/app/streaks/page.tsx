@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Flame, Snowflake, TrendingDown, TrendingUp, Crown, Target, Layers } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
@@ -187,16 +188,23 @@ function TeamRow({ s }: { s: TeamStreak }) {
 }
 
 export default async function StreaksPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const streaks = await computeStreaks();
 
   if (streaks.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="League" icon={Flame} title="Streaks" subtitle="Hot and cold teams across the NBA" />
+        <PageHeader
+          eyebrow={isZh ? "联盟" : "League"}
+          icon={Flame}
+          title={isZh ? "连胜连败" : "Streaks"}
+          subtitle={isZh ? "全联盟最热与最冷的球队" : "Hot and cold teams across the NBA"}
+        />
         <EmptyState
           icon={Flame}
-          title="No streak data yet"
-          description="Streak analysis needs at least a handful of finished games for the season."
+          title={isZh ? "暂无连胜数据" : "No streak data yet"}
+          description={isZh ? "连胜分析需要本赛季已结束的若干场比赛。" : "Streak analysis needs at least a handful of finished games for the season."}
         />
       </div>
     );
@@ -218,10 +226,10 @@ export default async function StreaksPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={Flame}
-        title="Streaks"
-        subtitle="Hot and cold teams · auto-updated from finished games"
+        title={isZh ? "连胜连败" : "Streaks"}
+        subtitle={isZh ? "全联盟最热与最冷的球队" : "Hot and cold teams across the NBA"}
       />
 
       {/* Insight strip */}
@@ -232,7 +240,7 @@ export default async function StreaksPage() {
               <Flame size={18} className="text-accent-amber" />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Hottest</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "最火热" : "Hottest"}</p>
               <p className="text-sm font-bold text-text-primary">{TEAM_META[hottest.tricode]?.city} {TEAM_META[hottest.tricode]?.name}</p>
               <p className="text-[10px] font-mono tabular-nums text-accent-amber">{hottest.current.count} {hottest.current.type} in a row</p>
             </div>
@@ -244,7 +252,7 @@ export default async function StreaksPage() {
               <Snowflake size={18} className="text-danger" />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Coldest</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "最低迷" : "Coldest"}</p>
               <p className="text-sm font-bold text-text-primary">{TEAM_META[coldest.tricode]?.city} {TEAM_META[coldest.tricode]?.name}</p>
               <p className="text-[10px] font-mono tabular-nums text-danger">{coldest.current.count} {coldest.current.type} in a row</p>
             </div>
@@ -256,7 +264,7 @@ export default async function StreaksPage() {
               <TrendingUp size={18} className="text-accent" />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Longest run</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "最长连续" : "Longest run"}</p>
               <p className="text-sm font-bold text-text-primary">{TEAM_META[longestStreak.tricode]?.tricode}</p>
               <p className="text-[10px] font-mono tabular-nums text-accent">{longestStreak.current.count} {longestStreak.current.type} streak</p>
             </div>
@@ -270,7 +278,7 @@ export default async function StreaksPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent-amber flex items-center gap-2">
               <Flame size={14} className="text-accent-amber" />
-              Hot · Currently winning
+              {isZh ? "热门 · 当前连胜" : "Hot · Currently winning"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
             <span className="text-[10px] font-mono tabular-nums text-text-secondary">{hot.length} teams</span>
@@ -289,7 +297,7 @@ export default async function StreaksPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-danger flex items-center gap-2">
               <TrendingDown size={14} className="text-danger" />
-              Cold · Currently losing
+              {isZh ? "低迷 · 当前连败" : "Cold · Currently losing"}
             </h2>
             <span className="h-px flex-1 bg-danger/30" />
             <span className="text-[10px] font-mono tabular-nums text-text-secondary">{cold.length} teams</span>
@@ -305,8 +313,8 @@ export default async function StreaksPage() {
       {hot.length === 0 && cold.length === 0 && (
         <EmptyState
           icon={Flame}
-          title="No active streaks"
-          description="No teams currently riding multi-game streaks. Check back after the next slate."
+          title={isZh ? "暂无活跃连胜" : "No active streaks"}
+          description={isZh ? "目前没有球队保持多场连胜。下一轮比赛后再来看看。" : "No teams currently riding multi-game streaks. Check back after the next slate."}
         />
       )}
 

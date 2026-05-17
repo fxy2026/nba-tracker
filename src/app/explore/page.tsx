@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Explore · Feature Index",
@@ -23,110 +24,115 @@ interface FeatureCategory {
   features: FeatureEntry[];
 }
 
-const CATEGORIES: FeatureCategory[] = [
-  {
-    title: "Live & Scheduled",
-    eyebrow: "Tonight",
-    color: "#DF1B41",
-    features: [
-      { href: "/", label: "Today", description: "Live scores, finished games, upcoming tip-offs", icon: Trophy, badge: "LIVE" },
-      { href: "/calendar", label: "Calendar", description: "Pick any date to see games and results", icon: Calendar },
-      { href: "/schedule", label: "Schedule", description: "Upcoming games across all teams", icon: Clock },
-      { href: "/schedule-heatmap", label: "Schedule Heatmap", description: "Game density calendar — busy nights at a glance", icon: Activity },
-      { href: "/back-to-back", label: "Back-to-Backs", description: "B2B counts per team and upcoming pairs", icon: Repeat },
-      { href: "/game-predictor", label: "Game Predictor", description: "Win probabilities for next 7 days", icon: Zap },
-    ],
-  },
-  {
-    title: "Rankings & Standings",
-    eyebrow: "League Order",
-    color: "#FFD700",
-    features: [
-      { href: "/standings", label: "Standings", description: "Conference standings with W-L records", icon: ListOrdered },
-      { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-6, 7-10 play-in, 11-15 lottery", icon: Trophy },
-      { href: "/divisions", label: "Divisions", description: "Six division mini-standings within each conference", icon: MapIcon },
-      { href: "/power-rankings", label: "Power Rankings", description: "Composite team strength · 1-30", icon: Crown },
-      { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
-      { href: "/streaks", label: "Streaks", description: "Hottest and coldest teams · L10 form dots", icon: Flame },
-      { href: "/momentum", label: "Momentum", description: "Teams trending up or down · L5 vs prior 10", icon: TrendingUp },
-      { href: "/clutch-teams", label: "Clutch Teams", description: "Records in close games and overtime", icon: Target },
-      { href: "/scoring-output", label: "Scoring Output", description: "Offense, defense, and net point differential", icon: Shield },
-      { href: "/home-vs-road", label: "Home vs Road", description: "Best home fortresses and road warriors", icon: Home },
-      { href: "/rivalries", label: "Rivalries", description: "Most-played and tightest matchups", icon: Swords },
-    ],
-  },
-  {
-    title: "Awards & Leaders",
-    eyebrow: "Hardware",
-    color: "#A855F7",
-    features: [
-      { href: "/awards-race", label: "Awards Race", description: "MVP / ROY / DPOY / 6MOY / MIP leaders", icon: Award },
-      { href: "/stats", label: "Stat Leaders", description: "Per-game and team statistical leaders", icon: BarChart3 },
-      { href: "/all-time-leaders", label: "All-Time Leaders", description: "Career PPG / RPG / APG / tenure", icon: Crown },
-      { href: "/milestones", label: "Milestones", description: "Active players chasing career thresholds", icon: TrendingUp },
-      { href: "/clutch", label: "Playoff Leaders", description: "Postseason performers", icon: Target },
-    ],
-  },
-  {
-    title: "Game Archive",
-    eyebrow: "Replay",
-    color: "#22C55E",
-    features: [
-      { href: "/best-games", label: "Best Games", description: "Closest, biggest, OT thrillers", icon: Flame },
-      { href: "/records", label: "Season Records", description: "Single-game highs and lows", icon: BookOpen },
-      { href: "/this-day", label: "On This Day", description: "Historical games on today's date", icon: CalendarDays },
-      { href: "/history", label: "Champions", description: "Past NBA champions and Finals", icon: History },
-      { href: "/h2h", label: "Head to Head", description: "Series history between any two teams", icon: Swords },
-    ],
-  },
-  {
-    title: "Player Universe",
-    eyebrow: "People",
-    color: "#3B82F6",
-    features: [
-      { href: "/search", label: "Player Search", description: "Find any active player by name", icon: Sparkles },
-      { href: "/rookie-watch", label: "Rookie Watch", description: "Top first- and second-year players", icon: Sparkles },
-      { href: "/draft-classes", label: "Draft Classes", description: "Players grouped by draft year", icon: GraduationCap },
-      { href: "/by-position", label: "By Position", icon: Users, description: "Guards / Wings / Forwards / Big Men leaders" },
-      { href: "/by-country", label: "By Country", description: "Global representation across the league", icon: Globe },
-      { href: "/by-college", label: "By College", description: "NBA pipeline schools and top performers", icon: School },
-      { href: "/compare", label: "Compare", description: "Side-by-side stat comparison of two players", icon: GitCompareArrows },
-    ],
-  },
-  {
-    title: "News & Personal",
-    eyebrow: "Around the league",
-    color: "#F59E0B",
-    features: [
-      { href: "/injuries", label: "Injuries", description: "Latest injury reports across the league", icon: AlertTriangle },
-      { href: "/transactions", label: "Transactions", description: "Trades, signings, waivers", icon: ArrowLeftRight },
-      { href: "/favorites", label: "Favorites", description: "Your saved teams and players", icon: Heart },
-    ],
-  },
-  {
-    title: "Fan Tools",
-    eyebrow: "Play & learn",
-    color: "#A855F7",
-    features: [
-      { href: "/quiz", label: "NBA Quiz", description: "Guess players from headshots, stat lines, or teams", icon: HelpCircle },
-      { href: "/glossary", label: "Glossary", description: "Stats and terminology explained · PPG to PER", icon: Book },
-    ],
-  },
-];
+function buildCategories(isZh: boolean): FeatureCategory[] {
+  return [
+    {
+      title: isZh ? "实时与赛程" : "Live & Scheduled",
+      eyebrow: isZh ? "今夜" : "Tonight",
+      color: "#DF1B41",
+      features: [
+        { href: "/", label: "Today", description: "Live scores, finished games, upcoming tip-offs", icon: Trophy, badge: "LIVE" },
+        { href: "/calendar", label: "Calendar", description: "Pick any date to see games and results", icon: Calendar },
+        { href: "/schedule", label: "Schedule", description: "Upcoming games across all teams", icon: Clock },
+        { href: "/schedule-heatmap", label: "Schedule Heatmap", description: "Game density calendar — busy nights at a glance", icon: Activity },
+        { href: "/back-to-back", label: "Back-to-Backs", description: "B2B counts per team and upcoming pairs", icon: Repeat },
+        { href: "/game-predictor", label: "Game Predictor", description: "Win probabilities for next 7 days", icon: Zap },
+      ],
+    },
+    {
+      title: isZh ? "排名与战绩" : "Rankings & Standings",
+      eyebrow: isZh ? "联赛排序" : "League Order",
+      color: "#FFD700",
+      features: [
+        { href: "/standings", label: "Standings", description: "Conference standings with W-L records", icon: ListOrdered },
+        { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-6, 7-10 play-in, 11-15 lottery", icon: Trophy },
+        { href: "/divisions", label: "Divisions", description: "Six division mini-standings within each conference", icon: MapIcon },
+        { href: "/power-rankings", label: "Power Rankings", description: "Composite team strength · 1-30", icon: Crown },
+        { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
+        { href: "/streaks", label: "Streaks", description: "Hottest and coldest teams · L10 form dots", icon: Flame },
+        { href: "/momentum", label: "Momentum", description: "Teams trending up or down · L5 vs prior 10", icon: TrendingUp },
+        { href: "/clutch-teams", label: "Clutch Teams", description: "Records in close games and overtime", icon: Target },
+        { href: "/scoring-output", label: "Scoring Output", description: "Offense, defense, and net point differential", icon: Shield },
+        { href: "/home-vs-road", label: "Home vs Road", description: "Best home fortresses and road warriors", icon: Home },
+        { href: "/rivalries", label: "Rivalries", description: "Most-played and tightest matchups", icon: Swords },
+      ],
+    },
+    {
+      title: isZh ? "奖项与排行" : "Awards & Leaders",
+      eyebrow: isZh ? "硬奖" : "Hardware",
+      color: "#A855F7",
+      features: [
+        { href: "/awards-race", label: "Awards Race", description: "MVP / ROY / DPOY / 6MOY / MIP leaders", icon: Award },
+        { href: "/stats", label: "Stat Leaders", description: "Per-game and team statistical leaders", icon: BarChart3 },
+        { href: "/all-time-leaders", label: "All-Time Leaders", description: "Career PPG / RPG / APG / tenure", icon: Crown },
+        { href: "/milestones", label: "Milestones", description: "Active players chasing career thresholds", icon: TrendingUp },
+        { href: "/clutch", label: "Playoff Leaders", description: "Postseason performers", icon: Target },
+      ],
+    },
+    {
+      title: isZh ? "比赛档案" : "Game Archive",
+      eyebrow: isZh ? "回放" : "Replay",
+      color: "#22C55E",
+      features: [
+        { href: "/best-games", label: "Best Games", description: "Closest, biggest, OT thrillers", icon: Flame },
+        { href: "/records", label: "Season Records", description: "Single-game highs and lows", icon: BookOpen },
+        { href: "/this-day", label: "On This Day", description: "Historical games on today's date", icon: CalendarDays },
+        { href: "/history", label: "Champions", description: "Past NBA champions and Finals", icon: History },
+        { href: "/h2h", label: "Head to Head", description: "Series history between any two teams", icon: Swords },
+      ],
+    },
+    {
+      title: isZh ? "球员宇宙" : "Player Universe",
+      eyebrow: isZh ? "人物" : "People",
+      color: "#3B82F6",
+      features: [
+        { href: "/search", label: "Player Search", description: "Find any active player by name", icon: Sparkles },
+        { href: "/rookie-watch", label: "Rookie Watch", description: "Top first- and second-year players", icon: Sparkles },
+        { href: "/draft-classes", label: "Draft Classes", description: "Players grouped by draft year", icon: GraduationCap },
+        { href: "/by-position", label: "By Position", icon: Users, description: "Guards / Wings / Forwards / Big Men leaders" },
+        { href: "/by-country", label: "By Country", description: "Global representation across the league", icon: Globe },
+        { href: "/by-college", label: "By College", description: "NBA pipeline schools and top performers", icon: School },
+        { href: "/compare", label: "Compare", description: "Side-by-side stat comparison of two players", icon: GitCompareArrows },
+      ],
+    },
+    {
+      title: isZh ? "新闻与个人" : "News & Personal",
+      eyebrow: isZh ? "联盟动态" : "Around the league",
+      color: "#F59E0B",
+      features: [
+        { href: "/injuries", label: "Injuries", description: "Latest injury reports across the league", icon: AlertTriangle },
+        { href: "/transactions", label: "Transactions", description: "Trades, signings, waivers", icon: ArrowLeftRight },
+        { href: "/favorites", label: "Favorites", description: "Your saved teams and players", icon: Heart },
+      ],
+    },
+    {
+      title: isZh ? "球迷工具" : "Fan Tools",
+      eyebrow: isZh ? "游戏与学习" : "Play & learn",
+      color: "#A855F7",
+      features: [
+        { href: "/quiz", label: "NBA Quiz", description: "Guess players from headshots, stat lines, or teams", icon: HelpCircle },
+        { href: "/glossary", label: "Glossary", description: "Stats and terminology explained · PPG to PER", icon: Book },
+      ],
+    },
+  ];
+}
 
-export default function ExplorePage() {
-  const total = CATEGORIES.reduce((s, c) => s + c.features.length, 0);
+export default async function ExplorePage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
+  const categories = buildCategories(isZh);
+  const total = categories.reduce((s, c) => s + c.features.length, 0);
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
         eyebrow="Index"
         icon={Compass}
-        title="Explore"
-        subtitle={`Every feature on NBATracker · ${total} pages organized by topic`}
+        title={isZh ? "浏览" : "Explore"}
+        subtitle={isZh ? `NBATracker 全部功能 · 按主题分类的 ${total} 个页面` : `Every feature on NBATracker · ${total} pages organized by topic`}
       />
 
       <div className="space-y-6">
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <section key={cat.title} className="glass-tile p-5 relative overflow-hidden">
             <div className="absolute inset-y-0 left-0 w-1 opacity-70" style={{ background: cat.color }} />
             <div className="relative">

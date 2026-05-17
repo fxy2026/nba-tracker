@@ -5,6 +5,7 @@ import { BookOpen, Crown, type LucideIcon } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Season Records",
@@ -157,13 +158,19 @@ function Section({
 }
 
 export default async function RecordsPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const { byCategory, totalGames } = await compute();
 
   if (totalGames === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Season" icon={BookOpen} title="Season Records" />
-        <EmptyState icon={BookOpen} title="No data yet" description="Records will populate once the season has produced finished games." />
+        <PageHeader eyebrow="Season" icon={BookOpen} title={isZh ? "赛季纪录" : "Season Records"} />
+        <EmptyState
+          icon={BookOpen}
+          title={isZh ? "暂无数据" : "No data yet"}
+          description={isZh ? "本赛季产生已结束比赛后，纪录会显示在这里。" : "Records will populate once the season has produced finished games."}
+        />
       </div>
     );
   }
@@ -173,60 +180,60 @@ export default async function RecordsPage() {
       <PageHeader
         eyebrow="Season"
         icon={BookOpen}
-        title="Season Records"
-        subtitle={`Single-game season-high and season-low records across ${totalGames} finished games`}
+        title={isZh ? "赛季纪录" : "Season Records"}
+        subtitle={isZh ? `本赛季单场纪录 — 最高球队得分、最大胜差、最长加时等等。共 ${totalGames} 场已完赛比赛。` : `Single-game season-high and season-low records across ${totalGames} finished games`}
       />
 
       <Section
         icon={Crown}
-        eyebrow="Top Score"
-        title="Highest Team Score"
-        description="Most points scored by a single team in one game"
+        eyebrow={isZh ? "顶级得分" : "Top Score"}
+        title={isZh ? "球队最高得分" : "Highest Team Score"}
+        description={isZh ? "单队单场最高得分" : "Most points scored by a single team in one game"}
         color="#FFD700"
         rows={byCategory.highestTeam}
         badgeFor={(p) => String(Math.max(p.game.homeTeam.score, p.game.awayTeam.score))}
       />
       <Section
         icon={BookOpen}
-        eyebrow="Cold Night"
-        title="Lowest Team Score"
-        description="Fewest points by a team in a finished game"
+        eyebrow={isZh ? "冷夜" : "Cold Night"}
+        title={isZh ? "球队最低得分" : "Lowest Team Score"}
+        description={isZh ? "单队单场最低得分" : "Fewest points by a team in a finished game"}
         color="#94A3B8"
         rows={byCategory.lowestTeam}
         badgeFor={(p) => String(Math.min(p.game.homeTeam.score, p.game.awayTeam.score))}
       />
       <Section
         icon={Crown}
-        eyebrow="Shootout"
-        title="Highest Combined Score"
-        description="Most total points scored across both teams"
+        eyebrow={isZh ? "对攻战" : "Shootout"}
+        title={isZh ? "两队总得分最高" : "Highest Combined Score"}
+        description={isZh ? "两队总得分最高" : "Most total points scored across both teams"}
         color="#22C55E"
         rows={byCategory.highestCombined}
         badgeFor={(p) => String(p.total)}
       />
       <Section
         icon={BookOpen}
-        eyebrow="Rock Fight"
-        title="Lowest Combined Score"
-        description="Fewest total points across both teams — defensive grinders"
+        eyebrow={isZh ? "防守战" : "Rock Fight"}
+        title={isZh ? "两队总得分最低" : "Lowest Combined Score"}
+        description={isZh ? "两队总得分最低 — 防守苦战" : "Fewest total points across both teams — defensive grinders"}
         color="#3B82F6"
         rows={byCategory.lowestCombined}
         badgeFor={(p) => String(p.total)}
       />
       <Section
         icon={Crown}
-        eyebrow="Beatdown"
-        title="Largest Margin"
-        description="Biggest blowouts of the season"
+        eyebrow={isZh ? "屠杀" : "Beatdown"}
+        title={isZh ? "最大胜差" : "Largest Margin"}
+        description={isZh ? "本赛季最大胜差" : "Biggest blowouts of the season"}
         color="#F59E0B"
         rows={byCategory.largestMargin}
         badgeFor={(p) => `+${p.margin}`}
       />
       <Section
         icon={Crown}
-        eyebrow="Photo Finish"
-        title="Smallest Margin"
-        description="Closest finishes — won by a single basket"
+        eyebrow={isZh ? "毫厘之差" : "Photo Finish"}
+        title={isZh ? "最小胜差" : "Smallest Margin"}
+        description={isZh ? "最接近的比赛 — 一球胜负" : "Closest finishes — won by a single basket"}
         color="#DF1B41"
         rows={byCategory.smallestMargin}
         badgeFor={(p) => `+${p.margin}`}
@@ -235,8 +242,8 @@ export default async function RecordsPage() {
         <Section
           icon={Crown}
           eyebrow="Bonus Basketball"
-          title="Most Overtimes"
-          description="Games that needed extra periods to settle"
+          title={isZh ? "最多加时" : "Most Overtimes"}
+          description={isZh ? "需要加时才能决出胜负的比赛" : "Games that needed extra periods to settle"}
           color="#A855F7"
           rows={byCategory.mostOT}
           badgeFor={(p) => p.otCount > 1 ? `${p.otCount}OT` : "OT"}

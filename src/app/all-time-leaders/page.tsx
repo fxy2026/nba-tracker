@@ -7,6 +7,7 @@ import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface PlayerInfo {
   personId: number;
@@ -25,14 +26,40 @@ interface PlayerInfo {
 
 type Category = "pts" | "reb" | "ast" | "tenure";
 
-const CATEGORIES: { key: Category; label: string; description: string; fmt: (v: number) => string }[] = [
-  { key: "pts", label: "Career PPG", description: "Highest scoring average across career", fmt: (v) => v.toFixed(1) },
-  { key: "reb", label: "Career RPG", description: "Best rebounding averages all time", fmt: (v) => v.toFixed(1) },
-  { key: "ast", label: "Career APG", description: "Most assists per game in NBA history", fmt: (v) => v.toFixed(1) },
-  { key: "tenure", label: "Longest Careers", description: "Most seasons played", fmt: (v) => `${v} years` },
-];
+type CategoryMeta = { key: Category; label: string; description: string; fmt: (v: number) => string };
+
+function buildCategories(isZh: boolean): CategoryMeta[] {
+  return [
+    {
+      key: "pts",
+      label: isZh ? "生涯场均得分" : "Career PPG",
+      description: isZh ? "生涯最高得分均值" : "Highest scoring average across career",
+      fmt: (v) => v.toFixed(1),
+    },
+    {
+      key: "reb",
+      label: isZh ? "生涯场均篮板" : "Career RPG",
+      description: isZh ? "历史最佳篮板均值" : "Best rebounding averages all time",
+      fmt: (v) => v.toFixed(1),
+    },
+    {
+      key: "ast",
+      label: isZh ? "生涯场均助攻" : "Career APG",
+      description: isZh ? "NBA 历史场均助攻最多" : "Most assists per game in NBA history",
+      fmt: (v) => v.toFixed(1),
+    },
+    {
+      key: "tenure",
+      label: isZh ? "最长生涯" : "Longest Careers",
+      description: isZh ? "出场赛季最多" : "Most seasons played",
+      fmt: (v) => (isZh ? `${v} 年` : `${v} years`),
+    },
+  ];
+}
 
 export default function AllTimeLeadersPage() {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [players, setPlayers] = useState<PlayerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<Category>("pts");
@@ -70,20 +97,23 @@ export default function AllTimeLeadersPage() {
   }, [players, category]);
 
   const topValue = ranked[0]?._value || 1;
-  const activeCat = CATEGORIES.find((c) => c.key === category)!;
+  const categories = useMemo(() => buildCategories(isZh), [isZh]);
+  const activeCat = categories.find((c) => c.key === category)!;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="History"
+        eyebrow={isZh ? "历史" : "History"}
         icon={Crown}
-        title="All-Time Leaders"
-        subtitle="Career averages across all NBA players in the index · adjusted by category"
+        title={isZh ? "历史排行榜" : "All-Time Leaders"}
+        subtitle={isZh
+          ? "NBA 球员索引中所有球员的生涯场均数据 · 按类别调整"
+          : "Career averages across all NBA players in the index · adjusted by category"}
       />
 
       {/* Category selector */}
       <div className="glass-tile flex flex-wrap overflow-hidden p-1 mb-6 w-fit">
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
             key={c.key}
             onClick={() => setCategory(c.key)}
@@ -105,7 +135,7 @@ export default function AllTimeLeadersPage() {
         </div>
         <div>
           <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {activeCat.label}</p>
-          <h2 className="text-lg font-semibold text-text-primary tracking-tight">{activeCat.label} Leaders</h2>
+          <h2 className="text-lg font-semibold text-text-primary tracking-tight">{activeCat.label}{isZh ? " 榜" : " Leaders"}</h2>
           <p className="text-xs text-text-secondary mt-0.5">{activeCat.description}</p>
         </div>
       </div>
@@ -119,8 +149,8 @@ export default function AllTimeLeadersPage() {
       ) : ranked.length === 0 ? (
         <EmptyState
           icon={Crown}
-          title="No data available"
-          description="Could not load player career data."
+          title={isZh ? "暂无数据" : "No data available"}
+          description={isZh ? "无法加载球员生涯数据。" : "Could not load player career data."}
         />
       ) : (
         <div className="space-y-2">
@@ -148,7 +178,7 @@ export default function AllTimeLeadersPage() {
                     {p.firstName} {p.lastName}
                   </p>
                   <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                    {p.teamAbbr || "—"} · {p.fromYear}-{p.toYear} · <span className="tabular-nums">{p._seasons}</span> yrs
+                    {p.teamAbbr || "—"} · {p.fromYear}-{p.toYear} · <span className="tabular-nums">{p._seasons}</span> {isZh ? "年" : "yrs"}
                   </p>
                 </div>
                 <div className="hidden sm:flex flex-col items-end shrink-0 min-w-[140px]">
@@ -173,21 +203,30 @@ export default function AllTimeLeadersPage() {
       )}
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Note</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "说明" : "Note"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Career averages from the NBA player index. Includes both active and retired players. PPG/RPG/APG are
-          career per-game averages, not totals — to rank by counting stats, see{" "}
-          <Link href="/milestones" className="text-accent hover:underline">milestones</Link>.
+          {isZh ? (
+            <>
+              生涯均值来自 NBA 球员索引，包含现役与退役球员。PPG/RPG/APG 为生涯场均数据，并非累计总数 — 按累计数据排名请查看{" "}
+              <Link href="/milestones" className="text-accent hover:underline">里程碑</Link>。
+            </>
+          ) : (
+            <>
+              Career averages from the NBA player index. Includes both active and retired players. PPG/RPG/APG are
+              career per-game averages, not totals — to rank by counting stats, see{" "}
+              <Link href="/milestones" className="text-accent hover:underline">milestones</Link>.
+            </>
+          )}
         </p>
       </div>
 
       <RelatedPages
         pages={[
-          { href: "/milestones", label: "Career Milestones", description: "Active players chasing thresholds", icon: TrendingUp },
-          { href: "/awards-race", label: "Awards Race", description: "MVP, ROY, DPOY, 6MOY, MIP", icon: Award },
-          { href: "/rookie-watch", label: "Rookie Watch", description: "Top first-year players", icon: Sparkles },
-          { href: "/by-position", label: "Leaders By Position", description: "Top by G/F/C", icon: Users },
-          { href: "/draft-classes", label: "Draft Classes", description: "Players grouped by draft year", icon: GraduationCap },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Career Milestones", description: isZh ? "现役球员冲击各项门槛" : "Active players chasing thresholds", icon: TrendingUp },
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards Race", description: "MVP, ROY, DPOY, 6MOY, MIP", icon: Award },
+          { href: "/rookie-watch", label: isZh ? "新秀观察" : "Rookie Watch", description: isZh ? "顶尖一年级球员" : "Top first-year players", icon: Sparkles },
+          { href: "/by-position", label: isZh ? "按位置排行" : "Leaders By Position", description: isZh ? "按 G/F/C 划分的最佳" : "Top by G/F/C", icon: Users },
+          { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份分组的球员" : "Players grouped by draft year", icon: GraduationCap },
         ]}
       />
     </div>
