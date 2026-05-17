@@ -199,8 +199,11 @@ export default function Navbar() {
             </button>
             {moreOpen && (
               <div
-                className="absolute right-0 top-full mt-1 w-[min(92vw,760px)] glass-tile p-4 z-50 animate-fade-in overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 72px)" }}
+                className="fixed right-3 sm:right-4 w-[min(92vw,760px)] glass-tile p-4 z-50 animate-fade-in overflow-y-auto"
+                style={{
+                  top: "68px",
+                  maxHeight: "calc(100vh - 80px)",
+                }}
               >
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-4">
                   {moreGroups.map((group) => (
@@ -242,8 +245,11 @@ export default function Navbar() {
             </button>
             {teamsOpen && (
               <div
-                className="absolute right-0 top-full mt-1 w-[360px] max-w-[92vw] glass-tile p-3 z-50 animate-fade-in overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 72px)" }}
+                className="fixed right-3 sm:right-4 w-[360px] max-w-[92vw] glass-tile p-3 z-50 animate-fade-in overflow-y-auto"
+                style={{
+                  top: "68px",
+                  maxHeight: "calc(100vh - 80px)",
+                }}
               >
                 <div className="grid grid-cols-5 gap-1.5">
                   {TEAMS.map((tm) => (
