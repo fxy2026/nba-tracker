@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from "react";
 import type { Locale, Translations } from "@/locales/types";
 import zh from "@/locales/zh";
 import en from "@/locales/en";
@@ -39,19 +39,28 @@ export function LocaleProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const setLocale = (next: Locale) => {
+  // PERF: setLocale identity is stable across renders. Without useCallback,
+  // the context value reference changes on every render even when locale
+  // hasn't changed, causing every useLocale() consumer (basically every
+  // client component on the site — Navbar, Footer, GamesList, every t.x
+  // call) to re-render unnecessarily.
+  const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     localStorage.setItem("locale", next);
     document.cookie = `locale=${next};path=/;max-age=31536000;SameSite=Lax`;
     // Reload so server components re-render with new locale
     window.location.reload();
-  };
+  }, []);
 
-  return (
-    <LocaleContext value={{ locale, t: dictionaries[locale], setLocale }}>
-      {children}
-    </LocaleContext>
+  // PERF: memoize the context value so its reference is stable across renders.
+  // Only changes when `locale` changes. Without this, every render of
+  // LocaleProvider would fan out a re-render to every consumer.
+  const value = useMemo<LocaleContextValue>(
+    () => ({ locale, t: dictionaries[locale], setLocale }),
+    [locale, setLocale]
   );
+
+  return <LocaleContext value={value}>{children}</LocaleContext>;
 }
 
 export function useLocale() {

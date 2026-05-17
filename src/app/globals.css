@@ -212,10 +212,15 @@ table { border-collapse: collapse; }
 
 .overflow-x-auto, .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
-  transform: translateZ(0);
+  /* NO translateZ — every scrollable element would become its own GPU
+     compositor layer, including the command palette + every dropdown +
+     every internal-scroll component. Layer explosion = main-thread/GPU
+     orchestration cost greater than the benefit. */
 }
 main { contain: layout style; }
-nav.sticky { will-change: transform; transform: translateZ(0); }
+/* No baseline will-change/transform on nav — Chrome already promotes
+   sticky elements when they actually stick. Pre-promoting wastes a
+   compositor layer + memory for no benefit. */
 
 /* ─────────────────────────────────────────────────────────────
    Card system — dashboard density
@@ -324,10 +329,9 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
   contain-intrinsic-size: auto 300px;
 }
 
-.box-score-table td.sticky,
-.box-score-table th.sticky {
-  will-change: transform;
-}
+/* Removed will-change: transform on box score sticky cells — only useful when
+   animation is actively running. As baseline it pre-promotes layers + balloons
+   VRAM. Chrome already promotes sticky elements when they actually stick. */
 .box-score-wrap { contain: layout style; }
 
 .stats-table {
