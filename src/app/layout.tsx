@@ -6,6 +6,7 @@ import MobileNav from "@/components/MobileNav";
 import BackToTop from "@/components/BackToTop";
 import SiteFooter from "@/components/SiteFooter";
 import InstallPrompt from "@/components/InstallPrompt";
+import OnlineStatus from "@/components/OnlineStatus";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import ThemeScript from "@/components/ThemeScript";
@@ -126,6 +127,7 @@ export default async function RootLayout({
           <MobileNav />
           <BackToTop />
           <InstallPrompt />
+          <OnlineStatus />
           </ToastProvider>
         </LocaleProvider>
       </body>
