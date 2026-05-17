@@ -198,7 +198,10 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.more}</span>
             </button>
             {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[min(90vw,760px)] max-h-[80vh] overflow-y-auto glass-tile p-4 z-50 animate-fade-in">
+              <div
+                className="absolute right-0 top-full mt-1 w-[min(92vw,760px)] glass-tile p-4 z-50 animate-fade-in overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 72px)" }}
+              >
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-4">
                   {moreGroups.map((group) => (
                     <div key={group.title} className="min-w-0">
@@ -238,7 +241,10 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.teams}</span>
             </button>
             {teamsOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[360px] max-w-[90vw] glass-tile p-3 z-50 animate-fade-in">
+              <div
+                className="absolute right-0 top-full mt-1 w-[360px] max-w-[92vw] glass-tile p-3 z-50 animate-fade-in overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 72px)" }}
+              >
                 <div className="grid grid-cols-5 gap-1.5">
                   {TEAMS.map((tm) => (
                     <Link
