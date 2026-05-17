@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { HelpCircle, RefreshCw, Trophy } from "lucide-react";
+import { HelpCircle, RefreshCw, Trophy, Crown } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
+import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 
 interface Player {
   personId: number;
@@ -18,12 +19,32 @@ interface Player {
   position: string;
 }
 
-type Mode = "headshot" | "statline" | "team";
+type Mode = "headshot" | "statline" | "team" | "legend";
+
+// Build a Player-shaped pool from the static all-time-leaders dataset so
+// the existing question-building helpers work unchanged on it.
+function legendsAsPlayers(): Player[] {
+  return ALL_TIME_LEADERS.map((l, i) => {
+    const [first, ...rest] = l.name.split(" ");
+    return {
+      // For retired legends personId=0; pad with index so multi-choice keys stay unique.
+      personId: l.personId || -(i + 1),
+      firstName: first,
+      lastName: rest.join(" "),
+      teamAbbr: l.team,
+      pts: l.ppg,
+      reb: l.rpg,
+      ast: l.apg,
+      position: l.active ? "Active" : "Retired",
+    };
+  });
+}
 
 const MODES: { key: Mode; label: string; description: string; labelZh: string; descriptionZh: string }[] = [
   { key: "headshot", label: "Guess from headshot", description: "Pick the name from a player's portrait", labelZh: "看头像猜人", descriptionZh: "从头像选出对应球员名字" },
   { key: "statline", label: "Guess from stats", description: "Identify a player by their season averages", labelZh: "看数据猜人", descriptionZh: "通过赛季均数据辨认球员" },
   { key: "team", label: "Guess the team", description: "Which team does this player play for?", labelZh: "猜球队", descriptionZh: "这名球员效力哪支球队？" },
+  { key: "legend", label: "Guess the legend", description: "Career averages of NBA history's greats — pick the right legend", labelZh: "猜历史名人", descriptionZh: "通过生涯均数据辨认 NBA 历史巨星" },
 ];
 
 function sample<T>(arr: T[], n: number): T[] {
@@ -42,11 +63,15 @@ interface Question {
 }
 
 function buildQuestion(pool: Player[], mode: Mode): Question {
-  const candidates = pool.filter((p) => p.pts >= 8); // filter to recognizable
+  // Legend mode uses the static GOAT pool exclusively — no PPG floor since
+  // even low-scoring legends (Bill Russell, Dennis Rodman) are quiz-worthy.
+  const effectivePool = mode === "legend" ? legendsAsPlayers() : pool;
+  const candidates = mode === "legend"
+    ? effectivePool
+    : effectivePool.filter((p) => p.pts >= 8);
   const picks = sample(candidates, 4);
   const answer = picks[0];
   if (mode === "team") {
-    // Get 4 unique team abbreviations
     const teams = [...new Set(pool.map((p) => p.teamAbbr).filter(Boolean))];
     const otherTeams = sample(teams.filter((t) => t !== answer.teamAbbr), 3);
     const teamChoices = sample([answer.teamAbbr, ...otherTeams], 4);
@@ -188,6 +213,21 @@ export default function QuizPage() {
                 <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">{isZh ? `${q.answer.firstName} 效力哪支球队？` : `Which team does ${q.answer.firstName} play for?`}</p>
               </div>
             )}
+            {mode === "legend" && (
+              <div>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Crown size={14} className="text-accent-amber" aria-hidden="true" />
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-accent-amber">{isZh ? "生涯场均" : "Career Averages"}</p>
+                </div>
+                <div className="flex items-center justify-center gap-6 font-mono">
+                  <div><p className="text-3xl tabular-nums text-accent-amber">{q.answer.pts.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">PPG</p></div>
+                  <div><p className="text-3xl tabular-nums text-text-primary">{q.answer.reb.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">RPG</p></div>
+                  <div><p className="text-3xl tabular-nums text-text-primary">{q.answer.ast.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">APG</p></div>
+                  <div><p className="text-xs tabular-nums text-accent uppercase">{q.answer.position}</p><p className="text-[10px] uppercase text-text-secondary">{isZh ? "状态" : "Status"}</p></div>
+                </div>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mt-3">{isZh ? "这是哪位历史名人？" : "Which all-time legend is this?"}</p>
+              </div>
+            )}
           </div>
 
           {/* Choices */}
@@ -245,16 +285,23 @@ export default function QuizPage() {
           </div>
 
           {showAnswer && (
-            <div className="mt-5 flex items-center justify-between">
-              <Link
-                href={`/player/${q.answer.personId}`}
-                className="text-xs font-mono uppercase tracking-[0.15em] text-accent hover:underline"
-              >
-                {isZh ? `查看 ${q.answer.firstName} ${q.answer.lastName} 的页面 →` : `View ${q.answer.firstName} ${q.answer.lastName} profile →`}
-              </Link>
+            <div className="mt-5 flex items-center justify-between gap-2">
+              {q.answer.personId > 0 ? (
+                <Link
+                  href={`/player/${q.answer.personId}`}
+                  className="text-xs font-mono uppercase tracking-[0.15em] text-accent hover:underline"
+                >
+                  {isZh ? `查看 ${q.answer.firstName} ${q.answer.lastName} 的页面 →` : `View ${q.answer.firstName} ${q.answer.lastName} profile →`}
+                </Link>
+              ) : (
+                // Retired legend — no profile page; show answer instead
+                <p className="text-xs font-mono uppercase tracking-[0.15em] text-accent-amber">
+                  {isZh ? `答案：${q.answer.firstName} ${q.answer.lastName}` : `Answer: ${q.answer.firstName} ${q.answer.lastName}`}
+                </p>
+              )}
               <button
                 onClick={next}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent/90 text-white text-sm font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent/90 text-white text-sm font-medium transition-colors cursor-pointer shrink-0"
               >
                 <RefreshCw size={14} />
                 {isZh ? "下一题" : "Next question"}

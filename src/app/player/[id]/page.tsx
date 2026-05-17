@@ -7,6 +7,7 @@ import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, T
 import FavoriteButton from "@/components/FavoriteButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import RecentVisitTracker from "@/components/RecentVisitTracker";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
@@ -124,6 +125,7 @@ export default async function PlayerPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <RecentVisitTracker kind="player" id={String(personId)} label={fullName} />
       <Breadcrumbs
         items={[
           { label: isZh ? "球员" : "Players", href: "/search" },

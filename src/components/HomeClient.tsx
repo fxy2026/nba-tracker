@@ -6,6 +6,7 @@ import DateNav from "./DateNav";
 import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
+import RecentlyViewed from "./RecentlyViewed";
 import { useLocale } from "@/components/LocaleProvider";
 import { localTz as getLocalTz, dateInTz } from "@/lib/timezone";
 
@@ -47,6 +48,9 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
         );
       })()}
       <GamesList selectedDate={selectedDate} />
+
+      {/* User's recent visits — only renders when localStorage has data */}
+      <RecentlyViewed />
 
       {/* Bottom rail — Standings + Season Progress side-by-side */}
       <div className="mt-10 mb-4">

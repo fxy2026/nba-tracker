@@ -18,6 +18,7 @@ import EmptyState from "@/components/EmptyState";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import RecentVisitTracker from "@/components/RecentVisitTracker";
 
 export const revalidate = 600;
 
@@ -204,6 +205,11 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      <RecentVisitTracker
+        kind="game"
+        id={id}
+        label={`${team1.tricode} vs ${team2.tricode} · ${round.short}`}
+      />
       <Breadcrumbs
         items={[
           { label: round.full, href: "/" },
