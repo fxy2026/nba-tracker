@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { ViewTransition } from "react";
 import { Fira_Sans, Fira_Code } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -105,9 +104,15 @@ export default async function RootLayout({
           />
           <Navbar />
           <main id="main-content" className="flex-1 relative">
-            {/* Global aurora mesh — visible behind every page, gives glass tiles something to refract */}
-            <div className="fixed inset-x-0 top-0 h-[70vh] bg-mesh-aurora pointer-events-none -z-10" />
-            <ViewTransition>{children}</ViewTransition>
+            {/* Global aurora mesh — visible behind every page, gives glass tiles something to refract.
+                Perf: changed from `fixed` (composites with every scroll on slow GPUs) to a static
+                absolute element scoped to top 70vh so the browser can paint it once and forget. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-[70vh] bg-mesh-aurora pointer-events-none -z-10"
+              style={{ willChange: "auto" }}
+            />
+            {children}
           </main>
           <SiteFooter />
           <MobileNav />

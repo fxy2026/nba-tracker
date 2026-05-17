@@ -174,7 +174,7 @@ export default function Navbar() {
   return (
     <nav
       data-scrolled={scrolled ? "true" : "false"}
-      className="sticky top-0 z-50 bg-bg-secondary/75 backdrop-blur-md border-b border-border safe-area-top transition-all duration-300"
+      className="sticky top-0 z-50 bg-bg-secondary/95 border-b border-border safe-area-top"
       role="navigation"
       aria-label="Main navigation"
     >

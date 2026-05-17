@@ -116,7 +116,7 @@ export default function MobileNav() {
       )}
 
       {/* Bottom nav bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-secondary/85 backdrop-blur-xl border-t border-border safe-area-bottom" role="navigation" aria-label="Mobile navigation">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-secondary/95 border-t border-border safe-area-bottom" role="navigation" aria-label="Mobile navigation">
         <div className="flex items-center justify-around h-14">
           {mainLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
