@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: "NBA Tracker",
       description: t.meta.twitterDescription,
     },
