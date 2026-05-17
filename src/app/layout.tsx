@@ -92,6 +92,8 @@ export default async function RootLayout({
         <SpeculationRules />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
+        {/* Scroll-driven progress indicator — pure CSS, no JS listener */}
+        <div className="scroll-progress-rail" aria-hidden="true" />
         <LocaleProvider initialLocale={locale}>
           <ToastProvider>
           {/* Skip to main content for accessibility */}
