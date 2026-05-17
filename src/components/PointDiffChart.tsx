@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { Activity } from "lucide-react";
 
 export interface PointDiffGame {
   gameId: string;
@@ -33,7 +33,6 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
   if (diffs.length === 0) return null;
 
   const maxAbs = Math.max(...diffs.map(Math.abs), 10);
-  // Round up to nearest 5 for clean axis
   const yMax = Math.ceil(maxAbs / 5) * 5;
 
   const avg = diffs.reduce((s, d) => s + d, 0) / diffs.length;
@@ -43,135 +42,167 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
   const wins = last.filter((g) => g.won).length;
   const losses = last.length - wins;
 
-  const chartH = 180;
-  const chartW = 100; // viewBox width, used as %
-  const padTop = 18;
-  const padBottom = 18;
+  // 3-game rolling average for trend line
+  const trend: (number | null)[] = diffs.map((_, i) => {
+    if (i < 2) return null;
+    const window = diffs.slice(Math.max(0, i - 2), i + 1);
+    return window.reduce((s, d) => s + d, 0) / window.length;
+  });
+
+  // Chart dimensions
+  const chartH = 220;
+  const chartW = 100; // viewBox width as percent
+  const padTop = 22;
+  const padBottom = 22;
+  const padLeft = 6;
+  const padRight = 2;
   const innerH = chartH - padTop - padBottom;
+  const innerW = chartW - padLeft - padRight;
   const midY = padTop + innerH / 2;
 
-  const barWidth = chartW / last.length;
-  const barGap = barWidth * 0.18;
+  const barWidth = innerW / last.length;
+  const barGap = barWidth * 0.22;
   const barInnerW = barWidth - barGap * 2;
 
-  // Average line as percentage of innerH
-  const avgY = midY - (avg / yMax) * (innerH / 2);
+  const valueToY = (v: number) => midY - (v / yMax) * (innerH / 2);
+  const indexToX = (i: number) => padLeft + i * barWidth + barWidth / 2;
 
-  // Gridlines at ±yMax/2 and 0
+  const avgY = valueToY(avg);
+
+  // Gridlines at clean values
   const gridLines = [
-    { value: yMax, y: padTop },
-    { value: yMax / 2, y: midY - (innerH / 4) },
-    { value: 0, y: midY },
-    { value: -yMax / 2, y: midY + (innerH / 4) },
-    { value: -yMax, y: padTop + innerH },
+    { value: yMax, y: padTop, major: false },
+    { value: yMax / 2, y: midY - (innerH / 4), major: false },
+    { value: 0, y: midY, major: true },
+    { value: -yMax / 2, y: midY + (innerH / 4), major: false },
+    { value: -yMax, y: padTop + innerH, major: false },
   ];
 
+  // Trend path
+  const trendPath = trend
+    .map((t, i) => {
+      if (t === null) return null;
+      const x = indexToX(i);
+      const y = valueToY(t);
+      return `${i === 2 || trend[i - 1] === null ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="glass-tile p-4 mt-6 relative overflow-hidden">
+    <div className="glass-tile p-5 mt-6 relative overflow-hidden">
+      {/* Subtle team-color halo */}
+      <div
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${teamColor}10, transparent)`,
+        }}
+      />
+
       {/* Header strip */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div className="relative flex items-end justify-between mb-5 flex-wrap gap-3">
         <div>
           <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Form</p>
-          <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-0.5">
-            <Activity size={14} className="text-accent" />
+          <h3 className="text-base font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-0.5">
+            <Activity size={15} style={{ color: teamColor }} />
             {title}
           </h3>
         </div>
-        <div className="flex items-center gap-3 text-[10px] font-mono">
-          <div className="text-right">
-            <p className="text-[8px] uppercase tracking-[0.2em] text-text-secondary/60">Avg</p>
-            <p className={`text-base tabular-nums font-light ${avg >= 0 ? "text-success" : "text-danger"}`}>
-              {avg >= 0 ? "+" : ""}{avg.toFixed(1)}
-            </p>
-          </div>
-          <div className="w-px h-7 bg-border" />
-          <div className="text-right">
-            <p className="text-[8px] uppercase tracking-[0.2em] text-text-secondary/60">Best</p>
-            <p className="text-base tabular-nums font-light text-success">+{best}</p>
-          </div>
-          <div className="w-px h-7 bg-border" />
-          <div className="text-right">
-            <p className="text-[8px] uppercase tracking-[0.2em] text-text-secondary/60">Worst</p>
-            <p className="text-base tabular-nums font-light text-danger">{worst}</p>
-          </div>
-          <div className="w-px h-7 bg-border" />
-          <div className="text-right">
-            <p className="text-[8px] uppercase tracking-[0.2em] text-text-secondary/60">Record</p>
-            <p className="text-base tabular-nums font-light text-text-primary">{wins}-{losses}</p>
-          </div>
+        <div className="flex items-stretch gap-0 divide-x divide-border/60 rounded-xl glass-tile px-1">
+          {[
+            { label: "AVG", value: `${avg >= 0 ? "+" : ""}${avg.toFixed(1)}`, color: avg >= 0 ? "text-success" : "text-danger" },
+            { label: "BEST", value: `+${best}`, color: "text-success" },
+            { label: "WORST", value: `${worst}`, color: "text-danger" },
+            { label: "W-L", value: `${wins}-${losses}`, color: "text-text-primary" },
+          ].map((s) => (
+            <div key={s.label} className="px-3 py-1.5 text-right">
+              <p className="text-[8px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">{s.label}</p>
+              <p className={`text-sm tabular-nums font-light font-mono ${s.color}`}>{s.value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
+      {/* Chart */}
       <div className="relative">
-        {/* Chart SVG */}
-        <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" preserveAspectRatio="none" style={{ height: chartH }}>
+        <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full block" preserveAspectRatio="none" style={{ height: chartH }}>
           <defs>
-            <linearGradient id="bar-pos" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#16A34A" stopOpacity="0.55" />
+            <linearGradient id="pdc-pos" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#34D399" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0.35" />
             </linearGradient>
-            <linearGradient id="bar-pos-hover" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4ADE80" stopOpacity="1" />
-              <stop offset="100%" stopColor="#22C55E" stopOpacity="0.75" />
+            <linearGradient id="pdc-pos-h" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6EE7B7" stopOpacity="1" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0.55" />
             </linearGradient>
-            <linearGradient id="bar-neg" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#DC2626" stopOpacity="0.95" />
+            <linearGradient id="pdc-neg" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#F87171" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#EF4444" stopOpacity="0.35" />
+            </linearGradient>
+            <linearGradient id="pdc-neg-h" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#FCA5A5" stopOpacity="1" />
               <stop offset="100%" stopColor="#EF4444" stopOpacity="0.55" />
             </linearGradient>
-            <linearGradient id="bar-neg-hover" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#F87171" stopOpacity="1" />
-              <stop offset="100%" stopColor="#EF4444" stopOpacity="0.75" />
-            </linearGradient>
+            <filter id="pdc-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="0.6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* Gridlines */}
+          {/* Gridlines + axis labels */}
           {gridLines.map((g, i) => (
             <g key={i}>
               <line
-                x1={0}
+                x1={padLeft}
                 y1={g.y}
-                x2={chartW}
+                x2={chartW - padRight}
                 y2={g.y}
-                stroke={g.value === 0 ? "var(--border-strong)" : "var(--border)"}
-                strokeWidth={g.value === 0 ? "0.3" : "0.15"}
-                strokeDasharray={g.value === 0 ? "none" : "0.6 0.6"}
+                stroke={g.major ? "var(--border-strong)" : "var(--border)"}
+                strokeWidth={g.major ? "0.35" : "0.18"}
+                strokeDasharray={g.major ? "none" : "0.5 1"}
                 vectorEffect="non-scaling-stroke"
+                opacity={g.major ? 0.6 : 0.4}
               />
               <text
-                x={0.5}
-                y={g.y - 0.5}
+                x={padLeft - 0.5}
+                y={g.y - 0.6}
                 fill="var(--text-secondary)"
-                fontSize="2.4"
+                fontSize="2.2"
                 opacity="0.55"
                 fontFamily="var(--font-mono)"
+                textAnchor="end"
               >
                 {g.value > 0 ? `+${g.value}` : g.value === 0 ? "0" : g.value}
               </text>
             </g>
           ))}
 
-          {/* Average dashed line */}
+          {/* Average line in team color */}
           {Math.abs(avg) > 0.1 && (
             <g>
               <line
-                x1={0}
+                x1={padLeft}
                 y1={avgY}
-                x2={chartW}
+                x2={chartW - padRight}
                 y2={avgY}
                 stroke={teamColor}
                 strokeWidth="0.4"
-                strokeDasharray="1 1"
+                strokeDasharray="1.5 1.2"
                 vectorEffect="non-scaling-stroke"
-                opacity="0.7"
+                opacity="0.75"
               />
               <text
-                x={chartW - 0.5}
+                x={chartW - padRight - 0.5}
                 y={avgY - 0.8}
                 textAnchor="end"
                 fill={teamColor}
-                fontSize="2.4"
+                fontSize="2.2"
                 fontFamily="var(--font-mono)"
-                opacity="0.85"
+                opacity="0.9"
+                fontWeight="600"
               >
                 avg {avg >= 0 ? "+" : ""}{avg.toFixed(1)}
               </text>
@@ -181,54 +212,69 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
           {/* Bars */}
           {diffs.map((d, i) => {
             const isHovered = hovered === i;
-            const barH = (Math.abs(d) / yMax) * (innerH / 2);
-            const x = i * barWidth + barGap;
-            const y = d >= 0 ? midY - barH : midY;
+            const x = padLeft + i * barWidth + barGap;
+            const barTop = d >= 0 ? valueToY(d) : midY;
+            const barBottom = d >= 0 ? midY : valueToY(d);
+            const barH = barBottom - barTop;
             const grad = d >= 0
-              ? (isHovered ? "url(#bar-pos-hover)" : "url(#bar-pos)")
-              : (isHovered ? "url(#bar-neg-hover)" : "url(#bar-neg)");
+              ? (isHovered ? "url(#pdc-pos-h)" : "url(#pdc-pos)")
+              : (isHovered ? "url(#pdc-neg-h)" : "url(#pdc-neg)");
             return (
-              <g key={i}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={barInnerW}
-                  height={Math.max(barH, 0.6)}
-                  rx={0.6}
-                  fill={grad}
-                  style={{ transition: "fill 150ms" }}
-                />
-                {/* Value above bar */}
-                <text
-                  x={x + barInnerW / 2}
-                  y={d >= 0 ? y - 1.2 : y + barH + 3}
-                  textAnchor="middle"
-                  fill={d >= 0 ? "var(--success)" : "var(--danger)"}
-                  fontSize="2.6"
-                  fontFamily="var(--font-mono)"
-                  fontWeight="600"
-                  opacity={isHovered ? 1 : 0.85}
-                >
-                  {d > 0 ? `+${d}` : d}
-                </text>
-              </g>
+              <rect
+                key={i}
+                x={x}
+                y={barTop}
+                width={barInnerW}
+                height={Math.max(barH, 0.6)}
+                rx={0.7}
+                fill={grad}
+                filter={isHovered ? "url(#pdc-glow)" : undefined}
+                style={{ transition: "fill 150ms" }}
+              />
             );
           })}
+
+          {/* Rolling-3 trend line (drawn on top of bars) */}
+          {trendPath && (
+            <path
+              d={trendPath}
+              fill="none"
+              stroke={teamColor}
+              strokeWidth="0.6"
+              vectorEffect="non-scaling-stroke"
+              opacity="0.55"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Hover bar highlight (vertical guide) */}
+          {hovered !== null && (
+            <line
+              x1={indexToX(hovered)}
+              x2={indexToX(hovered)}
+              y1={padTop}
+              y2={chartH - padBottom}
+              stroke={teamColor}
+              strokeWidth="0.3"
+              strokeDasharray="0.6 0.6"
+              vectorEffect="non-scaling-stroke"
+              opacity="0.4"
+            />
+          )}
         </svg>
 
-        {/* Hover overlay — captures pointer events outside the SVG for accuracy */}
-        <div className="absolute inset-0 flex">
+        {/* Hover overlay — captures pointer for each bar slot */}
+        <div className="absolute inset-0 flex" style={{ padding: `${padTop / chartH * 100}% ${padRight / chartW * 100}% ${padBottom / chartH * 100}% ${padLeft / chartW * 100}%` }}>
           {last.map((g, i) => (
             <Link
               key={i}
               href={`/game/${g.gameId}`}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
-              className="flex-1 group cursor-pointer relative"
+              className="flex-1 cursor-pointer"
               aria-label={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent} ${g.score}`}
-            >
-              <div className="absolute inset-0 hover:bg-accent/[0.04] transition-colors" />
-            </Link>
+            />
           ))}
         </div>
 
@@ -240,47 +286,46 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
           const isRight = leftPct > 50;
           return (
             <div
-              className="absolute pointer-events-none z-10 glass-tile p-2 text-xs font-mono whitespace-nowrap"
+              className="absolute pointer-events-none z-10 glass-tile px-3 py-2 text-xs font-mono whitespace-nowrap shadow-2xl"
               style={{
                 left: isRight ? "auto" : `${leftPct}%`,
                 right: isRight ? `${100 - leftPct}%` : "auto",
-                top: "-8px",
-                transform: isRight ? "translateX(8px) translateY(-100%)" : "translateX(-8px) translateY(-100%)",
+                top: "12px",
+                transform: isRight ? "translateX(-12px)" : "translateX(12px)",
               }}
             >
-              <p className="text-[10px] text-text-secondary mb-0.5">{g.date.slice(5)} · {g.home ? "vs" : "@"} {g.opponent}</p>
-              <p className="text-sm font-bold tabular-nums">
-                <span className={g.won ? "text-success" : "text-danger"}>{g.won ? "W" : "L"}</span>
-                <span className="mx-1.5 text-text-primary">{g.score}</span>
-                <span className={d >= 0 ? "text-success" : "text-danger"}>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-text-secondary mb-1">
+                {g.date.slice(5).replace("-", "/")} · {g.home ? "vs" : "@"} {g.opponent}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${g.won ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
+                  {g.won ? "W" : "L"}
+                </span>
+                <span className="text-base font-light tabular-nums text-text-primary">{g.score}</span>
+                <span className={`text-base font-bold tabular-nums ${d >= 0 ? "text-success" : "text-danger"}`}>
                   ({d > 0 ? "+" : ""}{d})
                 </span>
-              </p>
+              </div>
             </div>
           );
         })()}
       </div>
 
-      {/* Bottom dates + W/L strip */}
-      <div className="mt-3">
-        <div className="flex gap-0">
+      {/* W/L strip — thin pill row */}
+      <div className="relative mt-4">
+        <div className="flex gap-px">
           {last.map((g, i) => (
             <div
               key={i}
-              className={`flex-1 h-1 ${g.won ? "bg-success/70" : "bg-danger/70"} ${i === 0 ? "rounded-l-full" : ""} ${i === last.length - 1 ? "rounded-r-full" : ""} ${i > 0 ? "ml-px" : ""}`}
+              className={`flex-1 h-1.5 ${g.won ? "bg-success/80" : "bg-danger/80"} ${i === 0 ? "rounded-l-full" : ""} ${i === last.length - 1 ? "rounded-r-full" : ""} transition-opacity ${hovered === i ? "opacity-100" : "opacity-70"}`}
               title={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent}`}
             />
           ))}
         </div>
         <div className="flex justify-between text-[9px] font-mono tabular-nums text-text-secondary/60 mt-1.5">
-          <span className="flex items-center gap-1">
-            <TrendingDown size={9} />
-            {last[0]?.date.slice(5)}
-          </span>
-          <span className="flex items-center gap-1">
-            {last[last.length - 1]?.date.slice(5)}
-            <TrendingUp size={9} />
-          </span>
+          <span>{last[0]?.date.slice(5).replace("-", "/")}</span>
+          <span className="text-text-secondary/40">{last.length} games</span>
+          <span>{last[last.length - 1]?.date.slice(5).replace("-", "/")}</span>
         </div>
       </div>
     </div>

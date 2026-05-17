@@ -22,11 +22,13 @@ interface SeriesTeam {
 
 interface Series {
   id: string;
+  gameIdSample: string; // any game's gameId from this series — used to derive round
   team1: SeriesTeam;
   team2: SeriesTeam;
   totalGames: number;
   conference: "East" | "West" | "Finals";
   round: number;
+  seriesIndex: number; // index within round, used for bracket layout ordering
   results: ("T1" | "T2")[];
 }
 
@@ -38,21 +40,18 @@ function getConference(tricode1: string, tricode2: string): "East" | "West" | "F
   return t1.conference as "East" | "West";
 }
 
-function inferRound(series: Series[], s: Series): number {
-  const confSeries = series.filter((x) => x.conference === s.conference);
-  if (s.conference === "Finals") return 4;
-  if (s.team1.seed > 0 && s.team2.seed > 0) {
-    const seedSum = s.team1.seed + s.team2.seed;
-    if (seedSum === 9) return 1;
-    if ([3, 4, 5, 6, 7, 8, 10, 11, 12, 13].includes(seedSum)) {
-      if (confSeries.length >= 6) return 1;
-      if (confSeries.length >= 3) return seedSum <= 5 ? 2 : 1;
-      return seedSum <= 3 ? 3 : 2;
-    }
-  }
-  if (confSeries.length <= 1) return 3;
-  if (confSeries.length <= 2) return 2;
-  return 1;
+/**
+ * Parse round from NBA playoff gameId.
+ * Format: `004` + 2-digit season + `00` + 1-digit round + 1-digit series + 1-digit game
+ * Example: "0042500201" → round=2, series=0, game=1 (R2, East series 0, Game 1)
+ * Rounds: 1=R1 (8 series), 2=R2/Semis (4 series), 3=ConfFinals (2 series), 4=Finals (1 series)
+ */
+function parseGameId(gameId: string): { round: number; seriesIndex: number; game: number } {
+  if (!gameId.startsWith("004") || gameId.length < 10) return { round: 0, seriesIndex: 0, game: 0 };
+  const round = parseInt(gameId.charAt(7)) || 0;
+  const seriesIndex = parseInt(gameId.charAt(8)) || 0;
+  const game = parseInt(gameId.charAt(9)) || 0;
+  return { round, seriesIndex, game };
 }
 
 function winnerOf(s: Series): SeriesTeam | null {
@@ -279,12 +278,12 @@ function ConfHalf({
 }) {
   const isLeft = side === "left";
 
-  const sortedR1 = [...r1].sort((a, b) => {
-    const aSeed = Math.min(a.team1.seed || 99, a.team2.seed || 99);
-    const bSeed = Math.min(b.team1.seed || 99, b.team2.seed || 99);
-    return aSeed - bSeed;
-  });
-  const displayR1 = sortedR1;
+  // Sort by seriesIndex so feeders align with their R2 target:
+  // R1 series 0,1 → R2 series 0;  R1 series 2,3 → R2 series 1 (for East)
+  // R1 series 4,5 → R2 series 2;  R1 series 6,7 → R2 series 3 (for West)
+  const displayR1 = [...r1].sort((a, b) => a.seriesIndex - b.seriesIndex);
+  const displayR2 = [...r2].sort((a, b) => a.seriesIndex - b.seriesIndex);
+  const displayR3 = [...r3].sort((a, b) => a.seriesIndex - b.seriesIndex);
 
   // Fixed minimum widths prevent column collapse. Gutters wider so they're obvious.
   const gridCols = isLeft
@@ -358,8 +357,8 @@ function ConfHalf({
         ))}
 
         {/* R1 → R2 connectors */}
-        {r2.length > 0 && displayR1.length === 4 && [0, 1].map((pairIdx) => {
-          const r2Match = r2[pairIdx];
+        {displayR2.length > 0 && displayR1.length === 4 && [0, 1].map((pairIdx) => {
+          const r2Match = displayR2[pairIdx];
           const highlight = r2Match && championPath.has(r2Match.id);
           return (
             <div
@@ -376,7 +375,7 @@ function ConfHalf({
         })}
 
         {/* R2 cards */}
-        {r2.map((s, i) => (
+        {displayR2.map((s, i) => (
           <div
             key={s.id}
             className={cardWrap}
@@ -390,7 +389,7 @@ function ConfHalf({
         ))}
 
         {/* R2 → R3 connector */}
-        {r3.length > 0 && r2.length === 2 && (
+        {displayR3.length > 0 && displayR2.length === 2 && (
           <div
             className="relative"
             style={{
@@ -398,12 +397,12 @@ function ConfHalf({
               gridRow: "2 / 10",
             }}
           >
-            <Connector side={side} highlight={championPath.has(r3[0].id)} />
+            <Connector side={side} highlight={championPath.has(displayR3[0].id)} />
           </div>
         )}
 
         {/* R3 card */}
-        {r3.map((s) => (
+        {displayR3.map((s) => (
           <div
             key={s.id}
             className={cardWrap}
@@ -430,15 +429,21 @@ export default memo(function BracketTree({ games }: Props) {
   const seriesMap = new Map<string, Series>();
   for (const g of sortedGames) {
     const codes = [g.homeTeam.teamTricode, g.awayTeam.teamTricode].sort();
-    const key = codes.join("-");
+    const parsed = parseGameId(g.gameId);
+    // Include round in the key so same teams meeting in different rounds (rare edge
+    // case) don't get merged. In practice playoff teams can only meet once but
+    // the test data sometimes has duplicates from re-runs of season simulation.
+    const key = `R${parsed.round}-${codes.join("-")}`;
     if (!seriesMap.has(key)) {
       seriesMap.set(key, {
         id: key,
+        gameIdSample: g.gameId,
         team1: { tricode: codes[0], teamId: 0, teamCity: "", teamName: "", wins: 0, seed: 0 },
         team2: { tricode: codes[1], teamId: 0, teamCity: "", teamName: "", wins: 0, seed: 0 },
         totalGames: 0,
         conference: getConference(codes[0], codes[1]),
-        round: 1,
+        round: parsed.round,
+        seriesIndex: parsed.seriesIndex,
         results: [],
       });
     }
@@ -473,11 +478,13 @@ export default memo(function BracketTree({ games }: Props) {
 
   const allSeries = [...seriesMap.values()];
   if (allSeries.length === 0) return null;
-  for (const s of allSeries) s.round = inferRound(allSeries, s);
+  // Round was set from gameId at series creation; no inference needed.
 
-  const east = allSeries.filter((s) => s.conference === "East");
-  const west = allSeries.filter((s) => s.conference === "West");
-  const finals = allSeries.filter((s) => s.conference === "Finals");
+  // Filter by conference; Finals is always round 4.
+  // East/West get rounds 1-3 (R1, R2 / Semis, ConfFinals).
+  const east = allSeries.filter((s) => s.conference === "East" && s.round >= 1 && s.round <= 3);
+  const west = allSeries.filter((s) => s.conference === "West" && s.round >= 1 && s.round <= 3);
+  const finals = allSeries.filter((s) => s.round === 4);
 
   const championPath = new Set<string>();
   for (const s of allSeries) {
