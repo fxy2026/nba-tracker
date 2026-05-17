@@ -1,13 +1,17 @@
 import type { MetadataRoute } from "next";
 import { TEAM_META } from "@/lib/teams";
+import { getFullSchedule, getPlayerIndex } from "@/lib/api";
 
 const BASE = "https://nba.xpy.me";
 
 type ChangeFreq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
+type SitemapEntry = { url: string; changeFrequency: ChangeFreq; priority: number; lastModified?: Date };
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+
   // Core, high-priority pages updated frequently
-  const live: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const live: SitemapEntry[] = [
     { url: BASE, changeFrequency: "hourly", priority: 1 },
     { url: `${BASE}/calendar`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE}/schedule`, changeFrequency: "daily", priority: 0.8 },
@@ -17,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // League / standings views
-  const standings: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const standings: SitemapEntry[] = [
     { url: `${BASE}/standings`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/conference-race`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE}/divisions`, changeFrequency: "daily", priority: 0.7 },
@@ -32,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Awards & leaders
-  const leaders: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const leaders: SitemapEntry[] = [
     { url: `${BASE}/stats`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE}/awards-race`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/all-time-leaders`, changeFrequency: "weekly", priority: 0.7 },
@@ -43,7 +47,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Player browse hubs
-  const players: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const playerHubs: SitemapEntry[] = [
     { url: `${BASE}/search`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE}/compare`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE}/h2h`, changeFrequency: "weekly", priority: 0.5 },
@@ -55,7 +59,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // News & history
-  const news: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const news: SitemapEntry[] = [
     { url: `${BASE}/injuries`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/transactions`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/this-day`, changeFrequency: "daily", priority: 0.5 },
@@ -63,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Tools & meta
-  const tools: { url: string; changeFrequency: ChangeFreq; priority: number }[] = [
+  const tools: SitemapEntry[] = [
     { url: `${BASE}/explore`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/glossary`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/quiz`, changeFrequency: "weekly", priority: 0.4 },
@@ -72,20 +76,58 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // All 30 team pages
-  const teamPages = Object.keys(TEAM_META).map((tricode) => ({
+  const teamPages: SitemapEntry[] = Object.keys(TEAM_META).map((tricode) => ({
     url: `${BASE}/team/${tricode}`,
-    changeFrequency: "daily" as ChangeFreq,
+    changeFrequency: "daily",
     priority: 0.7,
   }));
 
-  const now = new Date();
+  // Dynamic: every individual game page (regular season + playoffs only, finished games
+  // have the most SEO value because they have full box scores; upcoming games are useful too).
+  const gamePages: SitemapEntry[] = [];
+  try {
+    const schedule = await getFullSchedule();
+    for (const gd of schedule) {
+      for (const g of gd.games) {
+        // Skip preseason (001) — those are exhibition vs international teams
+        if (g.gameId.startsWith("001")) continue;
+        // Skip "if necessary" placeholder games (ghost games)
+        if (g.ifNecessary === true && g.gameStatus === 1) continue;
+        gamePages.push({
+          url: `${BASE}/game/${g.gameId}`,
+          changeFrequency: g.gameStatus === 3 ? "monthly" : "daily",
+          priority: g.gameStatus === 3 ? 0.5 : 0.6,
+        });
+      }
+    }
+  } catch {
+    // If schedule fetch fails during build, just skip game pages — they'll be indexed via crawl
+  }
+
+  // Dynamic: every active player profile
+  const playerPages: SitemapEntry[] = [];
+  try {
+    const players = await getPlayerIndex();
+    for (const p of players) {
+      playerPages.push({
+        url: `${BASE}/player/${p.personId}`,
+        changeFrequency: "weekly",
+        priority: 0.5,
+      });
+    }
+  } catch {
+    // If player index fetch fails during build, skip — they'll be indexed via crawl
+  }
+
   return [
     ...live,
     ...standings,
     ...leaders,
-    ...players,
+    ...playerHubs,
     ...news,
     ...tools,
     ...teamPages,
-  ].map((p) => ({ ...p, lastModified: now }));
+    ...gamePages,
+    ...playerPages,
+  ].map((p) => ({ ...p, lastModified: p.lastModified || now }));
 }
