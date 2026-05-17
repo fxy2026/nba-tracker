@@ -269,42 +269,28 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
             ))}
           </div>
 
-          {/* Tooltip — positioned smartly to stay in bounds */}
+          {/* Tooltip — anchored at top-center of the chart, never overflows.
+              The vertical guide line shows which bar is being hovered. */}
           {hovered !== null && last[hovered] && (() => {
             const g = last[hovered];
             const d = diffs[hovered];
-            const totalBars = last.length;
-            // Anchor tooltip relative to the bar center
-            const barCenterPct = (hovered + 0.5) / totalBars * 100;
-            // Decide alignment based on which third the bar is in
-            let positionStyle: React.CSSProperties;
-            if (barCenterPct < 33) {
-              // Left side — anchor tooltip's LEFT edge to bar center
-              positionStyle = { left: `${barCenterPct}%`, transform: "translateX(8px)" };
-            } else if (barCenterPct > 67) {
-              // Right side — anchor tooltip's RIGHT edge to bar center
-              positionStyle = { right: `${100 - barCenterPct}%`, transform: "translateX(-8px)" };
-            } else {
-              // Middle — center the tooltip above the bar
-              positionStyle = { left: `${barCenterPct}%`, transform: "translateX(-50%)" };
-            }
             return (
               <div
-                className="absolute pointer-events-none z-10 glass-tile px-3 py-2 text-xs font-mono whitespace-nowrap shadow-2xl"
-                style={{ top: "8px", ...positionStyle }}
+                className="absolute pointer-events-none z-10 glass-tile px-3 py-1.5 text-xs font-mono shadow-2xl flex items-center gap-2 whitespace-nowrap"
+                style={{ top: "6px", left: "50%", transform: "translateX(-50%)", maxWidth: "calc(100% - 16px)" }}
               >
-                <p className="text-[9px] uppercase tracking-[0.2em] text-text-secondary mb-1">
-                  {g.date.slice(5).replace("-", "/")} · {g.home ? "vs" : "@"} {g.opponent}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${g.won ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
-                    {g.won ? "W" : "L"}
-                  </span>
-                  <span className="text-base font-light tabular-nums text-text-primary">{g.score}</span>
-                  <span className={`text-base font-bold tabular-nums ${d >= 0 ? "text-success" : "text-danger"}`}>
-                    ({d > 0 ? "+" : ""}{d})
-                  </span>
-                </div>
+                <span className="text-[9px] uppercase tracking-[0.18em] text-text-secondary">
+                  {g.date.slice(5).replace("-", "/")}
+                </span>
+                <span className="text-text-secondary/40">·</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${g.won ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
+                  {g.won ? "W" : "L"}
+                </span>
+                <span className="text-text-secondary text-[10px]">{g.home ? "vs" : "@"} {g.opponent}</span>
+                <span className="text-sm tabular-nums text-text-primary">{g.score}</span>
+                <span className={`text-sm font-bold tabular-nums ${d >= 0 ? "text-success" : "text-danger"}`}>
+                  ({d > 0 ? "+" : ""}{d})
+                </span>
               </div>
             );
           })()}

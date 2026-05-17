@@ -30,6 +30,7 @@ interface Series {
   round: number;
   seriesIndex: number; // index within round, used for bracket layout ordering
   results: ("T1" | "T2")[];
+  isProjected?: boolean; // true if this is a placeholder for an upcoming series
 }
 
 function getConference(tricode1: string, tricode2: string): "East" | "West" | "Finals" {
@@ -68,6 +69,96 @@ function isOnChampionPath(s: Series, allSeries: Series[]): boolean {
   return winner?.tricode === championTri;
 }
 
+/**
+ * Project placeholder series for future rounds based on already-decided winners.
+ * E.g., if both East R2 series have a winner but the East ConfFinals (R3.0) doesn't
+ * exist in the data yet, create a projected R3.0 with both R2 winners pre-filled
+ * (0-0 record, no games yet). Same logic cascades to Finals.
+ *
+ * Standard NBA bracket pairing:
+ *  - R1 series 0,1 → R2 series 0 (East top)
+ *  - R1 series 2,3 → R2 series 1 (East bottom)
+ *  - R1 series 4,5 → R2 series 2 (West top)
+ *  - R1 series 6,7 → R2 series 3 (West bottom)
+ *  - R2 series 0,1 → R3 series 0 (East ConfFinal)
+ *  - R2 series 2,3 → R3 series 1 (West ConfFinal)
+ *  - R3 series 0,1 → R4 series 0 (Finals)
+ */
+function projectFutureSeries(actual: Series[]): Series[] {
+  const out: Series[] = [...actual];
+  const findInOut = (round: number, seriesIndex: number) =>
+    out.find((s) => s.round === round && s.seriesIndex === seriesIndex);
+
+  const makeProjected = (
+    round: number,
+    seriesIndex: number,
+    conference: "East" | "West" | "Finals",
+    teamA: SeriesTeam,
+    teamB: SeriesTeam,
+  ): Series => {
+    // Canonicalize ordering by tricode so left/right placement is stable
+    const codes = [teamA.tricode, teamB.tricode].sort();
+    const [t1, t2] = teamA.tricode === codes[0] ? [teamA, teamB] : [teamB, teamA];
+    return {
+      id: `projected-R${round}S${seriesIndex}-${codes.join("-")}`,
+      gameIdSample: "",
+      team1: { ...t1, wins: 0 },
+      team2: { ...t2, wins: 0 },
+      totalGames: 0,
+      conference,
+      round,
+      seriesIndex,
+      results: [],
+      isProjected: true,
+    };
+  };
+
+  // Round 2 projections from R1 winners
+  const r2Pairings: { r2Idx: number; r1A: number; r1B: number; conf: "East" | "West" }[] = [
+    { r2Idx: 0, r1A: 0, r1B: 1, conf: "East" },
+    { r2Idx: 1, r1A: 2, r1B: 3, conf: "East" },
+    { r2Idx: 2, r1A: 4, r1B: 5, conf: "West" },
+    { r2Idx: 3, r1A: 6, r1B: 7, conf: "West" },
+  ];
+  for (const p of r2Pairings) {
+    if (findInOut(2, p.r2Idx)) continue;
+    const r1A = findInOut(1, p.r1A);
+    const r1B = findInOut(1, p.r1B);
+    const winA = r1A ? winnerOf(r1A) : null;
+    const winB = r1B ? winnerOf(r1B) : null;
+    if (!winA || !winB) continue;
+    out.push(makeProjected(2, p.r2Idx, p.conf, winA, winB));
+  }
+
+  // Round 3 projections from R2 winners
+  const r3Pairings: { r3Idx: number; r2A: number; r2B: number; conf: "East" | "West" }[] = [
+    { r3Idx: 0, r2A: 0, r2B: 1, conf: "East" },
+    { r3Idx: 1, r2A: 2, r2B: 3, conf: "West" },
+  ];
+  for (const p of r3Pairings) {
+    if (findInOut(3, p.r3Idx)) continue;
+    const r2A = findInOut(2, p.r2A);
+    const r2B = findInOut(2, p.r2B);
+    const winA = r2A ? winnerOf(r2A) : null;
+    const winB = r2B ? winnerOf(r2B) : null;
+    if (!winA || !winB) continue;
+    out.push(makeProjected(3, p.r3Idx, p.conf, winA, winB));
+  }
+
+  // Finals projection from R3 winners
+  if (!findInOut(4, 0)) {
+    const r3East = findInOut(3, 0);
+    const r3West = findInOut(3, 1);
+    const winE = r3East ? winnerOf(r3East) : null;
+    const winW = r3West ? winnerOf(r3West) : null;
+    if (winE && winW) {
+      out.push(makeProjected(4, 0, "Finals", winE, winW));
+    }
+  }
+
+  return out;
+}
+
 function ProgressDots({ results, total }: { results: ("T1" | "T2")[]; total: number }) {
   const slots = Array.from({ length: 7 });
   return (
@@ -92,6 +183,7 @@ function TeamRow({
   primaryColor,
   size,
   align,
+  dim = false,
 }: {
   team: SeriesTeam;
   leading: boolean;
@@ -100,6 +192,7 @@ function TeamRow({
   primaryColor?: string;
   size: "sm" | "md" | "lg";
   align: "left" | "right";
+  dim?: boolean;
 }) {
   const logoSize = size === "lg" ? 32 : size === "md" ? 24 : 20;
   const triSize = size === "lg" ? "text-base" : size === "md" ? "text-sm" : "text-xs";
@@ -122,14 +215,18 @@ function TeamRow({
         {team.seed > 0 && (
           <span className="text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
         )}
-        <span className={`${triSize} font-bold font-mono ${leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
+        <span className={`${triSize} font-bold font-mono ${dim ? "text-text-secondary" : leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
           {team.tricode}
         </span>
         {isWinner && <Crown size={size === "lg" ? 16 : 12} className="text-[#FFD700] shrink-0" />}
       </div>
-      <span className={`${winSize} font-light font-mono tabular-nums shrink-0 ${leading ? "text-accent-amber" : "text-text-secondary"}`}>
-        {team.wins}
-      </span>
+      {dim ? (
+        <span className={`${winSize} font-light font-mono tabular-nums shrink-0 text-text-secondary/40`}>—</span>
+      ) : (
+        <span className={`${winSize} font-light font-mono tabular-nums shrink-0 ${leading ? "text-accent-amber" : "text-text-secondary"}`}>
+          {team.wins}
+        </span>
+      )}
     </div>
   );
 }
@@ -153,14 +250,17 @@ function SeriesCard({
   const meta2 = TEAM_META[s.team2.tricode];
 
   const padClass = size === "lg" ? "p-4" : size === "md" ? "p-2.5" : "p-2";
+  const isProjected = s.isProjected;
   const ring = onPath
     ? "ring-1 ring-[#FFD700]/50 shadow-[0_0_24px_-4px_rgba(255,215,0,0.35)]"
+    : isProjected
+    ? "ring-1 ring-dashed ring-text-secondary/25"
     : finished
     ? "ring-1 ring-text-secondary/15"
     : "";
 
   return (
-    <div className={`glass-tile relative overflow-hidden w-full ${padClass} ${ring}`}>
+    <div className={`glass-tile relative overflow-hidden w-full ${padClass} ${ring} ${isProjected ? "bg-bg-card/40" : ""}`}>
       {onPath && (
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/[0.06] to-transparent pointer-events-none" />
       )}
@@ -173,6 +273,7 @@ function SeriesCard({
           primaryColor={meta1?.primaryColor}
           size={size}
           align={align}
+          dim={isProjected}
         />
         <div className="h-px bg-border/40 my-0.5" />
         <TeamRow
@@ -183,13 +284,23 @@ function SeriesCard({
           primaryColor={meta2?.primaryColor}
           size={size}
           align={align}
+          dim={isProjected}
         />
-        <ProgressDots results={s.results} total={s.totalGames} />
-        {finished && (
-          <div className="text-[9px] font-mono uppercase tracking-[0.18em] text-center text-[#FFD700] mt-1.5 font-bold flex items-center justify-center gap-1">
-            <Crown size={10} />
-            <span>{winner?.tricode} {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}</span>
+        {isProjected ? (
+          <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-center text-text-secondary/60 mt-1.5 flex items-center justify-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-accent-amber animate-pulse" />
+            <span>Matchup set · upcoming</span>
           </div>
+        ) : (
+          <>
+            <ProgressDots results={s.results} total={s.totalGames} />
+            {finished && (
+              <div className="text-[9px] font-mono uppercase tracking-[0.18em] text-center text-[#FFD700] mt-1.5 font-bold flex items-center justify-center gap-1">
+                <Crown size={10} />
+                <span>{winner?.tricode} {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}</span>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -476,9 +587,12 @@ export default memo(function BracketTree({ games }: Props) {
     }
   }
 
-  const allSeries = [...seriesMap.values()];
-  if (allSeries.length === 0) return null;
+  const actualSeries = [...seriesMap.values()];
+  if (actualSeries.length === 0) return null;
   // Round was set from gameId at series creation; no inference needed.
+
+  // Project placeholder series for upcoming rounds (advanced teams pre-filled).
+  const allSeries = projectFutureSeries(actualSeries);
 
   // Filter by conference; Finals is always round 4.
   // East/West get rounds 1-3 (R1, R2 / Semis, ConfFinals).
@@ -576,7 +690,7 @@ export default memo(function BracketTree({ games }: Props) {
               <div className="absolute inset-0 bg-[#FFD700]/8 blur-3xl rounded-3xl pointer-events-none" />
               {finals.length > 0 ? (
                 <div className="relative w-full">
-                  <SeriesCard s={finals[0]} size="lg" onPath align="left" />
+                  <SeriesCard s={finals[0]} size="lg" onPath={!finals[0].isProjected} align="left" />
                 </div>
               ) : (
                 <div className="relative w-full glass-tile p-6 text-center bg-[#FFD700]/[0.02] ring-1 ring-[#FFD700]/20">
@@ -622,7 +736,7 @@ export default memo(function BracketTree({ games }: Props) {
                 </p>
               </div>
               <div className="max-w-sm mx-auto">
-                <SeriesCard s={finals[0]} size="lg" onPath align="left" />
+                <SeriesCard s={finals[0]} size="lg" onPath={!finals[0].isProjected} align="left" />
               </div>
             </div>
           </div>
