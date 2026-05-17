@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, TrendingUp, ArrowRight } from "lucide-react";
-import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
+import { getFullSchedule, getScheduleAge, formatDate, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
@@ -225,6 +225,7 @@ export default async function GamePredictorPage() {
         icon={Sparkles}
         title="Game Predictor"
         subtitle="Next 7 days of games · winner picks + confidence based on team form"
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">

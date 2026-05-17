@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
-import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
@@ -104,6 +104,7 @@ export default async function ThisDayPage() {
         icon={CalendarDays}
         title={isZh ? `历史上的今天 · ${today}` : `On This Day · ${today}`}
         subtitle={isZh ? `NBA 历史上同一天发生过的比赛 — 重温过往对决。共 ${games.length} 场。` : `${games.length} historical game${games.length === 1 ? "" : "s"} from past seasons on this calendar date`}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="space-y-8">

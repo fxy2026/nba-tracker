@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Repeat } from "lucide-react";
-import { getFullSchedule, formatDate } from "@/lib/api";
+import { getFullSchedule, getScheduleAge, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
@@ -150,6 +150,7 @@ export default async function BackToBackPage() {
             ? `${past.length} 组背靠背已打 · ${future.length} 场即将到来 · 联盟最折磨的赛程`
             : `${past.length} B2B game pairs played · ${future.length} upcoming · the league's most punishing scheduling artifact`
         }
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

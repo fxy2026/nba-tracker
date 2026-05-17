@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, Shield } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -106,6 +106,7 @@ export default async function ScoringOutputPage() {
             ? `进攻、防守与每场净得分差 · 联盟均值 ${leagueAvgPpg.toFixed(1)} PPG`
             : `Offense, defense, and net point differential per game · league average ${leagueAvgPpg.toFixed(1)} PPG`
         }
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

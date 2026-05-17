@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Swords } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -167,6 +167,7 @@ export default async function RivalriesPage() {
             ? `${all.length} 组独特对战 · ${multiMeeting.length} 组本赛季至少交手两次`
             : `${all.length} unique matchups · ${multiMeeting.length} played at least twice this season`
         }
+        updatedAt={getScheduleAge()}
       />
 
       {mostPlayed.length > 0 && (

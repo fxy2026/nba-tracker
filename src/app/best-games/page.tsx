@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Flame, Zap, Target, Clock, BookOpen, CalendarDays, Crown, type LucideIcon } from "lucide-react";
-import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
@@ -195,6 +195,7 @@ export default async function BestGamesPage() {
         subtitle={isZh
           ? `本赛季 ${totalAnalyzed} 场已结束比赛中最令人难忘的对决`
           : `Most memorable games across ${totalAnalyzed} finished games this season`}
+        updatedAt={getScheduleAge()}
       />
 
       <Section

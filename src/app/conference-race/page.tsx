@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct } from "@/lib/games";
@@ -179,6 +179,7 @@ export default async function ConferenceRacePage() {
         icon={Trophy}
         title={isZh ? "分区冲刺" : "Conference Race"}
         subtitle={isZh ? "季后赛种子争夺 — 1-6 锁定，7-10 进入附加赛，11-15 进入乐透" : "Playoff seeding race — 1-6 locked in, 7-10 in the play-in tournament, 11-15 lottery bound"}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

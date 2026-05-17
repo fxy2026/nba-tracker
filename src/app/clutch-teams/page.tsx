@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Target } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -118,6 +118,7 @@ export default async function ClutchTeamsPage() {
         icon={Target}
         title={isZh ? "关键时刻" : "Clutch Teams"}
         subtitle={isZh ? "胜负差 ≤5 分的比赛战绩 · 含加时赛表现" : "Records in games decided by 5 points or fewer · plus overtime performance"}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">

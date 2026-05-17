@@ -68,6 +68,9 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to compute standings" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to compute standings" },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }

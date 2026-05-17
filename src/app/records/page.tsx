@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Crown, type LucideIcon } from "lucide-react";
-import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isCountedSeason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
@@ -186,6 +186,7 @@ export default async function RecordsPage() {
         icon={BookOpen}
         title={isZh ? "赛季纪录" : "Season Records"}
         subtitle={isZh ? `本赛季单场纪录 — 最高球队得分、最大胜差、最长加时等等。共 ${totalGames} 场已完赛比赛。` : `Single-game season-high and season-low records across ${totalGames} finished games`}
+        updatedAt={getScheduleAge()}
       />
 
       <Section

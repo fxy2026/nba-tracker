@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { TEAM_META } from "@/lib/teams";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct as calcWinPct } from "@/lib/games";
 import ExportStandings from "@/components/ExportStandings";
@@ -337,6 +337,7 @@ export default async function StandingsPage() {
         icon={ListOrdered}
         title={t.standingsPage.divisionStandings}
         subtitle={t.standingsPage.top6Hint}
+        updatedAt={getScheduleAge()}
         action={<ExportStandings east={eastTeams} west={westTeams} />}
       />
       {/* Conference comparison */}

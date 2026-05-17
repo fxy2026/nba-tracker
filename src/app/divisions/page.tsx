@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Map as MapIcon } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct } from "@/lib/games";
@@ -116,6 +116,7 @@ export default async function DivisionsPage() {
         icon={MapIcon}
         title={isZh ? "分区排名" : "Division Standings"}
         subtitle={isZh ? "六个分区 · 各组按胜率排序" : "Six divisions · ranked by win percentage within each group"}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

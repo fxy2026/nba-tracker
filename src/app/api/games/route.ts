@@ -98,6 +98,9 @@ export async function GET(request: NextRequest) {
       { headers: { "Cache-Control": cacheControl } }
     );
   } catch {
-    return NextResponse.json({ error: "Failed to fetch games" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch games" },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }

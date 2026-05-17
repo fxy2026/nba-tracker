@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Flame, Snowflake, TrendingDown, TrendingUp, Crown, Target, Layers } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff } from "@/lib/games";
@@ -232,6 +232,7 @@ export default async function StreaksPage() {
         icon={Flame}
         title={isZh ? "连胜连败" : "Streaks"}
         subtitle={isZh ? "全联盟最热与最冷的球队" : "Hot and cold teams across the NBA"}
+        updatedAt={getScheduleAge()}
       />
 
       {/* Insight strip */}

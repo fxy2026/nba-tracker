@@ -26,6 +26,6 @@ export async function GET() {
       },
     });
   } catch {
-    return NextResponse.json({ data: [] }, { status: 500 });
+    return NextResponse.json({ data: [] }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

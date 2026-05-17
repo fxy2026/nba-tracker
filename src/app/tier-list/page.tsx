@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Layers } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -171,6 +171,7 @@ export default async function TierListPage() {
         icon={Layers}
         title={isZh ? "等级表" : "Team Tier List"}
         subtitle={isZh ? "30 支球队按综合战力分分档 · S 到 D" : "All 30 teams bucketed by composite power score · S to D"}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="space-y-5">

@@ -78,6 +78,9 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch calendar" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch calendar" },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }

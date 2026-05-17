@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -153,6 +153,7 @@ export default async function MomentumPage() {
             ? "最近 5 场 vs 之前 10 场 · 最大变动 · 状态点显示最近结果（最新在左）"
             : "Last 5 games vs the prior 10 · biggest deltas surfaced · form dots show recent results (most recent first)"
         }
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

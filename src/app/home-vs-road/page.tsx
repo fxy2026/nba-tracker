@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Home, Plane } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -101,6 +101,7 @@ export default async function HomeVsRoadPage() {
         icon={Home}
         title={isZh ? "主客场分别" : "Home vs Road Splits"}
         subtitle={isZh ? "最强主场堡垒、顶级客场战士、最大差距 — 主客场很重要" : "Best fortresses, top road warriors, biggest splits — venue matters"}
+        updatedAt={getScheduleAge()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">

@@ -8,6 +8,6 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to load player index" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load player index" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

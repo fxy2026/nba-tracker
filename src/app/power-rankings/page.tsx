@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -277,6 +277,7 @@ export default async function PowerRankingsPage() {
         icon={Crown}
         title={isZh ? "战力榜" : "Power Rankings"}
         subtitle={isZh ? "综合排名 · 35% 总胜率 + 35% 近10场状态 + 30% 净胜分" : "Composite ranking · 35% overall win % + 35% last-10 form + 30% point differential"}
+        updatedAt={getScheduleAge()}
       />
 
       {/* Insight cards */}
