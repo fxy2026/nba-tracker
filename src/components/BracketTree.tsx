@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import Link from "next/link";
 import { Trophy, Crown } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
@@ -252,9 +253,15 @@ function TeamRow({
   const winSize = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-sm";
   const pad = size === "lg" ? "py-2" : size === "md" ? "py-1.5" : "py-0.5";
 
+  // When the team-color side stripe is rendered (leading + has primary color),
+  // pad that side a bit more so the team logo doesn't kiss the colored bar.
+  const sidePad = primaryColor && leading
+    ? align === "left" ? "pl-2" : "pr-2"
+    : "";
+
   return (
     <div
-      className={`flex items-center gap-2 ${pad} ${isLoser ? "opacity-40" : ""} relative ${align === "right" ? "flex-row-reverse" : ""}`}
+      className={`flex items-center gap-2 ${pad} ${sidePad} ${isLoser ? "opacity-40" : ""} relative ${align === "right" ? "flex-row-reverse" : ""}`}
       style={
         primaryColor && leading
           ? align === "left"
@@ -312,8 +319,14 @@ function SeriesCard({
     ? "ring-1 ring-text-secondary/15"
     : "";
 
-  return (
-    <div className={`glass-tile relative overflow-hidden w-full ${padClass} ${ring} ${isProjected ? "bg-bg-card/40" : ""}`}>
+  // Real (non-projected) series have a sample gameId → derive the 9-char series id
+  // and link to /series/[id] for the deep-dive page. Projected series stay
+  // unclickable since there's nothing to show yet.
+  const seriesId = !isProjected && s.gameIdSample ? s.gameIdSample.slice(0, 9) : null;
+  const cardClass = `glass-tile relative overflow-hidden w-full block ${padClass} ${ring} ${isProjected ? "bg-bg-card/40" : ""} ${seriesId ? "cursor-pointer hover:brightness-110 transition" : ""}`;
+
+  const inner = (
+    <>
       {onPath && (
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/[0.06] to-transparent pointer-events-none" />
       )}
@@ -364,7 +377,13 @@ function SeriesCard({
           </>
         )}
       </div>
-    </div>
+    </>
+  );
+
+  return seriesId ? (
+    <Link href={`/series/${seriesId}`} className={cardClass}>{inner}</Link>
+  ) : (
+    <div className={cardClass}>{inner}</div>
   );
 }
 
@@ -526,10 +545,12 @@ function ConfHalf({
         </span>
       </div>
 
-      {/* Single unified grid — headers in row 1, cards/connectors in rows 2-9 */}
-      <div className="grid gap-x-1" style={{
+      {/* Single unified grid — headers in row 1, cards/connectors in rows 2-9.
+          Row min-height bumped from 54→72 so R1 pairs breathe; gap-y-2 (8px)
+          puts visible vertical breathing room between adjacent cards. */}
+      <div className="grid gap-x-1 gap-y-2" style={{
         gridTemplateColumns: gridCols,
-        gridTemplateRows: "auto repeat(8, minmax(54px, auto))",
+        gridTemplateRows: "auto repeat(8, minmax(72px, auto))",
       }}>
         {/* Round headers — row 1 */}
         {isLeft ? (

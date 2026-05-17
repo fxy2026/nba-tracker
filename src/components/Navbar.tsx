@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon } from "lucide-react";
@@ -291,18 +290,20 @@ export default function Navbar() {
       {/* Command palette (renders to document.body via portal — escapes nav containment) */}
       <CommandPalette open={moreOpen} onClose={() => setMoreOpen(false)} groups={moreGroups} />
 
-      {/* Teams modal — portaled to body so nav's backdrop-filter doesn't trap it */}
+      {/* Teams modal — portaled to body. Perf: solid backdrop (no blur),
+          plain <img> instead of next/image (30 instances of next/image add
+          ~30 React state subscriptions + LCP work for a transient modal). */}
       {teamsOpen && portalReady && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-[8vh] animate-fade-in"
+          className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-[8vh]"
           onClick={() => setTeamsOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-label="Teams"
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/70" />
           <div
-            className="relative w-full max-w-md glass-tile p-4 shadow-2xl ring-1 ring-border"
+            className="relative w-full max-w-md bg-bg-card border border-border rounded-2xl p-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -312,7 +313,7 @@ export default function Navbar() {
               </div>
               <button
                 onClick={() => setTeamsOpen(false)}
-                className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover transition-colors cursor-pointer"
+                className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer"
               >
                 ESC
               </button>
@@ -323,17 +324,20 @@ export default function Navbar() {
                   key={tm.tricode}
                   href={`/team/${tm.tricode}`}
                   onClick={() => setTeamsOpen(false)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover cursor-pointer"
                   title={`${tm.city} ${tm.name}`}
+                  prefetch={false}
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
                     alt={tm.tricode}
                     width={32}
                     height={32}
-                    unoptimized
+                    loading="lazy"
+                    decoding="async"
                   />
-                  <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
+                  <span className="text-[10px] text-text-secondary font-mono">{tm.tricode}</span>
                 </Link>
               ))}
             </div>
