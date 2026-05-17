@@ -47,3 +47,4 @@ next-env.d.ts
 # article build artifacts
 article-wx.md
 article-images/*.mmd
+article-images/frames/
