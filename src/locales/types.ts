@@ -386,6 +386,8 @@ export interface Translations {
   clutchPage: {
     title: string;
     subtitle: string;
+    eyebrowSuffix: string;
+    aboutNote: string;
     topScorer: string;
     topPlaymaker: string;
     mostGames: string;

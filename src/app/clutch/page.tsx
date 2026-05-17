@@ -93,11 +93,16 @@ export default function ClutchPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow={`${CURRENT_SEASON} Playoffs`}
+        eyebrow={`${CURRENT_SEASON} ${t.clutchPage.eyebrowSuffix}`}
         icon={Target}
         title={t.clutchPage.title}
         subtitle={t.clutchPage.subtitle}
       />
+
+      <div className="glass-tile p-3 mb-6 flex items-start gap-2 text-xs text-text-secondary">
+        <Target size={14} className="text-accent-amber shrink-0 mt-0.5" aria-hidden="true" />
+        <p className="leading-relaxed">{t.clutchPage.aboutNote}</p>
+      </div>
 
       {/* Quick Stats Overview */}
       {!loading && overviewStats && (

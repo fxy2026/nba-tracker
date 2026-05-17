@@ -365,7 +365,9 @@ const zh: Translations = {
 
   clutchPage: {
     title: "季后赛表现",
-    subtitle: "季后赛 — 各项数据领先球员",
+    subtitle: "季后赛球员场均数据排行 · 按类别筛选",
+    eyebrowSuffix: "季后赛",
+    aboutNote: "本页面展示球员的季后赛场均数据 — 不是\"末节关键时刻 (clutch-time)\"的特殊统计。URL 是 /clutch 是历史遗留。",
     topScorer: "得分王",
     topPlaymaker: "助攻王",
     mostGames: "最多出场",

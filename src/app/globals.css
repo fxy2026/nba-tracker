@@ -499,6 +499,30 @@ main { contain: layout style; }
   .animate-toast-in { animation: none; }
 }
 
+/* Modern typography defaults — balance avoids orphans on title wraps, pretty
+ * tightens body paragraphs so the last line doesn't end with a single word. */
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+/* iOS auto-zooms on focus when input font-size is below 16px. Bump up only
+ * the inputs that are likely to receive focus (date picker, search palette,
+ * admin) to prevent that. Selectors picking compact filter chips are left. */
+@media (max-width: 767px) {
+  input[type="date"],
+  input[type="search"],
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea { font-size: max(16px, 1em); }
+}
+
+/* Render fonts crisply on every backend */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Score flash — for live game score updates
    ───────────────────────────────────────────────────────────── */

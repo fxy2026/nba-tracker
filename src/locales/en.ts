@@ -365,7 +365,9 @@ const en: Translations = {
 
   clutchPage: {
     title: "Playoff Performers",
-    subtitle: "Playoffs — Top players by category",
+    subtitle: "Postseason leaders, ranked by category",
+    eyebrowSuffix: "Postseason",
+    aboutNote: "This page ranks players by their playoff per-game totals — not last-five-minutes-of-close-games \"clutch\" splits. The URL says /clutch because the page predates NBA's clutch-time API integration.",
     topScorer: "Top Scorer",
     topPlaymaker: "Top Playmaker",
     mostGames: "Most Games",

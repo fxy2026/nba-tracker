@@ -10,6 +10,7 @@ import OnlineStatus from "@/components/OnlineStatus";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import ThemeScript from "@/components/ThemeScript";
+import SpeculationRules from "@/components/SpeculationRules";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -88,6 +89,7 @@ export default async function RootLayout({
     >
       <head>
         <ThemeScript />
+        <SpeculationRules />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
         <LocaleProvider initialLocale={locale}>
