@@ -3,17 +3,17 @@ import { ImageResponse } from "next/og";
 import { getBoxScore } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 
-export const runtime = "nodejs"; // needs node fetch for nba CDN
+export const runtime = "nodejs";
 export const alt = "NBA game score";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Every multi-child <div> needs display: flex per Satori (next/og engine).
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const box = await getBoxScore(id).catch(() => null);
 
   if (!box) {
-    // Fallback: simple branded card
     return new ImageResponse(
       (
         <div
@@ -23,10 +23,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "linear-gradient(135deg, #0A0E27, #1E1B4B)",
+            background: "#0A0E27",
             color: "white",
             fontSize: 48,
             fontWeight: 700,
+            fontFamily: "system-ui, sans-serif",
           }}
         >
           NBA Tracker
@@ -54,15 +55,6 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           position: "relative",
         }}
       >
-        {/* Split team-color background */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `linear-gradient(90deg, ${awayColor}33 0%, transparent 30%, transparent 70%, ${homeColor}33 100%)`,
-          }}
-        />
-
         {/* Top brand strip */}
         <div
           style={{
@@ -87,14 +79,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 20,
+                fontSize: 14,
+                fontWeight: 800,
+                color: "white",
               }}
             >
-              🏀
+              NBA
             </div>
             <span style={{ color: "#FFFFFF", fontWeight: 700, letterSpacing: -0.5, fontFamily: "system-ui" }}>NBA Tracker</span>
           </div>
-          <div>{isFinal ? "Final" : box.gameStatus === 2 ? "Live" : "Scheduled"}</div>
+          <div style={{ display: "flex" }}>{isFinal ? "Final" : box.gameStatus === 2 ? "Live" : "Scheduled"}</div>
         </div>
 
         {/* Score row */}
@@ -117,7 +111,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               alt=""
               style={{ opacity: isFinal && !awayWon ? 0.4 : 1 }}
             />
-            <div style={{ fontSize: 56, fontWeight: 800, color: "#FFFFFF", letterSpacing: -2, opacity: isFinal && !awayWon ? 0.5 : 1 }}>
+            <div
+              style={{
+                fontSize: 56,
+                fontWeight: 800,
+                color: "#FFFFFF",
+                letterSpacing: -2,
+                opacity: isFinal && !awayWon ? 0.5 : 1,
+                display: "flex",
+              }}
+            >
               {box.awayTeam.teamTricode}
             </div>
             <div
@@ -128,6 +131,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 lineHeight: 1,
                 fontFamily: "monospace",
                 letterSpacing: -4,
+                display: "flex",
               }}
             >
               {box.awayTeam.score}
@@ -147,11 +151,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               letterSpacing: 3,
             }}
           >
-            <div style={{ fontSize: 60, opacity: 0.3 }}>·</div>
-            <div>{box.gameStatusText || "vs"}</div>
+            <div style={{ fontSize: 60, opacity: 0.3, display: "flex" }}>·</div>
+            <div style={{ display: "flex" }}>{box.gameStatusText || "vs"}</div>
             {(box.homeTeam.periods?.length ?? 0) > 4 && (
-              <div style={{ fontSize: 18, color: "#F59E0B", fontWeight: 700 }}>
-                {(box.homeTeam.periods.length - 4)}OT
+              <div style={{ fontSize: 18, color: "#F59E0B", fontWeight: 700, display: "flex" }}>
+                {box.homeTeam.periods.length - 4}OT
               </div>
             )}
           </div>
@@ -165,7 +169,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               alt=""
               style={{ opacity: isFinal && awayWon ? 0.4 : 1 }}
             />
-            <div style={{ fontSize: 56, fontWeight: 800, color: "#FFFFFF", letterSpacing: -2, opacity: isFinal && awayWon ? 0.5 : 1 }}>
+            <div
+              style={{
+                fontSize: 56,
+                fontWeight: 800,
+                color: "#FFFFFF",
+                letterSpacing: -2,
+                opacity: isFinal && awayWon ? 0.5 : 1,
+                display: "flex",
+              }}
+            >
               {box.homeTeam.teamTricode}
             </div>
             <div
@@ -176,6 +189,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 lineHeight: 1,
                 fontFamily: "monospace",
                 letterSpacing: -4,
+                display: "flex",
               }}
             >
               {box.homeTeam.score}

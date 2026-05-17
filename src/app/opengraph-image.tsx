@@ -5,6 +5,9 @@ export const alt = "NBA Tracker — Live Scores · Player Stats · Schedule";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Satori (next/og engine) requires every <div> with multiple children to have
+// explicit `display: flex` (or contents/none). Forgetting it crashes the build:
+// "Expected <div> to have explicit display: flex".
 export default async function Image() {
   return new ImageResponse(
     (
@@ -16,34 +19,10 @@ export default async function Image() {
           flexDirection: "column",
           background: "linear-gradient(135deg, #0A0E27 0%, #1E1B4B 60%, #312E81 100%)",
           padding: 80,
-          fontFamily: "system-ui, -apple-system, sans-serif",
+          fontFamily: "system-ui, sans-serif",
           position: "relative",
         }}
       >
-        {/* Aurora-like background blobs */}
-        <div
-          style={{
-            position: "absolute",
-            top: -100,
-            right: -100,
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: -150,
-            left: -100,
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)",
-          }}
-        />
-
         {/* Brand row */}
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div
@@ -55,26 +34,43 @@ export default async function Image() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 12px 32px rgba(59,130,246,0.4)",
-              fontSize: 36,
+              fontSize: 30,
               fontWeight: 800,
               color: "#FFFFFF",
-              fontFamily: "system-ui, sans-serif",
             }}
           >
             NBA
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 48, fontWeight: 800, color: "#FFFFFF", letterSpacing: -1.5, lineHeight: 1 }}>
-              NBA<span style={{ color: "#3B82F6" }}>Tracker</span>
+            <div
+              style={{
+                fontSize: 48,
+                fontWeight: 800,
+                color: "#FFFFFF",
+                letterSpacing: -1.5,
+                lineHeight: 1,
+                display: "flex",
+              }}
+            >
+              NBATracker
             </div>
-            <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", letterSpacing: 4, marginTop: 6, textTransform: "uppercase", fontFamily: "monospace" }}>
+            <div
+              style={{
+                fontSize: 16,
+                color: "rgba(255,255,255,0.5)",
+                letterSpacing: 4,
+                marginTop: 6,
+                textTransform: "uppercase",
+                fontFamily: "monospace",
+                display: "flex",
+              }}
+            >
               by FXY · nba.xpy.me
             </div>
           </div>
         </div>
 
-        {/* Big tagline */}
+        {/* Tagline */}
         <div
           style={{
             display: "flex",
@@ -83,11 +79,30 @@ export default async function Image() {
             gap: 16,
           }}
         >
-          <div style={{ fontSize: 72, fontWeight: 700, color: "#FFFFFF", letterSpacing: -2, lineHeight: 1.05, maxWidth: 900 }}>
-            Live NBA scores, stats &amp; analytics
+          <div
+            style={{
+              fontSize: 68,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              letterSpacing: -2,
+              lineHeight: 1.1,
+              maxWidth: 1000,
+              display: "flex",
+            }}
+          >
+            Live NBA scores, stats & analytics
           </div>
-          <div style={{ fontSize: 28, color: "rgba(255,255,255,0.7)", lineHeight: 1.4, maxWidth: 900, marginTop: 8 }}>
-            35+ analytic views · power rankings · awards races · playoff bracket · all-time leaders
+          <div
+            style={{
+              fontSize: 28,
+              color: "rgba(255,255,255,0.7)",
+              lineHeight: 1.4,
+              maxWidth: 1000,
+              marginTop: 8,
+              display: "flex",
+            }}
+          >
+            35+ analytic views · power rankings · awards races · playoff bracket
           </div>
         </div>
 
@@ -115,6 +130,7 @@ export default async function Image() {
                 color: "rgba(255,255,255,0.85)",
                 fontFamily: "monospace",
                 letterSpacing: 2,
+                display: "flex",
               }}
             >
               {label}
@@ -122,7 +138,7 @@ export default async function Image() {
           ))}
         </div>
 
-        {/* Amber accent stripe */}
+        {/* Bottom accent stripe */}
         <div
           style={{
             position: "absolute",
