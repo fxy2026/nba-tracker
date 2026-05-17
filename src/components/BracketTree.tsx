@@ -180,12 +180,18 @@ function projectFutureSeries(actual: Series[]): Series[] {
     // both unknown: skip (we don't have enough info to show anything useful)
   };
 
-  // Round 2 projections from R1 feeders
+  // Round 2 projections from R1 feeders.
+  // NBA standard pairing: 1v8 winner meets 4v5 winner (top quarter), 2v7 winner
+  // meets 3v6 winner (bottom quarter). The series indices follow seed pattern
+  // 0=1v8, 1=2v7, 2=3v6, 3=4v5, so:
+  //   R2.0 (East top) = R1.0 (1v8) + R1.3 (4v5)
+  //   R2.1 (East bottom) = R1.1 (2v7) + R1.2 (3v6)
+  // West mirrors with offset 4.
   const r2Pairings: { r2Idx: number; r1A: number; r1B: number; conf: "East" | "West" }[] = [
-    { r2Idx: 0, r1A: 0, r1B: 1, conf: "East" },
-    { r2Idx: 1, r1A: 2, r1B: 3, conf: "East" },
-    { r2Idx: 2, r1A: 4, r1B: 5, conf: "West" },
-    { r2Idx: 3, r1A: 6, r1B: 7, conf: "West" },
+    { r2Idx: 0, r1A: 0, r1B: 3, conf: "East" },
+    { r2Idx: 1, r1A: 1, r1B: 2, conf: "East" },
+    { r2Idx: 2, r1A: 4, r1B: 7, conf: "West" },
+    { r2Idx: 3, r1A: 5, r1B: 6, conf: "West" },
   ];
   for (const p of r2Pairings) {
     project(2, p.r2Idx, p.conf, findInOut(1, p.r1A), findInOut(1, p.r1B));
@@ -483,10 +489,15 @@ function ConfHalf({
 }) {
   const isLeft = side === "left";
 
-  // Sort by seriesIndex so feeders align with their R2 target:
-  // R1 series 0,1 → R2 series 0;  R1 series 2,3 → R2 series 1 (for East)
-  // R1 series 4,5 → R2 series 2;  R1 series 6,7 → R2 series 3 (for West)
-  const displayR1 = [...r1].sort((a, b) => a.seriesIndex - b.seriesIndex);
+  // Display order matches actual NBA bracket pairing.
+  // R2.0 (top R2) = R1.0 + R1.3, so they must appear as displayR1[0] & [1].
+  // R2.1 (bottom R2) = R1.1 + R1.2, so they must appear as displayR1[2] & [3].
+  // Top→bottom visual order: 1v8, 4v5, 3v6, 2v7 → series indices [0, 3, 2, 1].
+  // West mirrors with offset 4 → [4, 7, 6, 5].
+  const r1Order = isLeft ? [0, 3, 2, 1] : [4, 7, 6, 5];
+  const displayR1 = r1Order
+    .map((idx) => r1.find((s) => s.seriesIndex === idx))
+    .filter((s): s is Series => !!s);
   const displayR2 = [...r2].sort((a, b) => a.seriesIndex - b.seriesIndex);
   const displayR3 = [...r3].sort((a, b) => a.seriesIndex - b.seriesIndex);
 
