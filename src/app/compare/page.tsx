@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { GitCompareArrows, ArrowLeftRight } from "lucide-react";
+import { GitCompareArrows, ArrowLeftRight, Users, Award, TrendingUp, Crown, Activity } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 interface PlayerData {
   personId: number;
@@ -27,7 +29,8 @@ const COMPARE_STATS = [
 ] as const;
 
 export default function ComparePage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [query1, setQuery1] = useState("");
   const [query2, setQuery2] = useState("");
   const [results1, setResults1] = useState<PlayerData[]>([]);
@@ -60,13 +63,23 @@ export default function ComparePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "工具" : "Tools", href: "/explore" },
+          { label: t.comparePage.title },
+        ]}
+      />
+
       {/* Editorial page header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Tool</p>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2 mt-1 text-balance">
           <GitCompareArrows size={20} className="text-accent-amber" />
           {t.comparePage.title}
         </h1>
+        <p className="text-xs text-text-secondary mt-2">
+          {isZh ? "数据为各球员最近完整赛季的场均（来自 NBA 球员索引）" : "Stats are last-completed-season per-game averages from the NBA player index"}
+        </p>
       </div>
 
       {/* Player selection */}
@@ -383,9 +396,20 @@ export default function ComparePage() {
             <GitCompareArrows size={28} className="text-accent-amber" />
           </div>
           <p className="text-base font-medium text-text-primary">{t.comparePage.selectHint}</p>
-          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary mt-2">Start by typing two player names above</p>
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary mt-2">{isZh ? "在上方输入两位球员的名字开始对比" : "Start by typing two player names above"}</p>
         </div>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/h2h", label: isZh ? "球队历史交锋" : "Team head-to-head", description: isZh ? "对比两支球队的历史战绩" : "Compare two teams head-to-head", icon: Users },
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards race", description: "MVP · DPOY · 6MOY · ROY", icon: Award },
+          { href: "/by-position", label: isZh ? "同位置排行" : "Same position", description: isZh ? "按位置筛选的排名" : "Leaders grouped by G/F/C", icon: Activity },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Career milestones", description: isZh ? "现役球员冲击门槛" : "Active players chasing thresholds", icon: TrendingUp },
+          { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", description: isZh ? "NBA 历史巨星" : "All-time NBA greats", icon: Crown },
+        ]}
+      />
     </div>
   );
 }
