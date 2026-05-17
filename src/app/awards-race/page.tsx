@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Trophy, Star, Shield, Sparkles, TrendingUp, Award } from "lucide-react";
+import { Trophy, Star, Shield, Sparkles, TrendingUp, Award, Crown, Target, Activity } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
@@ -348,6 +349,17 @@ export default function AwardsRacePage() {
             : "Note: These are computed projections, not official voting. Real awards involve voter sentiment and team narrative."}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/milestones", label: isZh ? "生涯轨迹" : "Milestones", description: isZh ? "生涯里程碑投影" : "Career milestone projections", icon: TrendingUp },
+          { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
+          { href: "/stats", label: isZh ? "联盟数据" : "League Stats", description: isZh ? "完整联盟统计" : "Full league statistics", icon: Award },
+          { href: "/clutch", label: isZh ? "关键时刻" : "Clutch", description: isZh ? "关键时刻表现" : "Clutch-time performers", icon: Target },
+          { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", description: isZh ? "本届新秀表现" : "Top rookies this season", icon: Activity },
+        ]}
+      />
     </div>
   );
 }

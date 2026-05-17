@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Sparkles, TrendingUp, ArrowRight } from "lucide-react";
+import { Sparkles, TrendingUp, ArrowRight, Calendar, Repeat, Activity, MapPin } from "lucide-react";
 import { getFullSchedule, getScheduleAge, formatDate, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
+import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Game Predictor",
@@ -200,6 +202,8 @@ function GameRow({ p }: { p: PredictedGame }) {
 }
 
 export default async function GamePredictorPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const predictions = await buildPredictions();
 
   if (predictions.length === 0) {
@@ -273,6 +277,17 @@ export default async function GamePredictorPage() {
           computed projections, not betting advice — sports are wonderfully unpredictable.
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/schedule", label: isZh ? "赛程" : "Schedule", description: isZh ? "完整赛程" : "Full league schedule", icon: Calendar },
+          { href: "/back-to-back", label: isZh ? "背靠背" : "Back-to-Back", description: isZh ? "背靠背赛程" : "Back-to-back games", icon: Repeat },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "球队实力排名" : "Team power rankings", icon: TrendingUp },
+          { href: "/momentum", label: isZh ? "势头追踪" : "Momentum", description: isZh ? "球队势头追踪" : "Team momentum tracker", icon: Activity },
+          { href: "/home-vs-road", label: isZh ? "主客场" : "Home vs Road", description: isZh ? "主客场战绩" : "Home/road splits", icon: MapPin },
+        ]}
+      />
     </div>
   );
 }

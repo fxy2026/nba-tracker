@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Trophy, Target, Award } from "lucide-react";
+import { Trophy, Target, Award, Crown, TrendingUp, Activity } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
@@ -258,6 +259,17 @@ export default async function MilestonesPage() {
             : "All numbers are projections, not official career totals. Method: last-season per-game averages (pts / reb / ast) from the NBA player index × ~70 games per season × seasons played. Because we use last-season averages rather than each season's actuals, results diverge from real career totals due to injuries, partial seasons, rest, and form. Players within ~2.5 seasons (at current pace) of their next tier are shown. This is a watchlist, not an official record book."}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards Race", description: isZh ? "MVP / ROY / DPOY" : "MVP / ROY / DPOY tracker", icon: Award },
+          { href: "/stats", label: isZh ? "联盟数据" : "League Stats", description: isZh ? "完整联盟统计" : "Full league statistics", icon: TrendingUp },
+          { href: "/history", label: isZh ? "历史" : "History", description: isZh ? "NBA 历史回顾" : "NBA history archive", icon: Trophy },
+          { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", description: isZh ? "本届新秀表现" : "Top rookies this season", icon: Activity },
+        ]}
+      />
     </div>
   );
 }

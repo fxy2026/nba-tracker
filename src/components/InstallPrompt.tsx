@@ -14,14 +14,28 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISSED_KEY = "nba-tracker-install-dismissed";
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Compact install banner. Only renders on browsers that fire the
-// beforeinstallprompt event (Chrome/Edge/Android). Hides itself for 7 days
-// after dismiss; permanently after install.
+// Detect iOS Safari — that browser never fires beforeinstallprompt, so we
+// show a manual "Share → Add to Home Screen" hint instead. UA sniff is the
+// only way; standalone-mode check confirms we're not already installed.
+function isIosSafariNonStandalone(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua) && !("MSStream" in window);
+  if (!iOS) return false;
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  if (!isSafari) return false;
+  // Already installed → don't show
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((window.navigator as any).standalone === true) return false;
+  return true;
+}
+
 export default function InstallPrompt() {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [iosHint, setIosHint] = useState(false);
 
   useEffect(() => {
     // Bail if previously dismissed within TTL
@@ -32,6 +46,13 @@ export default function InstallPrompt() {
 
     // Bail if already running as installed PWA
     if (window.matchMedia("(display-mode: standalone)").matches) return;
+
+    // iOS Safari — no beforeinstallprompt event ever fires; show manual hint
+    if (isIosSafariNonStandalone()) {
+      // Defer slightly so it doesn't pop on first paint
+      const id = setTimeout(() => { setIosHint(true); setVisible(true); }, 2000);
+      return () => clearTimeout(id);
+    }
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -52,9 +73,10 @@ export default function InstallPrompt() {
     };
   }, []);
 
-  if (!visible || !deferredPrompt) return null;
+  if (!visible || (!deferredPrompt && !iosHint)) return null;
 
   const onInstall = async () => {
+    if (!deferredPrompt) return;
     try {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
@@ -82,18 +104,24 @@ export default function InstallPrompt() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-text-primary">
-          {isZh ? "安装到主屏" : "Install app"}
+          {iosHint
+            ? (isZh ? "添加到主屏" : "Add to Home Screen")
+            : (isZh ? "安装到主屏" : "Install app")}
         </p>
         <p className="text-[11px] text-text-secondary leading-tight">
-          {isZh ? "更快启动 · 全屏体验 · 主屏图标" : "Faster launches · full-screen experience"}
+          {iosHint
+            ? (isZh ? "点击 Safari 分享按钮 → 添加到主屏幕" : "Tap Safari Share button → Add to Home Screen")
+            : (isZh ? "更快启动 · 全屏体验 · 主屏图标" : "Faster launches · full-screen experience")}
         </p>
       </div>
-      <button
-        onClick={onInstall}
-        className="px-3 py-1.5 text-xs font-bold bg-accent-gradient text-white rounded-lg hover:opacity-90 transition-opacity shrink-0 cursor-pointer min-h-[44px]"
-      >
-        {isZh ? "安装" : "Install"}
-      </button>
+      {!iosHint && (
+        <button
+          onClick={onInstall}
+          className="px-3 py-1.5 text-xs font-bold bg-accent-gradient text-white rounded-lg hover:opacity-90 transition-opacity shrink-0 cursor-pointer min-h-[44px]"
+        >
+          {isZh ? "安装" : "Install"}
+        </button>
+      )}
       <button
         onClick={onDismiss}
         aria-label={isZh ? "关闭" : "Dismiss"}

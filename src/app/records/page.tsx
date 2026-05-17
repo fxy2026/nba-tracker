@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Crown, type LucideIcon } from "lucide-react";
+import { BookOpen, Crown, Trophy, TrendingUp, Activity, Calendar, type LucideIcon } from "lucide-react";
 import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isCountedSeason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
@@ -254,6 +255,17 @@ export default async function RecordsPage() {
           badgeFor={(p) => p.otCount > 1 ? `${p.otCount}OT` : "OT"}
         />
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季精彩对决" : "Top games of the season", icon: Trophy },
+          { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
+          { href: "/milestones", label: isZh ? "生涯轨迹" : "Milestones", description: isZh ? "生涯里程碑投影" : "Career milestone projections", icon: TrendingUp },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "球队连胜与连败" : "Win and loss streaks", icon: Activity },
+          { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", description: isZh ? "历史比赛回顾" : "This day in history", icon: Calendar },
+        ]}
+      />
     </div>
   );
 }
