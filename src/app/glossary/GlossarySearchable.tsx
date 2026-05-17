@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Book, Search, X, type LucideIcon, BarChart3, Shield, Zap, Trophy, Calendar } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Term {
   term: string;
@@ -123,7 +124,18 @@ function highlight(text: string, query: string): React.ReactNode {
   );
 }
 
+const SECTION_TITLE_ZH: Record<string, { title: string; eyebrow: string }> = {
+  "Basic Stats": { title: "基础数据", eyebrow: "技术统计入门" },
+  "Shooting & Efficiency": { title: "投篮与效率", eyebrow: "投篮质量" },
+  "Advanced": { title: "进阶数据", eyebrow: "综合指标" },
+  "Game & Schedule": { title: "比赛与赛程", eyebrow: "围绕日历" },
+  "Postseason": { title: "季后赛", eyebrow: "季后赛及之后" },
+  "Defense": { title: "防守", eyebrow: "另一端" },
+};
+
 export default function GlossarySearchable() {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [query, setQuery] = useState("");
   const trimmed = query.trim().toLowerCase();
 
@@ -147,10 +159,14 @@ export default function GlossarySearchable() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Learn"
+        eyebrow={isZh ? "学习" : "Learn"}
         icon={Book}
-        title="NBA Glossary"
-        subtitle={`${totalTerms} terms and concepts · from box-score basics to advanced metrics and tactical jargon`}
+        title={isZh ? "NBA 术语" : "NBA Glossary"}
+        subtitle={
+          isZh
+            ? `${totalTerms} 个术语与概念 · 从技术统计基础到进阶指标与战术行话`
+            : `${totalTerms} terms and concepts · from box-score basics to advanced metrics and tactical jargon`
+        }
       />
 
       {/* Search bar */}
@@ -160,7 +176,7 @@ export default function GlossarySearchable() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search terms, abbreviations, or descriptions..."
+          placeholder={isZh ? "搜索术语、缩写或描述..." : "Search terms, abbreviations, or descriptions..."}
           className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none py-2"
           autoFocus
         />
@@ -168,14 +184,14 @@ export default function GlossarySearchable() {
           <button
             onClick={() => setQuery("")}
             className="p-1.5 rounded-md hover:bg-bg-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-            aria-label="Clear search"
+            aria-label={isZh ? "清除搜索" : "Clear search"}
           >
             <X size={14} />
           </button>
         )}
         {trimmed && (
           <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary tabular-nums shrink-0 pr-2">
-            {matchCount} match{matchCount === 1 ? "" : "es"}
+            {isZh ? `${matchCount} 条匹配` : `${matchCount} match${matchCount === 1 ? "" : "es"}`}
           </span>
         )}
       </div>
@@ -183,19 +199,22 @@ export default function GlossarySearchable() {
       {filtered.length === 0 ? (
         <div className="glass-tile p-8 text-center">
           <p className="text-sm text-text-secondary">
-            No terms match <span className="font-mono text-text-primary">&quot;{query}&quot;</span>
+            {isZh ? "未找到匹配 " : "No terms match "}<span className="font-mono text-text-primary">&quot;{query}&quot;</span>
           </p>
           <button
             onClick={() => setQuery("")}
             className="mt-3 text-xs font-mono uppercase tracking-[0.15em] text-accent hover:underline cursor-pointer"
           >
-            Clear search
+            {isZh ? "清除搜索" : "Clear search"}
           </button>
         </div>
       ) : (
         <div className="space-y-6">
           {filtered.map((sec) => {
             const Icon = sec.icon;
+            const zhMeta = SECTION_TITLE_ZH[sec.title];
+            const titleDisplay = isZh && zhMeta ? zhMeta.title : sec.title;
+            const eyebrowDisplay = isZh && zhMeta ? zhMeta.eyebrow : sec.eyebrow;
             return (
               <section key={sec.title} className="glass-tile p-5 relative overflow-hidden">
                 <div className="absolute inset-y-0 left-0 w-1 opacity-70" style={{ background: sec.color }} />
@@ -203,8 +222,8 @@ export default function GlossarySearchable() {
                   <div className="mb-4 flex items-center gap-3">
                     <Icon size={18} style={{ color: sec.color }} />
                     <div>
-                      <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {sec.eyebrow}</p>
-                      <h2 className="text-xl font-semibold tracking-tight" style={{ color: sec.color }}>{sec.title}</h2>
+                      <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {eyebrowDisplay}</p>
+                      <h2 className="text-xl font-semibold tracking-tight" style={{ color: sec.color }}>{titleDisplay}</h2>
                     </div>
                   </div>
                   <dl className="grid grid-cols-1 md:grid-cols-2 gap-3">

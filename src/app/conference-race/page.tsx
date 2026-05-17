@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -101,7 +102,7 @@ function Row({ team, seed }: { team: TeamRec; seed: number }) {
   );
 }
 
-function ConfPanel({ teams, eyebrow, title, color }: { teams: TeamRec[]; eyebrow: string; title: string; color: string }) {
+function ConfPanel({ teams, eyebrow, title, color, labels }: { teams: TeamRec[]; eyebrow: string; title: string; color: string; labels: { playoff: string; playIn: string; lottery: string } }) {
   const playoff = teams.slice(0, 6);
   const playIn = teams.slice(6, 10);
   const lottery = teams.slice(10);
@@ -116,14 +117,14 @@ function ConfPanel({ teams, eyebrow, title, color }: { teams: TeamRec[]; eyebrow
         </div>
 
         <div className="mb-4">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-success mb-2">Playoff Lock · seeds 1-6</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-success mb-2">{labels.playoff}</p>
           <div className="space-y-1.5">
             {playoff.map((t, i) => <Row key={t.tricode} team={t} seed={i + 1} />)}
           </div>
         </div>
 
         <div className="mb-4">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-accent-amber mb-2">Play-In · seeds 7-10</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-accent-amber mb-2">{labels.playIn}</p>
           <div className="space-y-1.5">
             {playIn.map((t, i) => <Row key={t.tricode} team={t} seed={i + 7} />)}
           </div>
@@ -131,7 +132,7 @@ function ConfPanel({ teams, eyebrow, title, color }: { teams: TeamRec[]; eyebrow
 
         {lottery.length > 0 && (
           <div>
-            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary mb-2">Lottery · seeds 11-15</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary mb-2">{labels.lottery}</p>
             <div className="space-y-1.5">
               {lottery.map((t, i) => <Row key={t.tricode} team={t} seed={i + 11} />)}
             </div>
@@ -143,13 +144,25 @@ function ConfPanel({ teams, eyebrow, title, color }: { teams: TeamRec[]; eyebrow
 }
 
 export default async function ConferenceRacePage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const all = await computeStandings();
+
+  const labels = {
+    playoff: isZh ? "锁定季后赛 · 1-6 号种子" : "Playoff Lock · seeds 1-6",
+    playIn: isZh ? "附加赛 · 7-10 号种子" : "Play-In · seeds 7-10",
+    lottery: isZh ? "乐透 · 11-15 号种子" : "Lottery · seeds 11-15",
+  };
 
   if (all.length === 0 || all.every((t) => t.wins + t.losses === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="League" icon={Trophy} title="Conference Race" />
-        <EmptyState icon={Trophy} title="No data" description="Conference race will populate once the season has produced finished games." />
+        <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={Trophy} title={isZh ? "分区冲刺" : "Conference Race"} />
+        <EmptyState
+          icon={Trophy}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "本赛季产生已结束比赛后，分区冲刺会显示在这里。" : "Conference race will populate once the season has produced finished games."}
+        />
       </div>
     );
   }
@@ -160,23 +173,23 @@ export default async function ConferenceRacePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={Trophy}
-        title="Conference Race"
-        subtitle="Playoff seeding race — 1-6 locked in, 7-10 in the play-in tournament, 11-15 lottery bound"
+        title={isZh ? "分区冲刺" : "Conference Race"}
+        subtitle={isZh ? "季后赛种子争夺 — 1-6 锁定，7-10 进入附加赛，11-15 进入乐透" : "Playoff seeding race — 1-6 locked in, 7-10 in the play-in tournament, 11-15 lottery bound"}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <ConfPanel teams={east} eyebrow="East" title="Eastern Conference" color="#3B82F6" />
-        <ConfPanel teams={west} eyebrow="West" title="Western Conference" color="#F59E0B" />
+        <ConfPanel teams={east} eyebrow="East" title={isZh ? "东部联盟" : "Eastern Conference"} color="#3B82F6" labels={labels} />
+        <ConfPanel teams={west} eyebrow="West" title={isZh ? "西部联盟" : "Western Conference"} color="#F59E0B" labels={labels} />
       </div>
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Format</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "赛制" : "Format"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          The top six seeds in each conference clinch a playoff berth outright. Seeds 7–10 enter the play-in tournament,
-          fighting for the final two playoff spots. The remaining teams head to the draft lottery, with worse records
-          generally yielding better odds at a top-4 pick.
+          {isZh
+            ? "每个联盟前 6 号种子直接锁定季后赛席位。7-10 号种子进入附加赛，争夺最后两个季后赛名额。其余球队进入选秀乐透，战绩越差通常前 4 顺位抽中概率越高。"
+            : "The top six seeds in each conference clinch a playoff berth outright. Seeds 7–10 enter the play-in tournament, fighting for the final two playoff spots. The remaining teams head to the draft lottery, with worse records generally yielding better odds at a top-4 pick."}
         </p>
       </div>
     </div>

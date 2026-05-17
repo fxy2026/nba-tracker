@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -100,13 +101,15 @@ const FLAGS: Record<string, string> = {
 };
 
 export default async function ByCountryPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const players = await getPlayerIndex().catch(() => []);
 
   if (players.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Global" icon={Globe} title="NBA By Country" />
-        <EmptyState icon={Globe} title="No data" description="Could not load player index." />
+        <PageHeader eyebrow={isZh ? "全球" : "Global"} icon={Globe} title={isZh ? "NBA 国别" : "NBA By Country"} />
+        <EmptyState icon={Globe} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
@@ -149,10 +152,14 @@ export default async function ByCountryPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Global"
+        eyebrow={isZh ? "全球" : "Global"}
         icon={Globe}
-        title="NBA By Country"
-        subtitle={`Players from ${groups.length} countries · ${totalInternational} international + ${usa?.count ?? 0} domestic`}
+        title={isZh ? "NBA 国别" : "NBA By Country"}
+        subtitle={
+          isZh
+            ? `来自 ${groups.length} 个国家的球员 · 国际 ${totalInternational} + 本土 ${usa?.count ?? 0}`
+            : `Players from ${groups.length} countries · ${totalInternational} international + ${usa?.count ?? 0} domestic`
+        }
       />
 
       {/* USA hero tile */}
@@ -163,19 +170,19 @@ export default async function ByCountryPage() {
             <div className="relative">
               <div className="flex items-end justify-between mb-4 flex-wrap gap-2">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Domestic</p>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "本土" : "Domestic"}</p>
                   <h2 className="text-3xl font-light tracking-tight flex items-center gap-3">
                     <span className="text-4xl">{FLAGS[usa.country]}</span>
-                    United States
+                    {isZh ? "美国" : "United States"}
                   </h2>
                 </div>
                 <div className="flex gap-5 text-right">
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">Players</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "球员" : "Players"}</p>
                     <p className="text-xl font-light font-mono tabular-nums">{usa.count}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">Best PPG</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最高得分" : "Best PPG"}</p>
                     <p className="text-xl font-light font-mono tabular-nums text-accent-amber">{usa.bestPpg.toFixed(1)}</p>
                   </div>
                 </div>
@@ -203,10 +210,10 @@ export default async function ByCountryPage() {
         <div className="mb-4 flex items-center gap-3">
           <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
             <Globe size={14} className="text-accent" />
-            International
+            {isZh ? "国际" : "International"}
           </h2>
           <span className="h-px flex-1 bg-accent/30" />
-          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{international.length} countries</span>
+          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{international.length} {isZh ? "国家" : "countries"}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {international.map((g) => (
@@ -217,7 +224,11 @@ export default async function ByCountryPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-text-primary truncate">{g.country}</p>
                     <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
-                      <span className="tabular-nums">{g.count}</span> player{g.count === 1 ? "" : "s"} · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span>
+                      {isZh ? (
+                        <><span className="tabular-nums">{g.count}</span> 名球员 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span></>
+                      ) : (
+                        <><span className="tabular-nums">{g.count}</span> player{g.count === 1 ? "" : "s"} · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span></>
+                      )}
                     </p>
                   </div>
                 </div>

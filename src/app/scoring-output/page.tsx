@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, Shield } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -69,13 +70,19 @@ function Row({ team, value, sub, color, rank }: { team: TeamOutput; value: strin
 }
 
 export default async function ScoringOutputPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const teams = await compute();
 
   if (teams.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Teams" icon={TrendingUp} title="Scoring Output" />
-        <EmptyState icon={TrendingUp} title="No data" description="Scoring data will populate once finished games are recorded." />
+        <PageHeader eyebrow={isZh ? "球队" : "Teams"} icon={TrendingUp} title={isZh ? "攻防输出" : "Scoring Output"} />
+        <EmptyState
+          icon={TrendingUp}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "记录已结束比赛后，得分数据会显示在这里。" : "Scoring data will populate once finished games are recorded."}
+        />
       </div>
     );
   }
@@ -89,10 +96,14 @@ export default async function ScoringOutputPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Teams"
+        eyebrow={isZh ? "球队" : "Teams"}
         icon={TrendingUp}
-        title="Scoring Output"
-        subtitle={`Offense, defense, and net point differential per game · league average ${leagueAvgPpg.toFixed(1)} PPG`}
+        title={isZh ? "攻防输出" : "Scoring Output"}
+        subtitle={
+          isZh
+            ? `进攻、防守与每场净得分差 · 联盟均值 ${leagueAvgPpg.toFixed(1)} PPG`
+            : `Offense, defense, and net point differential per game · league average ${leagueAvgPpg.toFixed(1)} PPG`
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -102,8 +113,8 @@ export default async function ScoringOutputPage() {
             <div className="mb-4 flex items-center gap-3">
               <TrendingUp size={18} className="text-success" />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Offense</p>
-                <h2 className="text-xl font-semibold text-success tracking-tight">Most Points Per Game</h2>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "进攻" : "Offense"}</p>
+                <h2 className="text-xl font-semibold text-success tracking-tight">{isZh ? "场均得分最高" : "Most Points Per Game"}</h2>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -124,8 +135,8 @@ export default async function ScoringOutputPage() {
             <div className="mb-4 flex items-center gap-3">
               <Shield size={18} className="text-accent" />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Defense</p>
-                <h2 className="text-xl font-semibold text-accent tracking-tight">Fewest Points Allowed</h2>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "防守" : "Defense"}</p>
+                <h2 className="text-xl font-semibold text-accent tracking-tight">{isZh ? "场均失分最少" : "Fewest Points Allowed"}</h2>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -146,15 +157,15 @@ export default async function ScoringOutputPage() {
             <div className="mb-4 flex items-center gap-3">
               <TrendingUp size={18} className="text-accent-amber" />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Net</p>
-                <h2 className="text-xl font-semibold text-accent-amber tracking-tight">Best Point Differential</h2>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "净值" : "Net"}</p>
+                <h2 className="text-xl font-semibold text-accent-amber tracking-tight">{isZh ? "最佳净胜分" : "Best Point Differential"}</h2>
               </div>
             </div>
             <div className="space-y-1.5">
               {net.slice(0, 15).map((t, i) => (
                 <Row key={t.tricode} team={t} rank={i + 1}
                   value={`${t.net >= 0 ? "+" : ""}${t.net.toFixed(1)}`}
-                  sub={`${t.ppg.toFixed(1)} for · ${t.papg.toFixed(1)} against`}
+                  sub={isZh ? `${t.ppg.toFixed(1)} 得分 · ${t.papg.toFixed(1)} 失分` : `${t.ppg.toFixed(1)} for · ${t.papg.toFixed(1)} against`}
                   color={t.net >= 0 ? "#F59E0B" : "#DF1B41"}
                 />
               ))}

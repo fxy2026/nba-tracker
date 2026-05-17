@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Target } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -85,14 +86,20 @@ function Row({ r, value, sub, color, rank }: { r: ClutchRec; value: string; sub:
 }
 
 export default async function ClutchTeamsPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const all = await compute();
   const hasData = all.some((r) => r.totalClose > 0 || r.otW + r.otL > 0);
 
   if (!hasData) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Teams" icon={Target} title="Clutch Teams" />
-        <EmptyState icon={Target} title="No close games yet" description="Clutch records will populate once games decided by 5 or fewer points exist." />
+        <PageHeader eyebrow={isZh ? "球队" : "Teams"} icon={Target} title={isZh ? "关键时刻" : "Clutch Teams"} />
+        <EmptyState
+          icon={Target}
+          title={isZh ? "暂无焦点战" : "No close games yet"}
+          description={isZh ? "胜负差 5 分以内的比赛出现后，关键时刻战绩会显示。" : "Clutch records will populate once games decided by 5 or fewer points exist."}
+        />
       </div>
     );
   }
@@ -105,10 +112,10 @@ export default async function ClutchTeamsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Teams"
+        eyebrow={isZh ? "球队" : "Teams"}
         icon={Target}
-        title="Clutch Teams"
-        subtitle="Records in games decided by 5 points or fewer · plus overtime performance"
+        title={isZh ? "关键时刻" : "Clutch Teams"}
+        subtitle={isZh ? "胜负差 ≤5 分的比赛战绩 · 含加时赛表现" : "Records in games decided by 5 points or fewer · plus overtime performance"}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
@@ -116,18 +123,18 @@ export default async function ClutchTeamsPage() {
           <div className="absolute inset-y-0 left-0 w-1.5 bg-success opacity-80" />
           <div className="relative">
             <div className="mb-4">
-              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Ice Water</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "冰水心脏" : "Ice Water"}</p>
               <h2 className="text-xl font-semibold text-success tracking-tight flex items-center gap-2">
                 <Target size={18} />
-                Best in Close Games
+                {isZh ? "焦点战最佳" : "Best in Close Games"}
               </h2>
-              <p className="text-xs text-text-secondary mt-1">Games decided by ≤5 · min 3 games qualifies</p>
+              <p className="text-xs text-text-secondary mt-1">{isZh ? "胜负差 ≤5 · 最少 3 场" : "Games decided by ≤5 · min 3 games qualifies"}</p>
             </div>
             <div className="space-y-1.5">
               {closeBest.map((r, i) => (
                 <Row key={r.tricode} r={r} rank={i + 1}
                   value={`${(r.closePct * 100).toFixed(1)}%`}
-                  sub={`${r.closeW}-${r.closeL} in close games · ${r.totalClose} total`}
+                  sub={isZh ? `${r.closeW}-${r.closeL} 焦点战 · ${r.totalClose} 场` : `${r.closeW}-${r.closeL} in close games · ${r.totalClose} total`}
                   color="#22C55E"
                 />
               ))}
@@ -139,18 +146,18 @@ export default async function ClutchTeamsPage() {
           <div className="absolute inset-y-0 left-0 w-1.5 bg-danger opacity-80" />
           <div className="relative">
             <div className="mb-4">
-              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Choke Point</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "易崩盘" : "Choke Point"}</p>
               <h2 className="text-xl font-semibold text-danger tracking-tight flex items-center gap-2">
                 <Target size={18} />
-                Worst in Close Games
+                {isZh ? "焦点战最差" : "Worst in Close Games"}
               </h2>
-              <p className="text-xs text-text-secondary mt-1">Teams losing more than their share when games tighten</p>
+              <p className="text-xs text-text-secondary mt-1">{isZh ? "比赛胶着时输得更多的球队" : "Teams losing more than their share when games tighten"}</p>
             </div>
             <div className="space-y-1.5">
               {closeWorst.map((r, i) => (
                 <Row key={r.tricode} r={r} rank={i + 1}
                   value={`${(r.closePct * 100).toFixed(1)}%`}
-                  sub={`${r.closeW}-${r.closeL} in close games · ${r.totalClose} total`}
+                  sub={isZh ? `${r.closeW}-${r.closeL} 焦点战 · ${r.totalClose} 场` : `${r.closeW}-${r.closeL} in close games · ${r.totalClose} total`}
                   color="#DF1B41"
                 />
               ))}
@@ -164,16 +171,16 @@ export default async function ClutchTeamsPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
               <Target size={14} className="text-accent-amber" />
-              Overtime Specialists
+              {isZh ? "加时赛专家" : "Overtime Specialists"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{otTotalQualified.length} teams with OT experience</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{otTotalQualified.length} {isZh ? "支球队有加时经验" : "teams with OT experience"}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {otTotalQualified.slice(0, 12).map((r) => (
               <Row key={r.tricode} r={r} rank={otTotalQualified.indexOf(r) + 1}
                 value={`${(r.otPct * 100).toFixed(0)}%`}
-                sub={`${r.otW}-${r.otL} in OT`}
+                sub={isZh ? `${r.otW}-${r.otL} 加时` : `${r.otW}-${r.otL} in OT`}
                 color="#F59E0B"
               />
             ))}

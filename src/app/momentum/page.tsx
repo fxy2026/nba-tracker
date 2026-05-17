@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -118,13 +119,19 @@ function Row({ r, delta, color, rank, showDirection }: { r: MomentumRec; delta: 
 }
 
 export default async function MomentumPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const all = await compute();
 
   if (all.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Trend" icon={TrendingUp} title="Momentum" />
-        <EmptyState icon={TrendingUp} title="No data" description="Momentum will populate once teams have played enough games." />
+        <PageHeader eyebrow={isZh ? "走势" : "Trend"} icon={TrendingUp} title={isZh ? "势头" : "Momentum"} />
+        <EmptyState
+          icon={TrendingUp}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "球队打过足够比赛后，势头数据会显示。" : "Momentum will populate once teams have played enough games."}
+        />
       </div>
     );
   }
@@ -136,10 +143,14 @@ export default async function MomentumPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Trend"
+        eyebrow={isZh ? "走势" : "Trend"}
         icon={TrendingUp}
-        title="Momentum"
-        subtitle="Last 5 games vs the prior 10 · biggest deltas surfaced · form dots show recent results (most recent first)"
+        title={isZh ? "势头" : "Momentum"}
+        subtitle={
+          isZh
+            ? "最近 5 场 vs 之前 10 场 · 最大变动 · 状态点显示最近结果（最新在左）"
+            : "Last 5 games vs the prior 10 · biggest deltas surfaced · form dots show recent results (most recent first)"
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -147,12 +158,12 @@ export default async function MomentumPage() {
           <div className="absolute inset-y-0 left-0 w-1.5 bg-success opacity-80" />
           <div className="relative">
             <div className="mb-4">
-              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Heating Up</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "上升期" : "Heating Up"}</p>
               <h2 className="text-xl font-semibold text-success tracking-tight flex items-center gap-2">
                 <TrendingUp size={18} />
-                Rising Teams
+                {isZh ? "上升球队" : "Rising Teams"}
               </h2>
-              <p className="text-xs text-text-secondary mt-1">Recent form better than the prior 10 games</p>
+              <p className="text-xs text-text-secondary mt-1">{isZh ? "最近状态优于之前 10 场" : "Recent form better than the prior 10 games"}</p>
             </div>
             <div className="space-y-1.5">
               {heating.map((r, i) => (
@@ -166,12 +177,12 @@ export default async function MomentumPage() {
           <div className="absolute inset-y-0 left-0 w-1.5 bg-danger opacity-80" />
           <div className="relative">
             <div className="mb-4">
-              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Cooling Off</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "下降期" : "Cooling Off"}</p>
               <h2 className="text-xl font-semibold text-danger tracking-tight flex items-center gap-2">
                 <TrendingDown size={18} />
-                Falling Teams
+                {isZh ? "下降球队" : "Falling Teams"}
               </h2>
-              <p className="text-xs text-text-secondary mt-1">Recent form worse than the prior 10 games</p>
+              <p className="text-xs text-text-secondary mt-1">{isZh ? "最近状态弱于之前 10 场" : "Recent form worse than the prior 10 games"}</p>
             </div>
             <div className="space-y-1.5">
               {cooling.map((r, i) => (
@@ -183,11 +194,11 @@ export default async function MomentumPage() {
       </div>
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Momentum compares win percentage over a team&apos;s last 5 games to their preceding 10 games. A team that was
-          4-6 over games 6-15 and goes 4-1 over their last 5 swings +50% — a clear hot streak emerging from mediocrity.
-          The reverse identifies teams sliding from strong form into trouble. Minimum 3 games in each window to qualify.
+          {isZh
+            ? "势头对比球队最近 5 场与之前 10 场的胜率。例如球队第 6-15 场是 4-6，最近 5 场 4-1，相当于 +50% 上升 — 从中游中爬出的明显热度。反之识别从强势滑向麻烦的球队。每个窗口至少 3 场才入围。"
+            : "Momentum compares win percentage over a team's last 5 games to their preceding 10 games. A team that was 4-6 over games 6-15 and goes 4-1 over their last 5 swings +50% — a clear hot streak emerging from mediocrity. The reverse identifies teams sliding from strong form into trouble. Minimum 3 games in each window to qualify."}
         </p>
       </div>
     </div>

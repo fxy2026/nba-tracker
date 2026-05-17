@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -94,13 +95,15 @@ function Card({ p, rank }: { p: RookieRow; rank: number }) {
 }
 
 export default async function RookieWatchPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const players = await getPlayerIndex().catch(() => []);
 
   if (players.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Players" icon={Sparkles} title="Rookie Watch" />
-        <EmptyState icon={Sparkles} title="No data" description="Could not load player index." />
+        <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={Sparkles} title={isZh ? "新秀榜" : "Rookie Watch"} />
+        <EmptyState icon={Sparkles} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
@@ -150,10 +153,14 @@ export default async function RookieWatchPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Players"
+        eyebrow={isZh ? "球员" : "Players"}
         icon={Sparkles}
-        title="Rookie Watch"
-        subtitle={`Top rookies${rookieYear ? ` (class of ${rookieYear})` : ""} ranked by composite score · PPG + RPG×1.2 + APG×1.5`}
+        title={isZh ? "新秀榜" : "Rookie Watch"}
+        subtitle={
+          isZh
+            ? `新秀按综合分数排名${rookieYear ? `（${rookieYear} 届）` : ""} · PPG + RPG×1.2 + APG×1.5`
+            : `Top rookies${rookieYear ? ` (class of ${rookieYear})` : ""} ranked by composite score · PPG + RPG×1.2 + APG×1.5`
+        }
       />
 
       {rookies.length > 0 ? (
@@ -161,10 +168,10 @@ export default async function RookieWatchPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
               <Sparkles size={14} />
-              Rookie Ladder
+              {isZh ? "新秀阶梯" : "Rookie Ladder"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{rookies.length} ranked</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{rookies.length} {isZh ? "已排名" : "ranked"}</span>
           </div>
           <div className="space-y-2">
             {rookies.map((p, i) => <Card key={p.personId} p={p} rank={i} />)}
@@ -173,8 +180,8 @@ export default async function RookieWatchPage() {
       ) : (
         <EmptyState
           icon={Sparkles}
-          title="No rookies tracked yet"
-          description="The player index has not surfaced first-year players for this season."
+          title={isZh ? "暂无新秀数据" : "No rookies tracked yet"}
+          description={isZh ? "球员索引尚未提供本赛季的一年级球员。" : "The player index has not surfaced first-year players for this season."}
         />
       )}
 
@@ -183,10 +190,10 @@ export default async function RookieWatchPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
               <Sparkles size={14} className="text-accent" />
-              Sophomore Class
+              {isZh ? "二年级班" : "Sophomore Class"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{sophomores.length} ranked</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{sophomores.length} {isZh ? "已排名" : "ranked"}</span>
           </div>
           <div className="space-y-2">
             {sophomores.map((p, i) => <Card key={p.personId} p={p} rank={i} />)}
@@ -195,11 +202,15 @@ export default async function RookieWatchPage() {
       )}
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Rookies are players whose <span className="font-mono">fromYear</span> equals the latest season in the index
-          and who have played only one season so far. Sophomores started one season earlier and are still active.
-          Composite score weights rebounds and assists slightly higher than points to surface well-rounded play.
+          {isZh ? (
+            <>新秀是 <span className="font-mono">fromYear</span> 等于索引中最新赛季且只打过一个赛季的球员。二年级生比新秀早一个赛季出道且仍现役。综合得分对篮板与助攻的权重略高于得分，以凸显全能表现。</>
+          ) : (
+            <>Rookies are players whose <span className="font-mono">fromYear</span> equals the latest season in the index
+              and who have played only one season so far. Sophomores started one season earlier and are still active.
+              Composite score weights rebounds and assists slightly higher than points to surface well-rounded play.</>
+          )}
         </p>
       </div>
     </div>

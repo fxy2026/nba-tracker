@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -88,13 +89,19 @@ function intensity(games: number, max: number): string {
 }
 
 export default async function ScheduleHeatmapPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const { byMonth, totalGames, finishedGames, maxGames, totalDays, todayStr } = await build();
 
   if (totalDays === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Season" icon={Activity} title="Schedule Heatmap" />
-        <EmptyState icon={Activity} title="No schedule data" description="The season schedule could not be loaded." />
+        <PageHeader eyebrow={isZh ? "赛季" : "Season"} icon={Activity} title={isZh ? "赛程热力图" : "Schedule Heatmap"} />
+        <EmptyState
+          icon={Activity}
+          title={isZh ? "暂无赛程数据" : "No schedule data"}
+          description={isZh ? "无法加载本赛季赛程。" : "The season schedule could not be loaded."}
+        />
       </div>
     );
   }
@@ -104,10 +111,14 @@ export default async function ScheduleHeatmapPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Season"
+        eyebrow={isZh ? "赛季" : "Season"}
         icon={Activity}
-        title="Schedule Heatmap"
-        subtitle={`${totalGames} games across ${totalDays} dates · ${finishedGames} finished · peak ${maxGames} games on a single night`}
+        title={isZh ? "赛程热力图" : "Schedule Heatmap"}
+        subtitle={
+          isZh
+            ? `${totalGames} 场比赛跨 ${totalDays} 个日期 · 已完 ${finishedGames} · 单晚峰值 ${maxGames} 场`
+            : `${totalGames} games across ${totalDays} dates · ${finishedGames} finished · peak ${maxGames} games on a single night`
+        }
       />
 
       <div className="space-y-6">
@@ -124,7 +135,7 @@ export default async function ScheduleHeatmapPage() {
               <div className="flex items-end justify-between mb-3 flex-wrap gap-2">
                 <h2 className="text-lg font-semibold tracking-tight text-text-primary">{monthLabel}</h2>
                 <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary tabular-nums">
-                  {monthGames} games · {days.length} dates
+                  {isZh ? `${monthGames} 场比赛 · ${days.length} 个日期` : `${monthGames} games · ${days.length} dates`}
                 </span>
               </div>
               <div className="grid grid-cols-7 gap-1.5">
@@ -159,7 +170,7 @@ export default async function ScheduleHeatmapPage() {
       </div>
 
       <div className="glass-tile p-4 mt-6 flex items-center gap-4 flex-wrap">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Intensity</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "热度" : "Intensity"}</p>
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-bg-hover/30" />
           <span className="text-[9px] font-mono text-text-secondary">0</span>
@@ -170,7 +181,7 @@ export default async function ScheduleHeatmapPage() {
           <div className="w-4 h-4 rounded bg-accent-amber/80" />
           <span className="text-[9px] font-mono text-text-secondary">{maxGames}</span>
         </div>
-        <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">click any cell to view that date</span>
+        <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "点击任一格查看当日比赛" : "click any cell to view that date"}</span>
       </div>
     </div>
   );

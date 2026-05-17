@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HelpCircle, RefreshCw, Trophy } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Player {
   personId: number;
@@ -19,10 +20,10 @@ interface Player {
 
 type Mode = "headshot" | "statline" | "team";
 
-const MODES: { key: Mode; label: string; description: string }[] = [
-  { key: "headshot", label: "Guess from headshot", description: "Pick the name from a player's portrait" },
-  { key: "statline", label: "Guess from stats", description: "Identify a player by their season averages" },
-  { key: "team", label: "Guess the team", description: "Which team does this player play for?" },
+const MODES: { key: Mode; label: string; description: string; labelZh: string; descriptionZh: string }[] = [
+  { key: "headshot", label: "Guess from headshot", description: "Pick the name from a player's portrait", labelZh: "看头像猜人", descriptionZh: "从头像选出对应球员名字" },
+  { key: "statline", label: "Guess from stats", description: "Identify a player by their season averages", labelZh: "看数据猜人", descriptionZh: "通过赛季均数据辨认球员" },
+  { key: "team", label: "Guess the team", description: "Which team does this player play for?", labelZh: "猜球队", descriptionZh: "这名球员效力哪支球队？" },
 ];
 
 function sample<T>(arr: T[], n: number): T[] {
@@ -55,6 +56,8 @@ function buildQuestion(pool: Player[], mode: Mode): Question {
 }
 
 export default function QuizPage() {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<Mode>("headshot");
@@ -111,10 +114,14 @@ export default function QuizPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Game"
+        eyebrow={isZh ? "游戏" : "Game"}
         icon={HelpCircle}
-        title="NBA Quiz"
-        subtitle="Guess the player from a headshot, stat line, or team · how well do you know the league?"
+        title={isZh ? "NBA 测验" : "NBA Quiz"}
+        subtitle={
+          isZh
+            ? "测试你的 NBA 知识 — 看头像、看数据、或猜球队，三种模式自动计分。"
+            : "Guess the player from a headshot, stat line, or team · how well do you know the league?"
+        }
       />
 
       <div className="glass-tile flex flex-wrap overflow-hidden p-1 mb-6 w-fit">
@@ -126,22 +133,22 @@ export default function QuizPage() {
               mode === m.key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
             }`}
           >
-            {m.label}
+            {isZh ? m.labelZh : m.label}
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
         <div className="glass-tile p-3 text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">Right</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "答对" : "Right"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-success">{score.right}</p>
         </div>
         <div className="glass-tile p-3 text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">Wrong</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "答错" : "Wrong"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-danger">{score.wrong}</p>
         </div>
         <div className="glass-tile p-3 text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">Accuracy</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "正确率" : "Accuracy"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{accuracy.toFixed(0)}%</p>
         </div>
       </div>
@@ -150,7 +157,7 @@ export default function QuizPage() {
         <div className="glass-tile h-64 skeleton-shimmer" />
       ) : !q ? (
         <div className="glass-tile p-6 text-center">
-          <p className="text-sm text-text-secondary">Could not load player data for quiz.</p>
+          <p className="text-sm text-text-secondary">{isZh ? "无法加载测验所需的球员数据。" : "Could not load player data for quiz."}</p>
         </div>
       ) : (
         <div className="glass-tile p-6">
@@ -159,26 +166,26 @@ export default function QuizPage() {
             {mode === "headshot" && (
               <div className="flex flex-col items-center gap-3">
                 <PlayerHeadshot personId={q.answer.personId} name={`${q.answer.firstName} ${q.answer.lastName}`} size={140} />
-                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">Who is this player?</p>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">{isZh ? "这位是谁？" : "Who is this player?"}</p>
               </div>
             )}
             {mode === "statline" && (
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-3">Season Averages</p>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-3">{isZh ? "赛季均数据" : "Season Averages"}</p>
                 <div className="flex items-center justify-center gap-6 font-mono">
                   <div><p className="text-3xl tabular-nums text-accent-amber">{q.answer.pts.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">PPG</p></div>
                   <div><p className="text-3xl tabular-nums text-text-primary">{q.answer.reb.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">RPG</p></div>
                   <div><p className="text-3xl tabular-nums text-text-primary">{q.answer.ast.toFixed(1)}</p><p className="text-[10px] uppercase text-text-secondary">APG</p></div>
-                  <div><p className="text-xl tabular-nums text-accent">{q.answer.position}</p><p className="text-[10px] uppercase text-text-secondary">Pos</p></div>
+                  <div><p className="text-xl tabular-nums text-accent">{q.answer.position}</p><p className="text-[10px] uppercase text-text-secondary">{isZh ? "位置" : "Pos"}</p></div>
                 </div>
-                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mt-3">Whose averages are these?</p>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mt-3">{isZh ? "这是谁的数据？" : "Whose averages are these?"}</p>
               </div>
             )}
             {mode === "team" && (
               <div className="flex flex-col items-center gap-3">
                 <PlayerHeadshot personId={q.answer.personId} name={`${q.answer.firstName} ${q.answer.lastName}`} size={100} />
                 <p className="text-lg font-semibold tracking-tight">{q.answer.firstName} {q.answer.lastName}</p>
-                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">Which team does {q.answer.firstName} play for?</p>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">{isZh ? `${q.answer.firstName} 效力哪支球队？` : `Which team does ${q.answer.firstName} play for?`}</p>
               </div>
             )}
           </div>
@@ -243,14 +250,14 @@ export default function QuizPage() {
                 href={`/player/${q.answer.personId}`}
                 className="text-xs font-mono uppercase tracking-[0.15em] text-accent hover:underline"
               >
-                View {q.answer.firstName} {q.answer.lastName} profile →
+                {isZh ? `查看 ${q.answer.firstName} ${q.answer.lastName} 的页面 →` : `View ${q.answer.firstName} ${q.answer.lastName} profile →`}
               </Link>
               <button
                 onClick={next}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent/90 text-white text-sm font-medium transition-colors cursor-pointer"
               >
                 <RefreshCw size={14} />
-                Next question
+                {isZh ? "下一题" : "Next question"}
               </button>
             </div>
           )}
@@ -261,7 +268,15 @@ export default function QuizPage() {
         <div className="glass-tile p-4 mt-4 bg-accent-amber/[0.05] flex items-center gap-3">
           <Trophy size={20} className="text-accent-amber shrink-0" />
           <p className="text-xs text-text-secondary">
-            <span className="font-bold text-text-primary">Sharp eye.</span> You&apos;re at <span className="font-mono tabular-nums text-accent-amber">{accuracy.toFixed(0)}%</span> over {total} questions — well above casual fan territory.
+            {isZh ? (
+              <>
+                <span className="font-bold text-text-primary">眼力好。</span>{total} 题正确率 <span className="font-mono tabular-nums text-accent-amber">{accuracy.toFixed(0)}%</span> — 远超普通球迷水平。
+              </>
+            ) : (
+              <>
+                <span className="font-bold text-text-primary">Sharp eye.</span> You&apos;re at <span className="font-mono tabular-nums text-accent-amber">{accuracy.toFixed(0)}%</span> over {total} questions — well above casual fan territory.
+              </>
+            )}
           </p>
         </div>
       )}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -39,13 +40,15 @@ function scoreImpact(p: ClassPlayer) {
 }
 
 export default async function DraftClassesPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const players = await getPlayerIndex().catch(() => []);
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Draft" icon={GraduationCap} title="Draft Classes" />
-        <EmptyState icon={GraduationCap} title="No data" description="Could not load player index." />
+        <PageHeader eyebrow={isZh ? "选秀" : "Draft"} icon={GraduationCap} title={isZh ? "选秀届" : "Draft Classes"} />
+        <EmptyState icon={GraduationCap} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
@@ -89,10 +92,14 @@ export default async function DraftClassesPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Draft"
+        eyebrow={isZh ? "选秀" : "Draft"}
         icon={GraduationCap}
-        title="Draft Classes"
-        subtitle={`Active players grouped by draft year · ${groups.length} classes represented`}
+        title={isZh ? "选秀届" : "Draft Classes"}
+        subtitle={
+          isZh
+            ? `现役球员按选秀年份分组 · 共 ${groups.length} 届`
+            : `Active players grouped by draft year · ${groups.length} classes represented`
+        }
       />
 
       <div className="space-y-4">
@@ -102,20 +109,20 @@ export default async function DraftClassesPage() {
             <section key={g.year} className="glass-tile p-5">
               <div className="flex items-end justify-between mb-4 flex-wrap gap-2">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Class of</p>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "届" : "Class of"}</p>
                   <h2 className="text-3xl font-light tracking-tight text-text-primary font-mono tabular-nums">{g.year}</h2>
                 </div>
                 <div className="flex items-center gap-5 text-right">
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">Active</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "现役" : "Active"}</p>
                     <p className="text-lg font-light font-mono tabular-nums text-text-primary">{g.totalPlayers}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">Avg PPG</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "场均得分" : "Avg PPG"}</p>
                     <p className="text-lg font-light font-mono tabular-nums text-text-secondary">{g.avgPts.toFixed(1)}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">Best PPG</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最高得分" : "Best PPG"}</p>
                     <p className="text-lg font-light font-mono tabular-nums text-accent-amber">{g.bestPpg.toFixed(1)}</p>
                   </div>
                 </div>
@@ -135,7 +142,7 @@ export default async function DraftClassesPage() {
                       <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={44} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                          #{i + 1} · {p.draftNumber ? `Pick ${p.draftNumber}` : "Undrafted"}
+                          #{i + 1} · {p.draftNumber ? (isZh ? `顺位 ${p.draftNumber}` : `Pick ${p.draftNumber}`) : (isZh ? "落选" : "Undrafted")}
                         </p>
                         <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">
                           {p.firstName} {p.lastName}
@@ -151,7 +158,11 @@ export default async function DraftClassesPage() {
 
               {undrafted > 0 && (
                 <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
-                  <span className="tabular-nums">{undrafted}</span> undrafted player{undrafted === 1 ? "" : "s"} still active from this class
+                  {isZh ? (
+                    <><span className="tabular-nums">{undrafted}</span> 名未选秀但仍现役的球员</>
+                  ) : (
+                    <><span className="tabular-nums">{undrafted}</span> undrafted player{undrafted === 1 ? "" : "s"} still active from this class</>
+                  )}
                 </p>
               )}
             </section>

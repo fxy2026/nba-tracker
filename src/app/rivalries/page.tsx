@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Swords } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -83,7 +84,7 @@ async function compute(): Promise<SeriesData[]> {
   return out;
 }
 
-function SeriesCard({ s, badge, badgeColor, badgeLabel }: { s: SeriesData; badge: string; badgeColor: string; badgeLabel: string }) {
+function SeriesCard({ s, badge, badgeColor, badgeLabel, isZh }: { s: SeriesData; badge: string; badgeColor: string; badgeLabel: string; isZh: boolean }) {
   const lead = s.winsA - s.winsB;
   const leader = lead > 0 ? s.triA : lead < 0 ? s.triB : null;
   return (
@@ -103,7 +104,7 @@ function SeriesCard({ s, badge, badgeColor, badgeLabel }: { s: SeriesData; badge
           </div>
           {s.isDivisionRival && (
             <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-danger/15 text-danger uppercase tracking-[0.15em] shrink-0">
-              Division
+              {isZh ? "同区" : "Division"}
             </span>
           )}
         </div>
@@ -114,14 +115,14 @@ function SeriesCard({ s, badge, badgeColor, badgeLabel }: { s: SeriesData; badge
           </div>
           <div className="text-right">
             <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
-              {s.meetings} meeting{s.meetings === 1 ? "" : "s"}
+              {isZh ? `${s.meetings} 次交手` : `${s.meetings} meeting${s.meetings === 1 ? "" : "s"}`}
             </p>
             <p className="text-sm font-mono tabular-nums text-text-secondary">
               {s.triA} <span className={lead > 0 ? "text-text-primary font-bold" : ""}>{s.winsA}</span>
               <span className="mx-1">-</span>
               <span className={lead < 0 ? "text-text-primary font-bold" : ""}>{s.winsB}</span> {s.triB}
             </p>
-            {leader && <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-accent mt-0.5">{leader} leads</p>}
+            {leader && <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-accent mt-0.5">{isZh ? `${leader} 领先` : `${leader} leads`}</p>}
           </div>
         </div>
       </div>
@@ -130,13 +131,19 @@ function SeriesCard({ s, badge, badgeColor, badgeLabel }: { s: SeriesData; badge
 }
 
 export default async function RivalriesPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const all = await compute();
 
   if (all.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Matchups" icon={Swords} title="Rivalries" />
-        <EmptyState icon={Swords} title="No data" description="Series data populates once teams have played each other in the regular season." />
+        <PageHeader eyebrow={isZh ? "对决" : "Matchups"} icon={Swords} title={isZh ? "宿敌对决" : "Rivalries"} />
+        <EmptyState
+          icon={Swords}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "球队在常规赛交手后，系列数据会显示在这里。" : "Series data populates once teams have played each other in the regular season."}
+        />
       </div>
     );
   }
@@ -150,10 +157,14 @@ export default async function RivalriesPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Matchups"
+        eyebrow={isZh ? "对决" : "Matchups"}
         icon={Swords}
-        title="Rivalries"
-        subtitle={`${all.length} unique matchups · ${multiMeeting.length} played at least twice this season`}
+        title={isZh ? "宿敌对决" : "Rivalries"}
+        subtitle={
+          isZh
+            ? `${all.length} 组独特对战 · ${multiMeeting.length} 组本赛季至少交手两次`
+            : `${all.length} unique matchups · ${multiMeeting.length} played at least twice this season`
+        }
       />
 
       {mostPlayed.length > 0 && (
@@ -161,13 +172,13 @@ export default async function RivalriesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
               <Swords size={14} className="text-accent" />
-              Most Played
+              {isZh ? "交手最多" : "Most Played"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {mostPlayed.map((s) => (
-              <SeriesCard key={s.key} s={s} badge={String(s.meetings)} badgeLabel="Meetings" badgeColor="#3B82F6" />
+              <SeriesCard key={s.key} s={s} badge={String(s.meetings)} badgeLabel={isZh ? "交手" : "Meetings"} badgeColor="#3B82F6" isZh={isZh} />
             ))}
           </div>
         </section>
@@ -178,13 +189,13 @@ export default async function RivalriesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-danger flex items-center gap-2">
               <Swords size={14} className="text-danger" />
-              Tightest Series
+              {isZh ? "最胶着系列" : "Tightest Series"}
             </h2>
             <span className="h-px flex-1 bg-danger/30" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {closest.map((s) => (
-              <SeriesCard key={s.key} s={s} badge={`±${s.avgMargin.toFixed(1)}`} badgeLabel="Avg Margin" badgeColor="#DF1B41" />
+              <SeriesCard key={s.key} s={s} badge={`±${s.avgMargin.toFixed(1)}`} badgeLabel={isZh ? "均差" : "Avg Margin"} badgeColor="#DF1B41" isZh={isZh} />
             ))}
           </div>
         </section>
@@ -195,13 +206,13 @@ export default async function RivalriesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-success flex items-center gap-2">
               <Swords size={14} className="text-success" />
-              Highest Scoring
+              {isZh ? "最高得分" : "Highest Scoring"}
             </h2>
             <span className="h-px flex-1 bg-success/30" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {highestScoring.map((s) => (
-              <SeriesCard key={s.key} s={s} badge={s.avgScore.toFixed(0)} badgeLabel="Avg Total" badgeColor="#22C55E" />
+              <SeriesCard key={s.key} s={s} badge={s.avgScore.toFixed(0)} badgeLabel={isZh ? "均总分" : "Avg Total"} badgeColor="#22C55E" isZh={isZh} />
             ))}
           </div>
         </section>

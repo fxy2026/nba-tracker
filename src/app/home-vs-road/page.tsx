@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Home, Plane } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -69,13 +70,19 @@ function Row({ team, value, sub, color }: { team: TeamSplit; value: string; sub:
 }
 
 export default async function HomeVsRoadPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const teams = await compute();
 
   if (teams.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Teams" icon={Home} title="Home vs Road Splits" />
-        <EmptyState icon={Home} title="No data" description="Splits will populate once the season has produced finished games." />
+        <PageHeader eyebrow={isZh ? "球队" : "Teams"} icon={Home} title={isZh ? "主客场分别" : "Home vs Road Splits"} />
+        <EmptyState
+          icon={Home}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "本赛季产生已结束比赛后，主客场数据会显示在这里。" : "Splits will populate once the season has produced finished games."}
+        />
       </div>
     );
   }
@@ -88,10 +95,10 @@ export default async function HomeVsRoadPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Teams"
+        eyebrow={isZh ? "球队" : "Teams"}
         icon={Home}
-        title="Home vs Road Splits"
-        subtitle="Best fortresses, top road warriors, biggest splits — venue matters"
+        title={isZh ? "主客场分别" : "Home vs Road Splits"}
+        subtitle={isZh ? "最强主场堡垒、顶级客场战士、最大差距 — 主客场很重要" : "Best fortresses, top road warriors, biggest splits — venue matters"}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
@@ -101,8 +108,8 @@ export default async function HomeVsRoadPage() {
             <div className="mb-4 flex items-center gap-3">
               <Home size={18} className="text-success" />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Fortress</p>
-                <h2 className="text-xl font-semibold text-success tracking-tight">Best at Home</h2>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "堡垒" : "Fortress"}</p>
+                <h2 className="text-xl font-semibold text-success tracking-tight">{isZh ? "最强主场" : "Best at Home"}</h2>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -125,8 +132,8 @@ export default async function HomeVsRoadPage() {
             <div className="mb-4 flex items-center gap-3">
               <Plane size={18} className="text-accent-amber" />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ Road Warrior</p>
-                <h2 className="text-xl font-semibold text-accent-amber tracking-tight">Best on the Road</h2>
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "客场战士" : "Road Warrior"}</p>
+                <h2 className="text-xl font-semibold text-accent-amber tracking-tight">{isZh ? "最强客场" : "Best on the Road"}</h2>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -146,8 +153,8 @@ export default async function HomeVsRoadPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <section className="glass-tile p-5">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-accent mb-1">/ Venue Effect</p>
-          <h2 className="text-lg font-semibold tracking-tight mb-3">Biggest Home/Road Split</h2>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-accent mb-1">/ {isZh ? "主场效应" : "Venue Effect"}</p>
+          <h2 className="text-lg font-semibold tracking-tight mb-3">{isZh ? "主客差距最大" : "Biggest Home/Road Split"}</h2>
           <div className="space-y-1.5">
             {biggestSplit.map((t) => (
               <Row
@@ -162,8 +169,8 @@ export default async function HomeVsRoadPage() {
         </section>
 
         <section className="glass-tile p-5">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary mb-1">/ Travel-Proof</p>
-          <h2 className="text-lg font-semibold tracking-tight mb-3">Most Consistent</h2>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary mb-1">/ {isZh ? "适应客场" : "Travel-Proof"}</p>
+          <h2 className="text-lg font-semibold tracking-tight mb-3">{isZh ? "最稳定" : "Most Consistent"}</h2>
           <div className="space-y-1.5">
             {flatTeams.map((t) => (
               <Row

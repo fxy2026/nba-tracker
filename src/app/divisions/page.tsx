@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Map as MapIcon } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -68,14 +69,29 @@ const DIVISION_COLORS: Record<string, { color: string; eyebrow: string }> = {
 
 const ORDER = ["Atlantic", "Central", "Southeast", "Northwest", "Pacific", "Southwest"];
 
+const DIVISION_ZH: Record<string, { name: string; eyebrow: string }> = {
+  "Atlantic":  { name: "大西洋", eyebrow: "东部 · 大西洋" },
+  "Central":   { name: "中央",   eyebrow: "东部 · 中央" },
+  "Southeast": { name: "东南",   eyebrow: "东部 · 东南" },
+  "Northwest": { name: "西北",   eyebrow: "西部 · 西北" },
+  "Pacific":   { name: "太平洋", eyebrow: "西部 · 太平洋" },
+  "Southwest": { name: "西南",   eyebrow: "西部 · 西南" },
+};
+
 export default async function DivisionsPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const teams = await compute();
 
   if (teams.length === 0 || teams.every((t) => t.wins + t.losses === 0)) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="League" icon={MapIcon} title="Division Standings" />
-        <EmptyState icon={MapIcon} title="No data" description="Division standings will populate once games have been played." />
+        <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={MapIcon} title={isZh ? "分区排名" : "Division Standings"} />
+        <EmptyState
+          icon={MapIcon}
+          title={isZh ? "暂无数据" : "No data"}
+          description={isZh ? "比赛进行后，分区排名会显示在这里。" : "Division standings will populate once games have been played."}
+        />
       </div>
     );
   }
@@ -94,23 +110,24 @@ export default async function DivisionsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={MapIcon}
-        title="Division Standings"
-        subtitle="Six divisions · ranked by win percentage within each group"
+        title={isZh ? "分区排名" : "Division Standings"}
+        subtitle={isZh ? "六个分区 · 各组按胜率排序" : "Six divisions · ranked by win percentage within each group"}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {ORDER.map((division) => {
           const list = grouped.get(division) || [];
           const meta = DIVISION_COLORS[division];
+          const zhMeta = DIVISION_ZH[division];
           return (
             <section key={division} className="glass-tile p-5 relative overflow-hidden">
               <div className="absolute inset-y-0 left-0 w-1.5 opacity-80" style={{ background: meta.color }} />
               <div className="relative">
                 <div className="mb-4">
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {meta.eyebrow}</p>
-                  <h2 className="text-xl font-semibold tracking-tight" style={{ color: meta.color }}>{division}</h2>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? zhMeta.eyebrow : meta.eyebrow}</p>
+                  <h2 className="text-xl font-semibold tracking-tight" style={{ color: meta.color }}>{isZh ? zhMeta.name : division}</h2>
                 </div>
                 <div className="space-y-1.5">
                   {list.map((t, i) => {

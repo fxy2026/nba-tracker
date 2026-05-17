@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { School } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
+import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -36,13 +37,15 @@ function score(p: { pts: number; reb: number; ast: number }) {
 }
 
 export default async function ByCollegePage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const players = await getPlayerIndex().catch(() => []);
 
   if (players.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Players" icon={School} title="Players By College" />
-        <EmptyState icon={School} title="No data" description="Could not load player index." />
+        <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={School} title={isZh ? "按大学榜" : "Players By College"} />
+        <EmptyState icon={School} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
@@ -92,10 +95,14 @@ export default async function ByCollegePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Players"
+        eyebrow={isZh ? "球员" : "Players"}
         icon={School}
-        title="Players By College"
-        subtitle={`${groups.length} schools represented · ${topColleges.length} with 3+ players in the league`}
+        title={isZh ? "按大学榜" : "Players By College"}
+        subtitle={
+          isZh
+            ? `代表 ${groups.length} 所院校 · ${topColleges.length} 所有 3 名以上 NBA 球员`
+            : `${groups.length} schools represented · ${topColleges.length} with 3+ players in the league`
+        }
       />
 
       {/* Power schools — 3+ players */}
@@ -103,10 +110,10 @@ export default async function ByCollegePage() {
         <div className="mb-4 flex items-center gap-3">
           <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
             <School size={14} className="text-accent-amber" />
-            NBA Pipelines
+            {isZh ? "NBA 培养院校" : "NBA Pipelines"}
           </h2>
           <span className="h-px flex-1 bg-accent-amber/30" />
-          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{topColleges.length} schools · 3+ in NBA</span>
+          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{topColleges.length} {isZh ? "所院校 · 联盟内 3+ 球员" : "schools · 3+ in NBA"}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {topColleges.map((g, i) => {
@@ -123,7 +130,11 @@ export default async function ByCollegePage() {
                       {g.college}
                     </p>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-0.5">
-                      <span className="tabular-nums">{g.count}</span> active · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · avg <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span>
+                      {isZh ? (
+                        <><span className="tabular-nums">{g.count}</span> 现役 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · 均值 <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span></>
+                      ) : (
+                        <><span className="tabular-nums">{g.count}</span> active · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · avg <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span></>
+                      )}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
@@ -161,17 +172,17 @@ export default async function ByCollegePage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
               <School size={14} className="text-accent" />
-              Tandem Schools
+              {isZh ? "双子院校" : "Tandem Schools"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{midColleges.length} schools · 2 in NBA</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{midColleges.length} {isZh ? "所院校 · 联盟内 2 球员" : "schools · 2 in NBA"}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {midColleges.map((g) => (
               <div key={g.college} className="glass-tile p-3">
                 <p className="text-xs font-bold text-text-primary truncate">{g.college}</p>
                 <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mb-1.5">
-                  Best PPG <span className="tabular-nums text-text-secondary">{g.bestPpg.toFixed(1)}</span>
+                  {isZh ? "最高得分" : "Best PPG"} <span className="tabular-nums text-text-secondary">{g.bestPpg.toFixed(1)}</span>
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {g.topThree.map((p) => (
@@ -196,10 +207,10 @@ export default async function ByCollegePage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-text-secondary flex items-center gap-2">
               <School size={14} />
-              Solo Reps
+              {isZh ? "独苗" : "Solo Reps"}
             </h2>
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{singles.length} schools · 1 active</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{singles.length} {isZh ? "所院校 · 1 名现役" : "schools · 1 active"}</span>
           </div>
           <div className="glass-tile p-4">
             <div className="flex flex-wrap gap-1.5">
@@ -214,7 +225,7 @@ export default async function ByCollegePage() {
                 </Link>
               ))}
               {singles.length > 60 && (
-                <span className="text-[10px] font-mono px-2 py-1 text-text-secondary/60">+{singles.length - 60} more</span>
+                <span className="text-[10px] font-mono px-2 py-1 text-text-secondary/60">+{singles.length - 60} {isZh ? "更多" : "more"}</span>
               )}
             </div>
           </div>

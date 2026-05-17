@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Repeat } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -116,13 +117,19 @@ function fmtDate(iso: string): string {
 }
 
 export default async function BackToBackPage() {
+  const locale = await getLocale();
+  const isZh = locale === "zh";
   const { past, future, totals } = await compute();
 
   if (past.length === 0 && future.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Schedule" icon={Repeat} title="Back-to-Backs" />
-        <EmptyState icon={Repeat} title="No B2Bs detected" description="No consecutive-day game pairs were found in the schedule." />
+        <PageHeader eyebrow={isZh ? "赛程" : "Schedule"} icon={Repeat} title={isZh ? "背靠背" : "Back-to-Backs"} />
+        <EmptyState
+          icon={Repeat}
+          title={isZh ? "未检测到背靠背" : "No B2Bs detected"}
+          description={isZh ? "赛程中未发现连续两天的比赛。" : "No consecutive-day game pairs were found in the schedule."}
+        />
       </div>
     );
   }
@@ -133,10 +140,14 @@ export default async function BackToBackPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Schedule"
+        eyebrow={isZh ? "赛程" : "Schedule"}
         icon={Repeat}
-        title="Back-to-Backs"
-        subtitle={`${past.length} B2B game pairs played · ${future.length} upcoming · the league's most punishing scheduling artifact`}
+        title={isZh ? "背靠背" : "Back-to-Backs"}
+        subtitle={
+          isZh
+            ? `${past.length} 组背靠背已打 · ${future.length} 场即将到来 · 联盟最折磨的赛程`
+            : `${past.length} B2B game pairs played · ${future.length} upcoming · the league's most punishing scheduling artifact`
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -144,7 +155,7 @@ export default async function BackToBackPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
               <Repeat size={14} />
-              Most B2Bs By Team
+              {isZh ? "球队背靠背最多" : "Most B2Bs By Team"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
           </div>
@@ -163,8 +174,17 @@ export default async function BackToBackPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold font-mono group-hover:text-accent transition-colors">{r.team}</p>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                      <span className="tabular-nums">{r.played}</span> played · <span className="tabular-nums">{r.upcoming}</span> upcoming
-                      {winPct !== null && <> · <span className="tabular-nums">{winPct.toFixed(0)}%</span> on B2Bs</>}
+                      {isZh ? (
+                        <>
+                          <span className="tabular-nums">{r.played}</span> 已打 · <span className="tabular-nums">{r.upcoming}</span> 场未打
+                          {winPct !== null && <> · <span className="tabular-nums">{winPct.toFixed(0)}%</span> 背靠背胜率</>}
+                        </>
+                      ) : (
+                        <>
+                          <span className="tabular-nums">{r.played}</span> played · <span className="tabular-nums">{r.upcoming}</span> upcoming
+                          {winPct !== null && <> · <span className="tabular-nums">{winPct.toFixed(0)}%</span> on B2Bs</>}
+                        </>
+                      )}
                     </p>
                     <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-1.5">
                       <div className="h-full bg-accent rounded-full" style={{ width: `${pct}%` }} />
@@ -181,15 +201,15 @@ export default async function BackToBackPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
               <Repeat size={14} className="text-accent-amber" />
-              Upcoming B2Bs
+              {isZh ? "即将到来的背靠背" : "Upcoming B2Bs"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{future.length} ahead</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{future.length} {isZh ? "未打" : "ahead"}</span>
           </div>
           <div className="space-y-1.5">
             {future.length === 0 ? (
               <div className="glass-tile p-4 text-center text-xs font-mono text-text-secondary">
-                No upcoming back-to-backs detected
+                {isZh ? "暂无即将到来的背靠背" : "No upcoming back-to-backs detected"}
               </div>
             ) : future.map((ins, i) => (
               <div key={`${ins.teamTricode}-${ins.dates[0]}-${i}`} className="glass-tile p-3 flex items-center gap-3">
@@ -213,11 +233,11 @@ export default async function BackToBackPage() {
       </div>
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          A back-to-back is any pair of games scheduled on consecutive calendar days. The NBA has progressively reduced
-          B2Bs to manage player workload — historically tied to lower win rates on the second night, especially when
-          traveling between cities.
+          {isZh
+            ? "背靠背指连续两个日历日内的两场比赛。NBA 已经逐步减少背靠背以管理球员负荷 — 历史上背靠背第二场胜率偏低，跨城市旅行后更明显。"
+            : "A back-to-back is any pair of games scheduled on consecutive calendar days. The NBA has progressively reduced B2Bs to manage player workload — historically tied to lower win rates on the second night, especially when traveling between cities."}
         </p>
       </div>
     </div>
