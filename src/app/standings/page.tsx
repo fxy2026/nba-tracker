@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { TEAM_META } from "@/lib/teams";
+import { getFullSchedule } from "@/lib/api";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
@@ -32,15 +33,36 @@ interface TeamRecord {
 const EAST_DIVISIONS = ["Atlantic", "Central", "Southeast"] as const;
 const WEST_DIVISIONS = ["Northwest", "Pacific", "Southwest"] as const;
 
+// Compute standings directly from the schedule (avoid SSR self-fetch which
+// fails on deployed environments where baseUrl resolution is unreliable).
 async function getStandings(): Promise<TeamRecord[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-    || "http://localhost:3000";
   try {
-    const res = await fetch(`${baseUrl}/api/standings`, { next: { revalidate: 600 } });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data || [];
+    const dates = await getFullSchedule();
+    const teamMap: Record<string, TeamRecord> = {};
+    for (const gd of dates) {
+      for (const g of gd.games) {
+        if (g.gameStatus !== 3) continue;
+        if (!g.gameId.startsWith("002")) continue; // regular season only
+        const h = g.homeTeam;
+        const a = g.awayTeam;
+        if (!teamMap[h.teamTricode])
+          teamMap[h.teamTricode] = { tricode: h.teamTricode, teamId: h.teamId, teamName: h.teamName, teamCity: h.teamCity, wins: 0, losses: 0 };
+        if (!teamMap[a.teamTricode])
+          teamMap[a.teamTricode] = { tricode: a.teamTricode, teamId: a.teamId, teamName: a.teamName, teamCity: a.teamCity, wins: 0, losses: 0 };
+        if (h.score > a.score) {
+          teamMap[h.teamTricode].wins++;
+          teamMap[a.teamTricode].losses++;
+        } else {
+          teamMap[a.teamTricode].wins++;
+          teamMap[h.teamTricode].losses++;
+        }
+      }
+    }
+    return Object.values(teamMap).sort((a, b) => {
+      const wa = a.wins / (a.wins + a.losses || 1);
+      const wb = b.wins / (b.wins + b.losses || 1);
+      return wb - wa;
+    });
   } catch {
     return [];
   }

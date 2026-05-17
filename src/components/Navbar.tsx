@@ -72,48 +72,78 @@ export default function Navbar() {
     { href: "/standings", label: t.nav.standings, icon: BarChart3 },
   ], [t]);
 
-  // Secondary nav — inside "More" dropdown
-  const moreLinks = useMemo(() => [
-    { href: "/explore", label: "Explore (All)", icon: Compass },
-    { href: "/streaks", label: "Streaks", icon: Flame },
-    { href: "/power-rankings", label: "Power Rankings", icon: Crown },
-    { href: "/conference-race", label: "Conference Race", icon: Trophy },
-    { href: "/tier-list", label: "Tier List", icon: Layers },
-    { href: "/awards-race", label: "Awards Race", icon: Award },
-    { href: "/best-games", label: "Best Games", icon: Flame },
-    { href: "/records", label: "Season Records", icon: BookOpen },
-    { href: "/game-predictor", label: "Game Predictor", icon: Zap },
-    { href: "/all-time-leaders", label: "All-Time Leaders", icon: Crown },
-    { href: "/milestones", label: "Milestones", icon: TrendingUp },
-    { href: "/rookie-watch", label: "Rookie Watch", icon: Sparkles },
-    { href: "/draft-classes", label: "Draft Classes", icon: GraduationCap },
-    { href: "/by-country", label: "By Country", icon: Globe },
-    { href: "/by-position", label: "By Position", icon: Users },
-    { href: "/by-college", label: "By College", icon: School },
-    { href: "/this-day", label: "On This Day", icon: CalendarDays },
-    { href: "/schedule-heatmap", label: "Schedule Heatmap", icon: Activity },
-    { href: "/home-vs-road", label: "Home vs Road", icon: Home },
-    { href: "/scoring-output", label: "Scoring Output", icon: Shield },
-    { href: "/rivalries", label: "Rivalries", icon: Swords },
-    { href: "/back-to-back", label: "Back-to-Backs", icon: Repeat },
-    { href: "/divisions", label: "Divisions", icon: MapIcon },
-    { href: "/clutch-teams", label: "Clutch Teams", icon: Target },
-    { href: "/momentum", label: "Momentum", icon: TrendingUp },
-    { href: "/quiz", label: "NBA Quiz", icon: HelpCircle },
-    { href: "/glossary", label: "Glossary", icon: Book },
-    { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
-    { href: "/h2h", label: t.nav.h2h, icon: Swords },
-    { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
-    { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
-    { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
-    { href: "/history", label: t.nav.champions, icon: History },
-    { href: "/search", label: t.nav.playerSearch, icon: Search },
-    { href: "/favorites", label: t.nav.favorites, icon: Trophy },
+  // Secondary nav — mega-menu organized into categorized columns
+  const moreGroups = useMemo(() => [
+    {
+      title: "League Order",
+      eyebrow: "Standings",
+      color: "#FFD700",
+      items: [
+        { href: "/conference-race", label: "Conference Race", icon: Trophy },
+        { href: "/divisions", label: "Divisions", icon: MapIcon },
+        { href: "/power-rankings", label: "Power Rankings", icon: Crown },
+        { href: "/tier-list", label: "Tier List", icon: Layers },
+        { href: "/streaks", label: "Streaks", icon: Flame },
+        { href: "/momentum", label: "Momentum", icon: TrendingUp },
+        { href: "/clutch-teams", label: "Clutch Teams", icon: Target },
+        { href: "/scoring-output", label: "Scoring Output", icon: Shield },
+      ],
+    },
+    {
+      title: "Awards & Leaders",
+      eyebrow: "Hardware",
+      color: "#A855F7",
+      items: [
+        { href: "/awards-race", label: "Awards Race", icon: Award },
+        { href: "/all-time-leaders", label: "All-Time Leaders", icon: Crown },
+        { href: "/milestones", label: "Milestones", icon: TrendingUp },
+        { href: "/best-games", label: "Best Games", icon: Flame },
+        { href: "/records", label: "Season Records", icon: BookOpen },
+        { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
+      ],
+    },
+    {
+      title: "Players",
+      eyebrow: "People",
+      color: "#3B82F6",
+      items: [
+        { href: "/search", label: t.nav.playerSearch, icon: Search },
+        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
+        { href: "/h2h", label: t.nav.h2h, icon: Swords },
+        { href: "/rookie-watch", label: "Rookie Watch", icon: Sparkles },
+        { href: "/draft-classes", label: "Draft Classes", icon: GraduationCap },
+        { href: "/by-position", label: "By Position", icon: Users },
+        { href: "/by-country", label: "By Country", icon: Globe },
+        { href: "/by-college", label: "By College", icon: School },
+        { href: "/favorites", label: t.nav.favorites, icon: Trophy },
+      ],
+    },
+    {
+      title: "More",
+      eyebrow: "Tools & History",
+      color: "#22C55E",
+      items: [
+        { href: "/explore", label: "Explore All", icon: Compass },
+        { href: "/game-predictor", label: "Game Predictor", icon: Zap },
+        { href: "/schedule-heatmap", label: "Schedule Heatmap", icon: Activity },
+        { href: "/back-to-back", label: "Back-to-Backs", icon: Repeat },
+        { href: "/home-vs-road", label: "Home vs Road", icon: Home },
+        { href: "/rivalries", label: "Rivalries", icon: Swords },
+        { href: "/this-day", label: "On This Day", icon: CalendarDays },
+        { href: "/history", label: t.nav.champions, icon: History },
+        { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
+        { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
+        { href: "/glossary", label: "Glossary", icon: Book },
+        { href: "/quiz", label: "NBA Quiz", icon: HelpCircle },
+      ],
+    },
   ], [t]);
+
+  const allMoreHrefs = useMemo(() => moreGroups.flatMap((g) => g.items.map((i) => i.href)), [moreGroups]);
 
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
-  const isMoreActive = moreLinks.some(({ href }) => pathname === href);
+  const isMoreActive = allMoreHrefs.some((href) => pathname === href);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -168,16 +198,28 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.more}</span>
             </button>
             {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 glass-tile p-1.5 z-50 animate-fade-in">
-                {moreLinks.map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href} onClick={() => setMoreOpen(false)}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                      pathname === href ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                    }`}>
-                    <Icon size={14} />
-                    {label}
-                  </Link>
-                ))}
+              <div className="absolute right-0 top-full mt-2 w-[min(90vw,760px)] max-h-[80vh] overflow-y-auto glass-tile p-4 z-50 animate-fade-in">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-4">
+                  {moreGroups.map((group) => (
+                    <div key={group.title} className="min-w-0">
+                      <div className="mb-2 pb-1.5 border-b border-border/60">
+                        <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-text-secondary/50">/ {group.eyebrow}</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: group.color }}>{group.title}</p>
+                      </div>
+                      <div className="space-y-0.5">
+                        {group.items.map(({ href, label, icon: Icon }) => (
+                          <Link key={href} href={href} onClick={() => setMoreOpen(false)}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
+                              pathname === href ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+                            }`}>
+                            <Icon size={13} className="shrink-0" />
+                            <span className="truncate">{label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
