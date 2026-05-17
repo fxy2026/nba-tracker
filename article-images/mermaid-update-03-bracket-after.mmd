@@ -1,0 +1,21 @@
+graph TB
+    Root["BracketTree.tsx<br/>163 行 · 组合入口"]
+
+    Root --> Mobile["BracketMobile.tsx<br/>83 行"]
+    Root --> Desktop["BracketDesktop.tsx<br/>100 行"]
+
+    Mobile --> Card["SeriesCard.tsx<br/>220 行"]
+    Desktop --> Card
+    Desktop --> Conn["Connector.tsx<br/>50 行"]
+    Desktop --> Half["ConfHalf.tsx<br/>184 行"]
+
+    Card --> Lib["lib/playoffs.ts<br/>198 行<br/>纯函数 + 类型"]
+    Half --> Lib
+
+    style Root fill:#cce5ff,stroke:#0d6efd,color:#1a1a2e
+    style Lib fill:#d4edda,stroke:#28a745,color:#1a1a2e
+    style Mobile fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style Desktop fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style Card fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style Conn fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style Half fill:#fff3cd,stroke:#ffc107,color:#1a1a2e

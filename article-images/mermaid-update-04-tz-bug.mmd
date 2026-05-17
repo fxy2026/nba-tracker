@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    participant U as 浏览器<br/>(北京 5/17)
+    participant S as Vercel Server
+    participant A as NBA CDN
+
+    U->>S: GET /
+    Note over S: new Date() → UTC
+    Note over S: formatDate() 强转 ET<br/>得到 "2026-05-16"
+    S->>A: 拉取赛程
+    A-->>S: 赛程数据<br/>用 ET 日期编码
+    Note over A: "5/16" 那场实际是<br/>北京 5/17 早上的比赛
+    S-->>U: initialDate = "2026-05-16"
+    Note over U: 显示"今天 5/16"
+    Note over U: 用户:"今天明明是 5/17!"

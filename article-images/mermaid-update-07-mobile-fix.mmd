@@ -1,0 +1,14 @@
+graph TB
+    F0["从底部抽屉<br/>切换为<br/>居中模态(CommandPalette)"]
+    F0 --> F1["桌面和手机<br/>共享 useMoreGroups hook<br/>单一翻译源"]
+    F0 --> F2["弹层用 createPortal<br/>逃离 z-index 容器块"]
+    F0 --> F3["焦点陷阱 + body scroll lock<br/>从 CommandPalette 继承"]
+    F0 --> F4["内置搜索框<br/>键盘导航 ↑↓ Enter Esc"]
+
+    F1 --> OK["✓ 全中文<br/>✓ 不被 Navbar 挡<br/>✓ 滚动正常<br/>✓ 可搜索"]
+    F2 --> OK
+    F3 --> OK
+    F4 --> OK
+
+    style F0 fill:#cce5ff,stroke:#0d6efd,color:#1a1a2e
+    style OK fill:#d4edda,stroke:#28a745,color:#1a1a2e

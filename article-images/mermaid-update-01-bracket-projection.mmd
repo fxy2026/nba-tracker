@@ -1,0 +1,21 @@
+graph TB
+    R1A1["首轮 1v8<br/>OKC vs PHX"]
+    R1A2["首轮 4v5<br/>HOU vs LAL"]
+    R1B1["首轮 2v7<br/>DEN vs LAC"]
+    R1B2["首轮 3v6<br/>MEM vs MIN"]
+
+    R2A["半决赛<br/>OKC vs ???"]
+    R2B["半决赛<br/>??? vs ???"]
+
+    CF["西部决赛"]
+
+    R1A1 -->|"OKC 4-0"| R2A
+    R1A2 -.->|"进行中"| R2A
+    R1B1 -.-> R2B
+    R1B2 -.-> R2B
+    R2A --> CF
+    R2B --> CF
+
+    style R1A1 fill:#d4edda,stroke:#28a745,color:#1a1a2e
+    style R2A fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style CF fill:#cce5ff,stroke:#0d6efd,color:#1a1a2e

@@ -1,0 +1,18 @@
+flowchart TB
+    Req[/fetch event/] --> Method{"GET?"}
+    Method -->|No| Pass1["passthrough"]
+    Method -->|Yes| API{"路径 /api/*?"}
+    API -->|Yes| Pass2["passthrough<br/>直播比分必须新鲜"]
+    API -->|No| Mode{"request.mode"}
+
+    Mode -->|"navigate (HTML)"| Nav["network-first<br/>失败 → 缓存 → / shell"]
+    Mode -->|其他| Bucket{"URL 类型"}
+
+    Bucket -->|"/_next/static/<br/>字体 + 图标"| Static["cache-first<br/>内容哈希永不过期"]
+    Bucket -->|"cdn.nba.com<br/>头像 + logo"| Image["stale-while-revalidate<br/>立刻返回缓存<br/>后台刷新"]
+    Bucket -->|其他| Pass3["passthrough"]
+
+    style Pass2 fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style Nav fill:#cce5ff,stroke:#0d6efd,color:#1a1a2e
+    style Static fill:#d4edda,stroke:#28a745,color:#1a1a2e
+    style Image fill:#e0d4f5,stroke:#A855F7,color:#1a1a2e

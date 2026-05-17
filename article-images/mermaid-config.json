@@ -1,0 +1,36 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "fontFamily": "\"Fira Sans\", \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+    "fontSize": "16px",
+    "primaryColor": "#EFF6FF",
+    "primaryTextColor": "#0F172A",
+    "primaryBorderColor": "#3B82F6",
+    "lineColor": "#475569",
+    "secondaryColor": "#F1F5F9",
+    "tertiaryColor": "#FAFAFA",
+    "background": "#FFFFFF",
+    "mainBkg": "#EFF6FF",
+    "secondBkg": "#F1F5F9",
+    "tertiaryBkg": "#FAFAFA",
+    "actorBkg": "#EFF6FF",
+    "actorBorder": "#3B82F6",
+    "actorTextColor": "#0F172A",
+    "actorLineColor": "#475569",
+    "noteBkgColor": "#FEF3C7",
+    "noteTextColor": "#92400E",
+    "noteBorderColor": "#F59E0B"
+  },
+  "flowchart": {
+    "curve": "basis",
+    "nodeSpacing": 60,
+    "rankSpacing": 80,
+    "padding": 20
+  },
+  "sequence": {
+    "actorMargin": 80,
+    "boxMargin": 12,
+    "noteMargin": 12,
+    "messageMargin": 40
+  }
+}

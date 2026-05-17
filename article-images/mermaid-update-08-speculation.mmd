@@ -1,0 +1,18 @@
+sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant P as 当前页面
+    participant B as 浏览器
+    participant N as 下一页(后台)
+
+    U->>P: 打开首页
+    Note over P: 嵌入<br/>SpeculationRules<br/>script
+    B->>B: 立即 prefetch<br/>列表 URL<br/>(/standings /stats...)
+
+    U->>P: 鼠标停留在<br/>"湖人队"链接上
+    Note over B: hover ~200ms
+    B->>N: 后台 prerender<br/>/team/LAL<br/>完整 RSC stream
+
+    U->>P: 点击链接
+    Note over P,N: 切换瞬时<br/>页面已渲染好
+    P-->>U: ✓ 0ms 切换

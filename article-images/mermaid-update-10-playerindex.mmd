@@ -1,0 +1,10 @@
+graph LR
+    PI["NBA playerIndex.json<br/>字段: pts / reb / ast"]
+    PI -->|"字段名暗示"| EXPECT["以为是<br/>'生涯均值'<br/>'所有球员'"]
+    PI -->|"实际含义"| REAL["实际是<br/>'上赛季均值'<br/>'仅现役球员'"]
+
+    EXPECT -.->|"这种期待<br/>导致"| BUG["all-time-leaders 显示<br/>Luka 33.5 PPG 第一<br/>乔丹张伯伦都不存在"]
+
+    style EXPECT fill:#f8d7da,stroke:#dc3545,color:#1a1a2e
+    style REAL fill:#d4edda,stroke:#28a745,color:#1a1a2e
+    style BUG fill:#fff3cd,stroke:#ffc107,color:#1a1a2e

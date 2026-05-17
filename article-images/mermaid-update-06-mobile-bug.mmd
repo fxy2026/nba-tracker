@@ -1,0 +1,13 @@
+graph TB
+    BUG["弹层结构<br/>position: absolute<br/>bottom: 56px<br/>没有 max-height<br/>没有 overflow-y-auto"]
+    BUG --> P1["内容 4 个 section ×~10 项<br/>总高度 > 屏幕高度"]
+    BUG --> P2["body 没设 overflow: hidden"]
+    P1 --> R1["内容顶部溢出屏幕<br/>被 Navbar 挡住<br/>下面那点点也看不全"]
+    P2 --> R2["touch 事件穿透到下层<br/>滚的是 body<br/>不是弹层"]
+    R1 --> X["用户体验:抓狂"]
+    R2 --> X
+
+    style BUG fill:#f8d7da,stroke:#dc3545,color:#1a1a2e
+    style X fill:#f8d7da,stroke:#dc3545,color:#1a1a2e
+    style P1 fill:#fff3cd,stroke:#ffc107,color:#1a1a2e
+    style P2 fill:#fff3cd,stroke:#ffc107,color:#1a1a2e

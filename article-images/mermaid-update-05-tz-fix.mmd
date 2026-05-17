@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    participant U as 浏览器<br/>(北京 5/17)
+    participant C as HomeClient
+    participant API as /api/games
+
+    U->>C: 首次挂载
+    Note over C: Intl.DateTimeFormat()<br/>.resolvedOptions().timeZone<br/>→ "Asia/Shanghai"
+    C->>API: GET ?date=2026-05-17<br/>&tz=Asia/Shanghai
+    Note over API: 扫全赛季<br/>把每场 UTC 开球时间<br/>换算到上海时区<br/>取落在 5/17 的
+    API-->>C: 北京 5/17 当天的<br/>所有比赛
+    C-->>U: 显示"今天 5/17"<br/>+ 6 场比赛
