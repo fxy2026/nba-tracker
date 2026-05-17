@@ -1,21 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import DateNav from "./DateNav";
 import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
-import { formatDate } from "@/lib/api";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface HomeClientProps {
   initialDate: string;
 }
 
+// "YYYY-MM-DD" in a given IANA timezone.
+function dateInTz(d: Date, tz: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(d);
+}
+
+function getLocalTz(): string {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
+  catch { return "America/New_York"; }
+}
+
 export default function HomeClient({ initialDate }: HomeClientProps) {
   const { t } = useLocale();
+  const searchParams = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const today = formatDate(new Date());
+
+  // On mount, if the URL has no explicit ?date and the server-rendered initial
+  // (ET-today) differs from the user's local "today", jump to local today.
+  useEffect(() => {
+    if (searchParams.get("date")) return;
+    const localToday = dateInTz(new Date(), getLocalTz());
+    if (localToday !== initialDate) setSelectedDate(localToday);
+  // Run once on mount — searchParams updating shouldn't re-snap to "today".
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const today = dateInTz(new Date(), getLocalTz());
   const isToday = selectedDate === today;
 
   return (
@@ -24,7 +49,7 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
       {isToday && (() => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = formatDate(yesterday);
+        const yStr = dateInTz(yesterday, getLocalTz());
         return (
           <div className="mt-1 mb-1">
             <button onClick={() => setSelectedDate(yStr)} className="text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer">

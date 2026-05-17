@@ -11,7 +11,6 @@ import TodayStars from "./TodayStars";
 import HomeExtra from "./HomeExtra";
 import EmptyState from "./EmptyState";
 import { AlertCircle } from "lucide-react";
-import { formatDate } from "@/lib/api";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface GamesListProps {
@@ -20,9 +19,21 @@ interface GamesListProps {
   initialReplayIds?: string[];
 }
 
+function getLocalTz(): string {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
+  catch { return "America/New_York"; }
+}
+
+function localToday(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: getLocalTz(),
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+}
+
 export default function GamesList({ selectedDate, initialGames, initialReplayIds }: GamesListProps) {
   const { t } = useLocale();
-  const today = formatDate(new Date());
+  const today = localToday();
   const isToday = selectedDate === today;
   const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
   const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
@@ -34,7 +45,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     setError(false);
     try {
       const [gamesRes, replayRes] = await Promise.all([
-        fetch(`/api/games?date=${date}`, { signal }),
+        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(getLocalTz())}`, { signal }),
         fetch("/api/replay?action=ids", { signal }).catch(() => null),
       ]);
       if (signal?.aborted) return;
@@ -365,7 +376,13 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <div className="mt-6 w-full max-w-lg">
               <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{t.home.noGamesToday}</p>
               <div className="grid grid-cols-2 gap-3">
-                <Link href={`/?date=${(() => { const d = new Date(); d.setDate(d.getDate() - 1); return formatDate(d); })()}`} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
+                <Link href={`/?date=${(() => {
+                  const d = new Date(); d.setDate(d.getDate() - 1);
+                  return new Intl.DateTimeFormat("en-CA", {
+                    timeZone: getLocalTz(),
+                    year: "numeric", month: "2-digit", day: "2-digit",
+                  }).format(d);
+                })()}`} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.browseRecent}</span>
                   <span className="text-[10px] text-text-secondary">{t.home.yesterdayResults}</span>
                 </Link>
