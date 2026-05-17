@@ -222,7 +222,7 @@ function ProgressDots({ results, total }: { results: ("T1" | "T2")[]; total: num
         const filled = r === "T1" ? "bg-accent" : r === "T2" ? "bg-success" : "bg-bg-hover";
         return <div key={i} className={`w-1.5 h-1.5 rounded-full ${filled}`} />;
       })}
-      <span className="ml-1.5 text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 tabular-nums">
+      <span className="ml-1.5 text-[11px] sm:text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 tabular-nums">
         {total}/7
       </span>
     </div>
@@ -273,7 +273,7 @@ function TeamRow({
       <TeamLogo teamId={team.teamId} tricode={team.tricode} size={logoSize} />
       <div className={`flex-1 min-w-0 flex items-center gap-1.5 ${align === "right" ? "flex-row-reverse" : ""}`}>
         {team.seed > 0 && (
-          <span className="text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
+          <span className="text-[11px] sm:text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
         )}
         <span className={`${triSize} font-bold font-mono ${dim ? "text-text-secondary" : leading ? "text-text-primary" : "text-text-secondary"} truncate`}>
           {team.tricode}
@@ -361,7 +361,7 @@ function SeriesCard({
           />
         )}
         {isProjected ? (
-          <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-center text-text-secondary/60 mt-1.5 flex items-center justify-center gap-1">
+          <div className="text-[11px] sm:text-[9px] font-mono uppercase tracking-[0.2em] text-center text-text-secondary/60 mt-1.5 flex items-center justify-center gap-1">
             <span className="w-1 h-1 rounded-full bg-accent-amber animate-pulse" />
             <span>{(s.team1Candidates?.length || s.team2Candidates?.length) ? "Awaiting opponent" : "Matchup set · upcoming"}</span>
           </div>
@@ -369,7 +369,7 @@ function SeriesCard({
           <>
             <ProgressDots results={s.results} total={s.totalGames} />
             {finished && (
-              <div className="text-[9px] font-mono uppercase tracking-[0.18em] text-center text-[#FFD700] mt-1.5 font-bold flex items-center justify-center gap-1">
+              <div className="text-[11px] sm:text-[9px] font-mono uppercase tracking-[0.18em] text-center text-[#FFD700] mt-1.5 font-bold flex items-center justify-center gap-1">
                 <Crown size={10} />
                 <span>{winner?.tricode} {Math.max(s.team1.wins, s.team2.wins)}-{Math.min(s.team1.wins, s.team2.wins)}</span>
               </div>
@@ -397,7 +397,7 @@ function CandidatesRow({
   align: "left" | "right";
 }) {
   const logoSize = size === "lg" ? 22 : size === "md" ? 18 : 16;
-  const triSize = size === "lg" ? "text-sm" : "text-[10px]";
+  const triSize = size === "lg" ? "text-sm" : "text-[11px] sm:text-[10px]";
   const pad = size === "lg" ? "py-2" : size === "md" ? "py-1.5" : "py-0.5";
   return (
     <div className={`flex items-center gap-1.5 ${pad} relative ${align === "right" ? "flex-row-reverse" : ""}`}>

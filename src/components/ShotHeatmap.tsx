@@ -377,7 +377,15 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
           </div>
 
           <div className="relative">
-            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 480 }}>
+            <svg
+              viewBox={`0 0 ${W} ${H}`}
+              className="w-full"
+              style={{ maxHeight: 480 }}
+              role="img"
+              aria-label={locale === "zh"
+                ? `球员投篮热图，按球场区域 — ${season} 赛季，命中率 ${overallPct.toFixed(1)}%`
+                : `Player shot heatmap by court zone — ${season} season, ${overallPct.toFixed(1)}% FG`}
+            >
               <rect x="0" y="0" width={W} height={H} fill="#141414" rx="8" />
 
               {RENDER_ORDER.map((zone) => {

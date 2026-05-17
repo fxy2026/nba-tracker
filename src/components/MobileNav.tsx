@@ -8,7 +8,8 @@ import { useLocale } from "@/components/LocaleProvider";
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [moreOpen, setMoreOpen] = useState(false);
 
   const mainLinks = useMemo(() => [
@@ -136,6 +137,9 @@ export default function MobileNav() {
           })}
           <button
             onClick={() => setMoreOpen(!moreOpen)}
+            aria-label={isZh ? "更多导航选项" : "More navigation options"}
+            aria-haspopup="dialog"
+            aria-expanded={moreOpen}
             className={`flex flex-col items-center gap-0.5 min-w-[48px] min-h-[44px] justify-center px-2 py-1 rounded-lg transition-colors cursor-pointer relative ${
               moreOpen || isMoreActive ? "text-accent" : "text-text-secondary"
             }`}

@@ -40,16 +40,26 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   }, [selectedDate, navigate]);
 
   // Mobile swipe navigation
-  const touchStart = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   useEffect(() => {
     const el = document.getElementById("main-content");
     if (!el) return;
-    const onTouchStart = (e: TouchEvent) => { touchStart.current = e.touches[0].clientX; };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
     const onTouchEnd = (e: TouchEvent) => {
-      if (touchStart.current === null) return;
-      const diff = e.changedTouches[0].clientX - touchStart.current;
-      touchStart.current = null;
-      if (Math.abs(diff) > 80) navigate(offsetDate(selectedDate, diff > 0 ? -1 : 1));
+      if (touchStartX.current === null || touchStartY.current === null) return;
+      const diff = e.changedTouches[0].clientX - touchStartX.current;
+      const diffY = e.changedTouches[0].clientY - touchStartY.current;
+      touchStartX.current = null;
+      touchStartY.current = null;
+      // Only trigger date change on mostly-horizontal swipes (Y delta < 50px)
+      // so vertical scrolls don't accidentally navigate.
+      if (Math.abs(diff) > 80 && Math.abs(diffY) < 50) {
+        navigate(offsetDate(selectedDate, diff > 0 ? -1 : 1));
+      }
     };
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     el.addEventListener("touchend", onTouchEnd, { passive: true });
@@ -88,7 +98,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
 
   return (
     <div
-      className="sticky top-12 sm:top-16 z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
+      className="sticky top-[calc(env(safe-area-inset-top)+3rem)] sm:top-[calc(env(safe-area-inset-top)+4rem)] z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
       role="navigation"
       aria-label="Date navigation"
     >

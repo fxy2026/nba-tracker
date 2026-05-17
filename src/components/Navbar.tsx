@@ -23,6 +23,9 @@ export default function Navbar() {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const teamsDialogRef = useRef<HTMLDivElement>(null);
+  const teamsCloseBtnRef = useRef<HTMLButtonElement>(null);
+  const teamsTriggerRef = useRef<HTMLElement | null>(null);
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -73,6 +76,53 @@ export default function Navbar() {
   }, [searchOpen, teamsOpen]);
 
   // Teams dropdown close: handled by backdrop click + Escape (in keyboard handler above)
+
+  // Teams modal: body scroll lock + focus trap + initial focus + restore on close.
+  useEffect(() => {
+    if (!teamsOpen) return;
+    // Capture trigger so we can restore focus on close
+    teamsTriggerRef.current = (document.activeElement as HTMLElement) || null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // Initial focus on the close button
+    const id = setTimeout(() => { teamsCloseBtnRef.current?.focus(); }, 0);
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const root = teamsDialogRef.current;
+      if (!root) return;
+      const focusables = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !root.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || !root.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      // Restore focus to trigger
+      teamsTriggerRef.current?.focus?.();
+      teamsTriggerRef.current = null;
+    };
+  }, [teamsOpen]);
 
   // Primary nav — always visible
   const primaryLinks = useMemo(() => [
@@ -207,7 +257,9 @@ export default function Navbar() {
 
           {/* More button — opens command palette modal */}
           <button onClick={() => setMoreOpen(true)}
-            aria-label="More navigation options"
+            aria-label={isZh ? "更多导航选项" : "More navigation options"}
+            aria-haspopup="dialog"
+            aria-expanded={moreOpen}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
             }`}>
@@ -219,6 +271,9 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setTeamsOpen((v) => !v)}
+            aria-label={isZh ? "球队菜单" : "Teams menu"}
+            aria-haspopup="dialog"
+            aria-expanded={teamsOpen}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
               teamsOpen || pathname.startsWith("/team")
                 ? "bg-accent/15 text-accent"
@@ -260,6 +315,8 @@ export default function Navbar() {
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center gap-1.5 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
                 title={t.nav.searchShortcut}
+                aria-label={isZh ? "打开搜索" : "Open search"}
+                aria-expanded={searchOpen}
               >
                 <Search size={18} />
                 <kbd className="hidden lg:inline text-[10px] px-1.5 py-0.5 bg-bg-card border border-border rounded text-text-secondary">⌘K</kbd>
@@ -276,7 +333,8 @@ export default function Navbar() {
             onClick={() => {
               router.push("/search");
             }}
-            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+            aria-label={isZh ? "搜索" : "Search"}
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
           >
             <Search size={18} />
           </button>
@@ -299,21 +357,24 @@ export default function Navbar() {
           onClick={() => setTeamsOpen(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Teams"
+          aria-labelledby="teams-modal-title"
         >
           <div className="absolute inset-0 bg-black/70" />
           <div
+            ref={teamsDialogRef}
             className="relative w-full max-w-md bg-bg-card border border-border rounded-2xl p-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users size={14} className="text-accent" />
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-text-primary">{t.nav.teams}</p>
+                <h2 id="teams-modal-title" className="text-xs font-bold uppercase tracking-[0.2em] text-text-primary">{t.nav.teams}</h2>
               </div>
               <button
+                ref={teamsCloseBtnRef}
                 onClick={() => setTeamsOpen(false)}
-                className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer"
+                aria-label={isZh ? "关闭球队菜单 (Esc)" : "Close teams menu (Esc)"}
+                className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
               >
                 ESC
               </button>

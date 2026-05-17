@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Activity } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export interface PointDiffGame {
   gameId: string;
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export default function PointDiffChart({ games, title, teamColor = "#3B82F6", count = 15 }: Props) {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const last = games.slice(0, count).slice().reverse(); // chronological for display
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -131,6 +134,10 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
             viewBox={`0 0 100 ${innerH}`}
             preserveAspectRatio="none"
             className="absolute inset-0 w-full h-full block"
+            role="img"
+            aria-label={isZh
+              ? `近 ${last.length} 场净胜分趋势，平均 ${avg >= 0 ? "+" : ""}${avg.toFixed(1)}，战绩 ${wins}-${losses}`
+              : `Last ${last.length} games point differential trend, average ${avg >= 0 ? "+" : ""}${avg.toFixed(1)}, record ${wins}-${losses}`}
           >
             <defs>
               <linearGradient id="pdc-pos" x1="0" y1="0" x2="0" y2="1">

@@ -38,7 +38,7 @@ export default memo(function ShareButton({ text }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="p-1.5 rounded-lg text-text-secondary hover:text-accent transition-colors relative"
+      className="p-1.5 rounded-lg text-text-secondary hover:text-accent transition-colors relative inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
       title={t.share.shareGame}
       aria-label={t.share.shareGame}
     >

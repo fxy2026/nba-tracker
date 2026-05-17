@@ -9,13 +9,14 @@ import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
 import TeamCompare from "@/components/TeamCompare";
 import KeyMoments from "@/components/KeyMoments";
-import { Play, ExternalLink, Users, GitCompareArrows, Trophy, Calendar, Crown } from "lucide-react";
+import { Play, ExternalLink, Users, GitCompareArrows, Trophy, Calendar, Crown, Clock } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import QuarterBars from "@/components/QuarterBars";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import EmptyState from "@/components/EmptyState";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import type { Translations } from "@/locales";
@@ -507,13 +508,19 @@ export default async function GamePage({ params }: PageProps) {
     playerInfoMap.set(pi.personId, pi);
   }
 
+  const isZh = locale === "zh";
+
   if (!boxScore) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">&larr; {t.common.back}</Link>
-        <div className="flex flex-col items-center justify-center py-24 text-text-secondary">
-          <p className="text-lg">{t.gameDetail.boxScoreNotAvailable}</p>
-          <p className="text-sm mt-1">{t.gameDetail.gameNotStarted}</p>
+        <div className="mt-6">
+          <EmptyState
+            icon={Clock}
+            title={isZh ? "比赛尚未开始" : "Game hasn't tipped off yet"}
+            description={isZh ? "比分和数据将在比赛开始后显示" : "Stats appear once the game starts"}
+            action={{ href: "/", label: isZh ? "查看其他比赛" : "Other games" }}
+          />
         </div>
       </div>
     );
@@ -524,7 +531,6 @@ export default async function GamePage({ params }: PageProps) {
   const scoreDiff = Math.abs(boxScore.homeTeam.score - boxScore.awayTeam.score);
   const isCloseGame = isFinal && scoreDiff <= 5;
   const isPlayoffs = boxScore.gameId.startsWith("004");
-  const isZh = locale === "zh";
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
   const beijingTime = toBeijingTime(boxScore.gameTimeUTC);

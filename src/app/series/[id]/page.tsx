@@ -462,8 +462,9 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
       {finishedGames.length === 0 && (
         <EmptyState
           icon={Trophy}
-          title={isZh ? "系列赛尚未开打" : "Series hasn't started"}
-          description={isZh ? "首场比赛开打后，统计和回顾会显示在这里。" : "Stats and recaps will appear here after Game 1 tips off."}
+          title={isZh ? "暂无系列数据" : "No series data yet"}
+          description={isZh ? "等比赛开打后回来看看" : "Come back once the series tips off"}
+          action={{ href: "/", label: isZh ? "回到首页" : "Back to home" }}
         />
       )}
 

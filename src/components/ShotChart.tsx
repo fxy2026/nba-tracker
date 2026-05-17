@@ -23,7 +23,8 @@ interface Props {
 }
 
 export default memo(function ShotChart({ shots, homeTricode, awayTricode, players }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
@@ -132,7 +133,15 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
 
       {/* Court SVG - vertical full court */}
       <div className="glass-tile p-2 overflow-hidden">
-        <svg viewBox={`0 0 ${courtWidth} ${courtHeight}`} className="w-full" style={{ maxHeight: 600 }}>
+        <svg
+          viewBox={`0 0 ${courtWidth} ${courtHeight}`}
+          className="w-full"
+          style={{ maxHeight: 600 }}
+          role="img"
+          aria-label={isZh
+            ? `比赛投篮图 — ${made}/${total} 命中 ${pct}%`
+            : `Game shot chart — ${made} of ${total} made, ${pct}%`}
+        >
           {/* Court background */}
           <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#1a1a1a" rx="8" />
 

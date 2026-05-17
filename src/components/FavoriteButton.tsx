@@ -43,7 +43,7 @@ export default function FavoriteButton({ type, id, className = "" }: FavoriteBut
   return (
     <button
       onClick={handleToggle}
-      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+      className={`p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px] ${
         isFav
           ? "text-danger hover:opacity-80"
           : "text-text-secondary hover:text-danger"

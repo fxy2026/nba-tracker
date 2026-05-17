@@ -13,7 +13,7 @@ export default function LocaleToggle() {
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors text-xs font-medium cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+      className="p-2 rounded-lg text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors text-xs font-medium cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
       title={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
       aria-label={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
     >

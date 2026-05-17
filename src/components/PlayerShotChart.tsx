@@ -77,7 +77,8 @@ function CourtLines() {
 
 /* ── Main component ── */
 export default function PlayerShotChart({ playerName, playerId, shots, playerInfo }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -282,7 +283,12 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
 
             {/* Court */}
             <div className="px-5 pb-3">
-              <svg viewBox={`0 0 ${CW_TOTAL} ${CH_TOTAL}`} className="w-full">
+              <svg
+                viewBox={`0 0 ${CW_TOTAL} ${CH_TOTAL}`}
+                className="w-full"
+                role="img"
+                aria-label={isZh ? `${playerName} 本场投篮图` : `${playerName} shot chart for this game`}
+              >
                 <CourtLines />
                 {data.fieldGoalShots.map((shot, i) => {
                   const sx = toSvgX(shot.y), sy = toSvgY(shot.x);

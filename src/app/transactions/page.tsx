@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowLeftRight } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import EmptyState from "@/components/EmptyState";
+import { useLocale } from "@/components/LocaleProvider";
 
 interface Transaction {
   date: string;
@@ -15,6 +17,8 @@ interface Transaction {
 }
 
 export default function TransactionsPage() {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,15 +63,15 @@ export default function TransactionsPage() {
     <div className="max-w-3xl mx-auto px-4 py-6">
       <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">
         <ArrowLeft size={14} className="inline mr-1" />
-        Back to home
+        {isZh ? "返回首页" : "Back to home"}
       </Link>
 
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={ArrowLeftRight}
-        title="NBA Transactions"
+        title={isZh ? "NBA 交易动态" : "NBA Transactions"}
         action={!loading && transactions.length > 0 ? (
-          <span className="chip font-mono"><span className="tabular-nums">{transactions.length}</span> recent</span>
+          <span className="chip font-mono"><span className="tabular-nums">{transactions.length}</span> {isZh ? "条最新" : "recent"}</span>
         ) : undefined}
         className="mt-4"
       />
@@ -113,10 +117,12 @@ export default function TransactionsPage() {
       })()}
 
       {!loading && transactions.length === 0 && (
-        <div className="text-center py-12 text-text-secondary">
-          <p className="text-lg">No recent transactions available</p>
-          <p className="text-sm mt-1">Check back later for updates</p>
-        </div>
+        <EmptyState
+          icon={ArrowLeftRight}
+          title={isZh ? "暂无最新交易动态" : "No recent transactions available"}
+          description={isZh ? "稍后回来看看更新" : "Check back later for updates"}
+          action={{ href: "/injuries", label: isZh ? "查看伤病" : "View injuries" }}
+        />
       )}
 
       {!loading && sortedDates.length > 0 && (

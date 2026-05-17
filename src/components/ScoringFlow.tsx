@@ -31,7 +31,8 @@ function toGameMinutes(period: number, clock: string): number {
 }
 
 export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode, scoreEvents }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   if (homePeriods.length === 0) return null;
 
   // Build data points: use play-by-play if available, else quarter-level
@@ -109,7 +110,15 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
           {maxAwayLead > 0 && <span>{awayTricode} {t.scoringFlow.ledBy} {maxAwayLead}</span>}
         </div>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        className="w-full"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label={isZh
+          ? `得分走势图 — ${awayTricode} ${last.away} vs ${homeTricode} ${last.home}`
+          : `Scoring flow chart — ${awayTricode} ${last.away} vs ${homeTricode} ${last.home}`}
+      >
         {/* Y-axis grid */}
         {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const y = pad.top + plotH * (1 - ratio);

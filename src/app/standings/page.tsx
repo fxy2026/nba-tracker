@@ -128,13 +128,13 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
                 />
                 <div>
                   <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
-                  {isPlayoff && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
-                  {isPlayIn && <span className="ml-1.5 text-[9px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{t.standingsPage.playIn}</span>}
+                  {isPlayoff && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
+                  {isPlayIn && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{t.standingsPage.playIn}</span>}
                   {streaks.get(team.tricode) && (() => {
                     const streak = streaks.get(team.tricode)!;
                     const isWin = streak.startsWith("W");
                     return (
-                      <span className={`ml-1 text-[9px] px-1 py-0.5 rounded font-medium ${isWin ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+                      <span className={`ml-1 text-[11px] sm:text-[9px] px-1 py-0.5 rounded font-medium ${isWin ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
                         {streak}
                       </span>
                     );
@@ -220,8 +220,8 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                       <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={22} height={22} unoptimized />
                       <span className="font-semibold text-text-primary font-mono">{team.tricode}</span>
                       {i === 0 && <span title={t.standingsPage.confLeader} className="text-[#FFD700]">★</span>}
-                      {isPlayoff && i !== 0 && <span className="text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent/15 text-accent">P</span>}
-                      {isPlayIn && <span className="text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">PI</span>}
+                      {isPlayoff && i !== 0 && <span className="text-[11px] sm:text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent/15 text-accent">P</span>}
+                      {isPlayIn && <span className="text-[11px] sm:text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">PI</span>}
                     </Link>
                   </td>
                   <td className="text-center py-2 px-2 font-medium font-mono tabular-nums">{team.wins}</td>
@@ -239,11 +239,11 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                     {isPlayoff && (() => {
                       const gamesLeft = 82 - team.wins - team.losses;
                       return gamesLeft > 0 ? (
-                        <span className="block text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}{t.standingsPage.gamesLeft})</span>
+                        <span className="block text-[11px] sm:text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}{t.standingsPage.gamesLeft})</span>
                       ) : null;
                     })()}
                   </td>
-                  <td className="text-center py-2 px-1 text-[10px] text-text-secondary/70 font-mono tabular-nums">
+                  <td className="text-center py-2 px-1 text-[11px] sm:text-[10px] text-text-secondary/70 font-mono tabular-nums">
                     {(() => {
                       const projected = Math.round(winPct * 82);
                       return <span title={t.standingsPage.proj}>&rarr; {projected}w</span>;

@@ -42,18 +42,27 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
   const [query, setQuery] = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerElRef = useRef<HTMLElement | null>(null);
 
-  // Reset query/focus on open transition (false → true)
+  // Reset query/focus on open transition (false → true).
+  // Also capture the trigger element so we can restore focus on close.
   const prevOpenRef = useRef(open);
   useEffect(() => {
     const justOpened = !prevOpenRef.current && open;
+    const justClosed = prevOpenRef.current && !open;
     prevOpenRef.current = open;
     if (justOpened) {
+      triggerElRef.current = (document.activeElement as HTMLElement) || null;
       setTimeout(() => {
         setQuery("");
         setActiveIdx(0);
         inputRef.current?.focus();
       }, 0);
+    } else if (justClosed) {
+      // Restore focus to the trigger that originally opened the dialog
+      triggerElRef.current?.focus?.();
+      triggerElRef.current = null;
     }
   }, [open]);
 
@@ -120,6 +129,30 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
           router.push(it.href);
           onClose();
         }
+      } else if (e.key === "Tab") {
+        // Focus trap — wrap focus inside the dialog
+        const root = dialogRef.current;
+        if (!root) return;
+        const focusables = Array.from(
+          root.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey) {
+          if (active === first || !root.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (active === last || !root.contains(active)) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     document.addEventListener("keydown", onKey);
@@ -144,13 +177,14 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Command palette"
+      aria-label={isZh ? "命令面板" : "Command palette"}
     >
       {/* Backdrop — solid color, NO blur (Windows perf) */}
       <div className="absolute inset-0 bg-black/70" />
 
       {/* Panel */}
       <div
+        ref={dialogRef}
         className="relative w-full max-w-2xl max-h-[80vh] flex flex-col bg-bg-card border border-border rounded-2xl overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -163,22 +197,23 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isZh ? "跳转到任意页面 · 搜索 35+ 个页面..." : "Jump to anywhere · search 35+ pages..."}
+            aria-label={isZh ? "搜索页面" : "Search pages"}
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
             autoComplete="off"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="text-text-secondary hover:text-text-primary p-1 rounded cursor-pointer"
-              aria-label="Clear"
+              className="text-text-secondary hover:text-text-primary p-1 rounded cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
+              aria-label={isZh ? "清除搜索" : "Clear search"}
             >
               <X size={14} />
             </button>
           )}
           <button
             onClick={onClose}
-            className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer"
-            aria-label="Close (Esc)"
+            className="text-[12px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
+            aria-label={isZh ? "关闭 (Esc)" : "Close (Esc)"}
           >
             ESC
           </button>
@@ -245,7 +280,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         </div>
 
         {/* Footer hint */}
-        <div className="border-t border-border/60 px-4 py-2 flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 shrink-0">
+        <div className="border-t border-border/60 px-4 py-2 flex items-center justify-between text-[12px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 shrink-0">
           <span className="flex items-center gap-3">
             <span><kbd className="px-1 border border-border rounded">↑</kbd> <kbd className="px-1 border border-border rounded">↓</kbd> {isZh ? "切换" : "navigate"}</span>
             <span><kbd className="px-1 border border-border rounded">↵</kbd> {isZh ? "进入" : "open"}</span>
