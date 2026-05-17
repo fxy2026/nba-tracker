@@ -12,7 +12,7 @@
    - tags:     Next.js, React, UI/UX, PWA, Service Worker
    - summary:  从对阵图说起，NBA Tracker 重构记
    - icon:     🏀 (或留空)
-   - cover:    https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/30-bracket-tree.png
+   - cover:    https://nba.xpy.me/article-images/30-bracket-tree.png
 
  操作:
    1. 打开 Notion 博客数据库
@@ -56,11 +56,11 @@ UI/UX Pro Max 给的建议：
 - 用**进度点**显示系列赛打了几场（best of 7，1-0 / 2-0 / 4-0）
 - 已经晋级的球队**预先填到**下一轮的位置——OKC 4-0 横扫之后，下一轮"OKC vs ???"直接标出来
 
-![对阵图全貌](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/30-bracket-tree.png)
+![对阵图全貌](https://nba.xpy.me/article-images/30-bracket-tree.png)
 
 每个系列卡片可以点进去，跳到独立的系列赛详情页（这是新加的路由）：
 
-![系列赛详情页](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/31-series-detail.png)
+![系列赛详情页](https://nba.xpy.me/article-images/31-series-detail.png)
 
 页面包含逐场战果、双方场均、最大胜差、关键球员排行——把整个 best-of-7 拍扁到一个页面看。
 
@@ -68,7 +68,7 @@ UI/UX Pro Max 给的建议：
 
 UI 重写需要触碰原来的 `BracketTree.tsx`——911 行单文件。打开就头晕：
 
-![BracketTree 拆分前](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-02-bracket-before.png)
+![BracketTree 拆分前](https://nba.xpy.me/article-images/mermaid-update-02-bracket-before.png)
 
 React 组件、纯函数、桌面布局、移动布局全混在一起。任何一处微调都要在 900 多行里找位置。
 
@@ -76,7 +76,7 @@ UI/UX Pro Max 的建议里有一条隐含的工程要求：**视觉结构应该�
 
 拆完变成 7 个文件：
 
-![BracketTree 拆分后](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-03-bracket-after.png)
+![BracketTree 拆分后](https://nba.xpy.me/article-images/mermaid-update-03-bracket-after.png)
 
 拆分原则：
 
@@ -111,13 +111,13 @@ UI/UX Pro Max 的建议：**改成 Command Palette 风格的居中模态**。原
 
 手机底栏的「更多」按钮原本弹出的是个底部抽屉。我前阵子在手机上点开发现——弹层顶部撑到了状态栏，下面那点点也看不全。手指按住屏幕想往下滚，**结果滚的是下层页面**，弹层本身一动不动：
 
-![弹层 bug 结构](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-06-mobile-bug.png)
+![弹层 bug 结构](https://nba.xpy.me/article-images/mermaid-update-06-mobile-bug.png)
 
 更深的问题是**两套实现两套翻译**：桌面 Navbar 的「更多」菜单已经全中文翻译完了，手机的 MobileNav 重新写了一套**英文硬编码**版本。维护两份必然漂移。
 
 修法：抽到共享 hook，桌面手机都用同一个 CommandPalette：
 
-![弹层修复结构](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-07-mobile-fix.png)
+![弹层修复结构](https://nba.xpy.me/article-images/mermaid-update-07-mobile-fix.png)
 
 `src/lib/useMoreGroups.ts` 成为单一数据源：
 
@@ -175,9 +175,9 @@ useEffect(() => {
 - **底部要有"继续探索"卡片**：5-6 个相关链接，让用户不会撞墙
 - **数据新鲜度要可见**：每页标题下显示"X 分钟前更新"
 
-![Breadcrumbs + UpdatedPill](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/23-breadcrumbs.png)
+![Breadcrumbs + UpdatedPill](https://nba.xpy.me/article-images/23-breadcrumbs.png)
 
-![RelatedPages 卡片网格](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/24-related-pages.png)
+![RelatedPages 卡片网格](https://nba.xpy.me/article-images/24-related-pages.png)
 
 实现一个 `<PageHeader>` 接受可选的 `updatedAt` prop，下面挂一个 `<UpdatedPill>` 实时更新：
 
@@ -226,7 +226,7 @@ UI/UX Pro Max 对首页的建议很具体：
 - **保留访问历史**：把用户最近浏览的球员 / 球队 / 比赛缩到首页中部一条横向滚动
 - **第一次访问的人看不到访问历史块**——空状态不显示
 
-![滚动驱动进度条 + UpdatedPill](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/25-scroll-progress-updated-pill.png)
+![滚动驱动进度条 + UpdatedPill](https://nba.xpy.me/article-images/25-scroll-progress-updated-pill.png)
 
 进度条用纯 CSS 滚动驱动动画实现：
 
@@ -276,7 +276,7 @@ export function recordVisit(kind: RecentKind, id: string, label: string): void {
 
 首页有 `<RecentlyViewed>` 横向滚动条显示最近 8 条。**首次访问时 localStorage 空，整个组件 `return null`，不显示空状态——避免空状态比展示空状态体面**。
 
-![最近浏览卡片](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/20-recently-viewed.png)
+![最近浏览卡片](https://nba.xpy.me/article-images/20-recently-viewed.png)
 
 ---
 
@@ -348,7 +348,7 @@ UI/UX Pro Max 对 PWA 的清单：manifest 完整化、安装提示、离线指�
 
 `public/sw.js` 按请求类型分桶缓存：
 
-![Service Worker 缓存决策](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-09-sw-cache.png)
+![Service Worker 缓存决策](https://nba.xpy.me/article-images/mermaid-update-09-sw-cache.png)
 
 ```javascript
 self.addEventListener("fetch", (event) => {
@@ -388,7 +388,7 @@ iOS Safari 特殊处理：那个浏览器**永远不会触发** `beforeinstallpr
 
 Chrome 122+ 加了新 API，能告诉浏览器哪些 URL 值得预先 prefetch 或者 prerender：
 
-![Speculation Rules 时序](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-08-speculation.png)
+![Speculation Rules 时序](https://nba.xpy.me/article-images/mermaid-update-08-speculation.png)
 
 ```tsx
 const rules = {
@@ -438,7 +438,7 @@ UI 改完之后，开始有人能注意到数据层面的问题——以前 UI �
 
 排查代码，数据源是 NBA CDN 的 `playerIndex.json`，取 `pts/reb/ast` 三个字段：
 
-![playerIndex 语义](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-10-playerindex.png)
+![playerIndex 语义](https://nba.xpy.me/article-images/mermaid-update-10-playerindex.png)
 
 两个隐藏坑：
 
@@ -460,7 +460,7 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
 ];
 ```
 
-![真历史排行](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/21-all-time-leaders-real.png)
+![真历史排行](https://nba.xpy.me/article-images/21-all-time-leaders-real.png)
 
 类似的"标签 vs 数据"不一致还在 5 个页面里发现：
 
@@ -479,7 +479,7 @@ Bug 让用户感知到问题（页面挂了）。**标签错了让用户带着�
 
 修 UI 期间发现的另一个深层问题。中国用户北京时间 5/17 早上 10 点打开网站，看到顶部写着"今天 5/16"：
 
-![时区 bug 流程](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-04-tz-bug.png)
+![时区 bug 流程](https://nba.xpy.me/article-images/mermaid-update-04-tz-bug.png)
 
 直接原因：NBA 官方赛程用美东时间编码。北京时间凌晨开打的比赛，在赛程数据里写的是前一天。但服务端代码强转 ET 算"今天"，于是中国用户看到的"今天"是 ET 的今天（北京的昨天）。
 
@@ -505,7 +505,7 @@ export function dateInTz(d: Date, tz: string = localTz()): string {
 
 然后 `/api/games` 接受 `?tz=Asia/Shanghai`，扫全赛季日程，把每场比赛的 UTC 开球时间换算到用户时区，看它落在哪一天。修完之后的数据流：
 
-![时区修复流程](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/mermaid-update-05-tz-fix.png)
+![时区修复流程](https://nba.xpy.me/article-images/mermaid-update-05-tz-fix.png)
 
 修复扩散到 `DateNav.tsx`、`GamesList.tsx`、`/api/calendar`、`/app/calendar/page.tsx` 等多处。两个分离的概念不能混：
 
@@ -566,7 +566,7 @@ for (const [tri, meta] of Object.entries(TEAM_META)) {
 }
 ```
 
-![搜索"字母哥"返回 Giannis](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/32-bilingual-search.png)
+![搜索"字母哥"返回 Giannis](https://nba.xpy.me/article-images/32-bilingual-search.png)
 
 ---
 
@@ -574,11 +574,11 @@ for (const [tri, meta] of Object.entries(TEAM_META)) {
 
 `/glossary` 第一版只有英文。扩到 82 个词条，全部翻译成虎扑式中文（"协防 / 护框者 / 退守战术 / 横扫 / 附加赛 / 双双 / 三双 / 接球投篮"），加了"阵容与战术"和"交易与名单"两个新分类：
 
-![中文词汇表](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/22-glossary-zh.png)
+![中文词汇表](https://nba.xpy.me/article-images/22-glossary-zh.png)
 
 `/quiz` 第一版有 3 个模式：看头像猜人 / 看数据猜人 / 猜球队。加了第 4 个："**猜历史名人**"。从那 45 位 GOAT 里随机出题，给生涯均值让你 4 选 1：
 
-![Legend Quiz 模式](https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/28-legend-quiz.png)
+![Legend Quiz 模式](https://nba.xpy.me/article-images/28-legend-quiz.png)
 
 看到一组 `30.07 / 22.9 / 4.4 / 退役` 能马上认出是张伯伦——22.9 篮板是大杀器，除了张伯伦只有比尔拉塞尔 22.5。
 
@@ -646,13 +646,11 @@ for (const [tri, meta] of Object.entries(TEAM_META)) {
 <!--
 === 正文结束 ===
 
-所有图片 URL 都指向 GitHub raw：
-https://raw.githubusercontent.com/fxy2026/nba-tracker/master/article-images/
+所有图片 URL 指向 https://nba.xpy.me/article-images/ — 由 Vercel 的全
+球 CDN 托管，文件实际存放在项目 public/article-images/ 目录里。
 
-19 张图片：10 张截图 + 9 张 mermaid PNG
-都已经在 GitHub 上 (master 分支 article-images/ 目录)
+国内访问通常 100-300ms，比 GitHub raw 快一个数量级。
 
-如果觉得 raw.githubusercontent.com 加载慢可以换 jsDelivr CDN:
-  https://cdn.jsdelivr.net/gh/fxy2026/nba-tracker@master/article-images/xxx.png
-速度通常快 3-5 倍。
+19 张图片：10 张截图 + 9 张 mermaid PNG。
+所有图永久跟随 nba-tracker 项目，零第三方依赖。
 -->
