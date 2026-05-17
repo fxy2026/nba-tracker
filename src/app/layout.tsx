@@ -7,6 +7,7 @@ import BackToTop from "@/components/BackToTop";
 import SiteFooter from "@/components/SiteFooter";
 import InstallPrompt from "@/components/InstallPrompt";
 import OnlineStatus from "@/components/OnlineStatus";
+import WebVitalsReporter from "@/components/WebVitalsReporter";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import ThemeScript from "@/components/ThemeScript";
@@ -132,6 +133,7 @@ export default async function RootLayout({
           <BackToTop />
           <InstallPrompt />
           <OnlineStatus />
+          <WebVitalsReporter />
           </ToastProvider>
         </LocaleProvider>
       </body>
