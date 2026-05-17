@@ -28,12 +28,21 @@ function getMonthStr(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
-// NBA schedule dates are in US/Eastern. Resolve "today" + current month in ET
-// so that users in any timezone (e.g. China UTC+8) see the same active day
-// the schedule API is keyed by.
-function getEtParts(): { year: number; month: number; day: number; todayStr: string } {
+// Resolve "today" + current month in the user's local timezone. The calendar
+// API groups games by this same timezone, so dates always line up with what
+// the user actually experienced (e.g. a NBA game on ET May 15 evening shows
+// on the May 16 cell for a Beijing user — that's when it was played there).
+function localTz(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York";
+  } catch {
+    return "America/New_York";
+  }
+}
+
+function getLocalParts(tz: string): { year: number; month: number; day: number; todayStr: string } {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
+    timeZone: tz,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -52,9 +61,10 @@ function getEtParts(): { year: number; month: number; day: number; todayStr: str
 export default function CalendarPage() {
   const router = useRouter();
   const { t } = useLocale();
-  const et = getEtParts();
+  const tz = localTz();
+  const et = getLocalParts(tz);
   const [year, setYear] = useState(et.year);
-  const [month, setMonth] = useState(et.month); // 0-indexed (ET)
+  const [month, setMonth] = useState(et.month); // 0-indexed (local tz)
   const [days, setDays] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,13 +86,13 @@ export default function CalendarPage() {
     const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch(`/api/calendar?month=${getMonthStr(year, month)}`, { signal: controller.signal })
+    fetch(`/api/calendar?month=${getMonthStr(year, month)}&tz=${encodeURIComponent(tz)}`, { signal: controller.signal })
       .then((r) => r.ok ? r.json() : null)
       .then((json) => { if (json && !controller.signal.aborted) setDays(json.data || []); })
       .catch(() => {})
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [year, month]);
+  }, [year, month, tz]);
 
   const goToPrevMonth = () => {
     if (month === 0) { setYear(year - 1); setMonth(11); }

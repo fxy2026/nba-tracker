@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Repeat } from "lucide-react";
-import { getFullSchedule } from "@/lib/api";
+import { getFullSchedule, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
@@ -60,7 +60,7 @@ async function compute() {
     }
   }
 
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = formatDate(new Date());
   const instances: B2BInstance[] = [];
   for (const [tricode, apps] of teamApps) {
     apps.sort((a, b) => a.date.localeCompare(b.date));

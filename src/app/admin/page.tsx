@@ -30,7 +30,12 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("replays");
 
   // Replay management
-  const [searchDate, setSearchDate] = useState(new Date().toISOString().split("T")[0]);
+  const [searchDate, setSearchDate] = useState(() =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/New_York",
+      year: "numeric", month: "2-digit", day: "2-digit",
+    }).format(new Date())
+  );
   const [games, setGames] = useState<ScheduleGame[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedGame, setSelectedGame] = useState<ScheduleGame | null>(null);
