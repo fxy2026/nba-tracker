@@ -48,6 +48,7 @@ async function compute(): Promise<{ games: DayGame[]; today: string; }> {
     if (parsed.y === todayYear) continue; // not "this day in history" — that's today
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
+      if (g.gameId.startsWith("001")) continue; // skip preseason
       const isOT = /ot/i.test(g.gameStatusText || "");
       matches.push({
         game: g,

@@ -41,6 +41,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
     for (const gd of schedule) {
       for (const g of gd.games) {
         if (g.gameStatus !== 3) continue;
+        if (g.gameId.startsWith("001")) continue; // skip preseason
         const isMatch =
           (g.homeTeam.teamTricode === t1 && g.awayTeam.teamTricode === t2) ||
           (g.homeTeam.teamTricode === t2 && g.awayTeam.teamTricode === t1);

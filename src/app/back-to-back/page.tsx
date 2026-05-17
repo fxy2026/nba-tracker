@@ -47,6 +47,8 @@ async function compute() {
     const iso = parseUS(gd.gameDate);
     if (!iso) continue;
     for (const g of gd.games) {
+      // Skip preseason (001) exhibition vs international teams; keep regular season + playoffs
+      if (g.gameId.startsWith("001")) continue;
       const won = g.gameStatus === 3 ? g.homeTeam.score > g.awayTeam.score : null;
       const pushH = teamApps.get(g.homeTeam.teamTricode) || [];
       pushH.push({ date: iso, gameId: g.gameId, status: g.gameStatus, teamId: g.homeTeam.teamId, won });

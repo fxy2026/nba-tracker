@@ -30,6 +30,8 @@ async function fetchAndCategorize() {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
+      // Skip preseason (001) — exhibition vs international teams
+      if (g.gameId.startsWith("001")) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const isoDate = `${y}-${m}-${d}`;

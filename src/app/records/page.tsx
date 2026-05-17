@@ -36,6 +36,7 @@ async function compute(): Promise<{
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
+      if (g.gameId.startsWith("001")) continue; // skip preseason exhibitions
       const isOT = /ot/i.test(g.gameStatusText || "");
       const otMatch = (g.gameStatusText || "").match(/(\d+)\s*ot/i);
       const otCount = otMatch ? parseInt(otMatch[1]) : isOT ? 1 : 0;

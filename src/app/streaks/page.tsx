@@ -35,6 +35,9 @@ async function computeStreaks(): Promise<TeamStreak[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
+      // Regular season (002) + playoffs (004) only — skip preseason (001) which
+      // includes exhibition games vs international teams (Melbourne, Guangzhou, etc).
+      if (!g.gameId.startsWith("002") && !g.gameId.startsWith("004")) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [month, day, year] = dateStr.split("/");
       const isoDate = `${year}-${month}-${day}`;
