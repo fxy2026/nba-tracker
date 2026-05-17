@@ -170,6 +170,37 @@ const SCHEDULE_TTL = 2 * 60 * 60 * 1000; // 2 hours (data changes infrequently)
 let scheduleInflight: Promise<ScheduleDate[]> | null = null;
 let scheduleRevalidating = false;
 
+// Age of the in-memory schedule cache, in ms. Returns null if no cache yet.
+// Used to render "Updated X ago" badges on cache-backed pages.
+export function getScheduleAge(): number | null {
+  return scheduleCache ? Date.now() - scheduleCache.ts : null;
+}
+
+// fetch wrapper with N retries and exponential backoff. Cold-start failures
+// against cdn.nba.com used to silently leave callers with `[]`; this gives
+// transient 5xx / DNS errors a real chance to succeed.
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit & { next?: { revalidate?: number } } = {},
+  retries = 2,
+  baseDelay = 200
+): Promise<Response> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, init);
+      // Retry on 5xx only — 4xx is a programmer error, don't hammer the API.
+      if (res.ok || res.status < 500 || attempt === retries) return res;
+      lastErr = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastErr = err;
+      if (attempt === retries) throw err;
+    }
+    await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+  }
+  throw lastErr;
+}
+
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
   // Serve from cache immediately if available (even if stale)
   if (scheduleCache) {
@@ -186,16 +217,20 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
 
 async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
   try {
-    const res = await fetch(
+    const res = await fetchWithRetry(
       `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
       { headers: HEADERS, next: { revalidate: 7200 } }
     );
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`schedule fetch failed: HTTP ${res.status}`);
+      return scheduleCache?.data || [];
+    }
     const data = await res.json();
     const dates = data.leagueSchedule?.gameDates || [];
     scheduleCache = { data: dates, ts: Date.now() };
     return dates;
-  } catch {
+  } catch (err) {
+    console.error("schedule fetch error:", err);
     return scheduleCache?.data || [];
   } finally {
     scheduleInflight = null;
@@ -203,7 +238,7 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
 }
 
 function fetchScheduleInBackground() {
-  fetch(`${CDN_BASE}/staticData/scheduleLeagueV2.json`, { headers: HEADERS, next: { revalidate: 7200 } })
+  fetchWithRetry(`${CDN_BASE}/staticData/scheduleLeagueV2.json`, { headers: HEADERS, next: { revalidate: 7200 } })
     .then((res) => res.ok ? res.json() : null)
     .then((data) => {
       if (data) {
@@ -211,7 +246,7 @@ function fetchScheduleInBackground() {
         scheduleCache = { data: dates, ts: Date.now() };
       }
     })
-    .catch(() => {})
+    .catch((err) => console.error("schedule revalidate error:", err))
     .finally(() => { scheduleRevalidating = false; });
 }
 

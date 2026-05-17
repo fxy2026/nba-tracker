@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Crown, Trophy, Target, Flame, Calendar, MapPin, Activity, type LucideIcon } from "lucide-react";
+import { Crown, Trophy, Target, Flame, Calendar, MapPin, Activity, Users, GitCompareArrows, type LucideIcon } from "lucide-react";
 import {
   getFullSchedule,
   getBoxScore,
@@ -15,6 +15,8 @@ import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 export const revalidate = 600;
 
@@ -201,14 +203,12 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] text-text-secondary mb-4">
-        <Link href="/" className="hover:text-accent transition-colors cursor-pointer">{isZh ? "首页" : "Home"}</Link>
-        <span className="text-text-secondary/40">/</span>
-        <span className="text-text-primary">{round.full}</span>
-        <span className="text-text-secondary/40">/</span>
-        <span className="text-text-primary">{team1.tricode} vs {team2.tricode}</span>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: round.full, href: "/" },
+          { label: `${team1.tricode} vs ${team2.tricode}` },
+        ]}
+      />
 
       <PageHeader
         eyebrow={round.full}
@@ -466,6 +466,17 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
           description={isZh ? "首场比赛开打后，统计和回顾会显示在这里。" : "Stats and recaps will appear here after Game 1 tips off."}
         />
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: `/team/${team1.tricode}`, label: `${team1.tricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+          { href: `/team/${team2.tricode}`, label: `${team2.tricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+          { href: `/h2h?t1=${team1.tricode}&t2=${team2.tricode}`, label: isZh ? "全部历史交锋" : "All-time h2h", icon: GitCompareArrows },
+          { href: "/", label: isZh ? "完整对阵图" : "Full bracket", icon: Trophy },
+          { href: "/records", label: isZh ? "赛季纪录" : "Season records", icon: Crown },
+        ]}
+      />
     </div>
   );
 }

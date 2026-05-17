@@ -8,8 +8,10 @@ import { getTranslations } from "@/locales";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PointDiffChart from "@/components/PointDiffChart";
-import { Users, Calendar, Trophy, ArrowLeft } from "lucide-react";
+import { Users, Calendar, Trophy, TrendingUp, Activity, Crown } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 // ISR: serve cached page, revalidate every 10 minutes
 export const revalidate = 600;
@@ -41,6 +43,7 @@ export default async function TeamPage({ params }: PageProps) {
 
   const locale = await getLocale();
   const t = getTranslations(locale);
+  const isZh = locale === "zh";
 
   const [schedule, playerIndex] = await Promise.all([
     getFullSchedule().catch(() => []),
@@ -216,9 +219,12 @@ export default async function TeamPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <Link href="/stats" className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary hover:text-accent transition-colors cursor-pointer">
-        <ArrowLeft size={12} /> {t.teamPage.backToStandings}
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "球队" : "Teams", href: "/standings" },
+          { label: `${team.city} ${team.name}` },
+        ]}
+      />
 
       {/* ─── Team Hero — Bento with team-color tinting ────── */}
       <div
@@ -750,6 +756,18 @@ export default async function TeamPage({ params }: PageProps) {
           </table>
         </div>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/standings", label: isZh ? "完整排名" : "Full standings", icon: Trophy },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power rankings", icon: TrendingUp },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", icon: Activity },
+          { href: "/divisions", label: isZh ? "分区对比" : "Divisions", icon: Users },
+          { href: "/momentum", label: isZh ? "球队趋势" : "Team momentum", icon: Activity },
+          { href: "/tier-list", label: isZh ? "球队分级" : "Tier list", icon: Crown },
+        ]}
+      />
     </div>
   );
 }

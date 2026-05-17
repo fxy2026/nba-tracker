@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getPlayerIndex } from "@/lib/api";
+import { expandQuery } from "@/lib/playerAliases";
+import { TEAM_META } from "@/lib/teams";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim().toLowerCase().slice(0, 100); // Cap length
+  const q = searchParams.get("q")?.trim().toLowerCase().slice(0, 100);
 
   if (!q || q.length < 2) {
     return NextResponse.json({ data: [] });
@@ -14,11 +16,27 @@ export async function GET(request: Request) {
       getPlayerIndex(),
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 6000)),
     ]);
+
+    // Expand colloquial / Chinese nicknames into matchable name fragments.
+    const queries = expandQuery(q);
+
+    // Team-name search: queries like "Lakers" or "湖人 center" should match
+    // every player on that team. Collect matching team tricodes.
+    const matchedTeams = new Set<string>();
+    for (const [tri, meta] of Object.entries(TEAM_META)) {
+      const haystack = `${meta.city} ${meta.name} ${tri}`.toLowerCase();
+      if (queries.some((qq) => haystack.includes(qq))) matchedTeams.add(tri);
+    }
+
     const results = players
       .filter((p) => {
         const full = `${p.firstName} ${p.lastName}`.toLowerCase();
         const reversed = `${p.lastName} ${p.firstName}`.toLowerCase();
-        return full.includes(q) || reversed.includes(q) || p.lastName.toLowerCase().includes(q);
+        const last = p.lastName.toLowerCase();
+        if (queries.some((qq) => full.includes(qq) || reversed.includes(qq) || last.includes(qq))) return true;
+        // Team-name path: include players from matched teams.
+        if (matchedTeams.has(p.teamAbbr)) return true;
+        return false;
       })
       .slice(0, 20)
       .map((p) => ({
@@ -40,6 +58,6 @@ export async function GET(request: Request) {
       headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
     });
   } catch {
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    return NextResponse.json({ error: "Search failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

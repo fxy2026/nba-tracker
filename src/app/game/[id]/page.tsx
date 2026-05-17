@@ -9,11 +9,13 @@ import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
 import TeamCompare from "@/components/TeamCompare";
 import KeyMoments from "@/components/KeyMoments";
-import { Play, ExternalLink } from "lucide-react";
+import { Play, ExternalLink, Users, GitCompareArrows, Trophy, Calendar, Crown } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import QuarterBars from "@/components/QuarterBars";
 import Link from "next/link";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import type { Translations } from "@/locales";
@@ -522,9 +524,36 @@ export default async function GamePage({ params }: PageProps) {
   const scoreDiff = Math.abs(boxScore.homeTeam.score - boxScore.awayTeam.score);
   const isCloseGame = isFinal && scoreDiff <= 5;
   const isPlayoffs = boxScore.gameId.startsWith("004");
+  const isZh = locale === "zh";
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
   const beijingTime = toBeijingTime(boxScore.gameTimeUTC);
+
+  // Breadcrumbs
+  const seriesId = isPlayoffs ? boxScore.gameId.slice(0, 9) : "";
+  const gameNum = isPlayoffs ? parseInt(boxScore.gameId.charAt(9), 10) : 0;
+  const breadcrumbItems = isPlayoffs
+    ? [
+        { label: isZh ? "季后赛" : "Playoffs", href: "/" },
+        { label: `${boxScore.awayTeam.teamTricode} vs ${boxScore.homeTeam.teamTricode}`, href: `/series/${seriesId}` },
+        { label: isZh ? `第 ${gameNum} 场` : `Game ${gameNum}` },
+      ]
+    : [
+        { label: isZh ? "比赛" : "Games", href: "/" },
+        { label: `${boxScore.awayTeam.teamTricode} @ ${boxScore.homeTeam.teamTricode} · ${backDate}` },
+      ];
+
+  // Related pages
+  const relatedPages = [
+    { href: `/team/${boxScore.homeTeam.teamTricode}`, label: `${boxScore.homeTeam.teamTricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+    { href: `/team/${boxScore.awayTeam.teamTricode}`, label: `${boxScore.awayTeam.teamTricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+    { href: `/h2h?t1=${boxScore.homeTeam.teamTricode}&t2=${boxScore.awayTeam.teamTricode}`, label: isZh ? "历史交锋" : "Head-to-head", icon: GitCompareArrows },
+    ...(isPlayoffs
+      ? [{ href: `/series/${seriesId}`, label: isZh ? "整个系列赛" : "Full series", icon: Trophy }]
+      : []),
+    { href: `/?date=${backDate}`, label: isZh ? "当天其他比赛" : "Other games that day", icon: Calendar },
+    { href: "/records", label: isZh ? "赛季纪录" : "Season records", icon: Crown },
+  ];
 
   const allPlayers = [
     ...boxScore.awayTeam.players.filter((p) => p.played === "1").map((p) => ({
@@ -586,14 +615,7 @@ export default async function GamePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-        <Link href="/" className="hover:text-accent transition-colors cursor-pointer">{t.common.home}</Link>
-        <span className="text-text-secondary/40">/</span>
-        <Link href={`/?date=${backDate}`} className="hover:text-accent transition-colors cursor-pointer">{backDate}</Link>
-        <span className="text-text-secondary/40">/</span>
-        <span className="text-text-primary">{boxScore.awayTeam.teamTricode} {t.common.vs} {boxScore.homeTeam.teamTricode}</span>
-      </nav>
+      <Breadcrumbs items={breadcrumbItems} />
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
       {/* ─── Scoreboard Hero — glass tile + team color tinting + giant scores ─── */}
@@ -990,6 +1012,8 @@ export default async function GamePage({ params }: PageProps) {
       <div className="mt-6">
         <PlayByPlaySection actions={pbpActions as Record<string, unknown>[]} />
       </div>
+
+      <RelatedPages eyebrow={isZh ? "继续探索" : "Keep exploring"} pages={relatedPages} />
     </div>
   );
 }

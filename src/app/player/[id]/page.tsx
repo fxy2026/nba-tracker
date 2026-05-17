@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, type LucideIcon } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
@@ -53,6 +55,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
   const locale = await getLocale();
   const t = getTranslations(locale);
+  const isZh = locale === "zh";
 
   // Get all players for league-wide stat context (rank, percentile, average)
   const { getPlayerIndex } = await import("@/lib/api");
@@ -115,9 +118,12 @@ export default async function PlayerPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors inline-flex items-center gap-1 cursor-pointer">
-        ← {t.common.backToSearch}
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "球员" : "Players", href: "/search" },
+          { label: fullName },
+        ]}
+      />
 
       {/* ─── Bento Hero ─────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">
@@ -577,6 +583,26 @@ export default async function PlayerPage({ params }: PageProps) {
           </Link>
         )}
       </section>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          ...(player.teamAbbr
+            ? [{ href: `/team/${player.teamAbbr}`, label: isZh ? "球队主页" : "Team page", icon: Users }]
+            : []),
+          { href: `/compare?p1=${player.personId}`, label: isZh ? "对比球员" : "Compare with another", icon: GitCompareArrows },
+          ...(player.position
+            ? [{ href: `/by-position?pos=${player.position}`, label: isZh ? "同位置球员" : "Same position", icon: Activity }]
+            : []),
+          ...(player.country
+            ? [{ href: `/by-country?country=${encodeURIComponent(player.country)}`, label: isZh ? "同国家球员" : "Same country", icon: Globe }]
+            : []),
+          ...(player.draftYear
+            ? [{ href: `/draft-classes/${player.draftYear}`, label: isZh ? `${player.draftYear} 届选秀` : `${player.draftYear} draft class`, icon: GraduationCap }]
+            : []),
+          { href: "/milestones", label: isZh ? "里程碑追踪" : "Career milestones", icon: Award },
+        ]}
+      />
     </div>
   );
 }
