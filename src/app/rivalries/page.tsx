@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Swords } from "lucide-react";
+import { Swords, GitCompareArrows, Trophy, Repeat, TrendingUp, ListOrdered } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Rivalries",
@@ -220,6 +221,17 @@ export default async function RivalriesPage() {
           </div>
         </section>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/h2h", label: isZh ? "球队交锋" : "Head-to-Head", description: isZh ? "任意两队的对比" : "Compare any two teams", icon: GitCompareArrows },
+          { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季最精彩对决" : "Season's standout matchups", icon: Trophy },
+          { href: "/back-to-back", label: isZh ? "背靠背" : "Back-to-Backs", description: isZh ? "连日作战赛程" : "Consecutive-day schedule", icon: Repeat },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/standings", label: isZh ? "排名榜" : "Standings", description: isZh ? "完整东西部排名" : "Full conference standings", icon: ListOrdered },
+        ]}
+      />
     </div>
   );
 }

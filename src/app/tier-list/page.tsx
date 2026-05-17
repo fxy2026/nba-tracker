@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Layers } from "lucide-react";
+import { Layers, TrendingUp, ListOrdered, Activity, Users } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Team Tier List",
@@ -229,6 +230,17 @@ export default async function TierListPage() {
           )}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/standings", label: isZh ? "排名榜" : "Standings", description: isZh ? "完整东西部排名" : "Full conference standings", icon: ListOrdered },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+          { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "上升与下降的球队" : "Rising and falling teams", icon: Activity },
+          { href: "/divisions", label: isZh ? "分区排名" : "Divisions", description: isZh ? "六个分区分别排名" : "Six-division breakdown", icon: Users },
+        ]}
+      />
     </div>
   );
 }

@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { CURRENT_SEASON } from "@/lib/constants";
-import { Target, Loader2 } from "lucide-react";
+import { Target, Loader2, Trophy, Crown, Activity, Calendar } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
@@ -24,7 +25,8 @@ interface PlayerRow {
 }
 
 export default function ClutchPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -240,6 +242,17 @@ export default function ClutchPage() {
         </div>
         );
       })()}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "季后赛精彩对决" : "Best playoff games this season", icon: Trophy },
+          { href: "/records", label: isZh ? "赛季纪录" : "Records", description: isZh ? "赛季单场纪录" : "Single-game season records", icon: Crown },
+          { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", description: isZh ? "焦点战与加时赛战绩" : "Close-game and OT records", icon: Activity },
+          { href: "/", label: isZh ? "季后赛对阵" : "Playoff Bracket", description: isZh ? "完整对阵图" : "Full postseason bracket", icon: Trophy },
+          { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", description: isZh ? "历史比赛回顾" : "This day in history", icon: Calendar },
+        ]}
+      />
     </div>
   );
 }

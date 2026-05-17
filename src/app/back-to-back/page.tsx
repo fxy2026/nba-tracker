@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Repeat } from "lucide-react";
+import { Repeat, Activity, Zap, Calendar } from "lucide-react";
 import { getFullSchedule, getScheduleAge, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isPreseason } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Back-to-Backs",
@@ -243,6 +244,17 @@ export default async function BackToBackPage() {
             : "A back-to-back is any pair of games scheduled on consecutive calendar days. The NBA has progressively reduced B2Bs to manage player workload — historically tied to lower win rates on the second night, especially when traveling between cities."}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+          { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "上升与下降的球队" : "Rising and falling teams", icon: Activity },
+          { href: "/scoring-output", label: isZh ? "攻防输出" : "Scoring Output", description: isZh ? "进攻、防守与净值" : "Offense, defense, and net rating", icon: Zap },
+          { href: "/schedule", label: isZh ? "赛程" : "Schedule", description: isZh ? "全联盟赛程一览" : "League-wide game calendar", icon: Calendar },
+          { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", description: isZh ? "焦点战与加时赛战绩" : "Close-game and OT records", icon: Repeat },
+        ]}
+      />
     </div>
   );
 }

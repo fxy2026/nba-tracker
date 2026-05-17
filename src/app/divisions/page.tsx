@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Map as MapIcon } from "lucide-react";
+import { Map as MapIcon, ListOrdered, Users, TrendingUp, Crown, Activity } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isRegular, winPct } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Division Standings",
@@ -164,6 +165,17 @@ export default async function DivisionsPage() {
           );
         })}
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/standings", label: isZh ? "排名榜" : "Standings", description: isZh ? "完整东西部排名" : "Full conference standings", icon: ListOrdered },
+          { href: "/conference-race", label: isZh ? "分区冲刺" : "Conference Race", description: isZh ? "季后赛种子争夺" : "Playoff seeding race", icon: Users },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/tier-list", label: isZh ? "等级表" : "Tier List", description: isZh ? "球队按战力分档" : "Teams bucketed by tier", icon: Crown },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+        ]}
+      />
     </div>
   );
 }

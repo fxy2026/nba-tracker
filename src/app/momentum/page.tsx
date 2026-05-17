@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Crown, Repeat, Users } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Momentum",
@@ -204,6 +205,17 @@ export default async function MomentumPage() {
             : "Momentum compares win percentage over a team's last 5 games to their preceding 10 games. A team that was 4-6 over games 6-15 and goes 4-1 over their last 5 swings +50% — a clear hot streak emerging from mediocrity. The reverse identifies teams sliding from strong form into trouble. Minimum 3 games in each window to qualify."}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/tier-list", label: isZh ? "等级表" : "Tier List", description: isZh ? "球队按战力分档" : "Teams bucketed by tier", icon: Crown },
+          { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", description: isZh ? "焦点战与加时赛战绩" : "Close-game and OT records", icon: Repeat },
+          { href: "/conference-race", label: isZh ? "分区冲刺" : "Conference Race", description: isZh ? "季后赛种子争夺" : "Playoff seeding race", icon: Users },
+        ]}
+      />
     </div>
   );
 }

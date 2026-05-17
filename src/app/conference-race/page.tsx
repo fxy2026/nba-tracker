@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, ListOrdered, Users, TrendingUp, Activity, MapPin } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isRegular, winPct } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Conference Race",
@@ -195,6 +196,17 @@ export default async function ConferenceRacePage() {
             : "The top six seeds in each conference clinch a playoff berth outright. Seeds 7–10 enter the play-in tournament, fighting for the final two playoff spots. The remaining teams head to the draft lottery, with worse records generally yielding better odds at a top-4 pick."}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/standings", label: isZh ? "排名榜" : "Standings", description: isZh ? "完整东西部排名" : "Full conference standings", icon: ListOrdered },
+          { href: "/divisions", label: isZh ? "分区排名" : "Divisions", description: isZh ? "六个分区分别排名" : "Six-division breakdown", icon: Users },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+          { href: "/home-vs-road", label: isZh ? "主客场分别" : "Home vs Road", description: isZh ? "主场堡垒和客场战士" : "Fortresses and road warriors", icon: MapPin },
+        ]}
+      />
     </div>
   );
 }

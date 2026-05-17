@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Target } from "lucide-react";
+import { Target, Activity, TrendingUp, ListOrdered } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -9,6 +9,7 @@ import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Clutch Teams",
@@ -190,6 +191,17 @@ export default async function ClutchTeamsPage() {
           </div>
         </section>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
+          { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
+          { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "最近 5 场 vs 之前 10 场" : "Last 5 vs prior 10 games", icon: Activity },
+          { href: "/clutch", label: isZh ? "季后赛表现" : "Playoff Performers", description: isZh ? "季后赛球员领先者" : "Postseason player leaders", icon: Target },
+          { href: "/standings", label: isZh ? "排名榜" : "Standings", description: isZh ? "完整东西部排名" : "Full conference standings", icon: ListOrdered },
+        ]}
+      />
     </div>
   );
 }

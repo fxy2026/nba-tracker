@@ -11,14 +11,19 @@ import PlayerHeadshot from "@/components/PlayerHeadshot";
 import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
-import PlayerMeasurements from "@/components/player/PlayerMeasurements";
-import PlayerSalary from "@/components/player/PlayerSalary";
-import PlayerNews from "@/components/player/PlayerNews";
-import PlayerStatsBundle from "@/components/player/PlayerStatsBundle";
-import PlayerAdvancedStats from "@/components/player/PlayerAdvancedStats";
-import ShotHeatmap from "@/components/ShotHeatmap";
+import nextDynamic from "next/dynamic";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
+
+// Heavy player subcomponents are code-split — each ships its own chunk
+// instead of bloating the player page bundle. They all fetch on mount,
+// so deferring the JS doesn't change behavior.
+const PlayerMeasurements = nextDynamic(() => import("@/components/player/PlayerMeasurements"));
+const PlayerSalary = nextDynamic(() => import("@/components/player/PlayerSalary"));
+const PlayerNews = nextDynamic(() => import("@/components/player/PlayerNews"));
+const PlayerStatsBundle = nextDynamic(() => import("@/components/player/PlayerStatsBundle"));
+const PlayerAdvancedStats = nextDynamic(() => import("@/components/player/PlayerAdvancedStats"));
+const ShotHeatmap = nextDynamic(() => import("@/components/ShotHeatmap"));
 
 // Dynamic rendering — no edge cache, avoids stale hanging pages
 export const dynamic = "force-dynamic";
