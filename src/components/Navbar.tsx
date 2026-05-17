@@ -24,7 +24,6 @@ export default function Navbar() {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const teamsRef = useRef<HTMLDivElement>(null);
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -65,8 +64,6 @@ export default function Navbar() {
     { href: "/standings", label: t.nav.standings, icon: BarChart3 },
   ], [t]);
 
-  const [teamsBtnRect, setTeamsBtnRect] = useState<{ top: number; right: number } | null>(null);
-  const teamsBtnRef = useRef<HTMLButtonElement>(null);
   // Portal target available only on client. By the time user clicks a button to open
   // the dropdown, hydration is complete and document.body exists.
   const portalReady = typeof window !== "undefined";
@@ -200,68 +197,19 @@ export default function Navbar() {
             <span className="hidden lg:inline">{t.nav.more}</span>
           </button>
 
-          {/* Teams button — opens grid via portal */}
-          <div ref={teamsRef}>
-            <button
-              ref={teamsBtnRef}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (teamsBtnRef.current) {
-                  const r = teamsBtnRef.current.getBoundingClientRect();
-                  setTeamsBtnRect({ top: r.bottom + 4, right: window.innerWidth - r.right });
-                }
-                setTeamsOpen(!teamsOpen);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                teamsOpen || pathname.startsWith("/team")
-                  ? "bg-accent/15 text-accent"
-                  : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-              }`}
-            >
-              <Users size={16} />
-              <span className="hidden lg:inline">{t.nav.teams}</span>
-            </button>
-            {teamsOpen && portalReady && teamsBtnRect && createPortal(
-              <>
-                {/* Transparent backdrop — captures clicks-outside to close */}
-                <div
-                  className="fixed inset-0 z-[59]"
-                  onClick={() => setTeamsOpen(false)}
-                />
-                <div
-                  className="fixed w-[360px] max-w-[92vw] glass-tile p-3 z-[60] animate-fade-in overflow-y-auto shadow-2xl ring-1 ring-border"
-                  style={{
-                    top: teamsBtnRect.top,
-                    right: teamsBtnRect.right,
-                    maxHeight: `calc(100vh - ${teamsBtnRect.top + 16}px)`,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {TEAMS.map((tm) => (
-                      <Link
-                        key={tm.tricode}
-                        href={`/team/${tm.tricode}`}
-                        onClick={() => setTeamsOpen(false)}
-                        className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
-                        title={`${tm.city} ${tm.name}`}
-                      >
-                        <Image
-                          src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
-                          alt={tm.tricode}
-                          width={28}
-                          height={28}
-                          unoptimized
-                        />
-                        <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </>,
-              document.body
-            )}
-          </div>
+          {/* Teams button — opens 30-team grid */}
+          <button
+            type="button"
+            onClick={() => setTeamsOpen((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              teamsOpen || pathname.startsWith("/team")
+                ? "bg-accent/15 text-accent"
+                : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+            }`}
+          >
+            <Users size={16} />
+            <span className="hidden lg:inline">{t.nav.teams}</span>
+          </button>
 
           <LocaleToggle />
           <ThemeToggle />
@@ -323,6 +271,57 @@ export default function Navbar() {
 
       {/* Command palette (renders to document.body via portal — escapes nav containment) */}
       <CommandPalette open={moreOpen} onClose={() => setMoreOpen(false)} groups={moreGroups} />
+
+      {/* Teams modal — portaled to body so nav's backdrop-filter doesn't trap it */}
+      {teamsOpen && portalReady && createPortal(
+        <div
+          className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-[8vh] animate-fade-in"
+          onClick={() => setTeamsOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Teams"
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-md glass-tile p-4 shadow-2xl ring-1 ring-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users size={14} className="text-accent" />
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-text-primary">{t.nav.teams}</p>
+              </div>
+              <button
+                onClick={() => setTeamsOpen(false)}
+                className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover transition-colors cursor-pointer"
+              >
+                ESC
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              {TEAMS.map((tm) => (
+                <Link
+                  key={tm.tricode}
+                  href={`/team/${tm.tricode}`}
+                  onClick={() => setTeamsOpen(false)}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                  title={`${tm.city} ${tm.name}`}
+                >
+                  <Image
+                    src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
+                    alt={tm.tricode}
+                    width={32}
+                    height={32}
+                    unoptimized
+                  />
+                  <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </nav>
   );
 }
