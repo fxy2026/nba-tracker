@@ -6,7 +6,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffxy2026%2Fnba-tracker&env=BALLDONTLIE_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,ADMIN_PASSWORD&envDescription=API%20keys%20needed%20for%20full%20functionality.%20Only%20BALLDONTLIE_API_KEY%20is%20required%2C%20others%20are%20optional.&project-name=nba-tracker&repository-name=nba-tracker)
 
-[Live Demo](https://nba.xpy.me) &nbsp;|&nbsp; [Tech Article](https://nba.xpy.me/article)
+[Live Demo](https://nba.xpy.me) &nbsp;|&nbsp; [v2 Article](https://www.xpy.me/article/nba-tracker-v2-ui-redesign) &nbsp;|&nbsp; [v1 Article](https://www.xpy.me/article/nba-tracker)
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
@@ -20,9 +20,9 @@
 
 ---
 
-![Homepage](article-images/01-homepage-desktop.png)
+![NBA Tracker v2 demo](article-images/demo.gif)
 
-> **2026-05 update**: ~50 commits worth of optimization — A11y/WCAG AA, true PWA (offline + install), bilingual zh/en, Web Vitals telemetry, modern web platform (Speculation Rules · Container Queries · `:has()` · scroll-driven animations), data accuracy fixes, code-split refactors. See [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story.
+> **2026-05 update**: full UI rebuild + ~50 commits of polish — bracket → tree structure, top menu → Command Palette, breadcrumbs + RelatedPages on every page, A11y/WCAG AA, true PWA (offline + install), Service Worker, bilingual zh/en, Web Vitals telemetry, modern web platform (Speculation Rules · Container Queries · `:has()` · scroll-driven animations), data accuracy fixes (real all-time career leaders), code-split refactors (BracketTree 911 → 163, game/[id] 1026 → 243). See [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story, [the article](https://www.xpy.me/article/nba-tracker-v2-ui-redesign) for the narrative.
 
 ## Highlights
 
@@ -62,17 +62,30 @@
 
 ## Screenshots
 
-<details>
-<summary><b>Click to expand all screenshots</b></summary>
+### v2 — May 2026 redesign
 
 | | |
 |:---:|:---:|
-| ![Desktop](article-images/01-homepage-desktop.png) | ![Mobile](article-images/02-homepage-mobile.png) |
-| Homepage — Desktop | Homepage — Mobile |
+| ![Playoff Bracket](article-images/30-bracket-tree.png) | ![Series Detail](article-images/31-series-detail.png) |
+| Playoff Bracket — tree structure with SVG connectors + partial projections | Series Detail — game-by-game · top performers · key moments |
+| ![All-Time Leaders](article-images/21-all-time-leaders-real.png) | ![Legend Quiz](article-images/28-legend-quiz.png) |
+| All-Time Leaders — real career data (Jordan 30.12 PPG, not last-season averages) | Legend Quiz — guess the GOAT from career stats |
+| ![Bilingual Search](article-images/32-bilingual-search.png) | ![Chinese Glossary](article-images/22-glossary-zh.png) |
+| Search 230+ aliases — "字母哥" → Giannis, "司机" → Nowitzki, "湖人" → roster | Glossary — 82 basketball terms with Hupu-style Chinese |
+| ![Breadcrumbs + UpdatedPill](article-images/23-breadcrumbs.png) | ![RelatedPages](article-images/24-related-pages.png) |
+| Breadcrumbs + "X minutes ago" freshness pill on every page | RelatedPages footer — every analytic page links to 5-6 siblings |
+| ![Scroll progress](article-images/25-scroll-progress-updated-pill.png) | ![Recently viewed](article-images/20-recently-viewed.png) |
+| Scroll-driven CSS progress bar (pure CSS, zero JS) | Recently viewed — last 8 player/team/game visits on homepage |
+
+<details>
+<summary><b>Click to expand original feature screenshots</b></summary>
+
+| | |
+|:---:|:---:|
 | ![Game](article-images/03-game-scoreboard.png) | ![BoxScore](article-images/03b-game-boxscore.png) |
 | Game Detail — Scoreboard | Game Detail — Box Score |
 | ![ShotChart](article-images/03c-game-shotchart.png) | ![PlayByPlay](article-images/03d-game-playbybplay.png) |
-| Shot Chart | Play-by-Play Timeline |
+| Shot Chart — pure SVG basketball court | Play-by-Play Timeline |
 | ![Player](article-images/05-player-header.png) | ![Stats](article-images/06-stats.png) |
 | Player Profile | Stats Leaders |
 | ![Standings](article-images/04-standings.png) | ![Team](article-images/11-team.png) |
@@ -81,8 +94,8 @@
 | Calendar | Injury Report |
 | ![Search](article-images/09-search.png) | ![History](article-images/12-history.png) |
 | Player Search | History |
-| ![GameMobile](article-images/10-game-mobile.png) | ![Scroll](article-images/01b-homepage-scroll.png) |
-| Game Detail — Mobile | Playoff Bracket |
+| ![GameMobile](article-images/10-game-mobile.png) | ![Mobile](article-images/02-homepage-mobile.png) |
+| Game Detail — Mobile | Homepage — Mobile |
 
 </details>
 
