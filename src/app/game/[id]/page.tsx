@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, parseMinutes, toBeijingTime, type PlayerStats, type ShotAction, type PlayerInfo, type BoxScoreTeam } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { isPlayoff } from "@/lib/games";
 import CountUpNumber from "@/components/CountUpNumber";
 import { getReplayLinks } from "@/lib/supabase";
 import TeamLogo from "@/components/TeamLogo";
@@ -530,7 +531,7 @@ export default async function GamePage({ params }: PageProps) {
   const homeWon = boxScore.homeTeam.score > boxScore.awayTeam.score;
   const scoreDiff = Math.abs(boxScore.homeTeam.score - boxScore.awayTeam.score);
   const isCloseGame = isFinal && scoreDiff <= 5;
-  const isPlayoffs = boxScore.gameId.startsWith("004");
+  const isPlayoffs = isPlayoff(boxScore.gameId);
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
   const beijingTime = toBeijingTime(boxScore.gameTimeUTC);

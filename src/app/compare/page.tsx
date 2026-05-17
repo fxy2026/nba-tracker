@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { GitCompareArrows, ArrowLeftRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface PlayerData {
   personId: number;
@@ -55,7 +56,7 @@ export default function ComparePage() {
     return () => clearTimeout(t);
   }, [query2]);
 
-  const headshotUrl = (id: number) => `https://cdn.nba.com/headshots/nba/latest/1040x760/${id}.png`;
+  const headshotUrl = (id: number) => playerHeadshotUrl(id);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">

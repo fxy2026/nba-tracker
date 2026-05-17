@@ -10,6 +10,7 @@ import RelatedPages from "@/components/RelatedPages";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
 import PlayerMeasurements from "@/components/player/PlayerMeasurements";
 import PlayerSalary from "@/components/player/PlayerSalary";
 import PlayerNews from "@/components/player/PlayerNews";
@@ -109,7 +110,7 @@ export default async function PlayerPage({ params }: PageProps) {
     nationality: player.country || undefined,
     alumniOf: player.college ? { "@type": "CollegeOrUniversity", name: player.college } : undefined,
     url: `https://nba.xpy.me/player/${player.personId}`,
-    image: `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.personId}.png`,
+    image: playerHeadshotUrl(player.personId),
   };
 
   return (
@@ -159,7 +160,7 @@ export default async function PlayerPage({ params }: PageProps) {
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-bg-card/95 to-transparent" />
             {/* Team logo watermark, top-left */}
             <Image
-              src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(player.teamId)}
               alt=""
               width={28}
               height={28}
@@ -551,7 +552,7 @@ export default async function PlayerPage({ params }: PageProps) {
             />
             {/* Watermark logo */}
             <Image
-              src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(player.teamId)}
               alt=""
               width={220}
               height={220}
@@ -564,7 +565,7 @@ export default async function PlayerPage({ params }: PageProps) {
                 style={{ background: `${teamColor}22`, boxShadow: `0 0 0 1px ${teamColor}44 inset` }}
               >
                 <Image
-                  src={`https://cdn.nba.com/logos/nba/${player.teamId}/global/L/logo.svg`}
+                  src={teamLogoUrl(player.teamId)}
                   alt={player.teamAbbr}
                   width={40}
                   height={40}

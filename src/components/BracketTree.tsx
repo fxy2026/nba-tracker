@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Trophy, Crown } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { isPlayoff } from "@/lib/games";
 import TeamLogo from "./TeamLogo";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -52,7 +53,7 @@ function getConference(tricode1: string, tricode2: string): "East" | "West" | "F
  * Rounds: 1=R1 (8 series), 2=R2/Semis (4 series), 3=ConfFinals (2 series), 4=Finals (1 series)
  */
 function parseGameId(gameId: string): { round: number; seriesIndex: number; game: number } {
-  if (!gameId.startsWith("004") || gameId.length < 10) return { round: 0, seriesIndex: 0, game: 0 };
+  if (!isPlayoff(gameId) || gameId.length < 10) return { round: 0, seriesIndex: 0, game: 0 };
   const round = parseInt(gameId.charAt(7)) || 0;
   const seriesIndex = parseInt(gameId.charAt(8)) || 0;
   const game = parseInt(gameId.charAt(9)) || 0;

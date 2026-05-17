@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Repeat } from "lucide-react";
 import { getFullSchedule, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isPreseason } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -49,7 +51,7 @@ async function compute() {
     if (!iso) continue;
     for (const g of gd.games) {
       // Skip preseason (001) exhibition vs international teams; keep regular season + playoffs
-      if (g.gameId.startsWith("001")) continue;
+      if (isPreseason(g.gameId)) continue;
       const won = g.gameStatus === 3 ? g.homeTeam.score > g.awayTeam.score : null;
       const pushH = teamApps.get(g.homeTeam.teamTricode) || [];
       pushH.push({ date: iso, gameId: g.gameId, status: g.gameStatus, teamId: g.homeTeam.teamId, won });
@@ -170,7 +172,7 @@ export default async function BackToBackPage() {
                   href={`/team/${r.team}`}
                   className="glass-tile p-3 flex items-center gap-3 group cursor-pointer"
                 >
-                  <Image src={`https://cdn.nba.com/logos/nba/${r.teamId}/global/L/logo.svg`} alt={r.team} width={32} height={32} unoptimized />
+                  <Image src={teamLogoUrl(r.teamId)} alt={r.team} width={32} height={32} unoptimized />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold font-mono group-hover:text-accent transition-colors">{r.team}</p>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
@@ -213,7 +215,7 @@ export default async function BackToBackPage() {
               </div>
             ) : future.map((ins, i) => (
               <div key={`${ins.teamTricode}-${ins.dates[0]}-${i}`} className="glass-tile p-3 flex items-center gap-3">
-                <Image src={`https://cdn.nba.com/logos/nba/${ins.teamId}/global/L/logo.svg`} alt={ins.teamTricode} width={32} height={32} unoptimized />
+                <Image src={teamLogoUrl(ins.teamId)} alt={ins.teamTricode} width={32} height={32} unoptimized />
                 <Link href={`/team/${ins.teamTricode}`} className="text-sm font-bold font-mono hover:text-accent transition-colors shrink-0">
                   {ins.teamTricode}
                 </Link>

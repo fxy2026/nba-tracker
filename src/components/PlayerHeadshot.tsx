@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import Image from "next/image";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface Props {
   personId: number;
@@ -26,7 +27,7 @@ export default memo(function PlayerHeadshot({ personId, name, size = 28 }: Props
   return (
     <div className="rounded-full overflow-hidden bg-bg-secondary shrink-0" style={{ width: size, height: size }}>
       <Image
-        src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${personId}.png`}
+        src={playerHeadshotUrl(personId)}
         alt={name}
         width={size}
         height={size}

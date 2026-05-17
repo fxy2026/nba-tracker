@@ -8,6 +8,7 @@ import { CURRENT_SEASON } from "@/lib/constants";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface PlayerRow {
   PLAYER_ID: number;
@@ -232,7 +233,7 @@ export default function AwardsRacePage() {
                 </span>
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
                   <Image
-                    src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
+                    src={playerHeadshotUrl(p.PLAYER_ID)}
                     alt={p.PLAYER}
                     width={40}
                     height={40}

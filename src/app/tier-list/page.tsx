@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Layers } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -32,7 +34,7 @@ async function rankTeams(): Promise<TeamScore[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const isoDate = `${y}-${m}-${d}`;
@@ -123,7 +125,7 @@ function TeamChip({ team }: { team: TeamScore }) {
       className="flex items-center gap-2 px-3 py-2 glass-tile group cursor-pointer"
     >
       <Image
-        src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+        src={teamLogoUrl(team.teamId)}
         alt={team.tricode}
         width={28}
         height={28}

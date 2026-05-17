@@ -7,22 +7,10 @@ import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
 import { useLocale } from "@/components/LocaleProvider";
+import { localTz as getLocalTz, dateInTz } from "@/lib/timezone";
 
 interface HomeClientProps {
   initialDate: string;
-}
-
-// "YYYY-MM-DD" in a given IANA timezone.
-function dateInTz(d: Date, tz: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(d);
-}
-
-function getLocalTz(): string {
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
-  catch { return "America/New_York"; }
 }
 
 export default function HomeClient({ initialDate }: HomeClientProps) {

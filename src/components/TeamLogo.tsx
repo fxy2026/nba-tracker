@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import Image from "next/image";
+import { teamLogoUrl } from "@/lib/teamUrls";
 
 interface TeamLogoProps {
   teamId?: number;
@@ -12,9 +13,7 @@ interface TeamLogoProps {
 export default memo(function TeamLogo({ teamId, tricode, size = 40 }: TeamLogoProps) {
   const [error, setError] = useState(false);
 
-  const url = teamId
-    ? `https://cdn.nba.com/logos/nba/${teamId}/global/L/logo.svg`
-    : "";
+  const url = teamId ? teamLogoUrl(teamId) : "";
 
   if (!url || error) {
     return (

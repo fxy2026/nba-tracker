@@ -3,6 +3,7 @@
 import { memo } from "react";
 import Link from "next/link";
 import type { ScheduleGame } from "@/lib/api";
+import { isPlayoff } from "@/lib/games";
 import TeamLogo from "./TeamLogo";
 import { ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -52,7 +53,7 @@ export default memo(function RecentHighlights({ games }: Props) {
                       {t.recentHighlights.blowout}
                     </span>
                   )}
-                  {game.gameId.startsWith("004") && (
+                  {isPlayoff(game.gameId) && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">
                       {t.recentHighlights.po}
                     </span>

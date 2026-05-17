@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Swords } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -39,7 +41,7 @@ async function compute(): Promise<SeriesData[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue; // regular season only
+      if (!isRegular(g.gameId)) continue; // regular season only
 
       const a = g.homeTeam.teamTricode;
       const b = g.awayTeam.teamTricode;
@@ -96,11 +98,11 @@ function SeriesCard({ s, badge, badgeColor, badgeLabel, isZh }: { s: SeriesData;
       <div className="relative">
         <div className="flex items-center justify-between mb-3 gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Image src={`https://cdn.nba.com/logos/nba/${s.teamIdA}/global/L/logo.svg`} alt={s.triA} width={36} height={36} unoptimized />
+            <Image src={teamLogoUrl(s.teamIdA)} alt={s.triA} width={36} height={36} unoptimized />
             <span className="text-base font-bold font-mono">{s.triA}</span>
             <span className="text-text-secondary/40 mx-1">vs</span>
             <span className="text-base font-bold font-mono">{s.triB}</span>
-            <Image src={`https://cdn.nba.com/logos/nba/${s.teamIdB}/global/L/logo.svg`} alt={s.triB} width={36} height={36} unoptimized />
+            <Image src={teamLogoUrl(s.teamIdB)} alt={s.triB} width={36} height={36} unoptimized />
           </div>
           {s.isDivisionRival && (
             <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-danger/15 text-danger uppercase tracking-[0.15em] shrink-0">

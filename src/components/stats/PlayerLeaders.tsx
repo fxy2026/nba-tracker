@@ -7,6 +7,7 @@ import { AlertCircle } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
 import EmptyState from "@/components/EmptyState";
+import { playerHeadshotUrl as buildHeadshotUrl } from "@/lib/teamUrls";
 const STATS_API = "/api/stats";
 
 interface LeaderRow {
@@ -39,7 +40,7 @@ const PLAYER_CATS = [
 ] as const;
 
 function headshotUrl(id: number) {
-  return `https://cdn.nba.com/headshots/nba/latest/1040x760/${id}.png`;
+  return buildHeadshotUrl(id);
 }
 
 export default function PlayerLeaders() {

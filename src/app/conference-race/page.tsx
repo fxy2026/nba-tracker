@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, winPct } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -30,7 +32,7 @@ async function computeStandings(): Promise<TeamRec[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const homeWon = g.homeTeam.score > g.awayTeam.score;
       const push = (tri: string, teamId: number, won: boolean) => {
         const r = records.get(tri) || { tricode: tri, teamId, wins: 0, losses: 0 };
@@ -46,7 +48,7 @@ async function computeStandings(): Promise<TeamRec[]> {
   for (const r of records.values()) {
     const meta = TEAM_META[r.tricode];
     if (!meta) continue;
-    const pct = r.wins + r.losses > 0 ? r.wins / (r.wins + r.losses) : 0;
+    const pct = winPct(r.wins, r.losses);
     out.push({ ...r, pct, conference: meta.conference as "East" | "West" });
   }
 
@@ -81,7 +83,7 @@ function Row({ team, seed }: { team: TeamRec; seed: number }) {
         {category.label}
       </span>
       <Image
-        src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+        src={teamLogoUrl(team.teamId)}
         alt={team.tricode} width={36} height={36} unoptimized
       />
       <div className="flex-1 min-w-0">

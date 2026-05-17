@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { ScheduleGame } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isPlayoff } from "@/lib/games";
+import { localTz, localToday } from "@/lib/timezone";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
@@ -17,18 +20,6 @@ interface GamesListProps {
   selectedDate: string;
   initialGames?: ScheduleGame[];
   initialReplayIds?: string[];
-}
-
-function getLocalTz(): string {
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
-  catch { return "America/New_York"; }
-}
-
-function localToday(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: getLocalTz(),
-    year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(new Date());
 }
 
 export default function GamesList({ selectedDate, initialGames, initialReplayIds }: GamesListProps) {
@@ -45,7 +36,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     setError(false);
     try {
       const [gamesRes, replayRes] = await Promise.all([
-        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(getLocalTz())}`, { signal }),
+        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(localTz())}`, { signal }),
         fetch("/api/replay?action=ids", { signal }).catch(() => null),
       ]);
       if (signal?.aborted) return;
@@ -197,7 +188,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         >
           {/* Background watermark logos — both teams faintly behind */}
           <Image
-            src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.awayTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(gameOfTheDay.awayTeam.teamId)}
             alt=""
             width={280}
             height={280}
@@ -205,7 +196,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             className="absolute -left-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
           />
           <Image
-            src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.homeTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(gameOfTheDay.homeTeam.teamId)}
             alt=""
             width={280}
             height={280}
@@ -218,7 +209,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             {/* Away team */}
             <div className="flex-1 flex items-center gap-3">
               <Image
-                src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.awayTeam.teamId}/global/L/logo.svg`}
+                src={teamLogoUrl(gameOfTheDay.awayTeam.teamId)}
                 alt={gameOfTheDay.awayTeam.teamTricode}
                 width={48}
                 height={48}
@@ -253,7 +244,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
                 <p className="text-sm font-bold text-text-primary truncate">{gameOfTheDay.homeTeam.teamTricode}</p>
               </div>
               <Image
-                src={`https://cdn.nba.com/logos/nba/${gameOfTheDay.homeTeam.teamId}/global/L/logo.svg`}
+                src={teamLogoUrl(gameOfTheDay.homeTeam.teamId)}
                 alt={gameOfTheDay.homeTeam.teamTricode}
                 width={48}
                 height={48}
@@ -268,7 +259,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       {/* Game cards by status — each group is its own section divider */}
       {games.length > 0 ? (
         <div className="space-y-6 mt-6">
-          {games.some((g) => g.gameId.startsWith("004")) && (
+          {games.some((g) => isPlayoff(g.gameId)) && (
             <div className="glass-tile glass-tile-featured px-4 py-2 text-center">
               <span className="text-xs font-bold text-accent-amber uppercase tracking-[0.25em]">★ {t.home.playoffGamesToday}</span>
             </div>
@@ -379,7 +370,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
                 <Link href={`/?date=${(() => {
                   const d = new Date(); d.setDate(d.getDate() - 1);
                   return new Intl.DateTimeFormat("en-CA", {
-                    timeZone: getLocalTz(),
+                    timeZone: localTz(),
                     year: "numeric", month: "2-digit", day: "2-digit",
                   }).format(d);
                 })()}`} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">

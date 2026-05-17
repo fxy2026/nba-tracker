@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 import ThemeToggle from "@/components/ThemeToggle";
 import LocaleToggle from "@/components/LocaleToggle";
 import { useLocale } from "@/components/LocaleProvider";
@@ -391,7 +392,7 @@ export default function Navbar() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
+                    src={teamLogoUrl(tm.teamId)}
                     alt={tm.tricode}
                     width={32}
                     height={32}

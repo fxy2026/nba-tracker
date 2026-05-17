@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -215,7 +216,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                     if (!meta) return null;
                     return (
                       <Image
-                        src={`https://cdn.nba.com/logos/nba/${meta.teamId}/global/L/logo.svg`}
+                        src={teamLogoUrl(meta.teamId)}
                         alt={meta.tricode}
                         width={24}
                         height={24}

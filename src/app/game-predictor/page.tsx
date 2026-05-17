@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, TrendingUp, ArrowRight } from "lucide-react";
 import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -57,7 +59,7 @@ async function buildPredictions(): Promise<PredictedGame[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const isoDate = `${y}-${m}-${d}`;
@@ -142,7 +144,7 @@ function GameRow({ p }: { p: PredictedGame }) {
         {/* Predicted winner side */}
         <div className="flex-1 flex items-center gap-3 min-w-0">
           <Image
-            src={`https://cdn.nba.com/logos/nba/${winnerId}/global/L/logo.svg`}
+            src={teamLogoUrl(winnerId)}
             alt={winnerTri}
             width={48}
             height={48}
@@ -177,7 +179,7 @@ function GameRow({ p }: { p: PredictedGame }) {
             </p>
           </div>
           <Image
-            src={`https://cdn.nba.com/logos/nba/${loserId}/global/L/logo.svg`}
+            src={teamLogoUrl(loserId)}
             alt={loserTri}
             width={48}
             height={48}

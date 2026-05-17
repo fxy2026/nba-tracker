@@ -10,6 +10,8 @@ import TeamLogo from "./TeamLogo";
 import GameCountdown from "./GameCountdown";
 import { useLocale } from "@/components/LocaleProvider";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isPlayoff } from "@/lib/games";
 
 /** Hook: detect when a score changes and trigger a CSS class for 1.2s */
 function useScoreFlash(score: number): boolean {
@@ -41,7 +43,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   // Live games only — flash when scores update
   const awayFlash = useScoreFlash(isLive ? game.awayTeam.score : 0);
   const homeFlash = useScoreFlash(isLive ? game.homeTeam.score : 0);
-  const isPlayoffs = game.gameId.startsWith("004");
+  const isPlayoffs = isPlayoff(game.gameId);
   const isScheduled = game.gameStatus === 1;
 
   // Determine playoff round from game ID
@@ -65,7 +67,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
       <div className={`glass-tile p-4 relative overflow-hidden ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
         {/* Decorative team-logo watermarks (very subtle) */}
         <Image
-          src={`https://cdn.nba.com/logos/nba/${game.awayTeam.teamId}/global/L/logo.svg`}
+          src={teamLogoUrl(game.awayTeam.teamId)}
           alt=""
           width={140}
           height={140}
@@ -74,7 +76,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
           className="pointer-events-none absolute -left-8 -bottom-8 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
         />
         <Image
-          src={`https://cdn.nba.com/logos/nba/${game.homeTeam.teamId}/global/L/logo.svg`}
+          src={teamLogoUrl(game.homeTeam.teamId)}
           alt=""
           width={140}
           height={140}

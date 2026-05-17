@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { TEAM_META } from "@/lib/teams";
 import { getFullSchedule, getPlayerIndex } from "@/lib/api";
+import { isPreseason } from "@/lib/games";
 
 const BASE = "https://nba.xpy.me";
 
@@ -90,7 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const gd of schedule) {
       for (const g of gd.games) {
         // Skip preseason (001) — those are exhibition vs international teams
-        if (g.gameId.startsWith("001")) continue;
+        if (isPreseason(g.gameId)) continue;
         // Skip "if necessary" placeholder games (ghost games)
         if (g.ifNecessary === true && g.gameStatus === 1) continue;
         gamePages.push({

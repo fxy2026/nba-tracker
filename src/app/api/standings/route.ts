@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFullSchedule } from "@/lib/api";
+import { isRegular } from "@/lib/games";
 
 interface TeamRecord {
   tricode: string;
@@ -23,7 +24,7 @@ async function computeStandings(): Promise<TeamRecord[]> {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
       // Only count regular season games (gameId starts with "002")
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const h = g.homeTeam;
       const a = g.awayTeam;
       if (!teamMap[h.teamTricode])

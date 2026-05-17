@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFullSchedule, getPlayerIndex, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import TeamLogo from "@/components/TeamLogo";
@@ -61,7 +63,7 @@ export default async function TeamPage({ params }: PageProps) {
 
   for (const gd of schedule) {
     for (const g of gd.games) {
-      if (g.gameStatus === 3 && g.gameId.startsWith("002")) {
+      if (g.gameStatus === 3 && isRegular(g.gameId)) {
         const ht = g.homeTeam.teamTricode;
         const at = g.awayTeam.teamTricode;
         if (!teamRecordMap[ht]) teamRecordMap[ht] = { w: 0, l: 0 };
@@ -82,11 +84,11 @@ export default async function TeamPage({ params }: PageProps) {
         const teamScore = isHome ? g.homeTeam.score : g.awayTeam.score;
         const oppScore = isHome ? g.awayTeam.score : g.homeTeam.score;
         const won = teamScore > oppScore;
-        const isRegularSeason = g.gameId.startsWith("002");
+        const isRegularSeason = isRegular(g.gameId);
         // Only count regular season games for W/L record
         if (isRegularSeason) {
           if (won) wins++; else losses++;
-        } else if (g.gameId.startsWith("004")) {
+        } else if (isPlayoff(g.gameId)) {
           if (won) playoffWins++; else playoffLosses++;
         }
 
@@ -172,7 +174,7 @@ export default async function TeamPage({ params }: PageProps) {
     .filter((p) => p.teamAbbr === team.tricode)
     .sort((a, b) => b.pts - a.pts);
 
-  const winPct = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : "0.0";
+  const winPct = wins + losses > 0 ? (calcWinPct(wins, losses) * 100).toFixed(1) : "0.0";
 
   // Compute conference ranking by sorting all conference teams by win% (uses
   // teamRecordMap built in the schedule pass above — no extra iteration).
@@ -196,7 +198,7 @@ export default async function TeamPage({ params }: PageProps) {
     name: `${team.city} ${team.name}`,
     sport: "Basketball",
     url: `https://nba.xpy.me/team/${team.tricode}`,
-    logo: `https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`,
+    logo: teamLogoUrl(team.teamId),
     location: {
       "@type": "Place",
       name: team.city,
@@ -518,7 +520,7 @@ export default async function TeamPage({ params }: PageProps) {
               for (const gd of schedule) {
                 for (const g of gd.games) {
                   if (g.gameStatus !== 3) continue;
-                  if (!g.gameId.startsWith("002")) continue; // regular season only
+                  if (!isRegular(g.gameId)) continue; // regular season only
                   const ht = g.homeTeam.teamTricode;
                   const at = g.awayTeam.teamTricode;
                   if (!oppRecords[ht]) oppRecords[ht] = { w: 0, l: 0 };

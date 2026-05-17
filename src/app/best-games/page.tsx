@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Flame, Zap, Target, Clock, BookOpen, CalendarDays, Crown, type LucideIcon } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isPreseason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
@@ -32,7 +34,7 @@ async function fetchAndCategorize() {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
       // Skip preseason (001) — exhibition vs international teams
-      if (g.gameId.startsWith("001")) continue;
+      if (isPreseason(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const isoDate = `${y}-${m}-${d}`;
@@ -81,7 +83,7 @@ function GameRow({ meta, badge, badgeColor }: { meta: GameWithMeta; badge: strin
       <div className="flex-1 flex items-center gap-3 min-w-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Image
-            src={`https://cdn.nba.com/logos/nba/${g.awayTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(g.awayTeam.teamId)}
             alt={g.awayTeam.teamTricode}
             width={32}
             height={32}
@@ -104,7 +106,7 @@ function GameRow({ meta, badge, badgeColor }: { meta: GameWithMeta; badge: strin
             {g.homeTeam.teamTricode}
           </span>
           <Image
-            src={`https://cdn.nba.com/logos/nba/${g.homeTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(g.homeTeam.teamId)}
             alt={g.homeTeam.teamTricode}
             width={32}
             height={32}

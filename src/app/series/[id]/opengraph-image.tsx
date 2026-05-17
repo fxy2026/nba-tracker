@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 
 export const runtime = "nodejs";
 export const alt = "NBA playoff series";
@@ -163,7 +164,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             }}
           >
             <img
-              src={`https://cdn.nba.com/logos/nba/${t1Id}/global/L/logo.svg`}
+              src={teamLogoUrl(t1Id)}
               width={200}
               height={200}
               alt=""
@@ -263,7 +264,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             }}
           >
             <img
-              src={`https://cdn.nba.com/logos/nba/${t2Id}/global/L/logo.svg`}
+              src={teamLogoUrl(t2Id)}
               width={200}
               height={200}
               alt=""

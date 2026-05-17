@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { isPreseason } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
@@ -41,7 +42,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
     for (const gd of schedule) {
       for (const g of gd.games) {
         if (g.gameStatus !== 3) continue;
-        if (g.gameId.startsWith("001")) continue; // skip preseason
+        if (isPreseason(g.gameId)) continue; // skip preseason
         const isMatch =
           (g.homeTeam.teamTricode === t1 && g.awayTeam.teamTricode === t2) ||
           (g.homeTeam.teamTricode === t2 && g.awayTeam.teamTricode === t1);

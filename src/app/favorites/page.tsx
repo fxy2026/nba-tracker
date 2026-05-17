@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Heart, Users, User, Copy, Check } from "lucide-react";
 import { getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
 import { useLocale } from "@/components/LocaleProvider";
 import PageHeader from "@/components/PageHeader";
 
@@ -170,7 +171,7 @@ export default function FavoritesPage() {
               return (
                 <div key={tricode} className="flex items-center gap-3 px-4 py-3 hover:bg-bg-hover transition-colors">
                   <Image
-                    src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+                    src={teamLogoUrl(team.teamId)}
                     alt={tricode}
                     width={32}
                     height={32}
@@ -209,7 +210,7 @@ export default function FavoritesPage() {
               return (
                 <div key={playerId} className="flex items-center gap-3 px-4 py-3 hover:bg-bg-hover transition-colors">
                   <Image
-                    src={`https://cdn.nba.com/headshots/nba/latest/260x190/${playerId}.png`}
+                    src={playerHeadshotUrl(playerId, "260x190")}
                     alt={player ? `${player.firstName} ${player.lastName}` : `Player ${playerId}`}
                     width={32}
                     height={32}

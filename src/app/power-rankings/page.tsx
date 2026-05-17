@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -40,7 +42,7 @@ async function computeMetrics(): Promise<TeamMetrics[]> {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
       // Only regular season games
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const isoDate = `${y}-${m}-${d}`;
@@ -175,7 +177,7 @@ function TeamRow({ m, rank, topPower, isZh }: { m: TeamMetrics; rank: number; to
       {/* Team logo + meta */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <Image
-          src={`https://cdn.nba.com/logos/nba/${m.teamId}/global/L/logo.svg`}
+          src={teamLogoUrl(m.teamId)}
           alt={m.tricode}
           width={36}
           height={36}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Flame, Snowflake, TrendingDown, TrendingUp, Crown, Target, Layers } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, isPlayoff } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -38,7 +40,7 @@ async function computeStreaks(): Promise<TeamStreak[]> {
       if (g.gameStatus !== 3) continue;
       // Regular season (002) + playoffs (004) only — skip preseason (001) which
       // includes exhibition games vs international teams (Melbourne, Guangzhou, etc).
-      if (!g.gameId.startsWith("002") && !g.gameId.startsWith("004")) continue;
+      if (!isRegular(g.gameId) && !isPlayoff(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [month, day, year] = dateStr.split("/");
       const isoDate = `${year}-${month}-${day}`;
@@ -145,7 +147,7 @@ function TeamRow({ s }: { s: TeamStreak }) {
       {/* Team logo + meta */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <Image
-          src={`https://cdn.nba.com/logos/nba/${s.teamId}/global/L/logo.svg`}
+          src={teamLogoUrl(s.teamId)}
           alt={s.tricode}
           width={36}
           height={36}

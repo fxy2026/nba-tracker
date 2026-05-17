@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/components/LocaleProvider";
+import { teamLogoUrl } from "@/lib/teamUrls";
 
 interface TeamRecord { tricode: string; teamId: number; teamName: string; teamCity: string; wins: number; losses: number; }
 
@@ -76,7 +77,7 @@ export default function TeamStandings() {
                 {filtered.map((tm, i) => {
                   const pct = tm.wins + tm.losses > 0 ? tm.wins / (tm.wins + tm.losses) : 0;
                   const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
-                  const logoUrl = `https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`;
+                  const logoUrl = teamLogoUrl(tm.teamId);
                   const isTop3 = i < 3;
                   const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
                     : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"

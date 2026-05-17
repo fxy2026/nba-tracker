@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
+import { isPlayoff } from "@/lib/games";
 
 export async function GET() {
   let schedule;
@@ -40,7 +41,7 @@ export async function GET() {
   // Playoff games
   const playoffGames = schedule
     .flatMap((gd) => gd.games)
-    .filter((g) => g.gameId.startsWith("004") && g.gameStatus === 3)
+    .filter((g) => isPlayoff(g.gameId) && g.gameStatus === 3)
     .map((g) => ({
       gameId: g.gameId,
       gameStatus: g.gameStatus,

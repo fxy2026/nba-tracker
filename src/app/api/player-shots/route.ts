@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFullSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
+import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
 
 // Aggregate shot data for a player across multiple games.
 // Current season: schedule (CDN) → game IDs → CDN PBP
@@ -62,8 +63,8 @@ async function getGameIdsFromSchedule(teamTricode: string, seasonType: string): 
       if (g.gameStatus !== 3) continue;
       const isTeamGame = g.homeTeam.teamTricode === teamTricode || g.awayTeam.teamTricode === teamTricode;
       if (!isTeamGame) continue;
-      const isRegular = g.gameId.startsWith("002");
-      const isPlayoff = g.gameId.startsWith("004");
+      const isRegular = isRegularGame(g.gameId);
+      const isPlayoff = isPlayoffGame(g.gameId);
       if (seasonType === "regular" && !isRegular) continue;
       if (seasonType === "playoffs" && !isPlayoff) continue;
       if (seasonType === "all" && !isRegular && !isPlayoff) continue;

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Home, Plane } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -32,7 +34,7 @@ async function compute(): Promise<TeamSplit[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const homeWon = g.homeTeam.score > g.awayTeam.score;
       const h = map.get(g.homeTeam.teamTricode) || { tricode: g.homeTeam.teamTricode, teamId: g.homeTeam.teamId, homeW: 0, homeL: 0, roadW: 0, roadL: 0 };
       const a = map.get(g.awayTeam.teamTricode) || { tricode: g.awayTeam.teamTricode, teamId: g.awayTeam.teamId, homeW: 0, homeL: 0, roadW: 0, roadL: 0 };
@@ -59,7 +61,7 @@ function Row({ team, value, sub, color }: { team: TeamSplit; value: string; sub:
       href={`/team/${team.tricode}`}
       className="glass-tile p-3 flex items-center gap-3 group cursor-pointer"
     >
-      <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={36} height={36} unoptimized />
+      <Image src={teamLogoUrl(team.teamId)} alt={team.tricode} width={36} height={36} unoptimized />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold font-mono text-text-primary group-hover:text-accent transition-colors">{team.tricode}</p>
         <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{sub}</p>

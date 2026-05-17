@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Map as MapIcon } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, winPct } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -31,7 +33,7 @@ async function compute(): Promise<TeamRec[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const homeWon = g.homeTeam.score > g.awayTeam.score;
       const push = (tri: string, teamId: number, won: boolean) => {
         const r = map.get(tri) || { tricode: tri, teamId, wins: 0, losses: 0 };
@@ -47,7 +49,7 @@ async function compute(): Promise<TeamRec[]> {
   for (const r of map.values()) {
     const meta = TEAM_META[r.tricode];
     if (!meta) continue;
-    const pct = r.wins + r.losses > 0 ? r.wins / (r.wins + r.losses) : 0;
+    const pct = winPct(r.wins, r.losses);
     out.push({ ...r, pct, conference: meta.conference, division: meta.division });
   }
   for (const meta of Object.values(TEAM_META)) {
@@ -142,7 +144,7 @@ export default async function DivisionsPage() {
                         <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
                           {i + 1}
                         </span>
-                        <Image src={`https://cdn.nba.com/logos/nba/${t.teamId}/global/L/logo.svg`} alt={t.tricode} width={28} height={28} unoptimized />
+                        <Image src={teamLogoUrl(t.teamId)} alt={t.tricode} width={28} height={28} unoptimized />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold font-mono text-text-primary group-hover:text-accent transition-colors">{t.tricode}</p>
                           <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">

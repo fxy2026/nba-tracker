@@ -11,6 +11,7 @@ import {
   type PlayerStats,
 } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -233,7 +234,7 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
           {/* Team 1 */}
           <Link href={`/team/${team1.tricode}`} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
             <Image
-              src={`https://cdn.nba.com/logos/nba/${team1.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(team1.teamId)}
               alt={team1.tricode} width={88} height={88} unoptimized
               className={finished && winnerCode !== team1.tricode ? "opacity-50" : ""}
             />
@@ -265,7 +266,7 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
           {/* Team 2 */}
           <Link href={`/team/${team2.tricode}`} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
             <Image
-              src={`https://cdn.nba.com/logos/nba/${team2.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(team2.teamId)}
               alt={team2.tricode} width={88} height={88} unoptimized
               className={finished && winnerCode !== team2.tricode ? "opacity-50" : ""}
             />

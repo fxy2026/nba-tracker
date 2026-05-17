@@ -4,6 +4,7 @@ import { useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { localToday } from "@/lib/timezone";
 
 interface DateNavProps {
   selectedDate: string;
@@ -84,14 +85,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
 
   // Local timezone "today" — for a Beijing user, this is YYYY-MM-DD in Beijing
   // time, matching the timezone-aware grouping in /api/games and /api/calendar.
-  const today = useMemo(() => {
-    let tz = "America/New_York";
-    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch {}
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric", month: "2-digit", day: "2-digit",
-    }).format(new Date());
-  }, []);
+  const today = useMemo(() => localToday(), []);
 
   const prevDate = offsetDate(selectedDate, -1);
   const nextDate = offsetDate(selectedDate, 1);

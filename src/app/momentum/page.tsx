@@ -4,6 +4,8 @@ import Link from "next/link";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { getFullSchedule } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
@@ -34,7 +36,7 @@ async function compute(): Promise<MomentumRec[]> {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!g.gameId.startsWith("002")) continue;
+      if (!isRegular(g.gameId)) continue;
       const dateStr = gd.gameDate.split(" ")[0];
       const [m, d, y] = dateStr.split("/");
       const iso = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
@@ -98,7 +100,7 @@ function Row({ r, delta, color, rank, showDirection }: { r: MomentumRec; delta: 
       <span className="w-7 h-7 flex items-center justify-center rounded-full text-xs font-mono tabular-nums shrink-0 bg-bg-hover text-text-secondary">
         {rank}
       </span>
-      <Image src={`https://cdn.nba.com/logos/nba/${r.teamId}/global/L/logo.svg`} alt={r.tricode} width={32} height={32} unoptimized />
+      <Image src={teamLogoUrl(r.teamId)} alt={r.tricode} width={32} height={32} unoptimized />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold font-mono text-text-primary group-hover:text-accent transition-colors">{r.tricode}</p>
         <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">

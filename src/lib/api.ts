@@ -1,6 +1,8 @@
 // NBA Official CDN API — completely free, no key needed
 // Data source: cdn.nba.com
 
+import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
+
 const CDN_BASE = "https://cdn.nba.com/static/json";
 const HEADERS: HeadersInit = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
@@ -419,7 +421,7 @@ export async function getPlayerInfo(personId: number): Promise<PlayerInfo | null
 
 // Player headshot URL
 export function getPlayerHeadshotUrl(personId: number): string {
-  return `https://cdn.nba.com/headshots/nba/latest/1040x760/${personId}.png`;
+  return playerHeadshotUrl(personId);
 }
 
 // ========== Helpers ==========
@@ -460,7 +462,7 @@ export function parseMinutes(min: string): string {
 
 // Team logo URL from team ID
 export function getTeamLogoUrl(teamId: number): string {
-  return `https://cdn.nba.com/logos/nba/${teamId}/global/L/logo.svg`;
+  return teamLogoUrl(teamId);
 }
 
 // Team logo URL from tricode

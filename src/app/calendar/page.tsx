@@ -8,6 +8,8 @@ import { CURRENT_SEASON } from "@/lib/constants";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
 import { useLocale } from "@/components/LocaleProvider";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { localTz } from "@/lib/timezone";
 
 interface CalendarGame {
   gameId: string;
@@ -32,14 +34,6 @@ function getMonthStr(year: number, month: number): string {
 // API groups games by this same timezone, so dates always line up with what
 // the user actually experienced (e.g. a NBA game on ET May 15 evening shows
 // on the May 16 cell for a Beijing user — that's when it was played there).
-function localTz(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York";
-  } catch {
-    return "America/New_York";
-  }
-}
-
 function getLocalParts(tz: string): { year: number; month: number; day: number; todayStr: string } {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: tz,
@@ -259,11 +253,11 @@ export default function CalendarPage() {
                             {cell.calDay!.games.slice(0, 2).map((g) => (
                               <div key={g.gameId} className="text-[9px] text-text-secondary truncate flex items-center gap-0.5">
                                 {TEAM_META[g.awayTricode] && (
-                                  <Image src={`https://cdn.nba.com/logos/nba/${TEAM_META[g.awayTricode].teamId}/global/L/logo.svg`} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
+                                  <Image src={teamLogoUrl(TEAM_META[g.awayTricode].teamId)} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
                                 )}
                                 {g.awayTricode} @{" "}
                                 {TEAM_META[g.homeTricode] && (
-                                  <Image src={`https://cdn.nba.com/logos/nba/${TEAM_META[g.homeTricode].teamId}/global/L/logo.svg`} alt={g.homeTricode} width={10} height={10} unoptimized className="inline-block" />
+                                  <Image src={teamLogoUrl(TEAM_META[g.homeTricode].teamId)} alt={g.homeTricode} width={10} height={10} unoptimized className="inline-block" />
                                 )}
                                 {g.homeTricode}
                                 {g.gameStatus === 3 && (

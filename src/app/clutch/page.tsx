@@ -7,6 +7,7 @@ import { CURRENT_SEASON } from "@/lib/constants";
 import { Target, Loader2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface PlayerRow {
   PLAYER_ID: number;
@@ -199,7 +200,7 @@ export default function ClutchPage() {
                       <Link href={`/player/${p.PLAYER_ID}`} className="flex items-center gap-2 hover:text-accent transition-colors">
                         <div className="w-7 h-7 rounded-full overflow-hidden bg-bg-secondary shrink-0">
                           <Image
-                            src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.PLAYER_ID}.png`}
+                            src={playerHeadshotUrl(p.PLAYER_ID)}
                             alt={p.PLAYER}
                             width={28}
                             height={28}

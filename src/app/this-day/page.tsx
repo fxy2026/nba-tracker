@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isPreseason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { getLocale } from "@/lib/locale";
@@ -49,7 +51,7 @@ async function compute(): Promise<{ games: DayGame[]; today: string; }> {
     if (parsed.y === todayYear) continue; // not "this day in history" — that's today
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (g.gameId.startsWith("001")) continue; // skip preseason
+      if (isPreseason(g.gameId)) continue; // skip preseason
       const isOT = /ot/i.test(g.gameStatusText || "");
       matches.push({
         game: g,
@@ -134,7 +136,7 @@ export default async function ThisDayPage() {
                       <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
                         <div className="flex items-center gap-2 min-w-0">
                           <Image
-                            src={`https://cdn.nba.com/logos/nba/${g.awayTeam.teamId}/global/L/logo.svg`}
+                            src={teamLogoUrl(g.awayTeam.teamId)}
                             alt={g.awayTeam.teamTricode} width={28} height={28} unoptimized
                           />
                           <span className={`text-sm font-bold font-mono ${!homeWon ? "text-text-primary" : "text-text-secondary"}`}>
@@ -151,7 +153,7 @@ export default async function ThisDayPage() {
                             {g.homeTeam.teamTricode}
                           </span>
                           <Image
-                            src={`https://cdn.nba.com/logos/nba/${g.homeTeam.teamId}/global/L/logo.svg`}
+                            src={teamLogoUrl(g.homeTeam.teamId)}
                             alt={g.homeTeam.teamTricode} width={28} height={28} unoptimized
                           />
                         </div>

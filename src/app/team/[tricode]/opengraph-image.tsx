@@ -2,6 +2,8 @@
 import { ImageResponse } from "next/og";
 import { TEAM_META } from "@/lib/teams";
 import { getFullSchedule } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, winPct } from "@/lib/games";
 
 export const runtime = "nodejs";
 export const alt = "NBA team page";
@@ -42,7 +44,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
   let wins = 0, losses = 0;
   for (const gd of schedule) {
     for (const g of gd.games) {
-      if (g.gameStatus !== 3 || !g.gameId.startsWith("002")) continue;
+      if (g.gameStatus !== 3 || !isRegular(g.gameId)) continue;
       const isHome = g.homeTeam.teamTricode === team.tricode;
       const isAway = g.awayTeam.teamTricode === team.tricode;
       if (!isHome && !isAway) continue;
@@ -52,7 +54,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
     }
   }
 
-  const pct = wins + losses > 0 ? wins / (wins + losses) : 0;
+  const pct = winPct(wins, losses);
 
   return new ImageResponse(
     (
@@ -117,7 +119,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
           }}
         >
           <img
-            src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(team.teamId)}
             width={260}
             height={260}
             alt=""

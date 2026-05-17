@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 import { getBoxScore } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 
 export const runtime = "nodejs";
 export const alt = "NBA game score";
@@ -105,7 +106,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {/* Away */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
             <img
-              src={`https://cdn.nba.com/logos/nba/${box.awayTeam.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(box.awayTeam.teamId)}
               width={160}
               height={160}
               alt=""
@@ -163,7 +164,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {/* Home */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
             <img
-              src={`https://cdn.nba.com/logos/nba/${box.homeTeam.teamId}/global/L/logo.svg`}
+              src={teamLogoUrl(box.homeTeam.teamId)}
               width={160}
               height={160}
               alt=""

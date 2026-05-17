@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Crown, type LucideIcon } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isCountedSeason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { getLocale } from "@/lib/locale";
@@ -39,7 +41,7 @@ async function compute(): Promise<{
       if (g.gameStatus !== 3) continue;
       // Skip preseason (001) AND All-Star weekend / rising stars (003) — both
       // include exhibition games vs international or themed teams (AUS, VIN, TMC, etc.)
-      if (g.gameId.startsWith("001") || g.gameId.startsWith("003")) continue;
+      if (!isCountedSeason(g.gameId)) continue;
       const isOT = /ot/i.test(g.gameStatusText || "");
       const otMatch = (g.gameStatusText || "").match(/(\d+)\s*ot/i);
       const otCount = otMatch ? parseInt(otMatch[1]) : isOT ? 1 : 0;
@@ -102,7 +104,7 @@ function GameRow({ p, badge, badgeColor }: { p: Played; badge: string; badgeColo
       <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <Image
-            src={`https://cdn.nba.com/logos/nba/${g.awayTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(g.awayTeam.teamId)}
             alt={g.awayTeam.teamTricode} width={28} height={28} unoptimized
           />
           <span className={`text-sm font-bold font-mono ${!p.homeWon ? "text-text-primary" : "text-text-secondary"}`}>{g.awayTeam.teamTricode}</span>
@@ -111,7 +113,7 @@ function GameRow({ p, badge, badgeColor }: { p: Played; badge: string; badgeColo
           <span className="text-base font-light font-mono tabular-nums text-text-secondary">{g.homeTeam.score}</span>
           <span className={`text-sm font-bold font-mono ${p.homeWon ? "text-text-primary" : "text-text-secondary"}`}>{g.homeTeam.teamTricode}</span>
           <Image
-            src={`https://cdn.nba.com/logos/nba/${g.homeTeam.teamId}/global/L/logo.svg`}
+            src={teamLogoUrl(g.homeTeam.teamId)}
             alt={g.homeTeam.teamTricode} width={28} height={28} unoptimized
           />
         </div>

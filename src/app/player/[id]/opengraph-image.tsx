@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
+import { teamLogoUrl } from "@/lib/teamUrls";
 
 export const runtime = "nodejs";
 export const alt = "NBA player profile";
@@ -93,7 +94,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {teamMeta && (
               <img
-                src={`https://cdn.nba.com/logos/nba/${teamMeta.teamId}/global/L/logo.svg`}
+                src={teamLogoUrl(teamMeta.teamId)}
                 width={36}
                 height={36}
                 alt=""

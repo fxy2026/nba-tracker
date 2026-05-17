@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface SearchResult {
   personId: number;
@@ -188,7 +189,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
             >
               <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0">
                 <Image
-                  src={`https://cdn.nba.com/headshots/nba/latest/1040x760/${p.personId}.png`}
+                  src={playerHeadshotUrl(p.personId)}
                   alt={`${p.firstName} ${p.lastName}`}
                   width={40}
                   height={40}

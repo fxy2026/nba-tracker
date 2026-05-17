@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { TEAM_META } from "@/lib/teams";
 import { getFullSchedule } from "@/lib/api";
+import { teamLogoUrl } from "@/lib/teamUrls";
+import { isRegular, winPct as calcWinPct } from "@/lib/games";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
@@ -42,7 +44,7 @@ async function getStandings(): Promise<TeamRecord[]> {
     for (const gd of dates) {
       for (const g of gd.games) {
         if (g.gameStatus !== 3) continue;
-        if (!g.gameId.startsWith("002")) continue; // regular season only
+        if (!isRegular(g.gameId)) continue; // regular season only
         const h = g.homeTeam;
         const a = g.awayTeam;
         if (!teamMap[h.teamTricode])
@@ -103,7 +105,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
           <span className="text-center">{t.standingsPage.gb}</span>
         </div>
         {sorted.map((team, idx) => {
-          const winPct = team.wins / (team.wins + team.losses || 1);
+          const winPct = calcWinPct(team.wins, team.losses);
           const gb = idx === 0 ? "-" : (((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2).toFixed(1);
           const confRank = conferenceRanks.get(team.tricode) || 99;
           const isPlayoff = confRank <= 6;
@@ -120,7 +122,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
               <span className="text-xs text-text-secondary w-5">{idx + 1}</span>
               <div className="flex items-center gap-2.5">
                 <Image
-                  src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`}
+                  src={teamLogoUrl(team.teamId)}
                   alt={team.tricode}
                   width={24}
                   height={24}
@@ -195,7 +197,7 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
           </thead>
           <tbody>
             {teams.map((team, i) => {
-              const winPct = team.wins / (team.wins + team.losses || 1);
+              const winPct = calcWinPct(team.wins, team.losses);
               const gb = i === 0 ? "-" : ((leaderDiff - (team.wins - team.losses)) / 2).toFixed(1);
               const isPlayoff = i < 6;
               const isPlayIn = i >= 6 && i < 10;
@@ -217,7 +219,7 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                   </td>
                   <td className="py-2 px-3">
                     <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors cursor-pointer ${i >= 10 && winPct < 0.3 ? "opacity-60" : ""}`}>
-                      <Image src={`https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`} alt={team.tricode} width={22} height={22} unoptimized />
+                      <Image src={teamLogoUrl(team.teamId)} alt={team.tricode} width={22} height={22} unoptimized />
                       <span className="font-semibold text-text-primary font-mono">{team.tricode}</span>
                       {i === 0 && <span title={t.standingsPage.confLeader} className="text-[#FFD700]">★</span>}
                       {isPlayoff && i !== 0 && <span className="text-[11px] sm:text-[9px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent/15 text-accent">P</span>}
