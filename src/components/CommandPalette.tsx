@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, X, type LucideIcon } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export interface PaletteItem {
   href: string;
@@ -30,6 +31,8 @@ interface Props {
 export default function CommandPalette({ open, onClose, groups }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [query, setQuery] = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -133,7 +136,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Jump to anywhere · search 30+ pages..."
+            placeholder={isZh ? "跳转到任意页面 · 搜索 35+ 个页面..." : "Jump to anywhere · search 35+ pages..."}
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
             autoComplete="off"
           />
@@ -160,7 +163,8 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
           {filtered.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-text-secondary">
-                No matches for <span className="font-mono text-text-primary">&quot;{query}&quot;</span>
+                {isZh ? "没有匹配 " : "No matches for "}
+                <span className="font-mono text-text-primary">&quot;{query}&quot;</span>
               </p>
             </div>
           ) : (
@@ -199,7 +203,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
                           {Icon && <Icon size={14} className="shrink-0" />}
                           <span className="flex-1 truncate">{it.label}</span>
                           {isCurrentPage && (
-                            <span className="text-[8px] font-mono uppercase tracking-[0.15em] text-accent/70">current</span>
+                            <span className="text-[8px] font-mono uppercase tracking-[0.15em] text-accent/70">{isZh ? "当前" : "current"}</span>
                           )}
                           {isActive && !isCurrentPage && (
                             <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">↵</span>
@@ -217,10 +221,10 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         {/* Footer hint */}
         <div className="border-t border-border/60 px-4 py-2 flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 shrink-0">
           <span className="flex items-center gap-3">
-            <span><kbd className="px-1 border border-border rounded">↑</kbd> <kbd className="px-1 border border-border rounded">↓</kbd> navigate</span>
-            <span><kbd className="px-1 border border-border rounded">↵</kbd> open</span>
+            <span><kbd className="px-1 border border-border rounded">↑</kbd> <kbd className="px-1 border border-border rounded">↓</kbd> {isZh ? "切换" : "navigate"}</span>
+            <span><kbd className="px-1 border border-border rounded">↵</kbd> {isZh ? "进入" : "open"}</span>
           </span>
-          <span className="tabular-nums">{flatItems.length} pages</span>
+          <span className="tabular-nums">{flatItems.length} {isZh ? "个页面" : "pages"}</span>
         </div>
       </div>
     </div>,

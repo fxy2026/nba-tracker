@@ -17,7 +17,8 @@ const TEAMS = Object.values(TEAM_META);
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
@@ -54,17 +55,7 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen, teamsOpen]);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (teamsRef.current && !teamsRef.current.contains(e.target as Node)) {
-        setTeamsOpen(false);
-      }
-    }
-    if (teamsOpen) {
-      document.addEventListener("mousedown", handleClick);
-      return () => document.removeEventListener("mousedown", handleClick);
-    }
-  }, [teamsOpen]);
+  // Teams dropdown close: handled by backdrop click + Escape (in keyboard handler above)
 
   // Primary nav — always visible
   const primaryLinks = useMemo(() => [
@@ -83,69 +74,69 @@ export default function Navbar() {
   // Secondary nav — mega-menu organized into categorized columns
   const moreGroups: PaletteGroup[] = useMemo(() => [
     {
-      title: "League Order",
-      eyebrow: "Standings",
+      title: isZh ? "联赛排序" : "League Order",
+      eyebrow: isZh ? "排名" : "Standings",
       color: "#FFD700",
       items: [
-        { href: "/conference-race", label: "Conference Race", icon: Trophy },
-        { href: "/divisions", label: "Divisions", icon: MapIcon },
-        { href: "/power-rankings", label: "Power Rankings", icon: Crown },
-        { href: "/tier-list", label: "Tier List", icon: Layers },
-        { href: "/streaks", label: "Streaks", icon: Flame },
-        { href: "/momentum", label: "Momentum", icon: TrendingUp },
-        { href: "/clutch-teams", label: "Clutch Teams", icon: Target },
-        { href: "/scoring-output", label: "Scoring Output", icon: Shield },
+        { href: "/conference-race", label: isZh ? "分区赛" : "Conference Race", icon: Trophy, keywords: "conference race playoff seeding" },
+        { href: "/divisions", label: isZh ? "六分区" : "Divisions", icon: MapIcon, keywords: "divisions atlantic central southeast" },
+        { href: "/power-rankings", label: isZh ? "战力榜" : "Power Rankings", icon: Crown, keywords: "power rankings" },
+        { href: "/tier-list", label: isZh ? "等级表" : "Tier List", icon: Layers, keywords: "tier list S A B C" },
+        { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", icon: Flame, keywords: "streaks hot cold" },
+        { href: "/momentum", label: isZh ? "趋势" : "Momentum", icon: TrendingUp, keywords: "momentum trend" },
+        { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", icon: Target, keywords: "clutch close games" },
+        { href: "/scoring-output", label: isZh ? "攻防输出" : "Scoring Output", icon: Shield, keywords: "scoring offense defense net" },
       ],
     },
     {
-      title: "Awards & Leaders",
-      eyebrow: "Hardware",
+      title: isZh ? "奖项与排行" : "Awards & Leaders",
+      eyebrow: isZh ? "奖项" : "Hardware",
       color: "#A855F7",
       items: [
-        { href: "/awards-race", label: "Awards Race", icon: Award },
-        { href: "/all-time-leaders", label: "All-Time Leaders", icon: Crown },
-        { href: "/milestones", label: "Milestones", icon: TrendingUp },
-        { href: "/best-games", label: "Best Games", icon: Flame },
-        { href: "/records", label: "Season Records", icon: BookOpen },
-        { href: "/clutch", label: t.nav.playoffLeaders, icon: Target },
+        { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race", icon: Award, keywords: "MVP ROY DPOY 6MOY MIP" },
+        { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-Time Leaders", icon: Crown, keywords: "all time leaders PPG career" },
+        { href: "/milestones", label: isZh ? "里程碑" : "Milestones", icon: TrendingUp, keywords: "milestones career thresholds" },
+        { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", icon: Flame, keywords: "best games closest blowouts OT" },
+        { href: "/records", label: isZh ? "赛季纪录" : "Season Records", icon: BookOpen, keywords: "records highest lowest" },
+        { href: "/clutch", label: t.nav.playoffLeaders, icon: Target, keywords: "playoff leaders clutch" },
       ],
     },
     {
-      title: "Players",
-      eyebrow: "People",
+      title: isZh ? "球员" : "Players",
+      eyebrow: isZh ? "人物" : "People",
       color: "#3B82F6",
       items: [
-        { href: "/search", label: t.nav.playerSearch, icon: Search },
-        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows },
-        { href: "/h2h", label: t.nav.h2h, icon: Swords },
-        { href: "/rookie-watch", label: "Rookie Watch", icon: Sparkles },
-        { href: "/draft-classes", label: "Draft Classes", icon: GraduationCap },
-        { href: "/by-position", label: "By Position", icon: Users },
-        { href: "/by-country", label: "By Country", icon: Globe },
-        { href: "/by-college", label: "By College", icon: School },
-        { href: "/favorites", label: t.nav.favorites, icon: Trophy },
+        { href: "/search", label: t.nav.playerSearch, icon: Search, keywords: "search player" },
+        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows, keywords: "compare player stats" },
+        { href: "/h2h", label: t.nav.h2h, icon: Swords, keywords: "head to head h2h matchup" },
+        { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", icon: Sparkles, keywords: "rookie watch first year" },
+        { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", icon: GraduationCap, keywords: "draft classes year" },
+        { href: "/by-position", label: isZh ? "按位置" : "By Position", icon: Users, keywords: "position guard forward center" },
+        { href: "/by-country", label: isZh ? "按国籍" : "By Country", icon: Globe, keywords: "country international" },
+        { href: "/by-college", label: isZh ? "按大学" : "By College", icon: School, keywords: "college university" },
+        { href: "/favorites", label: t.nav.favorites, icon: Trophy, keywords: "favorites saved" },
       ],
     },
     {
-      title: "More",
-      eyebrow: "Tools & History",
+      title: isZh ? "更多" : "More",
+      eyebrow: isZh ? "工具与历史" : "Tools & History",
       color: "#22C55E",
       items: [
-        { href: "/explore", label: "Explore All", icon: Compass },
-        { href: "/game-predictor", label: "Game Predictor", icon: Zap },
-        { href: "/schedule-heatmap", label: "Schedule Heatmap", icon: Activity },
-        { href: "/back-to-back", label: "Back-to-Backs", icon: Repeat },
-        { href: "/home-vs-road", label: "Home vs Road", icon: Home },
-        { href: "/rivalries", label: "Rivalries", icon: Swords },
-        { href: "/this-day", label: "On This Day", icon: CalendarDays },
-        { href: "/history", label: t.nav.champions, icon: History },
-        { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle },
-        { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight },
-        { href: "/glossary", label: "Glossary", icon: Book },
-        { href: "/quiz", label: "NBA Quiz", icon: HelpCircle },
+        { href: "/explore", label: isZh ? "浏览全部" : "Explore All", icon: Compass, keywords: "explore index all" },
+        { href: "/game-predictor", label: isZh ? "比赛预测" : "Game Predictor", icon: Zap, keywords: "predictor win probability" },
+        { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule Heatmap", icon: Activity, keywords: "schedule heatmap calendar density" },
+        { href: "/back-to-back", label: isZh ? "背靠背" : "Back-to-Backs", icon: Repeat, keywords: "back to back B2B" },
+        { href: "/home-vs-road", label: isZh ? "主客场" : "Home vs Road", icon: Home, keywords: "home road splits" },
+        { href: "/rivalries", label: isZh ? "宿敌对决" : "Rivalries", icon: Swords, keywords: "rivalries matchups" },
+        { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", icon: CalendarDays, keywords: "on this day history" },
+        { href: "/history", label: t.nav.champions, icon: History, keywords: "champions finals history" },
+        { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle, keywords: "injuries injury report" },
+        { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight, keywords: "trades transactions signings" },
+        { href: "/glossary", label: isZh ? "术语表" : "Glossary", icon: Book, keywords: "glossary terms PPG PER" },
+        { href: "/quiz", label: isZh ? "NBA 测验" : "NBA Quiz", icon: HelpCircle, keywords: "quiz trivia game" },
       ],
     },
-  ], [t]);
+  ], [t, isZh]);
 
   const allMoreHrefs = useMemo(() => moreGroups.flatMap((g) => g.items.map((i) => i.href)), [moreGroups]);
 
@@ -210,10 +201,11 @@ export default function Navbar() {
           </button>
 
           {/* Teams button — opens grid via portal */}
-          <div className="relative" ref={teamsRef}>
+          <div ref={teamsRef}>
             <button
               ref={teamsBtnRef}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (teamsBtnRef.current) {
                   const r = teamsBtnRef.current.getBoundingClientRect();
                   setTeamsBtnRect({ top: r.bottom + 4, right: window.innerWidth - r.right });
@@ -230,36 +222,43 @@ export default function Navbar() {
               <span className="hidden lg:inline">{t.nav.teams}</span>
             </button>
             {teamsOpen && portalReady && teamsBtnRect && createPortal(
-              <div
-                ref={teamsRef as React.RefObject<HTMLDivElement>}
-                className="fixed w-[360px] max-w-[92vw] glass-tile p-3 z-[60] animate-fade-in overflow-y-auto shadow-2xl ring-1 ring-border"
-                style={{
-                  top: teamsBtnRect.top,
-                  right: teamsBtnRect.right,
-                  maxHeight: `calc(100vh - ${teamsBtnRect.top + 16}px)`,
-                }}
-              >
-                <div className="grid grid-cols-5 gap-1.5">
-                  {TEAMS.map((tm) => (
-                    <Link
-                      key={tm.tricode}
-                      href={`/team/${tm.tricode}`}
-                      onClick={() => setTeamsOpen(false)}
-                      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
-                      title={`${tm.city} ${tm.name}`}
-                    >
-                      <Image
-                        src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
-                        alt={tm.tricode}
-                        width={28}
-                        height={28}
-                        unoptimized
-                      />
-                      <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
-                    </Link>
-                  ))}
+              <>
+                {/* Transparent backdrop — captures clicks-outside to close */}
+                <div
+                  className="fixed inset-0 z-[59]"
+                  onClick={() => setTeamsOpen(false)}
+                />
+                <div
+                  className="fixed w-[360px] max-w-[92vw] glass-tile p-3 z-[60] animate-fade-in overflow-y-auto shadow-2xl ring-1 ring-border"
+                  style={{
+                    top: teamsBtnRect.top,
+                    right: teamsBtnRect.right,
+                    maxHeight: `calc(100vh - ${teamsBtnRect.top + 16}px)`,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {TEAMS.map((tm) => (
+                      <Link
+                        key={tm.tricode}
+                        href={`/team/${tm.tricode}`}
+                        onClick={() => setTeamsOpen(false)}
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                        title={`${tm.city} ${tm.name}`}
+                      >
+                        <Image
+                          src={`https://cdn.nba.com/logos/nba/${tm.teamId}/global/L/logo.svg`}
+                          alt={tm.tricode}
+                          width={28}
+                          height={28}
+                          unoptimized
+                        />
+                        <span className="text-[10px] text-text-secondary group-hover:text-accent transition-colors font-mono">{tm.tricode}</span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>,
+              </>,
               document.body
             )}
           </div>
