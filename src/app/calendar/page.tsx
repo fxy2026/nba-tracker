@@ -28,21 +28,37 @@ function getMonthStr(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
-function getTodayStr(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+// NBA schedule dates are in US/Eastern. Resolve "today" + current month in ET
+// so that users in any timezone (e.g. China UTC+8) see the same active day
+// the schedule API is keyed by.
+function getEtParts(): { year: number; month: number; day: number; todayStr: string } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const y = parseInt(parts.find((p) => p.type === "year")!.value, 10);
+  const m = parseInt(parts.find((p) => p.type === "month")!.value, 10);
+  const d = parseInt(parts.find((p) => p.type === "day")!.value, 10);
+  return {
+    year: y,
+    month: m - 1,
+    day: d,
+    todayStr: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
+  };
 }
 
 export default function CalendarPage() {
   const router = useRouter();
   const { t } = useLocale();
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth()); // 0-indexed
+  const et = getEtParts();
+  const [year, setYear] = useState(et.year);
+  const [month, setMonth] = useState(et.month); // 0-indexed (ET)
   const [days, setDays] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const today = getTodayStr();
+  const today = et.todayStr;
 
   const DAYS_OF_WEEK = [
     t.calendarPage.sun,
@@ -119,9 +135,9 @@ export default function CalendarPage() {
             <button onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
               <ChevronRight size={18} />
             </button>
-            {(year !== now.getFullYear() || month !== now.getMonth()) && (
+            {(year !== et.year || month !== et.month) && (
               <button
-                onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}
+                onClick={() => { setYear(et.year); setMonth(et.month); }}
                 className="chip chip-active cursor-pointer"
               >
                 {t.common.today}

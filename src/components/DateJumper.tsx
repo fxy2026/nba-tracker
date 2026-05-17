@@ -2,6 +2,17 @@
 
 import { useRouter } from "next/navigation";
 
+// ET (NBA schedule timezone) "today" — keeps date input aligned with the schedule
+// API regardless of where the user is (China, Europe, West Coast, etc.).
+function etTodayStr(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 export default function DateJumper() {
   const router = useRouter();
   return (
@@ -10,7 +21,7 @@ export default function DateJumper() {
       <input
         type="date"
         id="date-jump"
-        defaultValue={new Date().toISOString().slice(0, 10)}
+        defaultValue={etTodayStr()}
         onChange={(e) => { if (e.target.value) router.push(`/?date=${e.target.value}`); }}
         className="glass-tile px-3 py-1.5 text-sm font-mono tabular-nums text-text-primary focus:outline-none focus:border-accent cursor-pointer"
       />
