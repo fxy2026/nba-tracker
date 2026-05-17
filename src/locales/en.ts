@@ -656,6 +656,8 @@ const en: Translations = {
   favorite: {
     add: "Add to favorites",
     remove: "Remove from favorites",
+    added: "Added to favorites",
+    removed: "Removed from favorites",
   },
 
   export: {

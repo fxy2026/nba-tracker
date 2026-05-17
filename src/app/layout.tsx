@@ -7,6 +7,7 @@ import BackToTop from "@/components/BackToTop";
 import SiteFooter from "@/components/SiteFooter";
 import InstallPrompt from "@/components/InstallPrompt";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { ToastProvider } from "@/components/ToastProvider";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -84,6 +85,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
         <LocaleProvider initialLocale={locale}>
+          <ToastProvider>
           {/* Skip to main content for accessibility */}
           <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-lg">
             {t.nav.skipToContent}
@@ -119,6 +121,7 @@ export default async function RootLayout({
           <MobileNav />
           <BackToTop />
           <InstallPrompt />
+          </ToastProvider>
         </LocaleProvider>
       </body>
     </html>

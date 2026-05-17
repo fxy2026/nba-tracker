@@ -3,6 +3,7 @@
 import { useState, memo } from "react";
 import { Share2, Check } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { useToast } from "@/components/ToastProvider";
 
 interface ShareButtonProps {
   text: string;
@@ -10,6 +11,7 @@ interface ShareButtonProps {
 
 export default memo(function ShareButton({ text }: ShareButtonProps) {
   const { t } = useLocale();
+  const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -29,6 +31,7 @@ export default memo(function ShareButton({ text }: ShareButtonProps) {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      toast(t.share.copied);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback

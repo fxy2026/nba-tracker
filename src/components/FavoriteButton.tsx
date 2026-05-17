@@ -9,6 +9,7 @@ import {
   toggleFavoritePlayer,
 } from "@/lib/favorites";
 import { useLocale } from "@/components/LocaleProvider";
+import { useToast } from "@/components/ToastProvider";
 
 interface FavoriteButtonProps {
   type: "team" | "player";
@@ -19,6 +20,7 @@ interface FavoriteButtonProps {
 export default function FavoriteButton({ type, id, className = "" }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
   const { t } = useLocale();
+  const { toast } = useToast();
 
   // Hydration: sync isFav from localStorage on mount and on prop change.
   useEffect(() => {
@@ -31,13 +33,17 @@ export default function FavoriteButton({ type, id, className = "" }: FavoriteBut
   }, [type, id]);
 
   const handleToggle = () => {
+    let nowFav: boolean;
     if (type === "team") {
       const updated = toggleFavoriteTeam(id as string);
-      setIsFav(updated.includes(id as string));
+      nowFav = updated.includes(id as string);
+      setIsFav(nowFav);
     } else {
       const updated = toggleFavoritePlayer(id as number);
-      setIsFav(updated.includes(id as number));
+      nowFav = updated.includes(id as number);
+      setIsFav(nowFav);
     }
+    toast(nowFav ? t.favorite.added : t.favorite.removed);
   };
 
   return (

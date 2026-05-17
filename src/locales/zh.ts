@@ -656,6 +656,8 @@ const zh: Translations = {
   favorite: {
     add: "添加到收藏",
     remove: "取消收藏",
+    added: "已添加到收藏",
+    removed: "已取消收藏",
   },
 
   export: {

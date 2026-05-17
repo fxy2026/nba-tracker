@@ -704,6 +704,8 @@ export interface Translations {
   favorite: {
     add: string;
     remove: string;
+    added: string;
+    removed: string;
   };
 
   // ---- Export ----
