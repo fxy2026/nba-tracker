@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Users, User, Copy, Check } from "lucide-react";
+import { Heart, Users, User, Copy, Check, Search, ListOrdered, Activity, TrendingUp, Award } from "lucide-react";
 import { getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
 import { useLocale } from "@/components/LocaleProvider";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 interface PlayerInfo {
   personId: number;
@@ -18,7 +20,8 @@ interface PlayerInfo {
 }
 
 export default function FavoritesPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [favTeams, setFavTeams] = useState<string[]>([]);
   const [favPlayers, setFavPlayers] = useState<number[]>([]);
   const [playerDetails, setPlayerDetails] = useState<Map<number, PlayerInfo>>(new Map());
@@ -70,6 +73,12 @@ export default function FavoritesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "个人" : "Personal" },
+          { label: isZh ? "收藏" : "Favorites" },
+        ]}
+      />
       <PageHeader eyebrow="You" icon={Heart} title={t.favoritesPage.title} action={
         hasAny ? (<button
             onClick={() => {
@@ -239,6 +248,17 @@ export default function FavoritesPage() {
           </div>
         </div>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/search", label: isZh ? "查找球员" : "Find players", icon: Search },
+          { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", icon: Activity },
+          { href: "/power-rankings", label: isZh ? "战力榜" : "Power rankings", icon: TrendingUp },
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards race", icon: Award },
+        ]}
+      />
     </div>
   );
 }

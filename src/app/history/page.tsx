@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, Crown, TrendingUp, Award, Calendar } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -46,6 +48,7 @@ const champions = [
 
 export default async function HistoryPage() {
   const locale = await getLocale();
+  const isZh = locale === "zh";
   const t = getTranslations(locale);
   // Detect sweeps and game-7s
   const sweeps = champions.filter((r) => r.series === "4-0");
@@ -68,6 +71,12 @@ export default async function HistoryPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "历史" : "History" },
+          { label: isZh ? "历届冠军" : "NBA champions" },
+        ]}
+      />
       <PageHeader eyebrow="History" icon={Trophy} title={t.historyPage.title} />
 
       {/* Quick Facts */}
@@ -205,6 +214,17 @@ export default async function HistoryPage() {
           &larr; {t.common.backToHome}
         </Link>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Milestones", icon: TrendingUp },
+          { href: "/records", label: isZh ? "纪录" : "Records", icon: Award },
+          { href: "/best-games", label: isZh ? "最佳比赛" : "Best games", icon: Trophy },
+          { href: "/this-day", label: isZh ? "历史上的今天" : "This day in history", icon: Calendar },
+        ]}
+      />
     </div>
   );
 }

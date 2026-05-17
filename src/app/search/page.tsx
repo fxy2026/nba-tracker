@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Search, Flame } from "lucide-react";
+import { Search, Flame, GitCompareArrows, Crown, Activity, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -33,6 +34,7 @@ interface PageProps {
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const locale = await getLocale();
+  const isZh = locale === "zh";
   const t = getTranslations(locale);
   const { q } = await searchParams;
 
@@ -94,6 +96,17 @@ export default async function SearchPage({ searchParams }: PageProps) {
           {t.searchPage.tip}
         </p>
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/compare", label: isZh ? "球员对比" : "Compare players", icon: GitCompareArrows },
+          { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },
+          { href: "/rookie-watch", label: isZh ? "新秀关注" : "Rookie watch", icon: Activity },
+          { href: "/favorites", label: isZh ? "我的收藏" : "My favorites", icon: Heart },
+          { href: "/by-position", label: isZh ? "按位置" : "By position", icon: Users },
+        ]}
+      />
     </div>
   );
 }

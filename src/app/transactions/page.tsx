@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowLeftRight } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 interface Transaction {
   date: string;
@@ -61,6 +63,12 @@ export default function TransactionsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "新闻" : "News" },
+          { label: isZh ? "交易动态" : "Transactions" },
+        ]}
+      />
       <Link href="/" className="text-sm text-text-secondary hover:text-accent transition-colors">
         <ArrowLeft size={14} className="inline mr-1" />
         {isZh ? "返回首页" : "Back to home"}
@@ -185,6 +193,17 @@ export default function TransactionsPage() {
           </div>
         </div>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/injuries", label: isZh ? "伤病报告" : "Injuries", icon: Activity },
+          { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
+          { href: "/history", label: isZh ? "历届冠军" : "Champions", icon: Crown },
+          { href: "/favorites", label: isZh ? "我的收藏" : "My favorites", icon: Heart },
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards race", icon: Award },
+        ]}
+      />
     </div>
   );
 }

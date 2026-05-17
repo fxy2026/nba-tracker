@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { HelpCircle, RefreshCw, Trophy, Crown } from "lucide-react";
+import { HelpCircle, RefreshCw, Trophy, Crown, Book, Activity, TrendingUp } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 
@@ -327,6 +328,17 @@ export default function QuizPage() {
           </p>
         </div>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/glossary", label: isZh ? "NBA 术语" : "NBA glossary", icon: Book },
+          { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },
+          { href: "/rookie-watch", label: isZh ? "新秀关注" : "Rookie watch", icon: Activity },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Milestones", icon: TrendingUp },
+          { href: "/best-games", label: isZh ? "最佳比赛" : "Best games", icon: Trophy },
+        ]}
+      />
     </div>
   );
 }

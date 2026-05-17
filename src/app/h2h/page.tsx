@@ -5,9 +5,11 @@ import { isPreseason } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
-import { Swords } from "lucide-react";
+import { Swords, GitCompareArrows, ListOrdered, Repeat, TrendingUp, Activity } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -26,6 +28,7 @@ interface PageProps {
 
 export default async function H2HPage({ searchParams }: PageProps) {
   const locale = await getLocale();
+  const isZh = locale === "zh";
   const t = getTranslations(locale);
   const params = await searchParams;
   const t1 = params.t1?.toUpperCase();
@@ -74,6 +77,12 @@ export default async function H2HPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "工具" : "Tools", href: "/explore" },
+          { label: t.h2hPage.title || (isZh ? "历史交锋" : "Head-to-head") },
+        ]}
+      />
       <PageHeader eyebrow="Tool" icon={Swords} title={t.h2hPage.title} subtitle={t.h2hPage.selectHint} />
 
       {/* Team Selectors */}
@@ -379,6 +388,17 @@ export default async function H2HPage({ searchParams }: PageProps) {
           )}
         </>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/compare", label: isZh ? "球员对比" : "Compare players", icon: GitCompareArrows },
+          { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
+          { href: "/rivalries", label: isZh ? "对抗史" : "Rivalries", icon: Repeat },
+          { href: "/power-rankings", label: isZh ? "战力榜" : "Power rankings", icon: TrendingUp },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", icon: Activity },
+        ]}
+      />
     </div>
   );
 }

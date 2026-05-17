@@ -8,6 +8,8 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct as calcWinPct } from "@/lib/games";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
+import RelatedPages from "@/components/RelatedPages";
+import { TrendingUp, Activity, Users, Crown, Award } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import type { Translations } from "@/locales";
@@ -461,6 +463,18 @@ export default async function StandingsPage() {
         <ConferenceTable title={t.standingsPage.eastConference} teams={eastTeams} t={t} />
         <ConferenceTable title={t.standingsPage.westConference} teams={westTeams} t={t} />
       </div>
+
+      <RelatedPages
+        eyebrow={locale === "zh" ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/power-rankings", label: locale === "zh" ? "实力榜" : "Power Rankings", description: locale === "zh" ? "综合表现排名" : "Composite team rankings", icon: TrendingUp },
+          { href: "/conference-race", label: locale === "zh" ? "季后赛席位竞争" : "Playoff race", description: locale === "zh" ? "1-6 锁定 · 7-10 附加" : "1-6 locked · 7-10 play-in", icon: Users },
+          { href: "/streaks", label: locale === "zh" ? "连胜连败" : "Streaks", description: locale === "zh" ? "近期火热与低迷" : "Hot and cold runs", icon: Activity },
+          { href: "/momentum", label: locale === "zh" ? "球队趋势" : "Team momentum", description: locale === "zh" ? "近 5 场 vs 前 10 场" : "Last 5 vs prior 10", icon: Activity },
+          { href: "/tier-list", label: locale === "zh" ? "球队分级" : "Tier list", description: locale === "zh" ? "S-D 等级划分" : "S through D buckets", icon: Crown },
+          { href: "/awards-race", label: locale === "zh" ? "奖项竞争" : "Awards race", description: "MVP · DPOY · ROY", icon: Award },
+        ]}
+      />
     </div>
   );
 }

@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
+import { ChevronLeft, ChevronRight, CalendarDays, ListOrdered, Calendar, Repeat, Crown } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
@@ -54,7 +56,8 @@ function getLocalParts(tz: string): { year: number; month: number; day: number; 
 
 export default function CalendarPage() {
   const router = useRouter();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const tz = localTz();
   const et = getLocalParts(tz);
   const [year, setYear] = useState(et.year);
@@ -125,6 +128,12 @@ export default function CalendarPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "赛程" : "Schedule" },
+          { label: isZh ? "赛季日历" : "Season calendar" },
+        ]}
+      />
       {/* Header */}
       <PageHeader
         eyebrow={`${CURRENT_SEASON} ${t.calendarPage.nbaSeason}`}
@@ -288,6 +297,17 @@ export default function CalendarPage() {
           </div>
         )}
       </div>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/schedule", label: isZh ? "全部赛程" : "All games", icon: ListOrdered },
+          { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule heatmap", icon: Calendar },
+          { href: "/back-to-back", label: isZh ? "背靠背" : "B2B fatigue", icon: Repeat },
+          { href: "/this-day", label: isZh ? "历史上的今天" : "This day in history", icon: Crown },
+          { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
+        ]}
+      />
     </div>
   );
 }

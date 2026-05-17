@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, CalendarX } from "lucide-react";
+import { CalendarDays, CalendarX, Calendar, Repeat, Target, ListOrdered } from "lucide-react";
 import { getFullSchedule, type ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
 import DateJumper from "@/components/DateJumper";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -31,6 +33,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
   const filterTeam = params.team?.toUpperCase() || "";
 
   const locale = await getLocale();
+  const isZh = locale === "zh";
   const t = getTranslations(locale);
 
   const allDates = await getFullSchedule();
@@ -80,6 +83,12 @@ export default async function SchedulePage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "赛程" : "Schedule" },
+          { label: isZh ? "全部赛程" : "All games" },
+        ]}
+      />
       <PageHeader eyebrow="Schedule" icon={CalendarDays} title={t.schedulePage.recentSchedule} />
 
       {/* Quick stats — chip strip */}
@@ -149,6 +158,17 @@ export default async function SchedulePage({ searchParams }: PageProps) {
           action={filterTeam ? { label: "Clear filter", href: "/schedule" } : { label: "Go to today", href: "/" }}
         />
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/calendar", label: isZh ? "赛季日历" : "Season calendar", icon: Calendar },
+          { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule heatmap", icon: Calendar },
+          { href: "/back-to-back", label: isZh ? "背靠背" : "B2B fatigue", icon: Repeat },
+          { href: "/game-predictor", label: isZh ? "比赛预测" : "Game predictor", icon: Target },
+          { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
+        ]}
+      />
     </div>
   );
 }

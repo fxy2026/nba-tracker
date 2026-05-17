@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, Suspense, lazy } from "react";
-import { BarChart3, Users, Trophy, Crown, Medal } from "lucide-react";
+import { BarChart3, Users, Trophy, Crown, Medal, Award, TrendingUp, Target } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
+import { useLocale } from "@/components/LocaleProvider";
 
 const PlayerLeaders = lazy(() => import("@/components/stats/PlayerLeaders"));
 const TeamStandings = lazy(() => import("@/components/stats/TeamStandings"));
@@ -31,9 +34,17 @@ const TABS = [
 
 export default function StatsPage() {
   const [tab, setTab] = useState<Tab>("players");
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "数据" : "Stats" },
+          { label: isZh ? "排行榜" : "Leaderboards" },
+        ]}
+      />
       <PageHeader
         eyebrow="League"
         icon={Crown}
@@ -60,6 +71,17 @@ export default function StatsPage() {
         {tab === "awards" && <AwardsSection />}
         {tab === "mvp" && <MvpLadder />}
       </Suspense>
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards race", icon: Award },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Milestones", icon: TrendingUp },
+          { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },
+          { href: "/by-position", label: isZh ? "按位置" : "By position", icon: Users },
+          { href: "/clutch", label: isZh ? "季后赛表现" : "Playoff Performers", icon: Target },
+        ]}
+      />
     </div>
   );
 }

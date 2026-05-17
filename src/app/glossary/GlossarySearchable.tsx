@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Book, Search, X, type LucideIcon, BarChart3, Shield, Zap, Trophy, Calendar, Layers, ArrowLeftRight } from "lucide-react";
+import { Book, Search, X, type LucideIcon, BarChart3, Shield, Zap, Trophy, Calendar, Layers, ArrowLeftRight, HelpCircle, ListOrdered, Crown, TrendingUp } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface Term {
@@ -233,6 +235,13 @@ export default function GlossarySearchable() {
         }
       />
 
+      <Breadcrumbs
+        items={[
+          { label: isZh ? "学习" : "Learn" },
+          { label: isZh ? "NBA 术语" : "NBA Glossary" },
+        ]}
+      />
+
       {/* Search bar */}
       <div className="glass-tile p-2 mb-5 flex items-center gap-2">
         <Search size={16} className="text-text-secondary ml-2 shrink-0" />
@@ -313,6 +322,17 @@ export default function GlossarySearchable() {
           })}
         </div>
       )}
+
+      <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
+        pages={[
+          { href: "/quiz", label: isZh ? "NBA 测验" : "NBA quiz", icon: HelpCircle },
+          { href: "/about", label: isZh ? "关于" : "About this site", icon: Book },
+          { href: "/explore", label: isZh ? "浏览全站" : "Explore", icon: ListOrdered },
+          { href: "/history", label: isZh ? "历届冠军" : "Past champions", icon: Crown },
+          { href: "/milestones", label: isZh ? "生涯里程碑" : "Milestones", icon: TrendingUp },
+        ]}
+      />
     </div>
   );
 }
