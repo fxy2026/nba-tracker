@@ -84,7 +84,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
 
   return (
     <div
-      className="sticky top-12 sm:top-16 z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary/85 backdrop-blur-xl border-b border-border/60"
+      className="sticky top-12 sm:top-16 z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
       role="navigation"
       aria-label="Date navigation"
     >

@@ -250,18 +250,17 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
    ───────────────────────────────────────────────────────────── */
 /* Perf: glass tile uses opaque-ish bg by default; backdrop-filter only opt-in
    via .glass-tile-blur class to avoid expensive blur on Windows when there
-   are hundreds of tiles on screen. */
+   are hundreds of tiles on screen. NO translateZ baseline — would create one
+   GPU compositor layer per tile, exploding the layer count on dense pages
+   like the bracket (100+ tiles) and overwhelming even a 5070's orchestration. */
 .glass-tile {
   position: relative;
   background: color-mix(in srgb, var(--bg-card) 88%, transparent);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow-card);
-  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 180ms ease-out;
+  transition: border-color 150ms ease-out;
   overflow: hidden;
-  /* Promote to its own compositor layer for cheaper hover transforms */
-  transform: translateZ(0);
 }
 .glass-tile::before {
   content: "";
@@ -278,7 +277,6 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
   background: color-mix(in srgb, var(--bg-card) 70%, transparent);
 }
 .glass-tile:hover {
-  transform: translateY(-2px) translateZ(0);
   border-color: var(--border-strong);
 }
 [data-theme="light"] .glass-tile {
