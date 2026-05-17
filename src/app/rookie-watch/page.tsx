@@ -34,14 +34,26 @@ function scoreRookie(p: { pts: number; reb: number; ast: number }) {
   return p.pts + p.reb * 1.2 + p.ast * 1.5;
 }
 
-function classify(players: { fromYear: string; toYear: string }[]): { rookieYear: string | null; sophomoreYear: string | null } {
-  // Find the most common max toYear — that's likely the current season
-  const maxTo = players.reduce((m, p) => {
-    const t = parseInt(p.toYear || "0");
-    return t > m ? t : m;
-  }, 0);
-  if (!maxTo) return { rookieYear: null, sophomoreYear: null };
-  return { rookieYear: String(maxTo), sophomoreYear: String(maxTo - 1) };
+// Identify the most recent draft class with non-zero stats (so the page
+// actually has data to show). NBA playerIndex's pts/reb/ast fields trail
+// by a season — currently-playing rookies often have 0s mid-year, so we
+// surface the latest draft class that has populated numbers.
+function classify(players: { draftYear: number | null; pts: number }[]): {
+  rookieYear: number | null;
+  sophomoreYear: number | null;
+  seasonLabel: string;
+} {
+  // Most recent draft year that has at least one player with pts > 0
+  const yearsWithStats = new Set(
+    players.filter((p) => p.draftYear && p.pts > 0).map((p) => p.draftYear as number)
+  );
+  if (yearsWithStats.size === 0) {
+    return { rookieYear: null, sophomoreYear: null, seasonLabel: "" };
+  }
+  const maxYear = Math.max(...yearsWithStats);
+  // Convert draft year to season label: 2024 draft → 2024-25 season
+  const seasonLabel = `${maxYear}-${String((maxYear + 1) % 100).padStart(2, "0")}`;
+  return { rookieYear: maxYear, sophomoreYear: maxYear - 1, seasonLabel };
 }
 
 function Card({ p, rank }: { p: RookieRow; rank: number }) {
@@ -108,10 +120,10 @@ export default async function RookieWatchPage() {
     );
   }
 
-  const { rookieYear, sophomoreYear } = classify(players);
+  const { rookieYear, sophomoreYear, seasonLabel } = classify(players);
 
   const rookies: RookieRow[] = players
-    .filter((p) => p.fromYear === rookieYear && p.fromYear === p.toYear && p.pts > 0)
+    .filter((p) => p.draftYear === rookieYear && p.pts > 0)
     .map((p) => ({
       personId: p.personId,
       firstName: p.firstName,
@@ -131,7 +143,7 @@ export default async function RookieWatchPage() {
     .slice(0, 25);
 
   const sophomores: RookieRow[] = players
-    .filter((p) => p.fromYear === sophomoreYear && parseInt(p.toYear) >= parseInt(sophomoreYear || "0") && p.pts > 0)
+    .filter((p) => p.draftYear === sophomoreYear && p.pts > 0)
     .map((p) => ({
       personId: p.personId,
       firstName: p.firstName,
@@ -158,8 +170,8 @@ export default async function RookieWatchPage() {
         title={isZh ? "新秀榜" : "Rookie Watch"}
         subtitle={
           isZh
-            ? `新秀按综合分数排名${rookieYear ? `（${rookieYear} 届）` : ""} · PPG + RPG×1.2 + APG×1.5`
-            : `Top rookies${rookieYear ? ` (class of ${rookieYear})` : ""} ranked by composite score · PPG + RPG×1.2 + APG×1.5`
+            ? `${rookieYear ? `${rookieYear} 届选秀 (${seasonLabel} 赛季) ` : ""}综合分数排名 · PPG + RPG×1.2 + APG×1.5 · 数据为该球员近期赛季均值`
+            : `${rookieYear ? `${rookieYear} draft class (${seasonLabel} season) ` : ""}ranked by composite score · PPG + RPG×1.2 + APG×1.5 · stats are most recent season averages`
         }
       />
 
@@ -205,11 +217,16 @@ export default async function RookieWatchPage() {
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
           {isZh ? (
-            <>新秀是 <span className="font-mono">fromYear</span> 等于索引中最新赛季且只打过一个赛季的球员。二年级生比新秀早一个赛季出道且仍现役。综合得分对篮板与助攻的权重略高于得分，以凸显全能表现。</>
+            <>新秀按 <span className="font-mono">draftYear</span> 识别（最新选秀届有数据者）。二年级生是上一届选秀。
+              <br />
+              ⚠️ NBA 球员索引的场均数据滞后一个赛季 — 即"现役 2025-26 新秀"如果赛季尚未结束，其数据可能为 0 或缺失，因此榜单展示的是最近有数据的选秀届（通常是上赛季新秀）。综合得分加权篮板与助攻，强调全能表现。</>
           ) : (
-            <>Rookies are players whose <span className="font-mono">fromYear</span> equals the latest season in the index
-              and who have played only one season so far. Sophomores started one season earlier and are still active.
-              Composite score weights rebounds and assists slightly higher than points to surface well-rounded play.</>
+            <>Rookies identified by <span className="font-mono">draftYear</span> (most recent class with stats). Sophomores
+              are the prior year.
+              <br />
+              ⚠️ NBA's player index reports last-completed-season averages, so an in-season rookie class may show as 0
+              until the season finalizes. This page surfaces the most recent class that has populated numbers. Composite
+              score weights rebounds and assists for well-rounded play.</>
           )}
         </p>
       </div>

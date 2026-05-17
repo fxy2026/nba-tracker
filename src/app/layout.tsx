@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
 import BackToTop from "@/components/BackToTop";
 import SiteFooter from "@/components/SiteFooter";
+import InstallPrompt from "@/components/InstallPrompt";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
@@ -117,6 +118,7 @@ export default async function RootLayout({
           <SiteFooter />
           <MobileNav />
           <BackToTop />
+          <InstallPrompt />
         </LocaleProvider>
       </body>
     </html>

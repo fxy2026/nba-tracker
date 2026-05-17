@@ -100,8 +100,8 @@ export default async function ByCollegePage() {
         title={isZh ? "按大学榜" : "Players By College"}
         subtitle={
           isZh
-            ? `代表 ${groups.length} 所院校 · ${topColleges.length} 所有 3 名以上 NBA 球员`
-            : `${groups.length} schools represented · ${topColleges.length} with 3+ players in the league`
+            ? `代表 ${groups.length} 所院校 · ${topColleges.length} 所有 3 名以上 NBA 球员 · 场均数据为上赛季`
+            : `${groups.length} schools represented · ${topColleges.length} with 3+ players in the league · per-game stats from last season`
         }
       />
 
@@ -131,9 +131,9 @@ export default async function ByCollegePage() {
                     </p>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-0.5">
                       {isZh ? (
-                        <><span className="tabular-nums">{g.count}</span> 现役 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · 均值 <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span></>
+                        <><span className="tabular-nums">{g.count}</span> 现役 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · 均值 <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span> · 上赛季</>
                       ) : (
-                        <><span className="tabular-nums">{g.count}</span> active · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · avg <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span></>
+                        <><span className="tabular-nums">{g.count}</span> active · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · avg <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span> · last season</>
                       )}
                     </p>
                   </div>
@@ -182,7 +182,7 @@ export default async function ByCollegePage() {
               <div key={g.college} className="glass-tile p-3">
                 <p className="text-xs font-bold text-text-primary truncate">{g.college}</p>
                 <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mb-1.5">
-                  {isZh ? "最高得分" : "Best PPG"} <span className="tabular-nums text-text-secondary">{g.bestPpg.toFixed(1)}</span>
+                  {isZh ? "最高得分 · 上赛季" : "Best PPG · last season"} <span className="tabular-nums text-text-secondary">{g.bestPpg.toFixed(1)}</span>
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {g.topThree.map((p) => (

@@ -128,7 +128,7 @@ export default async function ByPositionPage() {
         eyebrow={isZh ? "球员" : "Players"}
         icon={Users}
         title={isZh ? "按位置榜" : "Leaders By Position"}
-        subtitle={isZh ? "每个位置桶的现役前 10 球员 · 按 PPG + RPG×1.2 + APG×1.5 排序" : "Top 10 active players in each positional bucket · ranked by PPG + RPG×1.2 + APG×1.5"}
+        subtitle={isZh ? "每个位置桶的现役前 10 球员 · 按 PPG + RPG×1.2 + APG×1.5 排序 · 数据来自 NBA 球员索引（上赛季场均）" : "Top 10 active players in each positional bucket · ranked by PPG + RPG×1.2 + APG×1.5 · stats from NBA player index (last season averages)"}
       />
 
       <div className="space-y-6">

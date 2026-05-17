@@ -8,8 +8,8 @@ import EmptyState from "@/components/EmptyState";
 import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
-  title: "Career Milestones",
-  description: "Players approaching career scoring, rebounding, and assist milestones — estimated from per-game averages.",
+  title: "Career Pace Tracker",
+  description: "Career totals projected from recent per-game averages — milestone projections, not official career totals.",
 };
 
 export const revalidate = 600;
@@ -136,7 +136,7 @@ export default async function MilestonesPage() {
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Players" icon={Trophy} title={isZh ? "生涯里程碑" : "Career Milestones"} />
+        <PageHeader eyebrow="Players" icon={Trophy} title={isZh ? "生涯轨迹追踪" : "Career Pace Tracker"} />
         <EmptyState
           icon={Trophy}
           title="No player data"
@@ -174,8 +174,8 @@ export default async function MilestonesPage() {
       <PageHeader
         eyebrow="Players"
         icon={Trophy}
-        title={isZh ? "生涯里程碑" : "Career Milestones"}
-        subtitle={isZh ? "接近生涯得分、篮板、助攻里程碑的球员 — 根据场均数据估算。" : "Active players approaching historic thresholds · estimated from per-game averages × ~70 GP/season"}
+        title={isZh ? "生涯轨迹追踪" : "Career Pace Tracker"}
+        subtitle={isZh ? "基于近期场均推算的生涯累计与里程碑投影 · 实际数字会因伤病、场均波动而不同" : "Career totals projected from recent per-game averages · actual numbers shift with injuries and form"}
       />
 
       {scoringChase.length > 0 && (
@@ -183,7 +183,7 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent-amber flex items-center gap-2">
               <Trophy size={14} className="text-accent-amber" />
-              {isZh ? "得分里程碑" : "Scoring milestones"}
+              {isZh ? "得分里程碑投影" : "Projected scoring milestones"}
             </h2>
             <span className="h-px flex-1 bg-accent-amber/30" />
             <span className="text-[10px] font-mono tabular-nums text-text-secondary">{scoringChase.length} {isZh ? "追逐中" : "chasing"}</span>
@@ -194,7 +194,7 @@ export default async function MilestonesPage() {
                 key={`s-${i}-${m.player.personId}`}
                 m={m}
                 color="#FFD700"
-                eyebrow={`Toward ${m.threshold.label}`}
+                eyebrow={isZh ? `投影至 ${m.threshold.label}` : `Projected toward ${m.threshold.label}`}
                 isZh={isZh}
               />
             ))}
@@ -207,7 +207,7 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-success flex items-center gap-2">
               <Target size={14} className="text-success" />
-              {isZh ? "篮板里程碑" : "Rebounding milestones"}
+              {isZh ? "篮板里程碑投影" : "Projected rebounding milestones"}
             </h2>
             <span className="h-px flex-1 bg-success/30" />
             <span className="text-[10px] font-mono tabular-nums text-text-secondary">{reboundChase.length} {isZh ? "追逐中" : "chasing"}</span>
@@ -218,7 +218,7 @@ export default async function MilestonesPage() {
                 key={`r-${i}-${m.player.personId}`}
                 m={m}
                 color="#22C55E"
-                eyebrow={`Toward ${m.threshold.label}`}
+                eyebrow={isZh ? `投影至 ${m.threshold.label}` : `Projected toward ${m.threshold.label}`}
                 isZh={isZh}
               />
             ))}
@@ -231,7 +231,7 @@ export default async function MilestonesPage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent flex items-center gap-2">
               <Award size={14} className="text-accent" />
-              {isZh ? "助攻里程碑" : "Assist milestones"}
+              {isZh ? "助攻里程碑投影" : "Projected assist milestones"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
             <span className="text-[10px] font-mono tabular-nums text-text-secondary">{assistChase.length} {isZh ? "追逐中" : "chasing"}</span>
@@ -242,7 +242,7 @@ export default async function MilestonesPage() {
                 key={`a-${i}-${m.player.personId}`}
                 m={m}
                 color="#3B82F6"
-                eyebrow={`Toward ${m.threshold.label}`}
+                eyebrow={isZh ? `投影至 ${m.threshold.label}` : `Projected toward ${m.threshold.label}`}
                 isZh={isZh}
               />
             ))}
@@ -254,8 +254,8 @@ export default async function MilestonesPage() {
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
           {isZh
-            ? "生涯总数据为估算值：每场均数 × ~70场/赛季 × 出场赛季。实际生涯总数可能因伤病、半赛季、轮休而不同。展示按当前速度 ~2.5 赛季内能达成下一档的球员。这是观察清单，不是官方纪录册。"
-            : "Career totals are estimated: per-game average × ~70 games per season × seasons played. Real career totals may differ due to injuries, partial seasons, and rest. Players within ~2.5 seasons (at current pace) of their next tier are shown. This is a watchlist, not an official record book."}
+            ? "所有数字均为投影，非官方生涯统计。计算方式：NBA 球员索引中的上赛季场均（得分／篮板／助攻）× ~70 场／赛季 × 出场赛季数。由于使用的是上赛季场均而非各赛季实际数据，结果会因伤病、半赛季、轮休及场均波动而与真实生涯总和不同。展示按当前速度 ~2.5 赛季内能达成下一档的球员。这是观察清单，不是官方纪录册。"
+            : "All numbers are projections, not official career totals. Method: last-season per-game averages (pts / reb / ast) from the NBA player index × ~70 games per season × seasons played. Because we use last-season averages rather than each season's actuals, results diverge from real career totals due to injuries, partial seasons, rest, and form. Players within ~2.5 seasons (at current pace) of their next tier are shown. This is a watchlist, not an official record book."}
         </p>
       </div>
     </div>

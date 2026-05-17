@@ -10,6 +10,18 @@ import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
+// Derive season start year from CURRENT_SEASON e.g. "2025-26" → 2025
+const CURRENT_SEASON_START_YEAR = parseInt(CURRENT_SEASON.split("-")[0], 10);
+
+interface PlayerIndexRow {
+  personId: number;
+  firstName: string;
+  lastName: string;
+  draftYear: number | null;
+  fromYear: string;
+  toYear: string;
+}
+
 interface PlayerRow {
   PLAYER_ID: number;
   PLAYER: string;
@@ -97,6 +109,7 @@ export default function AwardsRacePage() {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
+  const [rookieIndex, setRookieIndex] = useState<PlayerIndexRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeRace, setActiveRace] = useState<RaceKey>("mvp");
 
@@ -131,6 +144,49 @@ export default function AwardsRacePage() {
     return () => controller.abort();
   }, []);
 
+  // Fetch player index for ROY rookie filter — only the fields we need
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch("/api/player-index", { signal: controller.signal });
+        if (!res.ok) return;
+        const json = await res.json();
+        const players = Array.isArray(json.data) ? json.data : [];
+        const trimmed: PlayerIndexRow[] = players.map((p: PlayerIndexRow) => ({
+          personId: p.personId,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          draftYear: p.draftYear,
+          fromYear: p.fromYear,
+          toYear: p.toYear,
+        }));
+        if (!controller.signal.aborted) setRookieIndex(trimmed);
+      } catch { /* ignore — ROY tab will fall back to unfiltered */ }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  // Build rookie eligibility lookup once. A player counts as a current-season rookie
+  // if their draftYear matches CURRENT_SEASON_START_YEAR, OR if their NBA tenure
+  // (fromYear..toYear) is just this season — both signals from the player index.
+  const { rookieIds, rookieNameSet } = useMemo(() => {
+    const ids = new Set<number>();
+    const names = new Set<string>();
+    for (const p of rookieIndex) {
+      const fy = parseInt(p.fromYear, 10);
+      const ty = parseInt(p.toYear, 10);
+      const isFirstYear = !Number.isNaN(fy) && !Number.isNaN(ty)
+        && fy === CURRENT_SEASON_START_YEAR && ty === CURRENT_SEASON_START_YEAR;
+      const isDraftClass = p.draftYear === CURRENT_SEASON_START_YEAR;
+      if (isFirstYear || isDraftClass) {
+        ids.add(p.personId);
+        names.add(`${p.firstName} ${p.lastName}`.trim().toLowerCase());
+      }
+    }
+    return { rookieIds: ids, rookieNameSet: names };
+  }, [rookieIndex]);
+
   // Compute scored leaders for active race
   const ranked = useMemo(() => {
     if (allPlayers.length === 0) return [];
@@ -139,10 +195,19 @@ export default function AwardsRacePage() {
       // Sixth Man: heuristic — high PTS but lower minutes (suggesting bench role)
       pool = pool.filter((p) => p.MIN < 28);
     }
+    if (activeRace === "roy" && (rookieIds.size > 0 || rookieNameSet.size > 0)) {
+      // Rookie filter: keep only players whose personId or name matches the rookie set.
+      // leagueleaders rows use PLAYER_ID and PLAYER (full name).
+      pool = pool.filter((p) => {
+        if (rookieIds.has(p.PLAYER_ID)) return true;
+        if (p.PLAYER && rookieNameSet.has(p.PLAYER.trim().toLowerCase())) return true;
+        return false;
+      });
+    }
     const scored = pool.map((p) => ({ ...p, _score: scoreForRace(p, activeRace) }));
     scored.sort((a, b) => b._score - a._score);
     return scored.slice(0, 10);
-  }, [allPlayers, activeRace]);
+  }, [allPlayers, activeRace, rookieIds, rookieNameSet]);
 
   const topScore = ranked[0]?._score || 1;
   const races = useMemo(() => buildRaces(isZh), [isZh]);
