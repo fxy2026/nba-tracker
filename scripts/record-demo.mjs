@@ -25,6 +25,49 @@ async function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// Force ALL images on the current page to load before we start recording.
+// Next/Image uses loading="lazy" + IntersectionObserver, which means logos
+// below the fold (esp. the bracket team logos and the all-time-leaders
+// headshots) never start loading until scrolled into view. We pre-trigger
+// them by flipping loading to eager + doing a full page scroll cycle, then
+// wait for every <img> to be .complete.
+async function preloadAllImages(page) {
+  // 1. Promote lazy → eager
+  await page.evaluate(() => {
+    for (const img of document.querySelectorAll("img")) {
+      if (img.loading === "lazy") img.loading = "eager";
+    }
+  });
+  // 2. Scroll bottom-to-top-to-bottom to trip every IntersectionObserver
+  await page.evaluate(() => new Promise((resolve) => {
+    const originalY = window.scrollY;
+    const max = document.body.scrollHeight;
+    let y = 0;
+    const id = setInterval(() => {
+      window.scrollTo(0, y);
+      y += 600;
+      if (y >= max) {
+        clearInterval(id);
+        window.scrollTo(0, originalY);
+        resolve(null);
+      }
+    }, 40);
+  }));
+  // 3. Wait for every <img> to settle (success or error — fallback handles 404s)
+  await page.evaluate(() => Promise.all(
+    Array.from(document.images).map((img) =>
+      img.complete
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+            img.addEventListener("load", () => resolve(), { once: true });
+            img.addEventListener("error", () => resolve(), { once: true });
+          })
+    )
+  ));
+  // 4. Settle for any post-load layout shift / state update
+  await wait(800);
+}
+
 async function main() {
   // Clean / recreate frames dir
   if (existsSync(FRAMES_DIR)) await rm(FRAMES_DIR, { recursive: true, force: true });
@@ -38,6 +81,14 @@ async function main() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
+
+  // Spoof a real Chrome UA — cdn.nba.com's Akamai layer rejects HTTP/2
+  // connections whose User-Agent contains "HeadlessChrome" with
+  // ERR_HTTP2_PROTOCOL_ERROR, breaking all team logos and player
+  // headshots. The site renders text/initials fallback instead.
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  );
 
   // Force light theme:
   //   1. emulate OS prefers-color-scheme so ThemeScript falls back correctly
@@ -80,8 +131,7 @@ async function main() {
   // the demo always shows real scorecards instead of "no games today".
   console.log("[demo] Scene 1: Homepage entry (5/14)");
   await page.goto(`${URL_BASE}/?date=2026-05-14`, { waitUntil: "networkidle2", timeout: 30000 });
-  // Settle for fonts / hydration
-  await wait(800);
+  await preloadAllImages(page);
   await record(3000);
 
   // ─── Scene 2: Smooth scroll down to playoff bracket (4s) ───
@@ -101,7 +151,7 @@ async function main() {
   // ─── Scene 3: Navigate to /all-time-leaders (4s) ───
   console.log("[demo] Scene 3: All-time leaders");
   await page.goto(`${URL_BASE}/all-time-leaders`, { waitUntil: "networkidle2", timeout: 30000 });
-  await wait(600);
+  await preloadAllImages(page);
   await record(2000);
   // Click the "Career Total Points" tab if present
   try {
@@ -119,7 +169,7 @@ async function main() {
   // ─── Scene 4: Navigate to /search and bring focus (4s) ───
   console.log("[demo] Scene 4: Search aliases");
   await page.goto(`${URL_BASE}/search`, { waitUntil: "networkidle2", timeout: 30000 });
-  await wait(500);
+  await preloadAllImages(page);
   await record(1000);
   // Type "字母哥" character by character for visible effect
   const input = await page.$("input[type='search'], input[type='text']");
