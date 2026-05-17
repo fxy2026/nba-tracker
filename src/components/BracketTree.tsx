@@ -101,10 +101,10 @@ function TeamRow({
   size: "sm" | "md" | "lg";
   align: "left" | "right";
 }) {
-  const logoSize = size === "lg" ? 32 : size === "md" ? 26 : 22;
+  const logoSize = size === "lg" ? 32 : size === "md" ? 24 : 20;
   const triSize = size === "lg" ? "text-base" : size === "md" ? "text-sm" : "text-xs";
-  const winSize = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-base";
-  const pad = size === "lg" ? "py-2" : size === "md" ? "py-1.5" : "py-1";
+  const winSize = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-sm";
+  const pad = size === "lg" ? "py-2" : size === "md" ? "py-1.5" : "py-0.5";
 
   return (
     <div
@@ -152,7 +152,7 @@ function SeriesCard({
   const meta1 = TEAM_META[s.team1.tricode];
   const meta2 = TEAM_META[s.team2.tricode];
 
-  const padClass = size === "lg" ? "p-4" : size === "md" ? "p-3" : "p-2.5";
+  const padClass = size === "lg" ? "p-4" : size === "md" ? "p-2.5" : "p-2";
   const ring = onPath
     ? "ring-1 ring-[#FFD700]/50 shadow-[0_0_24px_-4px_rgba(255,215,0,0.35)]"
     : finished
@@ -285,10 +285,10 @@ function ConfHalf({
   const displayR2 = [...r2].sort((a, b) => a.seriesIndex - b.seriesIndex);
   const displayR3 = [...r3].sort((a, b) => a.seriesIndex - b.seriesIndex);
 
-  // Fixed minimum widths prevent column collapse. Gutters wider so they're obvious.
+  // Tight enough to fit ~990px wide for narrow viewports; gutters compact but still visible.
   const gridCols = isLeft
-    ? "minmax(170px, 1fr) 60px minmax(180px, 1fr) 60px minmax(190px, 1fr)"
-    : "minmax(190px, 1fr) 60px minmax(180px, 1fr) 60px minmax(170px, 1fr)";
+    ? "minmax(120px, 1fr) 28px minmax(125px, 1fr) 28px minmax(135px, 1fr)"
+    : "minmax(135px, 1fr) 28px minmax(125px, 1fr) 28px minmax(120px, 1fr)";
 
   const cardWrap = "flex items-center";
 
@@ -311,9 +311,9 @@ function ConfHalf({
       </div>
 
       {/* Single unified grid — headers in row 1, cards/connectors in rows 2-9 */}
-      <div className="grid gap-x-2" style={{
+      <div className="grid gap-x-1" style={{
         gridTemplateColumns: gridCols,
-        gridTemplateRows: "auto repeat(8, minmax(64px, auto))",
+        gridTemplateRows: "auto repeat(8, minmax(54px, auto))",
       }}>
         {/* Round headers — row 1 */}
         {isLeft ? (
@@ -539,8 +539,8 @@ export default memo(function BracketTree({ games }: Props) {
 
       {/* Desktop tree (md+) — horizontal scroll on narrow screens */}
       <div className="hidden md:block overflow-x-auto pb-3 -mx-4 px-4">
-        <div className="grid items-stretch gap-x-4 min-w-[1280px]" style={{
-          gridTemplateColumns: "minmax(0, 1fr) 240px minmax(0, 1fr)",
+        <div className="grid items-stretch gap-x-2 min-w-[960px]" style={{
+          gridTemplateColumns: "minmax(0, 1fr) 160px minmax(0, 1fr)",
         }}>
           {/* East half */}
           <div className="relative">

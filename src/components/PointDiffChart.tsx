@@ -38,7 +38,6 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
   const avg = diffs.reduce((s, d) => s + d, 0) / diffs.length;
   const best = Math.max(...diffs);
   const worst = Math.min(...diffs);
-
   const wins = last.filter((g) => g.won).length;
   const losses = last.length - wins;
 
@@ -49,36 +48,23 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
     return window.reduce((s, d) => s + d, 0) / window.length;
   });
 
-  // Chart dimensions
-  const chartH = 220;
-  const chartW = 100; // viewBox width as percent
-  const padTop = 22;
-  const padBottom = 22;
-  const padLeft = 6;
-  const padRight = 2;
-  const innerH = chartH - padTop - padBottom;
-  const innerW = chartW - padLeft - padRight;
-  const midY = padTop + innerH / 2;
-
-  const barWidth = innerW / last.length;
+  // Chart geometry — use HTML container with explicit dimensions; SVG only for bars/lines.
+  const chartHeight = 220; // px
+  const yAxisWidth = 36;   // px, reserved for y-axis labels
+  // SVG inner uses a unit-less coordinate system that matches percentage layout
+  // Bars positioned 0..100 horizontally, value -yMax..+yMax vertically
+  const innerH = 100; // SVG viewBox height
+  const midY = innerH / 2;
+  const valueToY = (v: number) => midY - (v / yMax) * (innerH / 2);
+  const barWidth = 100 / last.length;
   const barGap = barWidth * 0.22;
   const barInnerW = barWidth - barGap * 2;
+  const indexToX = (i: number) => i * barWidth + barWidth / 2;
 
-  const valueToY = (v: number) => midY - (v / yMax) * (innerH / 2);
-  const indexToX = (i: number) => padLeft + i * barWidth + barWidth / 2;
+  // Y-axis label values (top to bottom)
+  const yLabels = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), -yMax];
 
-  const avgY = valueToY(avg);
-
-  // Gridlines at clean values
-  const gridLines = [
-    { value: yMax, y: padTop, major: false },
-    { value: yMax / 2, y: midY - (innerH / 4), major: false },
-    { value: 0, y: midY, major: true },
-    { value: -yMax / 2, y: midY + (innerH / 4), major: false },
-    { value: -yMax, y: padTop + innerH, major: false },
-  ];
-
-  // Trend path
+  // Trend path in viewBox coords
   const trendPath = trend
     .map((t, i) => {
       if (t === null) return null;
@@ -89,14 +75,18 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
     .filter(Boolean)
     .join(" ");
 
+  // Avg position as percent of chart height
+  const avgPct = ((midY - valueToY(avg)) / innerH + 0.5);
+  // Simpler: directly compute pct
+  const avgTopPct = (valueToY(avg) / innerH) * 100;
+  void avgPct;
+
   return (
     <div className="glass-tile p-5 mt-6 relative overflow-hidden">
       {/* Subtle team-color halo */}
       <div
         className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${teamColor}10, transparent)`,
-        }}
+        style={{ background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${teamColor}10, transparent)` }}
       />
 
       {/* Header strip */}
@@ -124,195 +114,205 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
       </div>
 
       {/* Chart */}
-      <div className="relative">
-        <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full block" preserveAspectRatio="none" style={{ height: chartH }}>
-          <defs>
-            <linearGradient id="pdc-pos" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#34D399" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.35" />
-            </linearGradient>
-            <linearGradient id="pdc-pos-h" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6EE7B7" stopOpacity="1" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.55" />
-            </linearGradient>
-            <linearGradient id="pdc-neg" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#F87171" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#EF4444" stopOpacity="0.35" />
-            </linearGradient>
-            <linearGradient id="pdc-neg-h" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#FCA5A5" stopOpacity="1" />
-              <stop offset="100%" stopColor="#EF4444" stopOpacity="0.55" />
-            </linearGradient>
-            <filter id="pdc-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="0.6" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* Gridlines + axis labels */}
-          {gridLines.map((g, i) => (
-            <g key={i}>
-              <line
-                x1={padLeft}
-                y1={g.y}
-                x2={chartW - padRight}
-                y2={g.y}
-                stroke={g.major ? "var(--border-strong)" : "var(--border)"}
-                strokeWidth={g.major ? "0.35" : "0.18"}
-                strokeDasharray={g.major ? "none" : "0.5 1"}
-                vectorEffect="non-scaling-stroke"
-                opacity={g.major ? 0.6 : 0.4}
-              />
-              <text
-                x={padLeft - 0.5}
-                y={g.y - 0.6}
-                fill="var(--text-secondary)"
-                fontSize="2.2"
-                opacity="0.55"
-                fontFamily="var(--font-mono)"
-                textAnchor="end"
-              >
-                {g.value > 0 ? `+${g.value}` : g.value === 0 ? "0" : g.value}
-              </text>
-            </g>
-          ))}
-
-          {/* Average line in team color */}
-          {Math.abs(avg) > 0.1 && (
-            <g>
-              <line
-                x1={padLeft}
-                y1={avgY}
-                x2={chartW - padRight}
-                y2={avgY}
-                stroke={teamColor}
-                strokeWidth="0.4"
-                strokeDasharray="1.5 1.2"
-                vectorEffect="non-scaling-stroke"
-                opacity="0.75"
-              />
-              <text
-                x={chartW - padRight - 0.5}
-                y={avgY - 0.8}
-                textAnchor="end"
-                fill={teamColor}
-                fontSize="2.2"
-                fontFamily="var(--font-mono)"
-                opacity="0.9"
-                fontWeight="600"
-              >
-                avg {avg >= 0 ? "+" : ""}{avg.toFixed(1)}
-              </text>
-            </g>
-          )}
-
-          {/* Bars */}
-          {diffs.map((d, i) => {
-            const isHovered = hovered === i;
-            const x = padLeft + i * barWidth + barGap;
-            const barTop = d >= 0 ? valueToY(d) : midY;
-            const barBottom = d >= 0 ? midY : valueToY(d);
-            const barH = barBottom - barTop;
-            const grad = d >= 0
-              ? (isHovered ? "url(#pdc-pos-h)" : "url(#pdc-pos)")
-              : (isHovered ? "url(#pdc-neg-h)" : "url(#pdc-neg)");
-            return (
-              <rect
-                key={i}
-                x={x}
-                y={barTop}
-                width={barInnerW}
-                height={Math.max(barH, 0.6)}
-                rx={0.7}
-                fill={grad}
-                filter={isHovered ? "url(#pdc-glow)" : undefined}
-                style={{ transition: "fill 150ms" }}
-              />
-            );
-          })}
-
-          {/* Rolling-3 trend line (drawn on top of bars) */}
-          {trendPath && (
-            <path
-              d={trendPath}
-              fill="none"
-              stroke={teamColor}
-              strokeWidth="0.6"
-              vectorEffect="non-scaling-stroke"
-              opacity="0.55"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
-
-          {/* Hover bar highlight (vertical guide) */}
-          {hovered !== null && (
-            <line
-              x1={indexToX(hovered)}
-              x2={indexToX(hovered)}
-              y1={padTop}
-              y2={chartH - padBottom}
-              stroke={teamColor}
-              strokeWidth="0.3"
-              strokeDasharray="0.6 0.6"
-              vectorEffect="non-scaling-stroke"
-              opacity="0.4"
-            />
-          )}
-        </svg>
-
-        {/* Hover overlay — captures pointer for each bar slot */}
-        <div className="absolute inset-0 flex" style={{ padding: `${padTop / chartH * 100}% ${padRight / chartW * 100}% ${padBottom / chartH * 100}% ${padLeft / chartW * 100}%` }}>
-          {last.map((g, i) => (
-            <Link
-              key={i}
-              href={`/game/${g.gameId}`}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              className="flex-1 cursor-pointer"
-              aria-label={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent} ${g.score}`}
-            />
+      <div className="relative" style={{ height: chartHeight, paddingLeft: yAxisWidth }}>
+        {/* Y-axis labels (HTML, not SVG, so they don't get distorted) */}
+        <div className="absolute left-0 inset-y-0 flex flex-col justify-between text-[10px] font-mono tabular-nums text-text-secondary/70 pointer-events-none" style={{ width: yAxisWidth - 6 }}>
+          {yLabels.map((v, i) => (
+            <div key={i} className="text-right pr-1.5 leading-none" style={{ marginTop: i === 0 ? 0 : i === yLabels.length - 1 ? 0 : "-0.5em" }}>
+              {v > 0 ? `+${v}` : v}
+            </div>
           ))}
         </div>
 
-        {/* Tooltip */}
-        {hovered !== null && last[hovered] && (() => {
-          const g = last[hovered];
-          const d = diffs[hovered];
-          const leftPct = (hovered + 0.5) / last.length * 100;
-          const isRight = leftPct > 50;
-          return (
+        {/* Chart inner — relative for absolute children */}
+        <div className="relative h-full w-full">
+          {/* SVG: gridlines, bars, trend line */}
+          <svg
+            viewBox={`0 0 100 ${innerH}`}
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full block"
+          >
+            <defs>
+              <linearGradient id="pdc-pos" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#34D399" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#10B981" stopOpacity="0.35" />
+              </linearGradient>
+              <linearGradient id="pdc-pos-h" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6EE7B7" stopOpacity="1" />
+                <stop offset="100%" stopColor="#10B981" stopOpacity="0.55" />
+              </linearGradient>
+              <linearGradient id="pdc-neg" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stopColor="#F87171" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#EF4444" stopOpacity="0.35" />
+              </linearGradient>
+              <linearGradient id="pdc-neg-h" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stopColor="#FCA5A5" stopOpacity="1" />
+                <stop offset="100%" stopColor="#EF4444" stopOpacity="0.55" />
+              </linearGradient>
+            </defs>
+
+            {/* Gridlines (lines only — labels are HTML above) */}
+            {yLabels.map((v, i) => {
+              const y = (i / (yLabels.length - 1)) * innerH;
+              const major = v === 0;
+              return (
+                <line
+                  key={i}
+                  x1={0}
+                  y1={y}
+                  x2={100}
+                  y2={y}
+                  stroke={major ? "var(--border-strong)" : "var(--border)"}
+                  strokeWidth={major ? "1" : "0.5"}
+                  strokeDasharray={major ? "none" : "2 2"}
+                  vectorEffect="non-scaling-stroke"
+                  opacity={major ? 0.6 : 0.35}
+                />
+              );
+            })}
+
+            {/* Avg line */}
+            {Math.abs(avg) > 0.1 && (
+              <line
+                x1={0}
+                y1={valueToY(avg)}
+                x2={100}
+                y2={valueToY(avg)}
+                stroke={teamColor}
+                strokeWidth="1.2"
+                strokeDasharray="4 3"
+                vectorEffect="non-scaling-stroke"
+                opacity="0.75"
+              />
+            )}
+
+            {/* Bars */}
+            {diffs.map((d, i) => {
+              const isHovered = hovered === i;
+              const x = i * barWidth + barGap;
+              const barTop = d >= 0 ? valueToY(d) : midY;
+              const barBottom = d >= 0 ? midY : valueToY(d);
+              const barH = barBottom - barTop;
+              const grad = d >= 0
+                ? (isHovered ? "url(#pdc-pos-h)" : "url(#pdc-pos)")
+                : (isHovered ? "url(#pdc-neg-h)" : "url(#pdc-neg)");
+              return (
+                <rect
+                  key={i}
+                  x={x}
+                  y={barTop}
+                  width={barInnerW}
+                  height={Math.max(barH, 0.6)}
+                  rx={0.7}
+                  fill={grad}
+                  style={{ transition: "fill 150ms" }}
+                />
+              );
+            })}
+
+            {/* Trend line */}
+            {trendPath && (
+              <path
+                d={trendPath}
+                fill="none"
+                stroke={teamColor}
+                strokeWidth="1.3"
+                vectorEffect="non-scaling-stroke"
+                opacity="0.55"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {/* Hover vertical guide */}
+            {hovered !== null && (
+              <line
+                x1={indexToX(hovered)}
+                x2={indexToX(hovered)}
+                y1={0}
+                y2={innerH}
+                stroke={teamColor}
+                strokeWidth="0.8"
+                strokeDasharray="2 2"
+                vectorEffect="non-scaling-stroke"
+                opacity="0.45"
+              />
+            )}
+          </svg>
+
+          {/* Avg label (HTML so it doesn't distort) */}
+          {Math.abs(avg) > 0.1 && (
             <div
-              className="absolute pointer-events-none z-10 glass-tile px-3 py-2 text-xs font-mono whitespace-nowrap shadow-2xl"
+              className="absolute right-0 text-[10px] font-mono font-bold tabular-nums pointer-events-none px-1 rounded"
               style={{
-                left: isRight ? "auto" : `${leftPct}%`,
-                right: isRight ? `${100 - leftPct}%` : "auto",
-                top: "12px",
-                transform: isRight ? "translateX(-12px)" : "translateX(12px)",
+                top: `${avgTopPct}%`,
+                transform: "translateY(-115%)",
+                color: teamColor,
+                background: "var(--bg-card)",
               }}
             >
-              <p className="text-[9px] uppercase tracking-[0.2em] text-text-secondary mb-1">
-                {g.date.slice(5).replace("-", "/")} · {g.home ? "vs" : "@"} {g.opponent}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${g.won ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
-                  {g.won ? "W" : "L"}
-                </span>
-                <span className="text-base font-light tabular-nums text-text-primary">{g.score}</span>
-                <span className={`text-base font-bold tabular-nums ${d >= 0 ? "text-success" : "text-danger"}`}>
-                  ({d > 0 ? "+" : ""}{d})
-                </span>
-              </div>
+              avg {avg >= 0 ? "+" : ""}{avg.toFixed(1)}
             </div>
-          );
-        })()}
+          )}
+
+          {/* Hover overlay — captures pointer for each bar slot */}
+          <div className="absolute inset-0 flex">
+            {last.map((g, i) => (
+              <Link
+                key={i}
+                href={`/game/${g.gameId}`}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                className="flex-1 cursor-pointer"
+                aria-label={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent} ${g.score}`}
+              />
+            ))}
+          </div>
+
+          {/* Tooltip — positioned smartly to stay in bounds */}
+          {hovered !== null && last[hovered] && (() => {
+            const g = last[hovered];
+            const d = diffs[hovered];
+            const totalBars = last.length;
+            // Anchor tooltip relative to the bar center
+            const barCenterPct = (hovered + 0.5) / totalBars * 100;
+            // Decide alignment based on which third the bar is in
+            let positionStyle: React.CSSProperties;
+            if (barCenterPct < 33) {
+              // Left side — anchor tooltip's LEFT edge to bar center
+              positionStyle = { left: `${barCenterPct}%`, transform: "translateX(8px)" };
+            } else if (barCenterPct > 67) {
+              // Right side — anchor tooltip's RIGHT edge to bar center
+              positionStyle = { right: `${100 - barCenterPct}%`, transform: "translateX(-8px)" };
+            } else {
+              // Middle — center the tooltip above the bar
+              positionStyle = { left: `${barCenterPct}%`, transform: "translateX(-50%)" };
+            }
+            return (
+              <div
+                className="absolute pointer-events-none z-10 glass-tile px-3 py-2 text-xs font-mono whitespace-nowrap shadow-2xl"
+                style={{ top: "8px", ...positionStyle }}
+              >
+                <p className="text-[9px] uppercase tracking-[0.2em] text-text-secondary mb-1">
+                  {g.date.slice(5).replace("-", "/")} · {g.home ? "vs" : "@"} {g.opponent}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${g.won ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
+                    {g.won ? "W" : "L"}
+                  </span>
+                  <span className="text-base font-light tabular-nums text-text-primary">{g.score}</span>
+                  <span className={`text-base font-bold tabular-nums ${d >= 0 ? "text-success" : "text-danger"}`}>
+                    ({d > 0 ? "+" : ""}{d})
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       </div>
 
       {/* W/L strip — thin pill row */}
-      <div className="relative mt-4">
+      <div className="relative mt-4" style={{ paddingLeft: yAxisWidth }}>
         <div className="flex gap-px">
           {last.map((g, i) => (
             <div
