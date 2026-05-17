@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Trophy, Calendar, Search, BarChart3, GitCompareArrows, Users, AlertTriangle, History, Target, Swords, ArrowLeftRight, MoreHorizontal, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -9,6 +10,7 @@ import { TEAM_META } from "@/lib/teams";
 import ThemeToggle from "@/components/ThemeToggle";
 import LocaleToggle from "@/components/LocaleToggle";
 import { useLocale } from "@/components/LocaleProvider";
+import CommandPalette, { type PaletteGroup } from "@/components/CommandPalette";
 
 const TEAMS = Object.values(TEAM_META);
 
@@ -72,8 +74,14 @@ export default function Navbar() {
     { href: "/standings", label: t.nav.standings, icon: BarChart3 },
   ], [t]);
 
+  const [teamsBtnRect, setTeamsBtnRect] = useState<{ top: number; right: number } | null>(null);
+  const teamsBtnRef = useRef<HTMLButtonElement>(null);
+  // Portal target available only on client. By the time user clicks a button to open
+  // the dropdown, hydration is complete and document.body exists.
+  const portalReady = typeof window !== "undefined";
+
   // Secondary nav — mega-menu organized into categorized columns
-  const moreGroups = useMemo(() => [
+  const moreGroups: PaletteGroup[] = useMemo(() => [
     {
       title: "League Order",
       eyebrow: "Standings",
@@ -142,15 +150,19 @@ export default function Navbar() {
   const allMoreHrefs = useMemo(() => moreGroups.flatMap((g) => g.items.map((i) => i.href)), [moreGroups]);
 
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
   const isMoreActive = allMoreHrefs.some((href) => pathname === href);
 
+  // Cmd+M / Ctrl+M shortcut to open the command palette (Cmd+K is search)
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
-    }
-    if (moreOpen) { document.addEventListener("mousedown", handleClick); return () => document.removeEventListener("mousedown", handleClick); }
-  }, [moreOpen]);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "m") {
+        e.preventDefault();
+        setMoreOpen(true);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <nav
@@ -187,53 +199,27 @@ export default function Navbar() {
             );
           })}
 
-          {/* More Dropdown */}
-          <div className="relative" ref={moreRef}>
-            <button onClick={() => setMoreOpen(!moreOpen)}
-              aria-label="More navigation options"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                moreOpen || isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-              }`}>
-              <MoreHorizontal size={16} />
-              <span className="hidden lg:inline">{t.nav.more}</span>
-            </button>
-            {moreOpen && (
-              <div
-                className="fixed right-3 sm:right-4 w-[min(92vw,760px)] glass-tile p-4 z-50 animate-fade-in overflow-y-auto"
-                style={{
-                  top: "68px",
-                  maxHeight: "calc(100vh - 80px)",
-                }}
-              >
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-4">
-                  {moreGroups.map((group) => (
-                    <div key={group.title} className="min-w-0">
-                      <div className="mb-2 pb-1.5 border-b border-border/60">
-                        <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-text-secondary/50">/ {group.eyebrow}</p>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: group.color }}>{group.title}</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        {group.items.map(({ href, label, icon: Icon }) => (
-                          <Link key={href} href={href} onClick={() => setMoreOpen(false)}
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                              pathname === href ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                            }`}>
-                            <Icon size={13} className="shrink-0" />
-                            <span className="truncate">{label}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* More button — opens command palette modal */}
+          <button onClick={() => setMoreOpen(true)}
+            aria-label="More navigation options"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isMoreActive ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+            }`}>
+            <MoreHorizontal size={16} />
+            <span className="hidden lg:inline">{t.nav.more}</span>
+          </button>
 
-          {/* Teams Dropdown */}
+          {/* Teams button — opens grid via portal */}
           <div className="relative" ref={teamsRef}>
             <button
-              onClick={() => setTeamsOpen(!teamsOpen)}
+              ref={teamsBtnRef}
+              onClick={() => {
+                if (teamsBtnRef.current) {
+                  const r = teamsBtnRef.current.getBoundingClientRect();
+                  setTeamsBtnRect({ top: r.bottom + 4, right: window.innerWidth - r.right });
+                }
+                setTeamsOpen(!teamsOpen);
+              }}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 teamsOpen || pathname.startsWith("/team")
                   ? "bg-accent/15 text-accent"
@@ -243,12 +229,14 @@ export default function Navbar() {
               <Users size={16} />
               <span className="hidden lg:inline">{t.nav.teams}</span>
             </button>
-            {teamsOpen && (
+            {teamsOpen && portalReady && teamsBtnRect && createPortal(
               <div
-                className="fixed right-3 sm:right-4 w-[360px] max-w-[92vw] glass-tile p-3 z-50 animate-fade-in overflow-y-auto"
+                ref={teamsRef as React.RefObject<HTMLDivElement>}
+                className="fixed w-[360px] max-w-[92vw] glass-tile p-3 z-[60] animate-fade-in overflow-y-auto shadow-2xl ring-1 ring-border"
                 style={{
-                  top: "68px",
-                  maxHeight: "calc(100vh - 80px)",
+                  top: teamsBtnRect.top,
+                  right: teamsBtnRect.right,
+                  maxHeight: `calc(100vh - ${teamsBtnRect.top + 16}px)`,
                 }}
               >
                 <div className="grid grid-cols-5 gap-1.5">
@@ -271,7 +259,8 @@ export default function Navbar() {
                     </Link>
                   ))}
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
 
@@ -332,6 +321,9 @@ export default function Navbar() {
       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-transparent">
         <div className="h-full bg-accent transition-[width] duration-75" style={{ width: `${scrollPct}%` }} />
       </div>
+
+      {/* Command palette (renders to document.body via portal — escapes nav containment) */}
+      <CommandPalette open={moreOpen} onClose={() => setMoreOpen(false)} groups={moreGroups} />
     </nav>
   );
 }
