@@ -124,6 +124,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  /* Sticky nav is 64px tall — keep anchor-link targets clear of it */
+  scroll-padding-top: 80px;
+  /* Prevent iOS auto-zoom on input focus + smooth scrolling */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -131,7 +139,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Eliminate 300ms tap delay + remove ugly default tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* Avoid horizontal overflow if any child misbehaves */
+  overflow-x: hidden;
 }
+
+/* Better focus visibility — ring instead of OS default outline */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* No outline on mouse clicks — only on keyboard nav */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 
 /* Numerals — Bloomberg / ESPN treatment: stat numbers in Fira Code */
 .stat-num, .tabular-nums, table td, table th {
@@ -223,18 +248,20 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
    Glass tile — Bento + Glassmorphism (Skill: premium SaaS)
    Translucent w/ backdrop-blur + hairline border + soft lift
    ───────────────────────────────────────────────────────────── */
+/* Perf: glass tile uses opaque-ish bg by default; backdrop-filter only opt-in
+   via .glass-tile-blur class to avoid expensive blur on Windows when there
+   are hundreds of tiles on screen. */
 .glass-tile {
   position: relative;
-  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow-card);
-  transition-property: transform, box-shadow, border-color, background-color;
-  transition-duration: 250ms;
-  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 180ms ease-out;
   overflow: hidden;
+  /* Promote to its own compositor layer for cheaper hover transforms */
+  transform: translateZ(0);
 }
 .glass-tile::before {
   content: "";
@@ -244,9 +271,14 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
   background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
   pointer-events: none;
 }
+/* Opt-in heavy blur — apply sparingly to hero / nav surfaces */
+.glass-tile-blur {
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+}
 .glass-tile:hover {
-  transform: translateY(-3px) scale(1.005);
-  box-shadow: var(--shadow-elevated);
+  transform: translateY(-2px) translateZ(0);
   border-color: var(--border-strong);
 }
 [data-theme="light"] .glass-tile {
@@ -485,17 +517,9 @@ nav.sticky { will-change: transform; transform: translateZ(0); }
   color: var(--accent);
 }
 
-/* Subtle aurora hue rotation — adds life to backgrounds */
-@keyframes aurora-drift {
-  0%, 100% { filter: hue-rotate(0deg); }
-  50% { filter: hue-rotate(8deg); }
-}
-.bg-mesh-aurora {
-  animation: aurora-drift 30s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .bg-mesh-aurora { animation: none; }
-}
+/* Perf: removed `filter: hue-rotate` animation — repaints the entire 70vh
+   aurora area every frame and causes visible jank on Windows DirectX backend.
+   Static gradient is good enough; the visual change was barely perceptible. */
 
 /* Numeric count-up — applied via React state, fall-through animation */
 @keyframes count-flash {

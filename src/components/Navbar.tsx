@@ -27,11 +27,30 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
+    // Perf: rAF-throttle the scroll handler. Previously fired setState 60-120
+    // times/sec on fast scroll, each triggering Navbar (35-item moreGroups) re-render.
+    let ticking = false;
+    let lastPct = -1;
+    let lastScrolled = false;
     function handleScroll() {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      setScrollPct(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
-      setScrolled(scrollTop > 8);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const nextPct = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+        const nextScrolled = scrollTop > 8;
+        // Only setState when value actually changed — avoid pointless re-renders
+        if (nextPct !== lastPct) {
+          lastPct = nextPct;
+          setScrollPct(nextPct);
+        }
+        if (nextScrolled !== lastScrolled) {
+          lastScrolled = nextScrolled;
+          setScrolled(nextScrolled);
+        }
+        ticking = false;
+      });
     }
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
