@@ -186,8 +186,36 @@ export default async function TeamPage({ params }: PageProps) {
   const w10 = last10.filter((g) => g.won).length;
   const l10 = last10.length - w10;
 
+  // JSON-LD structured data — SportsTeam schema for rich snippets
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    name: `${team.city} ${team.name}`,
+    sport: "Basketball",
+    url: `https://nba.xpy.me/team/${team.tricode}`,
+    logo: `https://cdn.nba.com/logos/nba/${team.teamId}/global/L/logo.svg`,
+    location: {
+      "@type": "Place",
+      name: team.city,
+      address: { "@type": "PostalAddress", addressLocality: team.city, addressCountry: "US" },
+    },
+    memberOf: [
+      { "@type": "SportsOrganization", name: `${team.conference}ern Conference`, url: "https://www.nba.com" },
+      { "@type": "SportsOrganization", name: `${team.division} Division`, url: "https://www.nba.com" },
+    ],
+    parentOrganization: {
+      "@type": "SportsOrganization",
+      name: "NBA",
+      url: "https://www.nba.com",
+    },
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Link href="/stats" className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.2em] text-text-secondary hover:text-accent transition-colors cursor-pointer">
         <ArrowLeft size={12} /> {t.teamPage.backToStandings}
       </Link>

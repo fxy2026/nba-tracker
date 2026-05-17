@@ -540,8 +540,52 @@ export default async function GamePage({ params }: PageProps) {
   const homeColor = TEAM_META[boxScore.homeTeam.teamTricode]?.primaryColor || "#F59E0B";
   const winnerColor = isFinal ? (homeWon ? homeColor : awayColor) : awayColor;
 
+  // JSON-LD structured data — SportsEvent schema for rich snippets
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${boxScore.awayTeam.teamCity} ${boxScore.awayTeam.teamName} vs ${boxScore.homeTeam.teamCity} ${boxScore.homeTeam.teamName}`,
+    sport: "Basketball",
+    startDate: boxScore.gameTimeUTC,
+    eventStatus: isFinal
+      ? "https://schema.org/EventCompleted"
+      : boxScore.gameStatus === 2
+      ? "https://schema.org/EventScheduled"
+      : "https://schema.org/EventScheduled",
+    location: {
+      "@type": "Place",
+      name: boxScore.arena.arenaName,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: boxScore.arena.arenaCity,
+      },
+    },
+    homeTeam: {
+      "@type": "SportsTeam",
+      name: `${boxScore.homeTeam.teamCity} ${boxScore.homeTeam.teamName}`,
+      url: `https://nba.xpy.me/team/${boxScore.homeTeam.teamTricode}`,
+    },
+    awayTeam: {
+      "@type": "SportsTeam",
+      name: `${boxScore.awayTeam.teamCity} ${boxScore.awayTeam.teamName}`,
+      url: `https://nba.xpy.me/team/${boxScore.awayTeam.teamTricode}`,
+    },
+    organizer: {
+      "@type": "SportsOrganization",
+      name: "NBA",
+      url: "https://www.nba.com",
+    },
+    ...(isFinal && {
+      description: `${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score}, ${boxScore.homeTeam.teamTricode} ${boxScore.homeTeam.score} — Final`,
+    }),
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] text-text-secondary">
         <Link href="/" className="hover:text-accent transition-colors cursor-pointer">{t.common.home}</Link>

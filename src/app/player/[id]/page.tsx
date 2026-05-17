@@ -88,8 +88,33 @@ export default async function PlayerPage({ params }: PageProps) {
   const rebCtx = statContext("reb", rpg);
   const astCtx = statContext("ast", apg);
 
+  // JSON-LD structured data — Person schema (athlete) for rich snippets
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: `${player.firstName} ${player.lastName}`,
+    givenName: player.firstName,
+    familyName: player.lastName,
+    jobTitle: "Professional basketball player",
+    affiliation: player.teamAbbr && TEAM_META[player.teamAbbr] ? {
+      "@type": "SportsTeam",
+      name: `${player.teamCity} ${player.teamName}`,
+      url: `https://nba.xpy.me/team/${player.teamAbbr}`,
+    } : undefined,
+    height: player.height ? player.height : undefined,
+    weight: player.weight ? `${player.weight} lb` : undefined,
+    nationality: player.country || undefined,
+    alumniOf: player.college ? { "@type": "CollegeOrUniversity", name: player.college } : undefined,
+    url: `https://nba.xpy.me/player/${player.personId}`,
+    image: `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.personId}.png`,
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Link href="/search" className="text-sm text-text-secondary hover:text-accent transition-colors inline-flex items-center gap-1 cursor-pointer">
         ← {t.common.backToSearch}
       </Link>
