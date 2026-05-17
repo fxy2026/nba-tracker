@@ -27,7 +27,7 @@
 
 ## 前情提要
 
-[上一篇](https://mp.weixin.qq.com/s/上一篇微信链接)写到 NBA Tracker 第一版：8800 行、16 个页面、纯 SVG 投篮图、Suspense 流式渲染。当时的目标是把功能堆起来——比分、Box Score、投篮图、季后赛对阵——能跑就行。
+[上一篇](https://www.xpy.me/article/nba-tracker)写到 NBA Tracker 第一版：8800 行、16 个页面、纯 SVG 投篮图、Suspense 流式渲染。当时的目标是把功能堆起来——比分、Box Score、投篮图、季后赛对阵——能跑就行。
 
 跑了一段时间之后，越用越觉得糙。不是哪一处特别坏，而是处处差一口气：
 
