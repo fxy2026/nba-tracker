@@ -72,7 +72,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0a",
+  // System-aware theme color — ThemeScript can still override at first paint
+  // (per stored preference), but this is the right default before its JS runs.
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#060912" },
+    { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
+  ],
 };
 
 export default async function RootLayout({
@@ -92,6 +97,9 @@ export default async function RootLayout({
       <head>
         <ThemeScript />
         <SpeculationRules />
+        {/* Explicit iOS touch icon — manifest icons aren't always picked up
+            on iOS Safari for "Add to Home Screen" before install. */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
         {/* Scroll-driven progress indicator — pure CSS, no JS listener */}
