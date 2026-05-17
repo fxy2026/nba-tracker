@@ -6,7 +6,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffxy2026%2Fnba-tracker&env=BALLDONTLIE_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,ADMIN_PASSWORD&envDescription=API%20keys%20needed%20for%20full%20functionality.%20Only%20BALLDONTLIE_API_KEY%20is%20required%2C%20others%20are%20optional.&project-name=nba-tracker&repository-name=nba-tracker)
 
-[Live Demo](https://nba.xpy.me) &nbsp;|&nbsp; [v2 Article](https://www.xpy.me/article/nba-tracker-v2-ui-redesign) &nbsp;|&nbsp; [v1 Article](https://www.xpy.me/article/nba-tracker)
+[Live Demo](https://nba.xpy.me) &nbsp;|&nbsp; [Tech Article](https://www.xpy.me/article/nba-tracker)
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
@@ -22,7 +22,7 @@
 
 ![NBA Tracker v2 demo](article-images/demo.gif)
 
-> **2026-05 update**: full UI rebuild + ~50 commits of polish — bracket → tree structure, top menu → Command Palette, breadcrumbs + RelatedPages on every page, A11y/WCAG AA, true PWA (offline + install), Service Worker, bilingual zh/en, Web Vitals telemetry, modern web platform (Speculation Rules · Container Queries · `:has()` · scroll-driven animations), data accuracy fixes (real all-time career leaders), code-split refactors (BracketTree 911 → 163, game/[id] 1026 → 243). See [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story, [the article](https://www.xpy.me/article/nba-tracker-v2-ui-redesign) for the narrative.
+> **2026-05 update**: full UI rebuild + ~50 commits of polish — bracket → tree structure, top menu → Command Palette, breadcrumbs + RelatedPages on every page, A11y/WCAG AA, true PWA (offline + install), Service Worker, bilingual zh/en, Web Vitals telemetry, modern web platform (Speculation Rules · Container Queries · `:has()` · scroll-driven animations), data accuracy fixes (real all-time career leaders), code-split refactors (BracketTree 911 → 163, game/[id] 1026 → 243). See [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story, [the article](https://www.xpy.me/article/nba-tracker) for the narrative.
 
 ## Highlights
 
