@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Trophy, Crown, TrendingUp, Award } from "lucide-react";
+import { CalendarDays, Trophy, Crown, TrendingUp, Award, Flame, GitCompareArrows, ArrowRight } from "lucide-react";
 import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
-import { teamLogoUrl } from "@/lib/teamUrls";
+import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
+import { ICONIC_GAMES, type IconicGame } from "@/lib/iconicGames";
+import { TEAM_META } from "@/lib/teams";
 
 export const metadata: Metadata = {
   title: "On This Day",
@@ -76,7 +78,16 @@ export default async function ThisDayPage() {
   const isZh = locale === "zh";
   const { games, today } = await compute();
 
-  if (games.length === 0) {
+  // Iconic-game matches on today's MM-DD (any year). Hand-curated dataset
+  // covers nights the official schedule doesn't (Wilt 100, Kobe 81, etc.)
+  // and surfaces them above the auto-detected games.
+  const now = new Date();
+  const monthDay = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const iconicToday = ICONIC_GAMES
+    .filter((g) => g.date.slice(5) === monthDay)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (games.length === 0 && iconicToday.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow="History" icon={CalendarDays} title={isZh ? `历史上的今天 · ${today}` : `On This Day · ${today}`} />
@@ -107,6 +118,26 @@ export default async function ThisDayPage() {
         subtitle={isZh ? `NBA 历史上同一天发生过的比赛 — 重温过往对决。共 ${games.length} 场。` : `${games.length} historical game${games.length === 1 ? "" : "s"} from past seasons on this calendar date`}
         updatedAt={getScheduleAge()}
       />
+
+      {iconicToday.length > 0 && (
+        <section className="mb-8">
+          <div className="mb-3 flex items-center gap-3">
+            <Flame size={14} className="text-accent-amber" />
+            <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent-amber">
+              {isZh ? "经典之夜" : "Iconic Game On This Date"}
+            </h2>
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">
+              {iconicToday.length}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {iconicToday.map((g) => (
+              <IconicGameRow key={g.id} game={g} isZh={isZh} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="space-y-8">
         {years.map((yrs) => {
@@ -180,6 +211,7 @@ export default async function ThisDayPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games", description: isZh ? "16 个改变生涯的夜晚" : "Single-night iconic performances", icon: Flame },
           { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季最精彩对决" : "Season highlights and standout matchups", icon: Trophy },
           { href: "/records", label: isZh ? "赛季纪录" : "Records", description: isZh ? "赛季单场纪录" : "Single-game season records", icon: Crown },
           { href: "/milestones", label: isZh ? "里程碑" : "Milestones", description: isZh ? "球员生涯关注" : "Career watch list", icon: TrendingUp },
@@ -188,5 +220,51 @@ export default async function ThisDayPage() {
         ]}
       />
     </div>
+  );
+}
+
+function IconicGameRow({ game, isZh }: { game: IconicGame; isZh: boolean }) {
+  const team = TEAM_META[game.team];
+  const teamColor = team?.primaryColor || "#94A3B8";
+  const title = isZh && game.titleZh ? game.titleZh : game.title;
+  const year = game.date.slice(0, 4);
+  const yearsAgo = new Date().getFullYear() - parseInt(year, 10);
+
+  return (
+    <Link
+      href={game.gameId ? `/game/${game.gameId}` : `/compare?p1=${game.personId}`}
+      className="glass-tile relative overflow-hidden p-3 flex items-center gap-3 group cursor-pointer hover:border-accent/40 transition-colors"
+    >
+      <div
+        className="absolute inset-0 opacity-12 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${teamColor}55 0%, transparent 70%)` }}
+      />
+      <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-bg-secondary border border-border shrink-0">
+        <Image
+          src={playerHeadshotUrl(game.personId)}
+          alt={game.name}
+          width={48}
+          height={48}
+          unoptimized
+          className="w-full h-full object-cover object-top"
+        />
+      </div>
+      <div className="relative flex-1 min-w-0">
+        <p className="font-semibold text-text-primary text-sm truncate">{title}</p>
+        <p className="text-[11px] text-text-secondary font-mono tabular-nums">
+          <span className="text-accent-amber">{game.pts} PTS</span>
+          <span className="text-text-secondary/40 mx-1.5">·</span>
+          <span>{game.name}</span>
+          <span className="text-text-secondary/40 mx-1.5">·</span>
+          <span>{year}</span>
+          <span className="text-text-secondary/40 mx-1.5">·</span>
+          <span>{yearsAgo} {isZh ? "年前" : `year${yearsAgo === 1 ? "" : "s"} ago`}</span>
+        </p>
+      </div>
+      <div className="relative shrink-0 text-text-secondary group-hover:text-accent transition-colors">
+        {game.gameId ? <Trophy size={14} /> : <GitCompareArrows size={14} />}
+        <ArrowRight size={11} className="inline ml-1 group-hover:translate-x-0.5 transition-transform" />
+      </div>
+    </Link>
   );
 }
