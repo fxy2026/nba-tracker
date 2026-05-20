@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { getPlayerHeadshotUrl, type ShotAction, type PlayerInfo } from "@/lib/api";
@@ -82,6 +82,8 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration pattern
   useEffect(() => { setMounted(true); }, []);
 
@@ -91,6 +93,56 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = ""; };
     }
+  }, [open]);
+
+  // Modal a11y: ESC closes, Tab traps focus, focus restores to trigger on close.
+  // Mirrors the patterns in CommandPalette for consistent keyboard behavior.
+  useEffect(() => {
+    if (!open) return;
+    triggerRef.current = (document.activeElement as HTMLElement) ?? null;
+    // Move focus into the dialog so screen readers anchor here
+    const focusFirst = () => {
+      const root = dialogRef.current;
+      if (!root) return;
+      const first = root.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      first?.focus();
+    };
+    const id = setTimeout(focusFirst, 0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+      } else if (e.key === "Tab") {
+        const root = dialogRef.current;
+        if (!root) return;
+        const focusables = Array.from(
+          root.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => el.offsetParent !== null);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey) {
+          if (active === first || !root.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (active === last || !root.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("keydown", onKey);
+      triggerRef.current?.focus?.();
+    };
   }, [open]);
 
   /* ── ALL heavy computation deferred until modal opens ── */
@@ -144,8 +196,15 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
   const headshotUrl = getPlayerHeadshotUrl(playerId);
 
   const modal = open && mounted && data ? createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" onClick={() => setOpen(false)}>
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+      onClick={() => setOpen(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isZh ? `${playerName} 投篮图` : `${playerName} shot chart`}
+    >
       <div
+        ref={dialogRef}
         className="bg-bg-secondary rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >

@@ -7,6 +7,7 @@ import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 
@@ -126,9 +127,12 @@ export default async function MomentumPage() {
   const isZh = locale === "zh";
   const all = await compute();
 
+  const breadcrumbs = <Breadcrumbs items={[{ label: isZh ? "势头" : "Momentum" }]} />;
+
   if (all.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
+        {breadcrumbs}
         <PageHeader eyebrow={isZh ? "走势" : "Trend"} icon={TrendingUp} title={isZh ? "势头" : "Momentum"} />
         <EmptyState
           icon={TrendingUp}
@@ -145,6 +149,7 @@ export default async function MomentumPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
+      {breadcrumbs}
       <PageHeader
         eyebrow={isZh ? "走势" : "Trend"}
         icon={TrendingUp}

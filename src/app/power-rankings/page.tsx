@@ -8,6 +8,7 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 
@@ -250,9 +251,12 @@ export default async function PowerRankingsPage() {
   const isZh = locale === "zh";
   const metrics = await computeMetrics();
 
+  const breadcrumbs = <Breadcrumbs items={[{ label: isZh ? "战力榜" : "Power Rankings" }]} />;
+
   if (metrics.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
+        {breadcrumbs}
         <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={Crown} title={isZh ? "战力榜" : "Power Rankings"} />
         <EmptyState
           icon={Crown}
@@ -272,6 +276,7 @@ export default async function PowerRankingsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {breadcrumbs}
       <PageHeader
         eyebrow={isZh ? "联盟" : "League"}
         icon={Crown}

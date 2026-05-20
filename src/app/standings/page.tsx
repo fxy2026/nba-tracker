@@ -8,6 +8,7 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct as calcWinPct } from "@/lib/games";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { TrendingUp, Activity, Users, Crown, Award } from "lucide-react";
 import { getLocale } from "@/lib/locale";
@@ -23,7 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const dynamic = "force-dynamic";
+// ISR: standings derive from the cached schedule — match the team page TTL.
+export const revalidate = 600;
 
 interface TeamRecord {
   tricode: string;
@@ -332,8 +334,11 @@ export default async function StandingsPage() {
     byDivision.get(div)!.push(team);
   }
 
+  const isZh = locale === "zh";
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: isZh ? "排名" : "Standings" }]} />
       <PageHeader
         eyebrow="League"
         icon={ListOrdered}

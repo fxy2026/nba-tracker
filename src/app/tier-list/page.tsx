@@ -8,6 +8,7 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 
@@ -150,9 +151,12 @@ export default async function TierListPage() {
   const isZh = locale === "zh";
   const teams = await rankTeams();
 
+  const breadcrumbs = <Breadcrumbs items={[{ label: isZh ? "等级表" : "Tier List" }]} />;
+
   if (teams.length === 0 || teams.every((t) => t.power === 0)) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
+        {breadcrumbs}
         <PageHeader eyebrow={isZh ? "联盟" : "League"} icon={Layers} title={isZh ? "等级表" : "Team Tier List"} />
         <EmptyState
           icon={Layers}
@@ -167,6 +171,7 @@ export default async function TierListPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {breadcrumbs}
       <PageHeader
         eyebrow={isZh ? "联盟" : "League"}
         icon={Layers}

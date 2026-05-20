@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
+import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -58,16 +58,17 @@ export default async function PlayerPage({ params }: PageProps) {
   const personId = parseInt(id, 10);
   if (isNaN(personId)) notFound();
 
-  const player = await getPlayerInfo(personId);
+  // Player info + league index in parallel — the index is large and was
+  // previously serialized after getPlayerInfo, adding ~100-300ms of TTFB.
+  const [player, allPlayers, locale] = await Promise.all([
+    getPlayerInfo(personId),
+    getPlayerIndex().catch(() => []),
+    getLocale(),
+  ]);
   if (!player) notFound();
 
-  const locale = await getLocale();
   const t = getTranslations(locale);
   const isZh = locale === "zh";
-
-  // Get all players for league-wide stat context (rank, percentile, average)
-  const { getPlayerIndex } = await import("@/lib/api");
-  const allPlayers = await getPlayerIndex().catch(() => []);
 
   const headshotUrl = getPlayerHeadshotUrl(personId);
   const fullName = `${player.firstName} ${player.lastName}`;

@@ -8,6 +8,7 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 
@@ -197,6 +198,7 @@ export default async function StreaksPage() {
   if (streaks.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
+        <Breadcrumbs items={[{ label: isZh ? "连胜连败" : "Streaks" }]} />
         <PageHeader
           eyebrow={isZh ? "联盟" : "League"}
           icon={Flame}
@@ -227,6 +229,7 @@ export default async function StreaksPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: isZh ? "连胜连败" : "Streaks" }]} />
       <PageHeader
         eyebrow={isZh ? "联盟" : "League"}
         icon={Flame}

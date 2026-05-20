@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Crown, TrendingUp, Sparkles, GraduationCap, Award, Users } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { TEAM_META } from "@/lib/teams";
@@ -43,15 +44,15 @@ function buildCategories(isZh: boolean): CategoryMeta[] {
     { key: "totalPts", group: "total",
       label: isZh ? "生涯总得分" : "Career Total Points",
       description: isZh ? "得分排行榜 — 累计计算" : "All-time scoring leaders by total",
-      fmt: (v) => v.toLocaleString() },
+      fmt: (v) => v.toLocaleString("en-US") },
     { key: "totalReb", group: "total",
       label: isZh ? "生涯总篮板" : "Career Total Rebounds",
       description: isZh ? "篮板球累计冠军" : "Career rebounding totals",
-      fmt: (v) => v.toLocaleString() },
+      fmt: (v) => v.toLocaleString("en-US") },
     { key: "totalAst", group: "total",
       label: isZh ? "生涯总助攻" : "Career Total Assists",
       description: isZh ? "传球之王" : "All-time assist totals",
-      fmt: (v) => v.toLocaleString() },
+      fmt: (v) => v.toLocaleString("en-US") },
     { key: "tenure", group: "career",
       label: isZh ? "最长生涯" : "Longest Careers",
       description: isZh ? "效力 NBA 赛季数最多" : "Most NBA seasons played",
@@ -71,6 +72,7 @@ export default function AllTimeLeadersPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: isZh ? "历史榜单" : "All-Time Leaders" }]} />
       <PageHeader
         eyebrow={isZh ? "历史" : "History"}
         icon={Crown}
