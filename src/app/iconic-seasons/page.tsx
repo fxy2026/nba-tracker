@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { Crown, GitCompareArrows, Trophy, Flame, Activity, Star } from "lucide-react";
-import { ICONIC_SEASONS, PLAY_STYLE_LABEL, type IconicSeason, type PlayStyle } from "@/lib/iconicSeasons";
+import { ICONIC_SEASONS, type IconicSeason, type PlayStyle } from "@/lib/iconicSeasons";
 import SeasonsFilter from "./SeasonsFilter";
-import { TEAM_META } from "@/lib/teams";
-import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
+import SeasonCard from "./SeasonCard";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -142,9 +140,12 @@ export default async function IconicSeasonsPage() {
           return (
             <section key={era}>
               <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber">
-                  / {eraLabel(era)}
-                </h2>
+                <Link
+                  href={`/iconic-seasons/${decadeKeyOf(era)}`}
+                  className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber hover:text-accent transition-colors cursor-pointer"
+                >
+                  / {eraLabel(era)} →
+                </Link>
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-[10px] font-mono tabular-nums text-text-secondary">
                   {seasons.length} {isZh ? "个赛季" : seasons.length === 1 ? "season" : "seasons"}
@@ -187,138 +188,3 @@ function StatTile({ label, value, icon: Icon }: { label: string; value: number; 
   );
 }
 
-function SeasonCard({ season, isZh }: { season: IconicSeason; isZh: boolean }) {
-  const team = TEAM_META[season.team];
-  const teamColor = team?.primaryColor || "#94A3B8";
-  const story = isZh && season.storyZh ? season.storyZh : season.story;
-
-  // Filter-axis attrs threaded through to the runtime CSS in SeasonsFilter.
-  const decade = `${Math.floor(season.seasonYear / 10) * 10}s`;
-  const trophyFlags = [
-    season.mvp && "mvp",
-    season.champion && "champion",
-    season.finalsMvp && "finalsMvp",
-    season.dpoy && "dpoy",
-    season.scoringTitle && "scoringTitle",
-  ].filter(Boolean).join(" ");
-
-  // Trophy chips — only render what this season earned
-  const trophies: { label: string; tone: string }[] = [];
-  if (season.mvp) trophies.push({ label: "MVP", tone: "bg-accent-amber/15 text-accent-amber border-accent-amber/30" });
-  if (season.finalsMvp) trophies.push({ label: "FMVP", tone: "bg-accent-amber/15 text-accent-amber border-accent-amber/30" });
-  if (season.champion) trophies.push({ label: "🏆", tone: "bg-success/15 text-success border-success/30" });
-  if (season.dpoy) trophies.push({ label: "DPOY", tone: "bg-accent/15 text-accent border-accent/30" });
-  if (season.scoringTitle) trophies.push({ label: "Scoring", tone: "bg-danger/10 text-danger border-danger/30" });
-
-  return (
-    <Link
-      href={`/compare?p1=${encodeURIComponent(season.id)}`}
-      className="glass-tile p-4 relative overflow-hidden block cursor-pointer hover:border-accent/40 transition-colors group"
-      data-season-card
-      data-decade={decade}
-      data-styles={(season.styles ?? []).join(" ")}
-      data-trophies={trophyFlags}
-    >
-      {/* Team color tint */}
-      <div
-        className="absolute inset-0 opacity-15 pointer-events-none"
-        style={{ background: `linear-gradient(135deg, ${teamColor}55 0%, transparent 60%)` }}
-      />
-
-      {/* Header — headshot + name */}
-      <div className="relative flex items-center gap-3 mb-3">
-        <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary shrink-0 border border-border">
-          <Image
-            src={playerHeadshotUrl(season.personId)}
-            alt={season.name}
-            width={56}
-            height={56}
-            unoptimized
-            className="w-full h-full object-cover object-top"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded bg-accent/15 text-accent">
-              {season.season}
-            </span>
-            {team && (
-              <Image
-                src={teamLogoUrl(team.teamId)}
-                alt=""
-                width={14}
-                height={14}
-                unoptimized
-                aria-hidden
-                className="opacity-70"
-              />
-            )}
-            <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary truncate">
-              {season.team}
-            </span>
-          </div>
-          <p className="font-semibold text-text-primary text-sm leading-tight mt-1 truncate">
-            {season.name}
-          </p>
-        </div>
-      </div>
-
-      {/* Headline stats */}
-      <div className="relative grid grid-cols-3 gap-2 mb-3">
-        <div className="text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">PPG</p>
-          <p className="text-xl font-light font-mono tabular-nums text-accent-amber">{season.ppg.toFixed(1)}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">RPG</p>
-          <p className="text-xl font-light font-mono tabular-nums text-text-primary">{season.rpg.toFixed(1)}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">APG</p>
-          <p className="text-xl font-light font-mono tabular-nums text-text-primary">{season.apg.toFixed(1)}</p>
-        </div>
-      </div>
-
-      {/* Trophies */}
-      {trophies.length > 0 && (
-        <div className="relative flex flex-wrap gap-1 mb-2">
-          {trophies.map((tr) => (
-            <span
-              key={tr.label}
-              className={`text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded border ${tr.tone}`}
-            >
-              {tr.label}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Style tags */}
-      {season.styles && season.styles.length > 0 && (
-        <div className="relative flex flex-wrap gap-1 mb-2">
-          {season.styles.slice(0, 2).map((st) => {
-            const label = PLAY_STYLE_LABEL[st];
-            return (
-              <span key={st} className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-                {isZh ? label.zh : label.en}
-              </span>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Story */}
-      <p className="relative text-[11px] text-text-secondary leading-relaxed line-clamp-3">
-        {story}
-      </p>
-
-      {/* CTA hint */}
-      <div className="relative mt-3 pt-2 border-t border-border/40 flex items-center justify-between text-[10px]">
-        <span className="text-text-secondary/60 font-mono uppercase tracking-[0.15em]">
-          {isZh ? "对比" : "Compare"}
-        </span>
-        <span className="text-accent group-hover:translate-x-1 transition-transform">→</span>
-      </div>
-    </Link>
-  );
-}
