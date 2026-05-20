@@ -20,14 +20,16 @@ interface Props {
   scoreEvents?: ScoreEvent[];
 }
 
-// Convert period + clock to elapsed game minutes (0 to 48+)
+// Convert period + clock to elapsed game minutes. Regulation quarters are 12
+// min, OT periods are 5 min — keep them on separate scales so the x-axis
+// matches the quarter boundary lines drawn at 48, 53, 58, …
 function toGameMinutes(period: number, clock: string): number {
-  const periodMins = 12; // NBA quarter length
   let min = 0, sec = 0;
   const match = clock?.match?.(/PT(\d+)M([\d.]+)S/);
   if (match) { min = parseInt(match[1]); sec = parseFloat(match[2]); }
-  const elapsed = periodMins - min - sec / 60;
-  return (Math.min(period, 4) - 1) * periodMins + (period <= 4 ? elapsed : periodMins) + (period > 4 ? (period - 5) * 5 + Math.min(elapsed, 5) : 0);
+  const remaining = min + sec / 60;
+  if (period <= 4) return (period - 1) * 12 + (12 - remaining);
+  return 48 + (period - 5) * 5 + (5 - remaining);
 }
 
 export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode, scoreEvents }: Props) {
