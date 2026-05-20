@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Crown, GitCompareArrows, Trophy, Flame, Activity, Star } from "lucide-react";
-import { ICONIC_SEASONS, PLAY_STYLE_LABEL, type IconicSeason } from "@/lib/iconicSeasons";
+import { ICONIC_SEASONS, PLAY_STYLE_LABEL, type IconicSeason, type PlayStyle } from "@/lib/iconicSeasons";
+import SeasonsFilter from "./SeasonsFilter";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
@@ -66,6 +67,26 @@ export default async function IconicSeasonsPage() {
     return e;
   };
 
+  // Filter input axes — derived from the dataset so chips only show what's
+  // actually populated.
+  const decadeKeyOf = (e: Era): string =>
+    e === "60s" ? "1960s"
+      : e === "80s" ? "1980s"
+      : e === "90s" ? "1990s"
+      : e === "2000s" ? "2000s"
+      : e === "2010s" ? "2010s"
+      : "2020s";
+  const availableDecades = eraOrder.filter((e) => byEra[e].length > 0).map(decadeKeyOf);
+  const availableStyles = Array.from(
+    new Set(sorted.flatMap((s) => s.styles ?? [])),
+  ) as PlayStyle[];
+  const availableTrophies: ("mvp" | "champion" | "finalsMvp" | "dpoy" | "scoringTitle")[] = [];
+  if (sorted.some((s) => s.mvp)) availableTrophies.push("mvp");
+  if (sorted.some((s) => s.champion)) availableTrophies.push("champion");
+  if (sorted.some((s) => s.finalsMvp)) availableTrophies.push("finalsMvp");
+  if (sorted.some((s) => s.dpoy)) availableTrophies.push("dpoy");
+  if (sorted.some((s) => s.scoringTitle)) availableTrophies.push("scoringTitle");
+
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -105,8 +126,16 @@ export default async function IconicSeasonsPage() {
         <StatTile label={isZh ? "FMVP" : "Finals MVP"} value={totalFmvp} icon={Star} />
       </div>
 
+      <div className="mt-6">
+        <SeasonsFilter
+          availableDecades={availableDecades}
+          availableStyles={availableStyles}
+          availableTrophies={availableTrophies}
+        />
+      </div>
+
       {/* Era sections */}
-      <div className="mt-10 space-y-12">
+      <div className="mt-6 space-y-12">
         {eraOrder.map((era) => {
           const seasons = byEra[era];
           if (seasons.length === 0) return null;
@@ -163,6 +192,16 @@ function SeasonCard({ season, isZh }: { season: IconicSeason; isZh: boolean }) {
   const teamColor = team?.primaryColor || "#94A3B8";
   const story = isZh && season.storyZh ? season.storyZh : season.story;
 
+  // Filter-axis attrs threaded through to the runtime CSS in SeasonsFilter.
+  const decade = `${Math.floor(season.seasonYear / 10) * 10}s`;
+  const trophyFlags = [
+    season.mvp && "mvp",
+    season.champion && "champion",
+    season.finalsMvp && "finalsMvp",
+    season.dpoy && "dpoy",
+    season.scoringTitle && "scoringTitle",
+  ].filter(Boolean).join(" ");
+
   // Trophy chips — only render what this season earned
   const trophies: { label: string; tone: string }[] = [];
   if (season.mvp) trophies.push({ label: "MVP", tone: "bg-accent-amber/15 text-accent-amber border-accent-amber/30" });
@@ -175,6 +214,10 @@ function SeasonCard({ season, isZh }: { season: IconicSeason; isZh: boolean }) {
     <Link
       href={`/compare?p1=${encodeURIComponent(season.id)}`}
       className="glass-tile p-4 relative overflow-hidden block cursor-pointer hover:border-accent/40 transition-colors group"
+      data-season-card
+      data-decade={decade}
+      data-styles={(season.styles ?? []).join(" ")}
+      data-trophies={trophyFlags}
     >
       {/* Team color tint */}
       <div
