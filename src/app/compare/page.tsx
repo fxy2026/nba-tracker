@@ -9,6 +9,9 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import RadarChart from "@/components/RadarChart";
 import type { PlayerAccolades } from "@/lib/playerAccolades";
+import type { PlayStyle } from "@/lib/iconicSeasons";
+import { PLAY_STYLE_LABEL } from "@/lib/iconicSeasons";
+import { getLeagueEra } from "@/lib/leagueEra";
 
 interface PlayerData {
   personId: number;
@@ -31,8 +34,22 @@ interface PlayerData {
   isIconicSeason?: boolean;
   iconicId?: string;
   season?: string;
+  seasonYear?: number;
   story?: string;
   storyZh?: string;
+  styles?: PlayStyle[];
+  // Shooting splits (decimals 0-1)
+  fgPct?: number;
+  tpPct?: number;
+  ftPct?: number;
+  // Single-season defensive stats — only iconic-season + legends carry these
+  spg?: number;
+  bpg?: number;
+  // Playoff per-game for the same season
+  playoffPpg?: number;
+  playoffRpg?: number;
+  playoffApg?: number;
+  playoffGp?: number;
   mvp?: boolean;
   champion?: boolean;
   finalsMvp?: boolean;
@@ -50,29 +67,93 @@ const COMPARE_STATS = [
   { key: "ast", label: "APG", color: "text-accent", barColor: "#60a5fa" },
 ] as const;
 
-// Build radar axes from two players. PPG/RPG/APG/SPG/BPG and the shooting
-// splits (FG%/3P%/FT%, when both sides have them) — each axis is normalized
-// to max(v1, v2) inside the RadarChart component itself.
-function buildRadarStats(p1: PlayerData, p2: PlayerData) {
+// Build radar axes from two players. Mode chooses regular-season vs
+// playoff per-game; defensive (SPG/BPG) axes only render when at least one
+// side carries them. Each axis is normalized to max(v1, v2) inside RadarChart.
+function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
   const axes: { label: string; home: number; away: number; max: number }[] = [];
   const push = (label: string, a: number, b: number, max?: number) => {
     if (a > 0 || b > 0) axes.push({ label, home: a, away: b, max: max ?? Math.max(a, b, 0.001) });
   };
-  push("PPG", p1.pts, p2.pts);
-  push("RPG", p1.reb, p2.reb);
-  push("APG", p1.ast, p2.ast);
-  // Defensive stats only show on iconic seasons / legends (BDL active player
-  // data is per-game basics, no SPG/BPG). Skip axes where neither side has it.
-  type IconicLike = PlayerData & { spg?: number; bpg?: number };
-  const x1 = p1 as IconicLike;
-  const x2 = p2 as IconicLike;
-  if (x1.spg !== undefined || x2.spg !== undefined) {
-    push("SPG", x1.spg ?? 0, x2.spg ?? 0);
-  }
-  if (x1.bpg !== undefined || x2.bpg !== undefined) {
-    push("BPG", x1.bpg ?? 0, x2.bpg ?? 0);
+  if (mode === "PO" && (p1.playoffPpg !== undefined || p2.playoffPpg !== undefined)) {
+    push("PPG", p1.playoffPpg ?? 0, p2.playoffPpg ?? 0);
+    push("RPG", p1.playoffRpg ?? 0, p2.playoffRpg ?? 0);
+    push("APG", p1.playoffApg ?? 0, p2.playoffApg ?? 0);
+  } else {
+    push("PPG", p1.pts, p2.pts);
+    push("RPG", p1.reb, p2.reb);
+    push("APG", p1.ast, p2.ast);
+    if (p1.spg !== undefined || p2.spg !== undefined) {
+      push("SPG", p1.spg ?? 0, p2.spg ?? 0);
+    }
+    if (p1.bpg !== undefined || p2.bpg !== undefined) {
+      push("BPG", p1.bpg ?? 0, p2.bpg ?? 0);
+    }
   }
   return axes;
+}
+
+// Vertical column rendering 1-3 style chips. Empty when the entry has none.
+function StyleTagsCol({ styles, isZh }: { styles?: PlayStyle[]; isZh: boolean }) {
+  if (!styles || styles.length === 0) {
+    return <div className="bg-bg-card p-3" />;
+  }
+  return (
+    <div className="bg-bg-card p-3 flex flex-wrap gap-1.5 items-center justify-center">
+      {styles.map((s) => {
+        const label = PLAY_STYLE_LABEL[s];
+        return (
+          <span
+            key={s}
+            className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20"
+          >
+            {isZh ? label.zh : label.en}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// Era-context strip: "X PPG vs Y league avg → +/- N above era".
+// Shows for each iconic-season player on their own side; falls back to
+// a quiet line when league era data isn't known for that year.
+function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
+  const renderSide = (p: PlayerData) => {
+    if (p.seasonYear === undefined) return null;
+    const era = getLeagueEra(p.seasonYear);
+    if (!era) return null;
+    const teamPpg = era.ppg;
+    // The league PPG is per team; an individual scoring 30 in a 105 PPG
+    // era is scoring 28.6% of his team's points. Compare relative shares.
+    const sharePct = (p.pts / teamPpg) * 100;
+    return (
+      <div className="bg-bg-card p-3 text-[11px] text-text-secondary leading-relaxed">
+        <div className="font-mono tabular-nums">
+          <span className="text-accent-amber">{p.pts.toFixed(1)}</span>
+          <span className="text-text-secondary/60"> PPG</span>
+          <span className="text-text-secondary/40 mx-1.5">·</span>
+          <span className="text-text-secondary">
+            {isZh ? "时代均值" : "Era avg"}: {era.ppg.toFixed(1)}
+          </span>
+        </div>
+        <div className="text-[10px] mt-1">
+          {isZh
+            ? `占球队得分 ${sharePct.toFixed(1)}% · ${era.season} 时代节奏 ${era.pace.toFixed(1)} poss`
+            : `${sharePct.toFixed(1)}% of team output · ${era.season} pace ${era.pace.toFixed(1)} poss`}
+        </div>
+      </div>
+    );
+  };
+  const side1 = renderSide(p1);
+  const side2 = renderSide(p2);
+  if (!side1 && !side2) return null;
+  return (
+    <div className="grid grid-cols-2 gap-px bg-border/40 border-b border-border">
+      {side1 ?? <div className="bg-bg-card p-3" />}
+      {side2 ?? <div className="bg-bg-card p-3" />}
+    </div>
+  );
 }
 
 // One accolade tile: label, both values, mini comparison bar. Winner side
@@ -139,6 +220,9 @@ export default function ComparePage() {
   const [results2, setResults2] = useState<PlayerData[]>([]);
   const [player1, setPlayer1] = useState<PlayerData | null>(null);
   const [player2, setPlayer2] = useState<PlayerData | null>(null);
+  // Toggle the radar chart between regular-season per-game and playoff
+  // per-game (only when both selected players carry playoff stats).
+  const [radarMode, setRadarMode] = useState<"RS" | "PO">("RS");
 
   const search = async (q: string, setter: (r: PlayerData[]) => void) => {
     if (q.length < 2) { setter([]); return; }
@@ -363,37 +447,82 @@ export default function ComparePage() {
             </div>
           )}
 
-          {/* Radar — 8 normalized stats overlaid. Only rendered when both
-              players have at least PPG/RPG/APG so the chart isn't lopsided. */}
-          {player1.pts > 0 && player2.pts > 0 && (
-            <div className="p-6 border-b border-border bg-bg-secondary/20">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
-                  / {isZh ? "雷达对比" : "Stat Radar"}
-                </h3>
-                <div className="flex items-center gap-3 text-[10px]">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-sm bg-accent" />
-                    <span className="text-text-secondary">{player1.firstName} {player1.lastName}</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-sm bg-success" />
-                    <span className="text-text-secondary">{player2.firstName} {player2.lastName}</span>
-                  </span>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <RadarChart
-                  stats={buildRadarStats(player1, player2)}
-                  homeLabel={`${player1.firstName} ${player1.lastName}`}
-                  awayLabel={`${player2.firstName} ${player2.lastName}`}
-                />
-              </div>
-              <p className="text-[9px] text-text-secondary/60 text-center mt-2 font-mono uppercase tracking-[0.15em]">
-                {isZh ? "每轴按两人最大值归一" : "Each axis normalized to the pair's max"}
-              </p>
+          {/* Style-tag row — definitional qualifier ("how they won"). Only on
+              iconic-season entries; the per-season tags are in iconicSeasons.ts. */}
+          {(player1.styles?.length || player2.styles?.length) ? (
+            <div className="grid grid-cols-2 gap-px bg-border/40 border-b border-border">
+              <StyleTagsCol styles={player1.styles} isZh={isZh} />
+              <StyleTagsCol styles={player2.styles} isZh={isZh} />
             </div>
+          ) : null}
+
+          {/* Era-context strip — "X scored Y in a league averaging Z (+/- N
+              above era)". Only renders when both sides are iconic seasons
+              (we have league averages keyed by seasonYear). */}
+          {player1.seasonYear !== undefined && player2.seasonYear !== undefined && (
+            <EraContext p1={player1} p2={player2} isZh={isZh} />
           )}
+
+          {/* Radar — RS/PO toggle appears only when both players carry
+              playoff per-game data (i.e. both are iconic seasons or legends
+              with playoff fields curated). */}
+          {player1.pts > 0 && player2.pts > 0 && (() => {
+            const bothHavePlayoffs = player1.playoffPpg !== undefined && player2.playoffPpg !== undefined;
+            const mode = bothHavePlayoffs ? radarMode : "RS";
+            return (
+              <div className="p-6 border-b border-border bg-bg-secondary/20">
+                <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+                  <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
+                    / {isZh ? "雷达对比" : "Stat Radar"}
+                    {mode === "PO" && (
+                      <span className="ml-2 text-accent-amber">· {isZh ? "季后赛" : "PLAYOFFS"}</span>
+                    )}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    {bothHavePlayoffs && (
+                      <div className="flex items-center gap-0.5 text-[10px] font-mono uppercase tracking-[0.15em] glass-tile p-0.5">
+                        {(["RS", "PO"] as const).map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => setRadarMode(m)}
+                            className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                              radarMode === m
+                                ? "bg-accent text-white"
+                                : "text-text-secondary hover:text-text-primary"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 text-[10px]">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-sm bg-accent" />
+                        <span className="text-text-secondary">{player1.firstName} {player1.lastName}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-sm bg-success" />
+                        <span className="text-text-secondary">{player2.firstName} {player2.lastName}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <RadarChart
+                    stats={buildRadarStats(player1, player2, mode)}
+                    homeLabel={`${player1.firstName} ${player1.lastName}`}
+                    awayLabel={`${player2.firstName} ${player2.lastName}`}
+                  />
+                </div>
+                <p className="text-[9px] text-text-secondary/60 text-center mt-2 font-mono uppercase tracking-[0.15em]">
+                  {isZh
+                    ? `每轴按两人最大值归一 · ${mode === "PO" ? "季后赛场均" : "常规赛场均"}`
+                    : `Each axis normalized · ${mode === "PO" ? "Playoff per-game" : "Regular-season per-game"}`}
+                </p>
+              </div>
+            );
+          })()}
 
           {/* Career-accolades tile grid — only when at least one side has
               data in PLAYER_ACCOLADES. The 0 vs N gap is part of the story. */}
