@@ -26,7 +26,11 @@ const firaSans = Fira_Sans({
 
 const firaCode = Fira_Code({
   variable: "--font-geist-mono",
-  weight: ["400", "500", "600", "700"],
+  // Audit (260 font-mono usages): font-light is used 90x (was falling back to
+  // 400 = faux-light, looked slightly wrong). font-normal 400 was used 1x
+  // and is dropped. Net same byte budget, better fidelity on the light
+  // tabular numbers all over the dashboard.
+  weight: ["300", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
 });
