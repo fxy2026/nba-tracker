@@ -126,6 +126,7 @@ const en: Translations = {
 
   home: {
     failedToLoad: "Failed to load games",
+    refreshFailed: "Couldn't refresh — showing last loaded data",
     gameOfTheDay: "Game of the Day: ",
     margin: "margin: ",
     packedSlate: "Packed Slate",

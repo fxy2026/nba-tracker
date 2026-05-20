@@ -21,8 +21,20 @@ export default memo(function QuarterBars({ homePeriods, awayPeriods, homeTricode
     1
   );
 
+  const ariaSummary = homePeriods
+    .map((hp, i) => {
+      const ap = awayPeriods[i];
+      const label = hp.period <= 4 ? `Q${hp.period}` : `OT${hp.period - 4}`;
+      return `${label}: ${awayTricode} ${ap?.score ?? 0} ${homeTricode} ${hp.score}`;
+    })
+    .join("; ");
+
   return (
-    <div className="glass-tile p-4 mt-4">
+    <div
+      className="glass-tile p-4 mt-4"
+      role="group"
+      aria-label={`By quarter — ${ariaSummary}`}
+    >
       <div className="mb-3">
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ By Quarter</p>
         <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">

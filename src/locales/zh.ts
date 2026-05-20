@@ -126,6 +126,7 @@ const zh: Translations = {
 
   home: {
     failedToLoad: "加载比赛失败",
+    refreshFailed: "刷新失败 — 显示上次加载的数据",
     gameOfTheDay: "今日最佳：",
     margin: "分差：",
     packedSlate: "密集赛程",

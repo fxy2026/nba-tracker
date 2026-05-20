@@ -26,8 +26,9 @@ const PlayerStatsBundle = nextDynamic(() => import("@/components/player/PlayerSt
 const PlayerAdvancedStats = nextDynamic(() => import("@/components/player/PlayerAdvancedStats"));
 const ShotHeatmap = nextDynamic(() => import("@/components/ShotHeatmap"));
 
-// Dynamic rendering — no edge cache, avoids stale hanging pages
-export const dynamic = "force-dynamic";
+// ISR: serve cached page, revalidate every 10 minutes — matches team page.
+// Player season averages tick at most once per game day.
+export const revalidate = 600;
 
 interface PageProps {
   params: Promise<{ id: string }>;

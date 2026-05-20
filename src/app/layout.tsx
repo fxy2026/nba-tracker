@@ -97,9 +97,6 @@ export default async function RootLayout({
       <head>
         <ThemeScript />
         <SpeculationRules />
-        {/* Explicit iOS touch icon — manifest icons aren't always picked up
-            on iOS Safari for "Add to Home Screen" before install. */}
-        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
         {/* Scroll-driven progress indicator — pure CSS, no JS listener */}

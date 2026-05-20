@@ -42,9 +42,17 @@ export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarCh
   const homePolygon = homePoints.map((p) => `${p.x},${p.y}`).join(" ");
   const awayPolygon = awayPoints.map((p) => `${p.x},${p.y}`).join(" ");
 
+  const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
+  const statSummary = stats.map((s) => `${s.label} ${fmt(s.home)}-${fmt(s.away)}`).join(", ");
+
   return (
     <div className="w-full max-w-[320px]">
-      <svg viewBox="0 0 300 300" className="w-full">
+      <svg
+        viewBox="0 0 300 300"
+        className="w-full"
+        role="img"
+        aria-label={`Team comparison radar — ${homeLabel} vs ${awayLabel}: ${statSummary}`}
+      >
         {/* Grid rings */}
         {gridRings.map((pts, i) => (
           <polygon key={i} points={pts} fill="none" stroke="var(--border)" strokeWidth={0.5} opacity={0.6} />

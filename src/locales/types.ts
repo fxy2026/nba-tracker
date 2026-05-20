@@ -133,6 +133,7 @@ export interface Translations {
   // ---- Home / GamesList ----
   home: {
     failedToLoad: string;
+    refreshFailed: string;
     gameOfTheDay: string;
     margin: string;
     packedSlate: string;

@@ -123,7 +123,10 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     );
   }
 
-  if (error) {
+  // Full-screen error only when we have nothing to show. If a refresh fails
+  // after we already rendered games, fall through and show a soft banner —
+  // stale data beats wiping the UI.
+  if (error && games.length === 0) {
     return (
       <div className="mt-6">
         <EmptyState
@@ -144,6 +147,18 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
 
   return (
     <>
+      {error && (
+        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30 text-warning text-xs">
+          <AlertCircle size={14} className="shrink-0" />
+          <span className="flex-1">{t.home.refreshFailed}</span>
+          <button
+            onClick={() => { setError(false); fetchGames(selectedDate); }}
+            className="font-medium underline decoration-dashed hover:no-underline"
+          >
+            {t.common.retry}
+          </button>
+        </div>
+      )}
       <LiveScoreRefresher hasLiveGames={hasLiveGames} />
 
       {/* Live score ticker (only when live games — high-signal real-time element) */}
