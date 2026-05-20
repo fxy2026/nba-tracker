@@ -201,32 +201,20 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           href={`/game/${gameOfTheDay.gameId}`}
           className="glass-tile glass-tile-featured block mt-5 cursor-pointer relative overflow-hidden group"
         >
-          {/* Background watermark logos — decorative only. Plain <img> with
-              loading=lazy + fetchPriority=low + decoding=async keeps them out
-              of the LCP candidate set (CF Analytics had them as the LCP element
-              at 3.2s P50 because 280×280 beats every other paintable thing
-              above the fold even at opacity 0.08). */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={teamLogoUrl(gameOfTheDay.awayTeam.teamId)}
-            alt=""
-            width={280}
-            height={280}
-            loading="lazy"
-            fetchPriority="low"
-            decoding="async"
-            className="absolute -left-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
+          {/* Background watermark logos — CSS background-image divs so they
+              are not in the LCP candidate set (browsers don't consider
+              background-image elements for LCP). The earlier <img loading=lazy>
+              fix didn't help because lazy only deprioritizes fetch; the image
+              still becomes the largest paint when it eventually loads. */}
+          <div
+            aria-hidden
+            className="absolute -left-12 top-1/2 -translate-y-1/2 w-[280px] h-[280px] opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none bg-no-repeat bg-contain bg-center"
+            style={{ backgroundImage: `url('${teamLogoUrl(gameOfTheDay.awayTeam.teamId)}')` }}
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={teamLogoUrl(gameOfTheDay.homeTeam.teamId)}
-            alt=""
-            width={280}
-            height={280}
-            loading="lazy"
-            fetchPriority="low"
-            decoding="async"
-            className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
+          <div
+            aria-hidden
+            className="absolute -right-12 top-1/2 -translate-y-1/2 w-[280px] h-[280px] opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none bg-no-repeat bg-contain bg-center"
+            style={{ backgroundImage: `url('${teamLogoUrl(gameOfTheDay.homeTeam.teamId)}')` }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent-amber/10 pointer-events-none" />
 

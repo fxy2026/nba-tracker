@@ -105,9 +105,11 @@ export default async function RootLayout({
         <ThemeScript />
         <SpeculationRules />
         {/* Warm up the connection to cdn.nba.com before the first <img>
-            request — team logos and player headshots ship from here on
-            every page, so preconnect shaves ~100-300ms TTFB on first paint. */}
-        <link rel="preconnect" href="https://cdn.nba.com" crossOrigin="anonymous" />
+            request — team logos + headshots ship from here. <img> defaults
+            to no-CORS, so preconnect must be plain (without crossOrigin) for
+            the browser to match it; the earlier crossOrigin="anonymous"
+            variant was sitting unused (PSI flagged "未使用的 preconnect"). */}
+        <link rel="preconnect" href="https://cdn.nba.com" />
         <link rel="dns-prefetch" href="https://cdn.nba.com" />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">

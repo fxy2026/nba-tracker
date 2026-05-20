@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Play } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import { getGameStatusDisplay } from "@/lib/api";
@@ -65,24 +64,20 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   return (
     <Link href={`/game/${game.gameId}`} className="block group cursor-pointer" aria-label={ariaLabel}>
       <div className={`glass-tile p-4 relative overflow-hidden ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
-        {/* Decorative team-logo watermarks (very subtle) */}
-        <Image
-          src={teamLogoUrl(game.awayTeam.teamId)}
-          alt=""
-          width={140}
-          height={140}
-          unoptimized
+        {/* Decorative team-logo watermarks — rendered as CSS background-image
+            so they're not LCP-eligible. Previously these <img> tags became the
+            LCP element on every game-card page (PSI: P75 4.0s, 4.7s of pure
+            load delay because the browser sees them as "largest paint" then
+            deprioritizes them as lazy). */}
+        <div
           aria-hidden
-          className="pointer-events-none absolute -left-8 -bottom-8 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
+          className="pointer-events-none absolute -left-8 -bottom-8 w-[140px] h-[140px] opacity-[0.05] group-hover:opacity-[0.10] transition-opacity bg-no-repeat bg-contain bg-center"
+          style={{ backgroundImage: `url('${teamLogoUrl(game.awayTeam.teamId)}')` }}
         />
-        <Image
-          src={teamLogoUrl(game.homeTeam.teamId)}
-          alt=""
-          width={140}
-          height={140}
-          unoptimized
+        <div
           aria-hidden
-          className="pointer-events-none absolute -right-8 -top-8 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
+          className="pointer-events-none absolute -right-8 -top-8 w-[140px] h-[140px] opacity-[0.05] group-hover:opacity-[0.10] transition-opacity bg-no-repeat bg-contain bg-center"
+          style={{ backgroundImage: `url('${teamLogoUrl(game.homeTeam.teamId)}')` }}
         />
         {/* Final games: subtle winner-team-color side glow */}
         {isFinal && (awayWon || homeWon) && (
