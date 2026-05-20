@@ -137,6 +137,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
+  // Iconic seasons gallery — index page (individual entries are surfaced
+  // via /compare?p1=<id> deep links from the gallery itself).
+  const iconicSeasonsIndex: SitemapEntry[] = [
+    { url: `${BASE}/iconic-seasons`, changeFrequency: "monthly", priority: 0.7 },
+  ];
+
   return [
     ...live,
     ...standings,
@@ -148,5 +154,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...gamePages,
     ...playerPages,
     ...legendPages,
+    ...iconicSeasonsIndex,
   ].map((p) => ({ ...p, lastModified: p.lastModified || now }));
 }
