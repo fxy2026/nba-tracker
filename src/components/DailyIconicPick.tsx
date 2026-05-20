@@ -142,6 +142,22 @@ export default async function DailyIconicPick() {
           </div>
         </Link>
       </div>
+
+      {/* Decade quick-nav — surfaces the per-decade landing pages from the home */}
+      <div className="mt-3 flex items-center flex-wrap gap-1.5">
+        <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60 mr-1">
+          {isZh ? "按年代浏览" : "Browse by decade"}
+        </span>
+        {(["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const).map((d) => (
+          <Link
+            key={d}
+            href={`/iconic-seasons/${d}`}
+            className="text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded border border-border bg-bg-secondary/40 text-text-secondary hover:border-accent/40 hover:text-text-primary cursor-pointer"
+          >
+            {d}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
