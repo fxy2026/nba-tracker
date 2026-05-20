@@ -1,0 +1,376 @@
+// Single-game iconic performances — the moments that get cited by stat
+// alone ("the 81-point game", "the Flu Game", "Tatum 51 in a Game 7").
+// Distinct from iconicSeasons.ts: those are season-long bodies of work,
+// these are nights. Both surface on dedicated gallery pages and link
+// to /compare or /game when applicable.
+
+export interface IconicGame {
+  // Composite stable id used for URLs and lookups
+  id: string;
+  personId: number;
+  name: string;
+  // ISO date (game date), used for sort + display
+  date: string;
+  season: string;
+  team: string;        // tricode
+  opponent: string;    // tricode (current franchise where possible)
+  result: "W" | "L";
+  finalScore: string;  // "122-104"
+  homeAway: "home" | "away";
+  // Player line that night
+  pts: number;
+  reb: number;
+  ast: number;
+  stl?: number;
+  blk?: number;
+  fg?: string;         // "28/46"
+  threeP?: string;     // "7/13"
+  ft?: string;         // "18/20"
+  minutes?: number;
+  // Narrative
+  title: string;
+  titleZh?: string;
+  story: string;
+  storyZh?: string;
+  // Categorical tags — used for filter chips on the gallery page
+  tags?: GameTag[];
+  // NBA gameId if this is a recent game with full box-score in our system
+  gameId?: string;
+}
+
+export type GameTag =
+  | "scoring-record"
+  | "playoff"
+  | "finals"
+  | "game-7"
+  | "buzzer-beater"
+  | "clutch"
+  | "rookie"
+  | "comeback"
+  | "career-high"
+  | "all-around";
+
+export const ICONIC_GAMES: IconicGame[] = [
+  // ── Scoring records / explosions
+  {
+    id: "wilt-100",
+    personId: 76375,
+    name: "Wilt Chamberlain",
+    date: "1962-03-02",
+    season: "1961-62",
+    team: "PHI",
+    opponent: "NYK",
+    result: "W",
+    finalScore: "169-147",
+    homeAway: "home",
+    pts: 100, reb: 25, ast: 2,
+    fg: "36/63", ft: "28/32", minutes: 48,
+    title: "The 100-Point Game",
+    titleZh: "100 分之夜",
+    story: "The single-game scoring record. Wilt scored from every spot, in every way, in a half-empty Hershey arena. Untouched in 60+ years.",
+    storyZh: "NBA 单场得分纪录。半空的赫尔希球馆里，张大帅用每一种方式打进 100 分。60 多年无人逼近。",
+    tags: ["scoring-record"],
+  },
+  {
+    id: "kobe-81",
+    personId: 977,
+    name: "Kobe Bryant",
+    date: "2006-01-22",
+    season: "2005-06",
+    team: "LAL",
+    opponent: "TOR",
+    result: "W",
+    finalScore: "122-104",
+    homeAway: "home",
+    pts: 81, reb: 6, ast: 2,
+    fg: "28/46", threeP: "7/13", ft: "18/20", minutes: 42,
+    title: "81 vs Toronto",
+    titleZh: "81 分屠龙",
+    story: "Lakers trailed by 18 at the half. Kobe outscored Toronto 55-41 over the final two-and-a-half quarters. Second-highest single-game total ever.",
+    storyZh: "半场落后 18 分。科比下半场加 OT 一人砍下 55 分，独自反超猛龙 41 分。NBA 历史第二高单场得分。",
+    tags: ["scoring-record", "comeback"],
+  },
+  {
+    id: "mitchell-71",
+    personId: 1628378,
+    name: "Donovan Mitchell",
+    date: "2023-01-02",
+    season: "2022-23",
+    team: "CLE",
+    opponent: "CHI",
+    result: "W",
+    finalScore: "145-134",
+    homeAway: "home",
+    pts: 71, reb: 8, ast: 11,
+    fg: "22/34", threeP: "7/15", ft: "20/25",
+    title: "Mitchell 71 — First 70 since Kobe",
+    titleZh: "米切尔 71 分 —— 科比之后首人",
+    story: "Overtime thriller. Mitchell's only triple of 70+ tied Wilt's mark for 70/10 rebounds (8 reb + 11 ast). The Bulls were stunned in their own building of choice — Cleveland in OT.",
+    storyZh: "OT 大战。米切尔成为 2006 年科比之后首位单场 70+ 球员，外加 11 次助攻——70+10+10 史无前例。",
+    tags: ["scoring-record", "career-high"],
+  },
+  {
+    id: "embiid-70",
+    personId: 203954,
+    name: "Joel Embiid",
+    date: "2024-01-22",
+    season: "2023-24",
+    team: "PHI",
+    opponent: "SAS",
+    result: "W",
+    finalScore: "133-123",
+    homeAway: "home",
+    pts: 70, reb: 18, ast: 5, blk: 1,
+    fg: "24/41", threeP: "3/7", ft: "19/21",
+    title: "Embiid 70 — Wemby's reckoning",
+    titleZh: "Embiid 70 分 —— 给 Wemby 上的一课",
+    story: "First 70-piece by a center since Wilt 1969. The matchup against #1 pick Victor Wembanyama turned into a dominance demonstration.",
+    storyZh: "1969 年张伯伦之后首位中锋 70 分。面对状元 Wembanyama 的统治级表演。",
+    tags: ["scoring-record"],
+  },
+  {
+    id: "tatum-51-g7",
+    personId: 1628369,
+    name: "Jayson Tatum",
+    date: "2023-05-14",
+    season: "2022-23",
+    team: "BOS",
+    opponent: "PHI",
+    result: "W",
+    finalScore: "112-88",
+    homeAway: "home",
+    pts: 51, reb: 13, ast: 5,
+    fg: "17/28", threeP: "6/10", ft: "11/12",
+    title: "Tatum's 51-point Game 7",
+    titleZh: "塔图姆 51 分 G7",
+    story: "Most points in any Game 7 in NBA history. Boston dispatched the 76ers in the conference semifinals.",
+    storyZh: "NBA 历史 G7 单场得分纪录（51）。凯尔特人横扫 76 人晋级东决。",
+    tags: ["scoring-record", "playoff", "game-7"],
+  },
+  {
+    id: "booker-70",
+    personId: 1626164,
+    name: "Devin Booker",
+    date: "2017-03-24",
+    season: "2016-17",
+    team: "PHX",
+    opponent: "BOS",
+    result: "L",
+    finalScore: "120-130",
+    homeAway: "away",
+    pts: 70, reb: 8, ast: 6,
+    fg: "21/40", threeP: "4/11", ft: "24/26",
+    title: "Booker 70 in TD Garden",
+    titleZh: "Booker 客场 70 分",
+    story: "Sub-6 record. The youngest player ever (20) to score 70+ in a game. Suns lost; Booker's individual brilliance was undeniable.",
+    storyZh: "20 岁，史上最年轻 70+ 球员。太阳虽然输球，Booker 的个人光辉依然耀眼。",
+    tags: ["scoring-record", "career-high"],
+  },
+
+  // ── Finals / Game 7 / Comeback
+  {
+    id: "mj-flu-game",
+    personId: 893,
+    name: "Michael Jordan",
+    date: "1997-06-11",
+    season: "1996-97",
+    team: "CHI",
+    opponent: "UTA",
+    result: "W",
+    finalScore: "90-88",
+    homeAway: "away",
+    pts: 38, reb: 7, ast: 5, stl: 3, blk: 1,
+    fg: "13/27", threeP: "1/3", ft: "11/12", minutes: 44,
+    title: "The Flu Game",
+    titleZh: "流感之战",
+    story: "Game 5 of the '97 Finals in Utah. Jordan, weakened by food poisoning (long mythologized as flu), willed himself to 38 including the late three. Pippen carried him off after the win.",
+    storyZh: "1997 年总决赛 G5。乔丹在食物中毒后（神话化为流感）独砍 38 分，包括关键三分。皮蓬在终场后扶他离场。",
+    tags: ["finals", "clutch"],
+  },
+  {
+    id: "mj-last-shot-1998",
+    personId: 893,
+    name: "Michael Jordan",
+    date: "1998-06-14",
+    season: "1997-98",
+    team: "CHI",
+    opponent: "UTA",
+    result: "W",
+    finalScore: "87-86",
+    homeAway: "away",
+    pts: 45, reb: 1, ast: 1, stl: 3,
+    fg: "15/35", ft: "12/15", minutes: 44,
+    title: "The Last Shot",
+    titleZh: "最后一投",
+    story: "Game 6, 1998 Finals. Jordan stripped Karl Malone, raced down, hit a 20-footer over Russell with 5.2 left. The capstone of the second three-peat.",
+    storyZh: "1998 年总决赛 G6。最后 18 秒抢断卡尔·马龙、长驱直入、面对拜伦·拉塞尔交叉步后干拔。第二个三连冠的句点。",
+    tags: ["finals", "clutch", "buzzer-beater"],
+  },
+  {
+    id: "lebron-game6-bos-2012",
+    personId: 2544,
+    name: "LeBron James",
+    date: "2012-06-07",
+    season: "2011-12",
+    team: "MIA",
+    opponent: "BOS",
+    result: "W",
+    finalScore: "98-79",
+    homeAway: "away",
+    pts: 45, reb: 15, ast: 5, stl: 1, blk: 1,
+    fg: "19/26", threeP: "2/4", ft: "5/7", minutes: 45,
+    title: "Game 6 in Boston",
+    titleZh: "波士顿的 G6",
+    story: "Down 3-2 in the East Finals, in TD Garden, on the road, season on the line. LeBron 45/15 silenced the Garden — the game that turned his career.",
+    storyZh: "东决 2-3 落后，客场绿衫军的城堡。45+15 让花园球馆鸦雀无声——詹姆斯生涯的转折之夜。",
+    tags: ["playoff", "comeback", "clutch"],
+  },
+  {
+    id: "lebron-game7-2016",
+    personId: 2544,
+    name: "LeBron James",
+    date: "2016-06-19",
+    season: "2015-16",
+    team: "CLE",
+    opponent: "GSW",
+    result: "W",
+    finalScore: "93-89",
+    homeAway: "away",
+    pts: 27, reb: 11, ast: 11, stl: 2, blk: 3,
+    fg: "9/24", threeP: "1/4", ft: "8/13", minutes: 47,
+    title: "The Block / The Comeback",
+    titleZh: "盖帽 / 3-1 翻盘",
+    story: "Game 7 vs the 73-win Warriors. Triple-double + The Block on Iguodala with under 2:00 left. Cleveland's first major-pro title in 52 years.",
+    storyZh: "G7 客场 73 胜勇士。三双 + 决胜阶段对伊戈达拉的史诗追身大帽。骑士 52 年来克利夫兰首座大球冠军。",
+    tags: ["finals", "game-7", "comeback", "all-around"],
+  },
+  {
+    id: "kawhi-buzzer-2019",
+    personId: 202695,
+    name: "Kawhi Leonard",
+    date: "2019-05-12",
+    season: "2018-19",
+    team: "TOR",
+    opponent: "PHI",
+    result: "W",
+    finalScore: "92-90",
+    homeAway: "home",
+    pts: 41, reb: 8, ast: 3, stl: 2, blk: 3,
+    fg: "16/39", threeP: "2/8", ft: "7/9", minutes: 43,
+    title: "The Shot — Kawhi's G7 Buzzer-Beater",
+    titleZh: "Kawhi 的 G7 绝杀",
+    story: "Game 7 second round. Kawhi caught a long pass on the right baseline, dribbled into a corner fadeaway, ball bounced four times on the rim — and dropped. Toronto onto its destined title.",
+    storyZh: "次轮 G7 末节最后一秒。底角接球、运到底线、跳投，球在筐沿弹了四下落入网窝。多伦多此后剑指总冠军。",
+    tags: ["playoff", "game-7", "buzzer-beater", "clutch"],
+  },
+  {
+    id: "klay-60-3q",
+    personId: 202691,
+    name: "Klay Thompson",
+    date: "2016-12-05",
+    season: "2016-17",
+    team: "GSW",
+    opponent: "IND",
+    result: "W",
+    finalScore: "142-106",
+    homeAway: "home",
+    pts: 60, reb: 1, ast: 1,
+    fg: "21/33", threeP: "8/14", ft: "10/11", minutes: 29,
+    title: "60 in 29 minutes",
+    titleZh: "29 分钟拿 60 分",
+    story: "Only 11 dribbles. 60 points in 29 minutes of game time. Klay sat the entire fourth quarter — Warriors were up 40+.",
+    storyZh: "29 分钟出场，11 次运球，60 分到手。第四节直接休息——勇士已经领先 40+ 了。",
+    tags: ["scoring-record"],
+  },
+  {
+    id: "curry-record-3pt",
+    personId: 201939,
+    name: "Stephen Curry",
+    date: "2021-12-14",
+    season: "2021-22",
+    team: "GSW",
+    opponent: "NYK",
+    result: "W",
+    finalScore: "105-96",
+    homeAway: "away",
+    pts: 22, reb: 3, ast: 1,
+    threeP: "5/14", minutes: 35,
+    title: "Three #2974 — Passing Ray Allen",
+    titleZh: "2974 — 超越 Ray Allen",
+    story: "Madison Square Garden. Curry sank a top-of-the-key three in the first quarter to pass Ray Allen as the NBA's all-time leading three-point shooter. Standing ovation; game stopped for a brief tribute.",
+    storyZh: "麦迪逊广场花园。首节一记前场弧顶三分让 Curry 超越 Ray Allen 登顶三分历史榜。全场起立，比赛短暂中断。",
+    tags: ["scoring-record"],
+  },
+  {
+    id: "lebron-passes-kareem",
+    personId: 2544,
+    name: "LeBron James",
+    date: "2023-02-07",
+    season: "2022-23",
+    team: "LAL",
+    opponent: "OKC",
+    result: "L",
+    finalScore: "130-133",
+    homeAway: "home",
+    pts: 38, reb: 7, ast: 3,
+    fg: "13/20", threeP: "2/4", ft: "10/12",
+    title: "38,388 — Passing Kareem",
+    titleZh: "38,388 — 超越贾巴尔",
+    story: "Late third quarter, baseline fadeaway over Kenrich Williams — LeBron passed Kareem Abdul-Jabbar (38,387) as the NBA's all-time scoring leader. A 39-year record fell.",
+    storyZh: "末节后段底线后仰打进——詹姆斯超越贾巴尔（38387 分），成为 NBA 历史得分王。一项 39 年的纪录易主。",
+    tags: ["scoring-record"],
+  },
+  {
+    id: "magic-rookie-finals-g6",
+    personId: 77142,
+    name: "Magic Johnson",
+    date: "1980-05-16",
+    season: "1979-80",
+    team: "LAL",
+    opponent: "PHI",
+    result: "W",
+    finalScore: "123-107",
+    homeAway: "away",
+    pts: 42, reb: 15, ast: 7, stl: 3,
+    fg: "14/23", ft: "14/14",
+    title: "Magic at Center — Game 6, Showtime is born",
+    titleZh: "魔术师顶替中锋出战——Showtime 的起点",
+    story: "Kareem out with a sprained ankle. Rookie Magic Johnson jumped center, played every position, finished 42/15/7 to clinch the title. Finals MVP at 20 years old.",
+    storyZh: "贾巴尔脚踝扭伤缺阵。20 岁新秀魔术师顶替中锋出场，五个位置随便打，砍下 42+15+7 锁定总冠军。最年轻的 FMVP。",
+    tags: ["finals", "rookie", "all-around"],
+  },
+  {
+    id: "dame-71",
+    personId: 203081,
+    name: "Damian Lillard",
+    date: "2023-02-26",
+    season: "2022-23",
+    team: "POR",
+    opponent: "HOU",
+    result: "W",
+    finalScore: "131-114",
+    homeAway: "home",
+    pts: 71, reb: 6, ast: 6,
+    fg: "22/38", threeP: "13/22", ft: "14/14", minutes: 39,
+    title: "Dame 71",
+    titleZh: "Dame 71 分",
+    story: "Lillard's career high. 13 threes in 22 attempts. Portland blew the doors off Houston.",
+    storyZh: "Lillard 生涯新高。13/22 三分。开拓者主场血洗火箭。",
+    tags: ["scoring-record", "career-high"],
+  },
+];
+
+// Tag display labels (bilingual). Used for filter chips on the gallery
+// page and the per-game card.
+export const GAME_TAG_LABEL: Record<GameTag, { en: string; zh: string }> = {
+  "scoring-record": { en: "Scoring", zh: "得分爆炸" },
+  "playoff": { en: "Playoffs", zh: "季后赛" },
+  "finals": { en: "Finals", zh: "总决赛" },
+  "game-7": { en: "Game 7", zh: "G7" },
+  "buzzer-beater": { en: "Buzzer-Beater", zh: "压哨绝杀" },
+  "clutch": { en: "Clutch", zh: "关键时刻" },
+  "rookie": { en: "Rookie", zh: "新秀" },
+  "comeback": { en: "Comeback", zh: "翻盘" },
+  "career-high": { en: "Career High", zh: "生涯新高" },
+  "all-around": { en: "All-Around", zh: "全能" },
+};

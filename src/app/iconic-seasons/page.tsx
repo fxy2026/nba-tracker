@@ -134,6 +134,7 @@ export default async function IconicSeasonsPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games", icon: Flame },
           { href: "/compare", label: isZh ? "球员对比" : "Player Compare", icon: GitCompareArrows },
           { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-Time Leaders", icon: Crown },
           { href: "/records", label: isZh ? "赛季纪录" : "Season Records", icon: Activity },

@@ -137,10 +137,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  // Iconic seasons gallery — index page (individual entries are surfaced
-  // via /compare?p1=<id> deep links from the gallery itself).
+  // Iconic seasons + iconic games — gallery index pages. Individual cards
+  // deep-link to /compare or /game from inside the gallery.
   const iconicSeasonsIndex: SitemapEntry[] = [
     { url: `${BASE}/iconic-seasons`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/iconic-games`, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   return [

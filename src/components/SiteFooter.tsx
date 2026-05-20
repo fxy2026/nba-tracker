@@ -39,6 +39,7 @@ export default function SiteFooter() {
         { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race" },
         { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-Time Leaders" },
         { href: "/iconic-seasons", label: isZh ? "经典赛季" : "Iconic Seasons" },
+        { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games" },
         { href: "/milestones", label: isZh ? "里程碑" : "Milestones" },
         { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games" },
         { href: "/records", label: isZh ? "赛季纪录" : "Season Records" },
