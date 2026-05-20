@@ -63,6 +63,11 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
     return () => controller.abort();
   }, [draftYear]);
 
+  // While the combine API is in flight (or for players without combine data)
+  // render nothing — most users will never see this tile, so reserving height
+  // would be wasted whitespace. The miss case is players who DO have combine
+  // data: returning null here briefly causes a small CLS when the tile appears.
+  // Accepted trade-off since players-with-combine is the minority.
   if (loading) return null;
   if (!data || !draftYear) return null;
 

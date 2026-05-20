@@ -29,7 +29,24 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
     return () => controller.abort();
   }, [playerName, teamAbbr]);
 
-  if (loading) return null;
+  // Reserve roughly the loaded-table height so the surrounding page doesn't
+  // reflow when the contract data lands. Returning null while loading was
+  // pushing /player/[id] into a "poor" CLS bucket.
+  if (loading) {
+    return (
+      <div className="glass-tile overflow-hidden" aria-hidden="true">
+        <div className="px-4 py-3 border-b border-border">
+          <div className="skeleton-shimmer h-2.5 w-16 rounded" />
+          <div className="skeleton-shimmer h-3.5 w-28 rounded mt-2" />
+        </div>
+        <div className="p-4 space-y-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton-shimmer h-8 rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (contracts.length === 0) return null;
 
   const formatSalary = (amount: number) => {

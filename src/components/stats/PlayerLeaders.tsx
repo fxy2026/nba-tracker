@@ -120,8 +120,10 @@ export default function PlayerLeaders() {
       </div>
 
       {loading ? (
+        // 25 rows ≈ the rendered table height; without this the footer below
+        // gets shoved down ~1500px when the data lands and CLS spikes.
         <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 25 }).map((_, i) => (
             <div key={i} className="glass-tile h-12 skeleton-shimmer" />
           ))}
         </div>

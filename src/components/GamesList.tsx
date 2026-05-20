@@ -201,21 +201,31 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           href={`/game/${gameOfTheDay.gameId}`}
           className="glass-tile glass-tile-featured block mt-5 cursor-pointer relative overflow-hidden group"
         >
-          {/* Background watermark logos — both teams faintly behind */}
-          <Image
+          {/* Background watermark logos — decorative only. Plain <img> with
+              loading=lazy + fetchPriority=low + decoding=async keeps them out
+              of the LCP candidate set (CF Analytics had them as the LCP element
+              at 3.2s P50 because 280×280 beats every other paintable thing
+              above the fold even at opacity 0.08). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={teamLogoUrl(gameOfTheDay.awayTeam.teamId)}
             alt=""
             width={280}
             height={280}
-            unoptimized
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
             className="absolute -left-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
           />
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={teamLogoUrl(gameOfTheDay.homeTeam.teamId)}
             alt=""
             width={280}
             height={280}
-            unoptimized
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
             className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent-amber/10 pointer-events-none" />
