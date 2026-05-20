@@ -20,6 +20,9 @@ interface PlayerData {
   pts: number;
   reb: number;
   ast: number;
+  // Set by /api/search for retired legends — used to badge them in results
+  // and skip jersey/position display (which we don't carry for legends).
+  isLegend?: boolean;
 }
 
 const COMPARE_STATS = [
@@ -99,6 +102,11 @@ export default function ComparePage() {
                 <button key={p.personId} onClick={() => { setPlayer1(p); setResults1([]); setQuery1(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
                   <span className="font-medium">{p.firstName} {p.lastName}</span>
+                  {p.isLegend && (
+                    <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
+                      {isZh ? "传奇" : "Legend"}
+                    </span>
+                  )}
                   <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
                 </button>
               ))}
@@ -139,6 +147,11 @@ export default function ComparePage() {
                 <button key={p.personId} onClick={() => { setPlayer2(p); setResults2([]); setQuery2(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
                   <span className="font-medium">{p.firstName} {p.lastName}</span>
+                  {p.isLegend && (
+                    <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
+                      {isZh ? "传奇" : "Legend"}
+                    </span>
+                  )}
                   <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
                 </button>
               ))}
@@ -178,9 +191,16 @@ export default function ComparePage() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player1.firstName} {player1.lastName}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player1.position}</span>
+                {player1.isLegend ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber text-xs font-bold">{isZh ? "传奇" : "Legend"}</span>
+                ) : player1.position ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player1.position}</span>
+                ) : null}
                 <p className="text-sm font-semibold text-text-primary mt-1">{player1.teamAbbr}</p>
-                <p className="text-[10px] text-text-secondary">{player1.teamCity} {player1.teamName} &middot; #{player1.jersey}</p>
+                <p className="text-[10px] text-text-secondary">
+                  {player1.teamCity} {player1.teamName}
+                  {player1.jersey && <> &middot; #{player1.jersey}</>}
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-center justify-center gap-2 px-4">
@@ -194,9 +214,16 @@ export default function ComparePage() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player2.firstName} {player2.lastName}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player2.position}</span>
+                {player2.isLegend ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber text-xs font-bold">{isZh ? "传奇" : "Legend"}</span>
+                ) : player2.position ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player2.position}</span>
+                ) : null}
                 <p className="text-sm font-semibold text-text-primary mt-1">{player2.teamAbbr}</p>
-                <p className="text-[10px] text-text-secondary">{player2.teamCity} {player2.teamName} &middot; #{player2.jersey}</p>
+                <p className="text-[10px] text-text-secondary">
+                  {player2.teamCity} {player2.teamName}
+                  {player2.jersey && <> &middot; #{player2.jersey}</>}
+                </p>
               </div>
             </div>
           </div>

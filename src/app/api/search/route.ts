@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPlayerIndex } from "@/lib/api";
 import { expandQuery } from "@/lib/playerAliases";
 import { TEAM_META } from "@/lib/teams";
+import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -54,7 +55,38 @@ export async function GET(request: Request) {
         ast: p.ast,
       }));
 
-    return NextResponse.json({ data: results }, {
+    // Also search retired legends — lets queries like "Jordan" or "Kobe"
+    // resolve. Only those with a verified personId (so they have a real
+    // headshot + /legends/[id] page).
+    const legendResults = ALL_TIME_LEADERS
+      .filter((p) => !p.active && p.personId > 0)
+      .filter((p) => {
+        const full = p.name.toLowerCase();
+        const last = p.name.split(" ").slice(-1)[0].toLowerCase();
+        return queries.some((qq) => full.includes(qq) || last.includes(qq));
+      })
+      .slice(0, 10)
+      .map((p) => {
+        const [firstName, ...rest] = p.name.split(" ");
+        const team = TEAM_META[p.team];
+        return {
+          personId: p.personId,
+          firstName,
+          lastName: rest.join(" "),
+          teamAbbr: p.team,
+          teamId: team?.teamId ?? 0,
+          teamName: team?.name ?? "",
+          teamCity: team?.city ?? "",
+          jersey: "",
+          position: "",
+          pts: p.ppg,
+          reb: p.rpg,
+          ast: p.apg,
+          isLegend: true as const,
+        };
+      });
+
+    return NextResponse.json({ data: [...results, ...legendResults] }, {
       headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
     });
   } catch {
