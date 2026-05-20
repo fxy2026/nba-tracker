@@ -73,6 +73,21 @@ export default function InstallPrompt() {
     };
   }, []);
 
+  // ESC dismisses — keep the prompt non-blocking but give keyboard users
+  // an easy out. No focus trap: this is a corner toast, not a modal.
+  // Must run before the early return below to satisfy rules-of-hooks.
+  useEffect(() => {
+    if (!visible) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        try { localStorage.setItem(DISMISSED_KEY, String(Date.now())); } catch {}
+        setVisible(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [visible]);
+
   if (!visible || (!deferredPrompt && !iosHint)) return null;
 
   const onInstall = async () => {

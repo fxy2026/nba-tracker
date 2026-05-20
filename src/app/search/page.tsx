@@ -4,6 +4,7 @@ import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
@@ -40,6 +41,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: isZh ? "搜索" : "Search" }]} />
       <PageHeader eyebrow="Tool" icon={Search} title={t.searchPage.title} />
       <SearchInput initialQuery={q || ""} />
 

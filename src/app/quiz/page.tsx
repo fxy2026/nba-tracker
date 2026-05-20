@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HelpCircle, RefreshCw, Trophy, Crown, Book, Activity, TrendingUp } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
@@ -139,6 +140,7 @@ export default function QuizPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <Breadcrumbs items={[{ label: isZh ? "测验" : "Quiz" }]} />
       <PageHeader
         eyebrow={isZh ? "游戏" : "Game"}
         icon={HelpCircle}
