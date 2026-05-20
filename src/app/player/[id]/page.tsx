@@ -3,8 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, type LucideIcon } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, Sparkles, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -738,6 +739,38 @@ export default async function PlayerPage({ params }: PageProps) {
           )}
         </section>
       )}
+
+      {(() => {
+        const iconic = ICONIC_SEASONS
+          .filter((s) => s.personId === player.personId)
+          .sort((a, b) => b.seasonYear - a.seasonYear);
+        if (iconic.length === 0) return null;
+        return (
+          <section className="mt-8">
+            <SectionHeader
+              icon={Sparkles}
+              eyebrow={isZh ? "巅峰赛季" : "Peak campaigns"}
+              title={isZh ? "经典赛季" : "Iconic Seasons"}
+            />
+            <div className="flex flex-wrap gap-2">
+              {iconic.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/compare?p1=${encodeURIComponent(s.id)}`}
+                  className="glass-tile px-3 py-2 text-xs inline-flex items-center gap-2 hover:border-accent-amber/40 transition-colors cursor-pointer group"
+                >
+                  <span className="font-mono tabular-nums text-accent">{s.season}</span>
+                  <span className="text-accent-amber font-mono tabular-nums">{s.ppg.toFixed(1)} PPG</span>
+                  {s.mvp && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-accent-amber/15 text-accent-amber">MVP</span>}
+                  {s.finalsMvp && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-accent-amber/15 text-accent-amber">FMVP</span>}
+                  {s.champion && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-success/15 text-success">🏆</span>}
+                  <ArrowRight size={11} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
