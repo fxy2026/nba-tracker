@@ -9,6 +9,111 @@ import { getAccolades } from "@/lib/playerAccolades";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim().toLowerCase().slice(0, 100);
+  const id = searchParams.get("id")?.trim().slice(0, 50);
+
+  // Lookup-by-id path — used by /compare to rehydrate the two selected
+  // players from URL state (?p1=&p2=). Returns a single PlayerData-shaped
+  // entry or null. Format: "893" (legend/active personId) or "893-1995"
+  // (iconic-season composite id).
+  if (id) {
+    if (id.includes("-")) {
+      const season = ICONIC_SEASONS.find((s) => s.id === id);
+      if (season) {
+        const [firstName, ...rest] = season.name.split(" ");
+        const team = TEAM_META[season.team];
+        return NextResponse.json({
+          data: {
+            personId: season.personId,
+            firstName,
+            lastName: rest.join(" "),
+            teamAbbr: season.team,
+            teamId: team?.teamId ?? 0,
+            teamName: team?.name ?? "",
+            teamCity: team?.city ?? "",
+            jersey: "",
+            position: "",
+            pts: season.ppg,
+            reb: season.rpg,
+            ast: season.apg,
+            spg: season.spg,
+            bpg: season.bpg,
+            fgPct: season.fgPct,
+            tpPct: season.tpPct,
+            ftPct: season.ftPct,
+            playoffPpg: season.playoffPpg,
+            playoffRpg: season.playoffRpg,
+            playoffApg: season.playoffApg,
+            playoffGp: season.playoffGp,
+            isIconicSeason: true,
+            iconicId: season.id,
+            season: season.season,
+            seasonYear: season.seasonYear,
+            styles: season.styles,
+            story: season.story,
+            storyZh: season.storyZh,
+            mvp: season.mvp,
+            champion: season.champion,
+            finalsMvp: season.finalsMvp,
+            dpoy: season.dpoy,
+            scoringTitle: season.scoringTitle,
+            accolades: getAccolades(season.personId) ?? undefined,
+          },
+        }, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
+      }
+    }
+    const numId = parseInt(id, 10);
+    if (!isNaN(numId)) {
+      // Legend?
+      const legend = ALL_TIME_LEADERS.find((p) => p.personId === numId && !p.active);
+      if (legend) {
+        const [firstName, ...rest] = legend.name.split(" ");
+        const team = TEAM_META[legend.team];
+        return NextResponse.json({
+          data: {
+            personId: legend.personId,
+            firstName,
+            lastName: rest.join(" "),
+            teamAbbr: legend.team,
+            teamId: team?.teamId ?? 0,
+            teamName: team?.name ?? "",
+            teamCity: team?.city ?? "",
+            jersey: "",
+            position: "",
+            pts: legend.ppg,
+            reb: legend.rpg,
+            ast: legend.apg,
+            isLegend: true,
+            accolades: getAccolades(legend.personId) ?? undefined,
+          },
+        }, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
+      }
+      // Active?
+      try {
+        const players = await getPlayerIndex();
+        const active = players.find((p) => p.personId === numId);
+        if (active) {
+          return NextResponse.json({
+            data: {
+              personId: active.personId,
+              firstName: active.firstName,
+              lastName: active.lastName,
+              teamAbbr: active.teamAbbr,
+              teamId: active.teamId,
+              teamName: active.teamName,
+              teamCity: active.teamCity,
+              jersey: active.jersey,
+              position: active.position,
+              pts: active.pts,
+              reb: active.reb,
+              ast: active.ast,
+              accolades: getAccolades(active.personId) ?? undefined,
+            },
+          }, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
+        }
+      } catch { /* fall through */ }
+    }
+    return NextResponse.json({ data: null }, { headers: { "Cache-Control": "no-store" } });
+  }
 
   if (!q || q.length < 2) {
     return NextResponse.json({ data: [] });
