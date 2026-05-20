@@ -210,10 +210,14 @@ export default function AllTimeLeadersPage() {
 
           const cardCls = `glass-tile flex items-center gap-3 p-3 group ${isTop3 ? "bg-accent-amber/[0.03]" : ""}`;
 
-          // Active players link to their /player page; retired legends render
-          // without a link since they're not in our active player index.
-          return p.active && p.personId > 0 ? (
-            <Link key={`${p.name}-${i}`} href={`/player/${p.personId}`} className={`${cardCls} cursor-pointer`}>
+          // Active players → /player/[id] (live BDL data). Retired legends
+          // with a verified personId → /legends/[id] (static career stats).
+          // Legacy stars without an NBA-CDN personId stay non-clickable.
+          const href = p.personId > 0
+            ? (p.active ? `/player/${p.personId}` : `/legends/${p.personId}`)
+            : null;
+          return href ? (
+            <Link key={`${p.name}-${i}`} href={href} className={`${cardCls} cursor-pointer`}>
               {inner}
             </Link>
           ) : (
