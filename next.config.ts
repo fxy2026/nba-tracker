@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     viewTransition: true,
+    // Tree-shake lucide-react named imports into per-icon modules — 102 files
+    // import from it; without this, each file pulls the whole barrel index in
+    // dev (no impact on production builds, but cuts dev compile time).
+    optimizePackageImports: ["lucide-react"],
   },
 };
 
