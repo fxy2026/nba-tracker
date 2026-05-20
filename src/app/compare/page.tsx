@@ -23,6 +23,19 @@ interface PlayerData {
   // Set by /api/search for retired legends — used to badge them in results
   // and skip jersey/position display (which we don't carry for legends).
   isLegend?: boolean;
+  // Iconic-season snapshot (e.g., 2016 LeBron, 2018 Harden). Differs from
+  // legend in that the stats are SINGLE-season, not career, and there are
+  // trophy flags + a narrative line to surface in the comparison panel.
+  isIconicSeason?: boolean;
+  iconicId?: string;
+  season?: string;
+  story?: string;
+  storyZh?: string;
+  mvp?: boolean;
+  champion?: boolean;
+  finalsMvp?: boolean;
+  dpoy?: boolean;
+  scoringTitle?: boolean;
 }
 
 const COMPARE_STATS = [
@@ -30,6 +43,31 @@ const COMPARE_STATS = [
   { key: "reb", label: "RPG", color: "text-success", barColor: "var(--success)" },
   { key: "ast", label: "APG", color: "text-accent", barColor: "#60a5fa" },
 ] as const;
+
+// Trophy strip for iconic-season cards. Only the flags set on the entry
+// render — the dataset already filters this per season (e.g. 2018 Harden
+// gets MVP + ScoringTitle, no champion).
+function TrophyRow({ p }: { p: PlayerData }) {
+  const items: { label: string; tone: string }[] = [];
+  if (p.mvp) items.push({ label: "MVP", tone: "bg-accent-amber/15 text-accent-amber border-accent-amber/30" });
+  if (p.finalsMvp) items.push({ label: "FMVP", tone: "bg-accent-amber/15 text-accent-amber border-accent-amber/30" });
+  if (p.champion) items.push({ label: "🏆", tone: "bg-success/15 text-success border-success/30" });
+  if (p.dpoy) items.push({ label: "DPOY", tone: "bg-accent/15 text-accent border-accent/30" });
+  if (p.scoringTitle) items.push({ label: "Scoring", tone: "bg-danger/10 text-danger border-danger/30" });
+  if (items.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
+      {items.map((it) => (
+        <span
+          key={it.label}
+          className={`text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded border ${it.tone}`}
+        >
+          {it.label}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function ComparePage() {
   const { t, locale } = useLocale();
@@ -102,11 +140,15 @@ export default function ComparePage() {
                 <button key={p.personId} onClick={() => { setPlayer1(p); setResults1([]); setQuery1(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
                   <span className="font-medium">{p.firstName} {p.lastName}</span>
-                  {p.isLegend && (
+                  {p.isIconicSeason ? (
+                    <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
+                      {p.season}
+                    </span>
+                  ) : p.isLegend ? (
                     <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
                       {isZh ? "传奇" : "Legend"}
                     </span>
-                  )}
+                  ) : null}
                   <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
                 </button>
               ))}
@@ -147,11 +189,15 @@ export default function ComparePage() {
                 <button key={p.personId} onClick={() => { setPlayer2(p); setResults2([]); setQuery2(""); }}
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
                   <span className="font-medium">{p.firstName} {p.lastName}</span>
-                  {p.isLegend && (
+                  {p.isIconicSeason ? (
+                    <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
+                      {p.season}
+                    </span>
+                  ) : p.isLegend ? (
                     <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
                       {isZh ? "传奇" : "Legend"}
                     </span>
-                  )}
+                  ) : null}
                   <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
                 </button>
               ))}
@@ -168,6 +214,12 @@ export default function ComparePage() {
             { label: "LeBron vs Curry", q1: "LeBron", q2: "Curry" },
             { label: "Jokic vs Embiid", q1: "Jokic", q2: "Embiid" },
             { label: "Luka vs SGA", q1: "Luka", q2: "Gilgeous" },
+            { label: "'16 LeBron vs '18 Harden", q1: "2015 LeBron", q2: "2017 Harden" },
+            { label: "'62 Wilt vs '96 Jordan", q1: "1961 Wilt", q2: "1995 Jordan" },
+            { label: "'16 Curry vs '17 Westbrook", q1: "2015 Curry", q2: "2016 Westbrook" },
+            { label: "'19 Kawhi vs '20 LeBron", q1: "2018 Kawhi", q2: "2019 LeBron" },
+            { label: "Jordan vs Kobe", q1: "Jordan", q2: "Kobe" },
+            { label: "MJ '88 vs Hakeem '94", q1: "1987 Jordan", q2: "1993 Hakeem" },
           ].map((preset) => (
             <button
               key={preset.label}
@@ -191,7 +243,9 @@ export default function ComparePage() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player1.firstName} {player1.lastName}</p>
-                {player1.isLegend ? (
+                {player1.isIconicSeason ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded bg-accent/15 text-accent text-xs font-mono font-bold tabular-nums">{player1.season}</span>
+                ) : player1.isLegend ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber text-xs font-bold">{isZh ? "传奇" : "Legend"}</span>
                 ) : player1.position ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player1.position}</span>
@@ -201,6 +255,7 @@ export default function ComparePage() {
                   {player1.teamCity} {player1.teamName}
                   {player1.jersey && <> &middot; #{player1.jersey}</>}
                 </p>
+                {player1.isIconicSeason && <TrophyRow p={player1} />}
               </div>
             </div>
             <div className="flex flex-col items-center justify-center gap-2 px-4">
@@ -214,7 +269,9 @@ export default function ComparePage() {
               </div>
               <div className="text-center">
                 <p className="font-bold text-text-primary">{player2.firstName} {player2.lastName}</p>
-                {player2.isLegend ? (
+                {player2.isIconicSeason ? (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded bg-accent/15 text-accent text-xs font-mono font-bold tabular-nums">{player2.season}</span>
+                ) : player2.isLegend ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber text-xs font-bold">{isZh ? "传奇" : "Legend"}</span>
                 ) : player2.position ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player2.position}</span>
@@ -224,9 +281,26 @@ export default function ComparePage() {
                   {player2.teamCity} {player2.teamName}
                   {player2.jersey && <> &middot; #{player2.jersey}</>}
                 </p>
+                {player2.isIconicSeason && <TrophyRow p={player2} />}
               </div>
             </div>
           </div>
+
+          {/* Iconic-season story strip — narrative one-liners for both players */}
+          {(player1.isIconicSeason || player2.isIconicSeason) && (
+            <div className="grid grid-cols-2 gap-px bg-border/40 border-b border-border">
+              <div className="bg-bg-card p-3 text-[11px] text-text-secondary leading-relaxed">
+                {player1.isIconicSeason
+                  ? (isZh && player1.storyZh ? player1.storyZh : player1.story)
+                  : null}
+              </div>
+              <div className="bg-bg-card p-3 text-[11px] text-text-secondary leading-relaxed">
+                {player2.isIconicSeason
+                  ? (isZh && player2.storyZh ? player2.storyZh : player2.story)
+                  : null}
+              </div>
+            </div>
+          )}
 
           {/* Position comparison + separator */}
           <div className="flex items-center gap-3 px-6 py-2 bg-bg-secondary/30">

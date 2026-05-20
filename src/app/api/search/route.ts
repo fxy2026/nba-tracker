@@ -3,6 +3,7 @@ import { getPlayerIndex } from "@/lib/api";
 import { expandQuery } from "@/lib/playerAliases";
 import { TEAM_META } from "@/lib/teams";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -86,7 +87,53 @@ export async function GET(request: Request) {
         };
       });
 
-    return NextResponse.json({ data: [...results, ...legendResults] }, {
+    // Iconic single-season snapshots — queries like "2016 lebron", "curry
+    // 2015", "1996 jordan" or just "harden" (after seeing the entry) resolve
+    // to a specific historic campaign with its trophy + narrative metadata.
+    // Match by name OR season year OR season string.
+    const lowerQ = q.toLowerCase();
+    const queryNum = parseInt(q, 10);
+    const seasonResults = ICONIC_SEASONS
+      .filter((s) => {
+        const full = s.name.toLowerCase();
+        const last = s.name.split(" ").slice(-1)[0].toLowerCase();
+        const nameMatches = queries.some((qq) => full.includes(qq) || last.includes(qq));
+        const yearMatches = !isNaN(queryNum) && (queryNum === s.seasonYear || queryNum === s.seasonYear + 1);
+        const seasonStrMatches = s.season.includes(lowerQ);
+        return nameMatches || yearMatches || seasonStrMatches;
+      })
+      .slice(0, 10)
+      .map((s) => {
+        const [firstName, ...rest] = s.name.split(" ");
+        const team = TEAM_META[s.team];
+        return {
+          // composite id so two seasons of the same player don't collide
+          personId: s.personId,
+          firstName,
+          lastName: rest.join(" "),
+          teamAbbr: s.team,
+          teamId: team?.teamId ?? 0,
+          teamName: team?.name ?? "",
+          teamCity: team?.city ?? "",
+          jersey: "",
+          position: "",
+          pts: s.ppg,
+          reb: s.rpg,
+          ast: s.apg,
+          isIconicSeason: true as const,
+          iconicId: s.id,
+          season: s.season,
+          story: s.story,
+          storyZh: s.storyZh,
+          mvp: s.mvp,
+          champion: s.champion,
+          finalsMvp: s.finalsMvp,
+          dpoy: s.dpoy,
+          scoringTitle: s.scoringTitle,
+        };
+      });
+
+    return NextResponse.json({ data: [...results, ...legendResults, ...seasonResults] }, {
       headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
     });
   } catch {
