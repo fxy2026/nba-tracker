@@ -84,20 +84,20 @@ function CourtLines() {
   return (
     <>
       {/* Court outline */}
-      <rect x={PAD} y={HALFCOURT} width={CW} height={CH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
+      <rect x={PAD} y={HALFCOURT} width={CW} height={CH} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
       {/* Paint */}
-      <rect x={PAINT_L} y={FT_Y} width={PAINT_R - PAINT_L} height={BASELINE - FT_Y} fill="none" stroke="#3a3a3a" strokeWidth="1.5" />
+      <rect x={PAINT_L} y={FT_Y} width={PAINT_R - PAINT_L} height={BASELINE - FT_Y} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
       {/* FT circle */}
-      <circle cx={BX} cy={FT_Y} r={6 * SX} fill="none" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4,4" />
+      <circle cx={BX} cy={FT_Y} r={6 * SX} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
       {/* Restricted area semicircle */}
-      <path d={`M ${sv(-4, 0).join(",")} A ${4 * SX} ${4 * SY} 0 0 1 ${sv(4, 0).join(",")}`} fill="none" stroke="#3a3a3a" strokeWidth="1" />
+      <path d={`M ${sv(-4, 0).join(",")} A ${4 * SX} ${4 * SY} 0 0 1 ${sv(4, 0).join(",")}`} fill="none" stroke="var(--court-line)" strokeWidth="1" />
       {/* Basket */}
       <circle cx={BX} cy={BY} r={4} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-      <line x1={BX - 12} y1={BY + 4} x2={BX + 12} y2={BY + 4} stroke="#555" strokeWidth="2" />
+      <line x1={BX - 12} y1={BY + 4} x2={BX + 12} y2={BY + 4} stroke="var(--court-line-strong)" strokeWidth="2" />
       {/* 3pt line: corner straight lines + arc */}
-      <line x1={arcLeftX} y1={BASELINE} x2={arcLeftX} y2={arcLeftY} stroke="#444" strokeWidth="1.5" />
-      <line x1={arcRightX} y1={BASELINE} x2={arcRightX} y2={arcRightY} stroke="#444" strokeWidth="1.5" />
-      <polyline points={arcPts.join(" ")} fill="none" stroke="#444" strokeWidth="1.5" />
+      <line x1={arcLeftX} y1={BASELINE} x2={arcLeftX} y2={arcLeftY} stroke="var(--court-line-strong)" strokeWidth="1.5" />
+      <line x1={arcRightX} y1={BASELINE} x2={arcRightX} y2={arcRightY} stroke="var(--court-line-strong)" strokeWidth="1.5" />
+      <polyline points={arcPts.join(" ")} fill="none" stroke="var(--court-line-strong)" strokeWidth="1.5" />
     </>
   );
 }
@@ -386,7 +386,7 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
                 ? `球员投篮热图，按球场区域 — ${season} 赛季，命中率 ${overallPct.toFixed(1)}%`
                 : `Player shot heatmap by court zone — ${season} season, ${overallPct.toFixed(1)}% FG`}
             >
-              <rect x="0" y="0" width={W} height={H} fill="#141414" rx="8" />
+              <rect x="0" y="0" width={W} height={H} fill="var(--court-bg)" rx="8" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
@@ -404,8 +404,8 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
               <CourtLines />
 
               {/* Zone divider lines (wing angles — from paint edge through 3pt arc to court boundary) */}
-              <line x1={WING_PAINT_L[0]} y1={WING_PAINT_L[1]} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
-              <line x1={WING_PAINT_R[0]} y1={WING_PAINT_R[1]} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="#3a3a3a" strokeWidth="1" />
+              <line x1={WING_PAINT_L[0]} y1={WING_PAINT_L[1]} x2={WING_L_EXT[0]} y2={WING_L_EXT[1]} stroke="var(--court-line)" strokeWidth="1" />
+              <line x1={WING_PAINT_R[0]} y1={WING_PAINT_R[1]} x2={WING_R_EXT[0]} y2={WING_R_EXT[1]} stroke="var(--court-line)" strokeWidth="1" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);

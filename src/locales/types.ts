@@ -707,6 +707,10 @@ export interface Translations {
     scheduleLink: string;
     conference: string;
     division: string;
+    seasonPace: string;
+    projectedWins: string;
+    ifRecentFormHolds: string;
+    gamesRemaining: string;
   };
 
   // ---- Favorite Button ----

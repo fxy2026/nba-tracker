@@ -660,6 +660,10 @@ const en: Translations = {
     scheduleLink: "Schedule →",
     conference: "Conference",
     division: "Division",
+    seasonPace: "Season pace",
+    projectedWins: "projected wins",
+    ifRecentFormHolds: "if last-10 form holds",
+    gamesRemaining: "games left",
   },
 
   favorite: {

@@ -16,15 +16,15 @@
 // purges every cache whose name doesn't match — defends against zombie
 // shells.
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_STATIC = `nba-tracker-static-${CACHE_VERSION}`;
 const CACHE_PAGES = `nba-tracker-pages-${CACHE_VERSION}`;
 const CACHE_IMAGES = `nba-tracker-images-${CACHE_VERSION}`;
 
-// Precache: minimal app shell. Just "/" — if it's reachable, the user can
-// at least see the homepage with a network error banner.
+// Precache: minimal app shell + dedicated offline fallback page.
 const PRECACHE_URLS = [
   "/",
+  "/offline",
   "/manifest.json",
   "/icon-192.svg",
   "/icon-512.svg",
@@ -82,7 +82,9 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(req).then((cached) => cached || caches.match("/"))
+          // Prefer a cached copy of the requested page; if we never saw it,
+          // show the dedicated offline page instead of a stale homepage.
+          caches.match(req).then((cached) => cached || caches.match("/offline") || caches.match("/"))
         )
     );
     return;

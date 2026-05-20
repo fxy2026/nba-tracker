@@ -143,14 +143,14 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             : `Game shot chart — ${made} of ${total} made, ${pct}%`}
         >
           {/* Court background */}
-          <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="#1a1a1a" rx="8" />
+          <rect x="0" y="0" width={courtWidth} height={courtHeight} fill="var(--court-bg)" rx="8" />
 
           {/* Court outline */}
-          <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="#333" strokeWidth="1.5" />
+          <rect x={pad} y={pad} width={cw} height={ch} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
           {/* Half court line */}
-          <line x1={pad} y1={svgMidY} x2={pad + cw} y2={svgMidY} stroke="#333" strokeWidth="1.5" />
+          <line x1={pad} y1={svgMidY} x2={pad + cw} y2={svgMidY} stroke="var(--court-line)" strokeWidth="1.5" />
           {/* Center circle */}
-          <circle cx={svgCx} cy={svgMidY} r={centerCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+          <circle cx={svgCx} cy={svgMidY} r={centerCircleR} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
 
           {/* === Top half (basket near top) === */}
           {(() => {
@@ -163,12 +163,12 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             const arcPeakY = toSvgY(basketPctX + THREE_PT_ARC_PCT);
             return (
               <>
-                <rect x={svgCx - paintHalfW} y={pad} width={paintHalfW * 2} height={ftLineY - pad} fill="none" stroke="#333" strokeWidth="1.5" />
-                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+                <rect x={svgCx - paintHalfW} y={pad} width={paintHalfW * 2} height={ftLineY - pad} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
+                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
                 <circle cx={svgCx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                <line x1={svgCx - 15} y1={basketY - 5} x2={svgCx + 15} y2={basketY - 5} stroke="#555" strokeWidth="2" />
-                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="#333" strokeWidth="1" />
-                <path d={`M ${corner3X1} ${pad} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad}`} fill="none" stroke="#444" strokeWidth="1.5" />
+                <line x1={svgCx - 15} y1={basketY - 5} x2={svgCx + 15} y2={basketY - 5} stroke="var(--court-line-strong)" strokeWidth="2" />
+                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="var(--court-line)" strokeWidth="1" />
+                <path d={`M ${corner3X1} ${pad} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad}`} fill="none" stroke="var(--court-line-strong)" strokeWidth="1.5" />
               </>
             );
           })()}
@@ -184,12 +184,12 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             const arcPeakY = toSvgY(100 - basketPctX - THREE_PT_ARC_PCT);
             return (
               <>
-                <rect x={svgCx - paintHalfW} y={ftLineY} width={paintHalfW * 2} height={pad + ch - ftLineY} fill="none" stroke="#333" strokeWidth="1.5" />
-                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="#333" strokeWidth="1" strokeDasharray="4,4" />
+                <rect x={svgCx - paintHalfW} y={ftLineY} width={paintHalfW * 2} height={pad + ch - ftLineY} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
+                <circle cx={svgCx} cy={ftLineY} r={ftCircleR} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
                 <circle cx={svgCx} cy={basketY} r={rimR} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-                <line x1={svgCx - 15} y1={basketY + 5} x2={svgCx + 15} y2={basketY + 5} stroke="#555" strokeWidth="2" />
-                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="#333" strokeWidth="1" />
-                <path d={`M ${corner3X1} ${pad + ch} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad + ch}`} fill="none" stroke="#444" strokeWidth="1.5" />
+                <line x1={svgCx - 15} y1={basketY + 5} x2={svgCx + 15} y2={basketY + 5} stroke="var(--court-line-strong)" strokeWidth="2" />
+                <circle cx={svgCx} cy={basketY} r={restrictedR} fill="none" stroke="var(--court-line)" strokeWidth="1" />
+                <path d={`M ${corner3X1} ${pad + ch} L ${corner3X1} ${corner3Y} Q ${corner3X1} ${arcPeakY} ${svgCx} ${arcPeakY} Q ${corner3X2} ${arcPeakY} ${corner3X2} ${corner3Y} L ${corner3X2} ${pad + ch}`} fill="none" stroke="var(--court-line-strong)" strokeWidth="1.5" />
               </>
             );
           })()}

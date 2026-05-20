@@ -660,6 +660,10 @@ const zh: Translations = {
     scheduleLink: "赛程 →",
     conference: "联盟",
     division: "分区",
+    seasonPace: "赛季节奏",
+    projectedWins: "预计胜场",
+    ifRecentFormHolds: "按近 10 场延续",
+    gamesRemaining: "场剩余",
   },
 
   favorite: {

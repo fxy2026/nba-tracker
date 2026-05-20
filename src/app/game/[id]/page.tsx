@@ -16,6 +16,7 @@ import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
 import GameHero from "./_components/GameHero";
+import GameStickyScore from "./_components/GameStickyScore";
 import GameHeadlines from "./_components/GameHeadlines";
 import GameLeaders from "./_components/GameLeaders";
 import GameMeta from "./_components/GameMeta";
@@ -192,6 +193,16 @@ export default async function GamePage({ params }: PageProps) {
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
       <GameHero boxScore={boxScore} shots={shots} isPlayoffs={isPlayoffs} t={t} />
+      <div id="game-hero-sentinel" />
+      <GameStickyScore
+        awayTricode={boxScore.awayTeam.teamTricode}
+        awayScore={boxScore.awayTeam.score}
+        awayTeamId={boxScore.awayTeam.teamId}
+        homeTricode={boxScore.homeTeam.teamTricode}
+        homeScore={boxScore.homeTeam.score}
+        homeTeamId={boxScore.homeTeam.teamId}
+        statusText={boxScore.gameStatusText}
+      />
 
       {isFinal && boxScore.homeTeam.periods?.length > 0 && (
         <QuarterBars

@@ -13,6 +13,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RecentVisitTracker from "@/components/RecentVisitTracker";
 import RelatedPages from "@/components/RelatedPages";
 import TeamHero from "./_components/TeamHero";
+import TeamPace from "./_components/TeamPace";
 import TeamStatsPanel from "./_components/TeamStatsPanel";
 import Last10Streak from "./_components/Last10Streak";
 import TeamScheduleCard, { type RecentGame, type UpcomingGame } from "./_components/TeamScheduleCard";
@@ -261,6 +262,8 @@ export default async function TeamPage({ params }: PageProps) {
         streakType={streakType} streakDisplay={streakDisplay}
         longestWinStreak={longestWinStreak} longestLossStreak={longestLossStreak}
       />
+
+      <TeamPace wins={wins} losses={losses} w10={w10} l10={l10} t={t} />
 
       <TeamStatsPanel team={team} t={t} recentGames={recentGames} gamesPlayed={gamesPlayed} ppg={ppg} oppPpg={oppPpg} />
 

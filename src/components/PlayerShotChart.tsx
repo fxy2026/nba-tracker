@@ -54,21 +54,21 @@ function CourtLines() {
     const c3Start = top ? PAD : PAD + CH;
     return (
       <>
-        <rect x={CCX - paintHW} y={paintTop} width={paintHW * 2} height={paintH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-        <circle cx={CCX} cy={ftLineY} r={FT_R} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+        <rect x={CCX - paintHW} y={paintTop} width={paintHW * 2} height={paintH} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
+        <circle cx={CCX} cy={ftLineY} r={FT_R} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
         <circle cx={CCX} cy={basketY} r={RIM_R} fill="none" stroke="#928CEE" strokeWidth="1.5" />
-        <line x1={CCX - 15} y1={bbY} x2={CCX + 15} y2={bbY} stroke="#444" strokeWidth="2" />
-        <circle cx={CCX} cy={basketY} r={RESTRICTED_R} fill="none" stroke="#2a2a2a" strokeWidth="1" />
-        <path d={`M ${c3x1} ${c3Start} L ${c3x1} ${c3y} Q ${c3x1} ${arcY} ${CCX} ${arcY} Q ${c3x2} ${arcY} ${c3x2} ${c3y} L ${c3x2} ${c3Start}`} fill="none" stroke="#333" strokeWidth="1.5" />
+        <line x1={CCX - 15} y1={bbY} x2={CCX + 15} y2={bbY} stroke="var(--court-line-strong)" strokeWidth="2" />
+        <circle cx={CCX} cy={basketY} r={RESTRICTED_R} fill="none" stroke="var(--court-line)" strokeWidth="1" />
+        <path d={`M ${c3x1} ${c3Start} L ${c3x1} ${c3y} Q ${c3x1} ${arcY} ${CCX} ${arcY} Q ${c3x2} ${arcY} ${c3x2} ${c3y} L ${c3x2} ${c3Start}`} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
       </>
     );
   };
   return (
     <>
-      <rect x="0" y="0" width={CW_TOTAL} height={CH_TOTAL} fill="#141414" rx="8" />
-      <rect x={PAD} y={PAD} width={CW} height={CH} fill="none" stroke="#2a2a2a" strokeWidth="1.5" />
-      <line x1={PAD} y1={MID_Y} x2={PAD + CW} y2={MID_Y} stroke="#2a2a2a" strokeWidth="1.5" />
-      <circle cx={CCX} cy={MID_Y} r={CENTER_R} fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4,4" />
+      <rect x="0" y="0" width={CW_TOTAL} height={CH_TOTAL} fill="var(--court-bg)" rx="8" />
+      <rect x={PAD} y={PAD} width={CW} height={CH} fill="none" stroke="var(--court-line)" strokeWidth="1.5" />
+      <line x1={PAD} y1={MID_Y} x2={PAD + CW} y2={MID_Y} stroke="var(--court-line)" strokeWidth="1.5" />
+      <circle cx={CCX} cy={MID_Y} r={CENTER_R} fill="none" stroke="var(--court-line)" strokeWidth="1" strokeDasharray="4,4" />
       {halfCourt(true)}
       {halfCourt(false)}
     </>

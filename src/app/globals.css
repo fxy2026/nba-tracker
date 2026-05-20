@@ -56,6 +56,11 @@
 
   --pattern-dots:
     radial-gradient(circle at 1px 1px, rgba(59,130,246,0.06) 1px, transparent 0);
+
+  /* Shot-chart court — same color in dark theme as the previous hardcodes */
+  --court-bg: #141414;
+  --court-line: #333333;
+  --court-line-strong: #444444;
 }
 
 [data-theme="light"] {
@@ -99,6 +104,11 @@
 
   --pattern-dots:
     radial-gradient(circle at 1px 1px, rgba(15,23,42,0.05) 1px, transparent 0);
+
+  /* Shot-chart court — warm cream evoking wood floor; line contrast tuned for AA */
+  --court-bg: #F4ECD8;
+  --court-line: #8B7355;
+  --court-line-strong: #6B5840;
 }
 
 @theme inline {
@@ -682,4 +692,18 @@ nav.sticky[data-scrolled="true"] {
 ::selection {
   background: color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--text-primary);
+}
+
+/* Blanket reduced-motion fallback — catches anything not explicitly guarded
+   above (kenburns, animate-pulse on live dots, etc.). Specific rules earlier
+   in this file still win for finer control. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
