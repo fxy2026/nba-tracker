@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { getBoxScore, getPlayByPlay, getPlayerIndex, type PlayerInfo } from "@/lib/api";
+import { getSeasonRank } from "@/lib/season-ranks";
 import { isPlayoff } from "@/lib/games";
 import QuarterBars from "@/components/QuarterBars";
 import TeamCompare from "@/components/TeamCompare";
@@ -60,9 +61,10 @@ export default async function GamePage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  // Box score + shots + player index + raw PBP in parallel. PBP comes
-  // straight from cdn.nba.com (the only place exposing score events with clocks)
-  const [boxScore, shots, playerIndex, pbpActions] = await Promise.all([
+  // Box score + shots + player index + raw PBP + season-wide rank in parallel.
+  // PBP comes straight from cdn.nba.com (the only place exposing score events
+  // with clocks). Season rank reads the schedule cache only — no extra fetch.
+  const [boxScore, shots, playerIndex, pbpActions, seasonRank] = await Promise.all([
     getBoxScore(id),
     getPlayByPlay(id).catch(() => []),
     getPlayerIndex().catch(() => []),
@@ -73,6 +75,7 @@ export default async function GamePage({ params }: PageProps) {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.game?.actions || [])
       .catch(() => []),
+    getSeasonRank(id).catch(() => null),
   ]);
 
   const scoreEvents = (pbpActions as { period: number; clock: string; scoreHome: string; scoreAway: string }[])
@@ -202,7 +205,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {isFinal && <GameMeta homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
-      {isFinal && <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} t={t} />}
+      {isFinal && <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} seasonRank={seasonRank} t={t} />}
 
       {isFinal && <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 

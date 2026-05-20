@@ -212,6 +212,10 @@ const en: Translations = {
     halftime: "Halftime: ",
     highestScoringQ: "Highest-scoring: ",
     ledBy: "led by",
+    seasonRankScoring: "highest-scoring game",
+    seasonRankBlowout: "biggest blowout",
+    seasonRankClose: "closest game",
+    seasonRankOf: "this season",
   },
 
   standingsPage: {

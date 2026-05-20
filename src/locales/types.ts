@@ -222,6 +222,10 @@ export interface Translations {
     halftime: string;
     highestScoringQ: string;
     ledBy: string;
+    seasonRankScoring: string;
+    seasonRankBlowout: string;
+    seasonRankClose: string;
+    seasonRankOf: string;
   };
 
   // ---- Standings ----

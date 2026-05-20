@@ -212,6 +212,10 @@ const zh: Translations = {
     halftime: "半场：",
     highestScoringQ: "最高得分节：",
     ledBy: "领先",
+    seasonRankScoring: "高分大战",
+    seasonRankBlowout: "大胜差",
+    seasonRankClose: "焦灼对决",
+    seasonRankOf: "本赛季",
   },
 
   standingsPage: {
