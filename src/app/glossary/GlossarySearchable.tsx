@@ -222,8 +222,33 @@ export default function GlossarySearchable() {
   const totalTerms = SECTIONS.reduce((s, sec) => s + sec.terms.length, 0);
   const matchCount = filtered.reduce((s, sec) => s + sec.terms.length, 0);
 
+  // FAQPage JSON-LD — Google's FAQ rich result is restricted to authoritative
+  // sources nowadays, but Bing + Knowledge Graph still pick it up, and the
+  // markup costs nothing to serve. Built off the same SECTIONS data the page
+  // shows, so the on-page content matches the schema (Google's hard rule).
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: SECTIONS.flatMap((sec) =>
+      sec.terms.map((term) => {
+        const label = isZh && term.termZh ? term.termZh : term.term;
+        const abbr = term.abbr ? ` (${term.abbr})` : "";
+        const answer = isZh && term.definitionZh ? term.definitionZh : term.definition;
+        return {
+          "@type": "Question",
+          name: `${label}${abbr}`,
+          acceptedAnswer: { "@type": "Answer", text: answer },
+        };
+      }),
+    ),
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <PageHeader
         eyebrow={isZh ? "学习" : "Learn"}
         icon={Book}

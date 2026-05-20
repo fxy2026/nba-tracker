@@ -70,8 +70,31 @@ export default function AllTimeLeadersPage() {
   const ranked = useMemo(() => getLeaderboard(category, 25), [category]);
   const topValue = ranked[0]?._value || 1;
 
+  // ItemList JSON-LD for the active leaderboard — eligible for the
+  // "carousel of ranked items" treatment in some SERP layouts.
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: activeCat.label,
+    description: activeCat.description,
+    numberOfItems: ranked.length,
+    itemListElement: ranked.slice(0, 10).map((entry, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: entry.name,
+      // personId 0 = retired legend without a CDN profile; skip the URL.
+      ...(entry.personId > 0
+        ? { url: `https://nba.xpy.me/player/${entry.personId}` }
+        : {}),
+    })),
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
       <Breadcrumbs items={[{ label: isZh ? "历史榜单" : "All-Time Leaders" }]} />
       <PageHeader
         eyebrow={isZh ? "历史" : "History"}
