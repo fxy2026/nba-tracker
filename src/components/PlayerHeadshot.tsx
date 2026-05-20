@@ -31,6 +31,7 @@ export default memo(function PlayerHeadshot({ personId, name, size = 28 }: Props
         alt={name}
         width={size}
         height={size}
+        unoptimized
         className="w-full h-full object-cover object-top"
         loading="lazy"
         onError={() => setError(true)}

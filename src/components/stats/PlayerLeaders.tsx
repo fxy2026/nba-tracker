@@ -178,6 +178,7 @@ export default function PlayerLeaders() {
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
                           <Image src={headshotUrl(r.PLAYER_ID)} alt={r.PLAYER} width={32} height={32}
+                            unoptimized
                             className="w-full h-full object-cover object-top"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                         </div>
