@@ -7,6 +7,8 @@ import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import RadarChart from "@/components/RadarChart";
+import type { PlayerAccolades } from "@/lib/playerAccolades";
 
 interface PlayerData {
   personId: number;
@@ -36,6 +38,10 @@ interface PlayerData {
   finalsMvp?: boolean;
   dpoy?: boolean;
   scoringTitle?: boolean;
+  // Career-level accolade counts — populated for any player our static
+  // table knows (most legends + ~20 superstars). Drives the trophy strip
+  // and the "MVPs/rings/All-Stars" tiles below the radar chart.
+  accolades?: PlayerAccolades;
 }
 
 const COMPARE_STATS = [
@@ -43,6 +49,61 @@ const COMPARE_STATS = [
   { key: "reb", label: "RPG", color: "text-success", barColor: "var(--success)" },
   { key: "ast", label: "APG", color: "text-accent", barColor: "#60a5fa" },
 ] as const;
+
+// Build radar axes from two players. PPG/RPG/APG/SPG/BPG and the shooting
+// splits (FG%/3P%/FT%, when both sides have them) — each axis is normalized
+// to max(v1, v2) inside the RadarChart component itself.
+function buildRadarStats(p1: PlayerData, p2: PlayerData) {
+  const axes: { label: string; home: number; away: number; max: number }[] = [];
+  const push = (label: string, a: number, b: number, max?: number) => {
+    if (a > 0 || b > 0) axes.push({ label, home: a, away: b, max: max ?? Math.max(a, b, 0.001) });
+  };
+  push("PPG", p1.pts, p2.pts);
+  push("RPG", p1.reb, p2.reb);
+  push("APG", p1.ast, p2.ast);
+  // Defensive stats only show on iconic seasons / legends (BDL active player
+  // data is per-game basics, no SPG/BPG). Skip axes where neither side has it.
+  type IconicLike = PlayerData & { spg?: number; bpg?: number };
+  const x1 = p1 as IconicLike;
+  const x2 = p2 as IconicLike;
+  if (x1.spg !== undefined || x2.spg !== undefined) {
+    push("SPG", x1.spg ?? 0, x2.spg ?? 0);
+  }
+  if (x1.bpg !== undefined || x2.bpg !== undefined) {
+    push("BPG", x1.bpg ?? 0, x2.bpg ?? 0);
+  }
+  return axes;
+}
+
+// One accolade tile: label, both values, mini comparison bar. Winner side
+// gets the accent-amber treatment; ties show in neutral text.
+function AccoladeTile({ label, v1, v2 }: { label: string; v1: number; v2: number }) {
+  const max = Math.max(v1, v2, 1);
+  const winner1 = v1 > v2;
+  const winner2 = v2 > v1;
+  return (
+    <div className="glass-tile p-3 text-center">
+      <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">{label}</p>
+      <div className="flex items-baseline justify-center gap-2 mt-1">
+        <span className={`text-lg font-light font-mono tabular-nums ${winner1 ? "text-accent-amber" : "text-text-primary"}`}>
+          {v1}
+        </span>
+        <span className="text-[9px] text-text-secondary/40">vs</span>
+        <span className={`text-lg font-light font-mono tabular-nums ${winner2 ? "text-accent-amber" : "text-text-primary"}`}>
+          {v2}
+        </span>
+      </div>
+      <div className="flex gap-0.5 mt-1.5 h-1">
+        <div className="flex-1 flex justify-end">
+          <div className={`h-full rounded-l-full ${winner1 ? "bg-accent-amber" : "bg-accent/40"}`} style={{ width: `${(v1 / max) * 100}%` }} />
+        </div>
+        <div className="flex-1">
+          <div className={`h-full rounded-r-full ${winner2 ? "bg-accent-amber" : "bg-success/40"}`} style={{ width: `${(v2 / max) * 100}%` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Trophy strip for iconic-season cards. Only the flags set on the entry
 // render — the dataset already filters this per season (e.g. 2018 Harden
@@ -298,6 +359,75 @@ export default function ComparePage() {
                 {player2.isIconicSeason
                   ? (isZh && player2.storyZh ? player2.storyZh : player2.story)
                   : null}
+              </div>
+            </div>
+          )}
+
+          {/* Radar — 8 normalized stats overlaid. Only rendered when both
+              players have at least PPG/RPG/APG so the chart isn't lopsided. */}
+          {player1.pts > 0 && player2.pts > 0 && (
+            <div className="p-6 border-b border-border bg-bg-secondary/20">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
+                  / {isZh ? "雷达对比" : "Stat Radar"}
+                </h3>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-accent" />
+                    <span className="text-text-secondary">{player1.firstName} {player1.lastName}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-success" />
+                    <span className="text-text-secondary">{player2.firstName} {player2.lastName}</span>
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <RadarChart
+                  stats={buildRadarStats(player1, player2)}
+                  homeLabel={`${player1.firstName} ${player1.lastName}`}
+                  awayLabel={`${player2.firstName} ${player2.lastName}`}
+                />
+              </div>
+              <p className="text-[9px] text-text-secondary/60 text-center mt-2 font-mono uppercase tracking-[0.15em]">
+                {isZh ? "每轴按两人最大值归一" : "Each axis normalized to the pair's max"}
+              </p>
+            </div>
+          )}
+
+          {/* Career-accolades tile grid — only when at least one side has
+              data in PLAYER_ACCOLADES. The 0 vs N gap is part of the story. */}
+          {(player1.accolades || player2.accolades) && (
+            <div className="p-6 border-b border-border">
+              <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3">
+                / {isZh ? "生涯成就" : "Career Accolades"}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <AccoladeTile
+                  label={isZh ? "总冠军" : "Rings"}
+                  v1={player1.accolades?.championships ?? 0}
+                  v2={player2.accolades?.championships ?? 0}
+                />
+                <AccoladeTile
+                  label="MVP"
+                  v1={player1.accolades?.mvps ?? 0}
+                  v2={player2.accolades?.mvps ?? 0}
+                />
+                <AccoladeTile
+                  label="FMVP"
+                  v1={player1.accolades?.finalsMvps ?? 0}
+                  v2={player2.accolades?.finalsMvps ?? 0}
+                />
+                <AccoladeTile
+                  label={isZh ? "全明星" : "All-Star"}
+                  v1={player1.accolades?.allStars ?? 0}
+                  v2={player2.accolades?.allStars ?? 0}
+                />
+                <AccoladeTile
+                  label="All-NBA"
+                  v1={player1.accolades?.allNba ?? 0}
+                  v2={player2.accolades?.allNba ?? 0}
+                />
               </div>
             </div>
           )}

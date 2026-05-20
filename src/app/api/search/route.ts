@@ -4,6 +4,7 @@ import { expandQuery } from "@/lib/playerAliases";
 import { TEAM_META } from "@/lib/teams";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { getAccolades } from "@/lib/playerAccolades";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -54,6 +55,7 @@ export async function GET(request: Request) {
         pts: p.pts,
         reb: p.reb,
         ast: p.ast,
+        accolades: getAccolades(p.personId) ?? undefined,
       }));
 
     // Also search retired legends — lets queries like "Jordan" or "Kobe"
@@ -84,6 +86,7 @@ export async function GET(request: Request) {
           reb: p.rpg,
           ast: p.apg,
           isLegend: true as const,
+          accolades: getAccolades(p.personId) ?? undefined,
         };
       });
 
@@ -130,6 +133,7 @@ export async function GET(request: Request) {
           finalsMvp: s.finalsMvp,
           dpoy: s.dpoy,
           scoringTitle: s.scoringTitle,
+          accolades: getAccolades(s.personId) ?? undefined,
         };
       });
 
