@@ -201,21 +201,12 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           href={`/game/${gameOfTheDay.gameId}`}
           className="glass-tile glass-tile-featured block mt-5 cursor-pointer relative overflow-hidden group"
         >
-          {/* Background watermark logos — CSS background-image divs so they
-              are not in the LCP candidate set (browsers don't consider
-              background-image elements for LCP). The earlier <img loading=lazy>
-              fix didn't help because lazy only deprioritizes fetch; the image
-              still becomes the largest paint when it eventually loads. */}
-          <div
-            aria-hidden
-            className="absolute -left-12 top-1/2 -translate-y-1/2 w-[280px] h-[280px] opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none bg-no-repeat bg-contain bg-center"
-            style={{ backgroundImage: `url('${teamLogoUrl(gameOfTheDay.awayTeam.teamId)}')` }}
-          />
-          <div
-            aria-hidden
-            className="absolute -right-12 top-1/2 -translate-y-1/2 w-[280px] h-[280px] opacity-[0.08] group-hover:opacity-[0.14] transition-opacity pointer-events-none bg-no-repeat bg-contain bg-center"
-            style={{ backgroundImage: `url('${teamLogoUrl(gameOfTheDay.homeTeam.teamId)}')` }}
-          />
+          {/* The 280×280 watermark logos used to live here. They were the LCP
+              element on the home page even as CSS background-image divs
+              (Chrome counts large background images as LCP candidates). The
+              ★ Game of the Day label, 4xl score, side-by-side 48px team
+              logos, and bg-gradient backdrop carry the visual weight without
+              the watermark. */}
           <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent-amber/10 pointer-events-none" />
 
           <div className="relative p-5 sm:p-6 flex items-center gap-4 sm:gap-6">

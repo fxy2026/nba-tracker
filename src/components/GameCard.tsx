@@ -9,7 +9,6 @@ import TeamLogo from "./TeamLogo";
 import GameCountdown from "./GameCountdown";
 import { useLocale } from "@/components/LocaleProvider";
 import { TEAM_META } from "@/lib/teams";
-import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
 
 /** Hook: detect when a score changes and trigger a CSS class for 1.2s */
@@ -64,21 +63,12 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   return (
     <Link href={`/game/${game.gameId}`} className="block group cursor-pointer" aria-label={ariaLabel}>
       <div className={`glass-tile p-4 relative overflow-hidden ${isLive ? "border-success/60 border-l-2 border-l-success game-card-live" : ""}`}>
-        {/* Decorative team-logo watermarks — rendered as CSS background-image
-            so they're not LCP-eligible. Previously these <img> tags became the
-            LCP element on every game-card page (PSI: P75 4.0s, 4.7s of pure
-            load delay because the browser sees them as "largest paint" then
-            deprioritizes them as lazy). */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-8 -bottom-8 w-[140px] h-[140px] opacity-[0.05] group-hover:opacity-[0.10] transition-opacity bg-no-repeat bg-contain bg-center"
-          style={{ backgroundImage: `url('${teamLogoUrl(game.awayTeam.teamId)}')` }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-8 -top-8 w-[140px] h-[140px] opacity-[0.05] group-hover:opacity-[0.10] transition-opacity bg-no-repeat bg-contain bg-center"
-          style={{ backgroundImage: `url('${teamLogoUrl(game.homeTeam.teamId)}')` }}
-        />
+        {/* Team-color side glow further down + the score itself give the
+            card all the visual personality it needs. The 140×140 logo
+            watermarks at opacity 0.05 were the LCP element for the home
+            page (PSI: 3.8-4.0s P75) — both as <img loading=lazy> and as
+            CSS background-image divs. Removing them entirely is the only
+            way to take a 140×140 element out of the LCP candidate set. */}
         {/* Final games: subtle winner-team-color side glow */}
         {isFinal && (awayWon || homeWon) && (
           <div
