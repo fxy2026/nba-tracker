@@ -211,12 +211,12 @@ export default async function ThisDayPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
-          { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games", description: isZh ? "16 个改变生涯的夜晚" : "Single-night iconic performances", icon: Flame },
+          { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games", description: isZh ? "改变生涯的夜晚" : "Single-night iconic performances", icon: Flame },
+          { href: "/iconic-seasons", label: isZh ? "经典赛季" : "Iconic Seasons", description: isZh ? "巅峰赛季快照" : "Peak-campaign snapshots", icon: Crown },
           { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季最精彩对决" : "Season highlights and standout matchups", icon: Trophy },
           { href: "/records", label: isZh ? "赛季纪录" : "Records", description: isZh ? "赛季单场纪录" : "Single-game season records", icon: Crown },
           { href: "/milestones", label: isZh ? "里程碑" : "Milestones", description: isZh ? "球员生涯关注" : "Career watch list", icon: TrendingUp },
           { href: "/all-time-leaders", label: isZh ? "历史榜单" : "All-Time Leaders", description: isZh ? "历史数据领先者" : "Career stat leaderboards", icon: Award },
-          { href: "/history", label: isZh ? "历史" : "History", description: isZh ? "历届总冠军" : "Past champions and seasons", icon: Crown },
         ]}
       />
     </div>
