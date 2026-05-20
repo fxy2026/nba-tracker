@@ -150,10 +150,10 @@ export default async function LegendPage({ params }: PageProps) {
               {player.name}
             </h1>
             <div className="flex items-center gap-2 mt-2">
-              {team && (
+              {team ? (
                 <>
                   <Image
-                    src={teamLogoUrl(player.team)}
+                    src={teamLogoUrl(team.teamId)}
                     alt=""
                     width={20}
                     height={20}
@@ -164,6 +164,10 @@ export default async function LegendPage({ params }: PageProps) {
                     {team.city} {team.name}
                   </span>
                 </>
+              ) : (
+                // Defunct/legacy tricode (NJN/NOJ/STL) — no current NBA logo
+                // exists at the CDN, so fall back to text-only attribution.
+                <span className="text-sm text-text-secondary font-mono">{player.team}</span>
               )}
             </div>
             {bestRank && (
