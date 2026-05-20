@@ -353,6 +353,7 @@ export default function AwardsRacePage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/iconic-seasons", label: isZh ? "历史 MVP 赛季" : "Historic MVP Seasons", description: isZh ? "34 个经典赛季 — 含每位 MVP 的当年数据线" : "34 hand-curated peak campaigns — MVP-winning seasons included", icon: Crown },
           { href: "/milestones", label: isZh ? "生涯轨迹" : "Milestones", description: isZh ? "生涯里程碑投影" : "Career milestone projections", icon: TrendingUp },
           { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
           { href: "/stats", label: isZh ? "联盟数据" : "League Stats", description: isZh ? "完整联盟统计" : "Full league statistics", icon: Award },

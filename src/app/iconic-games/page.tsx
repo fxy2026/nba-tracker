@@ -35,7 +35,11 @@ export default async function IconicGamesPage() {
   const allTags = Array.from(
     new Set(sorted.flatMap((g) => g.tags ?? [])),
   ) as GameTag[];
-  const ids = sorted.map((g) => g.id);
+
+  // Decade labels — "1960s", "2010s", etc. Computed once + passed to the
+  // filter so chips only show decades that have at least one entry.
+  const decadeOf = (g: IconicGame) => `${g.date.slice(0, 3)}0s`;
+  const allDecades = Array.from(new Set(sorted.map(decadeOf))).sort();
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -71,7 +75,7 @@ export default async function IconicGamesPage() {
 
       {/* Client filter — pure CSS-driven so the SSR list stays intact */}
       <div className="mt-6">
-        <GamesFilter availableTags={allTags} ids={ids} />
+        <GamesFilter availableTags={allTags} availableDecades={allDecades} />
       </div>
 
       {/* Game list — chronological, card-per-game */}
@@ -113,6 +117,7 @@ function GameCard({ game, isZh }: { game: IconicGame; isZh: boolean }) {
       className="glass-tile relative overflow-hidden"
       data-game-card
       data-tags={(game.tags ?? []).join(" ")}
+      data-decade={`${game.date.slice(0, 3)}0s`}
     >
       {/* Team color tint */}
       <div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { GAME_TAG_LABEL, type GameTag } from "@/lib/iconicGames";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -8,33 +8,21 @@ interface Props {
   // The list of tag IDs that actually appear in the dataset — passed in so
   // we don't render filter chips for tags nobody on the page has.
   availableTags: GameTag[];
-  // The set of game ids currently visible (mirrors the filtered subset).
-  // Page-level effect uses this to hide / show cards via CSS attribute
-  // selectors without re-rendering the SSR'd list.
-  ids: string[];
+  // The list of decade keys that exist in the dataset (e.g. "1960s", "2010s").
+  availableDecades: string[];
 }
 
 // Pure client component — toggles visibility of game cards rendered by the
-// server. Avoids re-fetching or re-rendering the list when filters change.
-export default function GamesFilter({ availableTags, ids }: Props) {
+// server. Combines tag and decade filters with AND semantics: a card must
+// have at least one active tag AND match at least one active decade.
+export default function GamesFilter({ availableTags, availableDecades }: Props) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
-  const [active, setActive] = useState<Set<GameTag>>(new Set());
+  const [activeTags, setActiveTags] = useState<Set<GameTag>>(new Set());
+  const [activeDecades, setActiveDecades] = useState<Set<string>>(new Set());
 
-  // Effect: rewrite the CSS rule that hides non-matching cards. We can't
-  // easily reach the cards through React (they're rendered server-side
-  // above this component), so we use a `<style>` tag with `display: none`
-  // selectors keyed off data-game-id.
-  const hiddenIds = useMemo(() => {
-    if (active.size === 0) return [] as string[];
-    // We don't have per-id tag info on the client — server emits data-tags
-    // on each card. Build a runtime selector that hides cards whose
-    // data-tags doesn't contain ANY of the active filters.
-    return ids;
-  }, [active, ids]);
-
-  const toggle = (tag: GameTag) => {
-    setActive((prev) => {
+  const toggleTag = (tag: GameTag) => {
+    setActiveTags((prev) => {
       const next = new Set(prev);
       if (next.has(tag)) next.delete(tag);
       else next.add(tag);
@@ -42,21 +30,87 @@ export default function GamesFilter({ availableTags, ids }: Props) {
     });
   };
 
-  const reset = () => setActive(new Set());
+  const toggleDecade = (d: string) => {
+    setActiveDecades((prev) => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return next;
+    });
+  };
+
+  const reset = () => {
+    setActiveTags(new Set());
+    setActiveDecades(new Set());
+  };
+
+  const hasAny = activeTags.size > 0 || activeDecades.size > 0;
+
+  // Build a CSS rule that:
+  // 1. hides all cards by default when any filter is on
+  // 2. shows cards matching at least one selected tag (if tags are active)
+  //    OR at least one selected decade (if decades are active)
+  // Tags and decades combine with OR within each axis, AND across axes.
+  const buildCss = () => {
+    if (!hasAny) return "";
+    const parts: string[] = ["[data-game-card] { display: none; }"];
+    const tagSel = Array.from(activeTags).map((t) => `[data-tags*="${t}"]`);
+    const decadeSel = Array.from(activeDecades).map((d) => `[data-decade="${d}"]`);
+    if (tagSel.length > 0 && decadeSel.length > 0) {
+      // both filters active — intersection
+      for (const t of tagSel) {
+        for (const d of decadeSel) {
+          parts.push(`[data-game-card]${t}${d} { display: block; }`);
+        }
+      }
+    } else if (tagSel.length > 0) {
+      for (const t of tagSel) parts.push(`[data-game-card]${t} { display: block; }`);
+    } else {
+      for (const d of decadeSel) parts.push(`[data-game-card]${d} { display: block; }`);
+    }
+    return parts.join("\n");
+  };
 
   return (
     <>
+      {/* Decade chips */}
+      {availableDecades.length > 1 && (
+        <div className="flex items-center flex-wrap gap-1.5 mb-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mr-1">
+            {isZh ? "年代" : "Decade"}
+          </span>
+          {availableDecades.map((d) => {
+            const isActive = activeDecades.has(d);
+            return (
+              <button
+                key={d}
+                onClick={() => toggleDecade(d)}
+                aria-pressed={isActive}
+                className={`text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded border transition-colors cursor-pointer ${
+                  isActive
+                    ? "bg-accent/20 text-accent border-accent/50"
+                    : "bg-bg-secondary/40 text-text-secondary border-border hover:border-accent/40"
+                }`}
+              >
+                {d}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tag chips */}
       <div className="flex items-center flex-wrap gap-1.5 mb-4">
         <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mr-1">
-          {isZh ? "标签筛选" : "Filter by tag"}
+          {isZh ? "标签" : "Tag"}
         </span>
         {availableTags.map((tag) => {
           const label = GAME_TAG_LABEL[tag];
-          const isActive = active.has(tag);
+          const isActive = activeTags.has(tag);
           return (
             <button
               key={tag}
-              onClick={() => toggle(tag)}
+              onClick={() => toggleTag(tag)}
               aria-pressed={isActive}
               className={`text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded border transition-colors cursor-pointer ${
                 isActive
@@ -68,7 +122,7 @@ export default function GamesFilter({ availableTags, ids }: Props) {
             </button>
           );
         })}
-        {active.size > 0 && (
+        {hasAny && (
           <button
             onClick={reset}
             className="text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 text-text-secondary hover:text-accent cursor-pointer"
@@ -78,19 +132,7 @@ export default function GamesFilter({ availableTags, ids }: Props) {
         )}
       </div>
 
-      {/* Runtime CSS: hides cards whose tag set doesn't intersect the
-          active filters. Uses [data-tags*=...] substring match — cheap and
-          works for our enum where tag names don't substring-overlap. */}
-      {active.size > 0 && (
-        <style>{`
-          [data-game-card] { display: none; }
-          ${Array.from(active).map((t) => `[data-game-card][data-tags*="${t}"] { display: block; }`).join("\n")}
-        `}</style>
-      )}
-      {/* When zero filters are active we leave cards alone (no style emitted). */}
-      {/* The hidden ids list is computed but unused for now — kept for the
-          eventual "no results" empty state. */}
-      {hiddenIds.length === 0 && null}
+      {hasAny && <style>{buildCss()}</style>}
     </>
   );
 }

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Crown, TrendingUp, GitCompareArrows, Users, Trophy, Sparkles, ArrowRight } from "lucide-react";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
@@ -62,6 +64,15 @@ export default async function LegendPage({ params }: PageProps) {
   const team = TEAM_META[player.team];
   const teamColor = team?.primaryColor || "#94A3B8";
   const seasons = player.toYear - player.fromYear + 1;
+
+  // Iconic moments tied to this player — surfaces when our curated dataset
+  // happens to contain seasons / games starring them. Sorted oldest-first.
+  const playerIconicSeasons = ICONIC_SEASONS
+    .filter((s) => s.personId === player.personId)
+    .sort((a, b) => a.seasonYear - b.seasonYear);
+  const playerIconicGames = ICONIC_GAMES
+    .filter((g) => g.personId === player.personId)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   // Rank a stat relative to all retired legends in our dataset — gives the
   // page a small "X-greatest of all time at category Y" narrative.
@@ -235,6 +246,67 @@ export default async function LegendPage({ params }: PageProps) {
             {player.totalBlk !== undefined && (
               <Stat label={isZh ? "总盖帽" : "Blocks"} value={player.totalBlk.toLocaleString("en-US")} />
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Iconic seasons curated for this legend — links into /compare */}
+      {playerIconicSeasons.length > 0 && (
+        <div className="mt-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mb-2 flex items-center gap-1.5">
+            <Sparkles size={11} className="text-accent-amber" />
+            {isZh ? "经典赛季" : "Iconic Seasons"}
+            <span className="text-text-secondary/40">·</span>
+            <span className="text-text-secondary tabular-nums">{playerIconicSeasons.length}</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {playerIconicSeasons.map((s) => (
+              <a
+                key={s.id}
+                href={`/compare?p1=${encodeURIComponent(s.id)}`}
+                className="glass-tile px-3 py-2 text-xs inline-flex items-center gap-2 hover:border-accent-amber/40 transition-colors cursor-pointer group"
+              >
+                <span className="font-mono tabular-nums text-accent">{s.season}</span>
+                <span className="text-accent-amber font-mono tabular-nums">{s.ppg.toFixed(1)} PPG</span>
+                {s.mvp && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-accent-amber/15 text-accent-amber">MVP</span>}
+                {s.finalsMvp && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-accent-amber/15 text-accent-amber">FMVP</span>}
+                {s.champion && <span className="text-[9px] uppercase tracking-[0.15em] px-1 rounded bg-success/15 text-success">🏆</span>}
+                <ArrowRight size={11} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-transform" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Iconic single-night performances for this legend */}
+      {playerIconicGames.length > 0 && (
+        <div className="mt-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mb-2 flex items-center gap-1.5">
+            <Sparkles size={11} className="text-accent" />
+            {isZh ? "经典之夜" : "Iconic Games"}
+            <span className="text-text-secondary/40">·</span>
+            <span className="text-text-secondary tabular-nums">{playerIconicGames.length}</span>
+          </p>
+          <div className="flex flex-col gap-2">
+            {playerIconicGames.map((g) => {
+              const dt = new Date(g.date + "T12:00:00");
+              const dateLabel = dt.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+                year: "numeric", month: "short", day: "numeric",
+              });
+              const title = isZh && g.titleZh ? g.titleZh : g.title;
+              return (
+                <a
+                  key={g.id}
+                  href={g.gameId ? `/game/${g.gameId}` : "/iconic-games"}
+                  className="glass-tile px-3 py-2 text-xs inline-flex items-center gap-3 hover:border-accent/40 transition-colors cursor-pointer group"
+                >
+                  <span className="font-mono tabular-nums text-text-secondary shrink-0 w-24">{dateLabel}</span>
+                  <span className="text-text-primary font-medium flex-1 truncate">{title}</span>
+                  <span className="font-mono tabular-nums text-accent-amber shrink-0">{g.pts} pts</span>
+                  <ArrowRight size={11} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-transform shrink-0" />
+                </a>
+              );
+            })}
           </div>
         </div>
       )}
