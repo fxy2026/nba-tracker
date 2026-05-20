@@ -13,7 +13,10 @@ interface Props {
 export default memo(function PlayerHeadshot({ personId, name, size = 28 }: Props) {
   const [error, setError] = useState(false);
 
-  if (error) {
+  // personId 0/missing = retired legend without an NBA-hosted headshot
+  // (NBA CDN would serve a generic silhouette, not the player's face).
+  // Skip the fetch and render initials directly.
+  if (error || !personId) {
     return (
       <div
         className="rounded-full bg-bg-secondary flex items-center justify-center text-[10px] font-bold text-text-secondary shrink-0"
