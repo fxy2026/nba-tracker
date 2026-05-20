@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Info, ExternalLink, Mail, Trophy } from "lucide-react";
+import { Info, ExternalLink, Mail, Trophy, GitCompareArrows, Flame, Crown, Calendar } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 
@@ -49,6 +49,66 @@ export default async function AboutPage() {
               </>
             )}
           </p>
+        </section>
+
+        <section className="glass-tile p-5">
+          <h2 className="text-base font-semibold text-text-primary mb-3">
+            {isZh ? "招牌功能" : "Highlights"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link href="/compare" className="glass-tile p-3 hover:border-accent/40 cursor-pointer transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <GitCompareArrows size={14} className="text-accent" />
+                <span className="text-sm font-semibold text-text-primary">
+                  {isZh ? "球员对比" : "Player Compare"}
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                {isZh
+                  ? "2-way 雷达图 / 3-way 多人 / 时代背景 / 雷达 / 季后赛切换 / 投票 / 一键社交分享图"
+                  : "2-way radar / 3-way grid / era context / RS-PO toggle / pick voting / one-tap share image"}
+              </p>
+            </Link>
+            <Link href="/iconic-seasons" className="glass-tile p-3 hover:border-accent/40 cursor-pointer transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <Crown size={14} className="text-accent-amber" />
+                <span className="text-sm font-semibold text-text-primary">
+                  {isZh ? "经典赛季" : "Iconic Seasons"}
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                {isZh
+                  ? "34 个手挑巅峰赛季 · 中英叙事 · 季后赛对位 · 风格标签"
+                  : "34 hand-curated peak campaigns · bilingual narratives · playoff splits · style tags"}
+              </p>
+            </Link>
+            <Link href="/iconic-games" className="glass-tile p-3 hover:border-accent/40 cursor-pointer transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <Flame size={14} className="text-accent" />
+                <span className="text-sm font-semibold text-text-primary">
+                  {isZh ? "经典之夜" : "Iconic Games"}
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                {isZh
+                  ? "25 个改写生涯的夜晚 · Wilt 100 / Kobe 81 / MJ 流感 / The Block"
+                  : "25 single-night performances · Wilt 100 / Kobe 81 / MJ flu game / The Block"}
+              </p>
+            </Link>
+            <Link href="/this-day" className="glass-tile p-3 hover:border-accent/40 cursor-pointer transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar size={14} className="text-success" />
+                <span className="text-sm font-semibold text-text-primary">
+                  {isZh ? "历史上的今天" : "On This Day"}
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                {isZh
+                  ? "今日历史 + 同一天的经典之夜（按月日匹配）"
+                  : "Same-date historical games + iconic-game match by month-day"}
+              </p>
+            </Link>
+          </div>
         </section>
 
         <section className="glass-tile p-5">

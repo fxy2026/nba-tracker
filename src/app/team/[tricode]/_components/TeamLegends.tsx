@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Crown, Flame, ArrowRight } from "lucide-react";
+import { Crown, Flame, ArrowRight, Trophy } from "lucide-react";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
+import { getFranchiseFive } from "@/lib/franchiseAllTimeFive";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 interface Props {
@@ -33,7 +34,9 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 6);
 
-  if (legends.length === 0 && seasons.length === 0 && games.length === 0) return null;
+  const allTimeFive = getFranchiseFive(tricode);
+
+  if (legends.length === 0 && seasons.length === 0 && games.length === 0 && !allTimeFive) return null;
 
   return (
     <div className="mt-6">
@@ -43,6 +46,62 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
         </h3>
         <span className="h-px flex-1 bg-border" />
       </div>
+
+      {/* All-Time Starting 5 — hand-curated for the most storied 10 teams.
+          Each member can deep-link into /legends/[id] (retired w/ headshot)
+          or just render as a text tile (defunct era, no CDN photo). */}
+      {allTimeFive && (
+        <div className="mb-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary mb-2 flex items-center gap-1.5">
+            <Trophy size={11} className="text-accent-amber" />
+            {isZh ? "历史最佳 5 人" : "All-Time Starting 5"}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {allTimeFive.five.map((p) => {
+              const hasHeadshot = p.personId > 0;
+              const bio = isZh && p.bioZh ? p.bioZh : p.bio;
+              const inner = (
+                <div className="flex flex-col items-center text-center h-full">
+                  {hasHeadshot ? (
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-accent-amber/40">
+                      <Image
+                        src={playerHeadshotUrl(p.personId)}
+                        alt={p.name}
+                        width={56}
+                        height={56}
+                        unoptimized
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-bg-secondary border border-border flex items-center justify-center text-[10px] font-bold text-text-secondary">
+                      {p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                    </div>
+                  )}
+                  <p className="text-[11px] font-semibold text-text-primary mt-1.5 truncate w-full">{p.name}</p>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-accent-amber">{p.position}</p>
+                  <p className="text-[9px] font-mono tabular-nums text-text-secondary/60">{p.era}</p>
+                  <p className="text-[10px] text-text-secondary leading-tight mt-1.5 line-clamp-2">{bio}</p>
+                </div>
+              );
+              return hasHeadshot ? (
+                <Link
+                  key={p.name}
+                  href={`/legends/${p.personId}`}
+                  className="glass-tile p-2.5 cursor-pointer hover:border-accent-amber/40 transition-colors"
+                  title={bio}
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div key={p.name} className="glass-tile p-2.5" title={bio}>
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {legends.length > 0 && (
         <div className="mb-5">
