@@ -63,8 +63,28 @@ export default function StandingsMini() {
     return () => controller.abort();
   }, []);
 
+  // Structural skeleton — must mirror the loaded layout's height (~170px)
+  // or the row jumps when data lands. CLS budget on this tile alone was 0.2+.
   if (loading) {
-    return <div className="glass-tile p-4 skeleton-shimmer h-28" />;
+    return (
+      <div className="glass-tile p-4 h-full">
+        <div className="grid grid-cols-2 gap-4">
+          {[0, 1].map((col) => (
+            <div key={col}>
+              <div className="skeleton-shimmer h-3 w-12 rounded mb-1.5" />
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-1.5 py-0.5">
+                  <div className="skeleton-shimmer w-3 h-3 rounded" />
+                  <div className="skeleton-shimmer w-8 h-3 rounded" />
+                  <div className="skeleton-shimmer h-3 ml-auto w-10 rounded" />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="skeleton-shimmer h-2.5 w-24 rounded mx-auto mt-2.5" />
+      </div>
+    );
   }
 
   if (east.length === 0 && west.length === 0) return null;
