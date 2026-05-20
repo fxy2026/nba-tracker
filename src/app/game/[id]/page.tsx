@@ -48,6 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${away.teamTricode} vs ${home.teamTricode}${score}`,
     description: desc,
+    alternates: { canonical: `/game/${id}` },
     openGraph: {
       title: `${away.teamTricode}${score ? " " + away.score : ""} vs ${home.teamTricode}${score ? " " + home.score : ""} | NBA Tracker`,
       description: `${away.teamCity} ${away.teamName} vs ${home.teamCity} ${home.teamName}`,

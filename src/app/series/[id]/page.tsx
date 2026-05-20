@@ -92,6 +92,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: `${data.team1.tricode} vs ${data.team2.tricode} — ${roundName(id, false).full}`,
     description: desc,
+    alternates: { canonical: `/series/${id}` },
   };
 }
 

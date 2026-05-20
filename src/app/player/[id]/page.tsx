@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${name} — ${player.teamCity} ${player.teamName}`,
     description: desc,
+    alternates: { canonical: `/player/${id}` },
     openGraph: {
       title: name,
       description: `${player.pts} PPG · ${player.reb} RPG · ${player.ast} APG`,

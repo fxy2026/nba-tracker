@@ -111,16 +111,35 @@ export default async function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "WebApplication",
-                name: "NBA Tracker",
-                description: t.meta.siteDescription,
-                applicationCategory: "SportsApplication",
-                operatingSystem: "Any",
-                offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-                author: { "@type": "Person", name: "FXY", url: "https://www.xpy.me" },
-              }),
+              __html: JSON.stringify([
+                {
+                  "@context": "https://schema.org",
+                  "@type": "WebApplication",
+                  name: "NBA Tracker",
+                  description: t.meta.siteDescription,
+                  applicationCategory: "SportsApplication",
+                  operatingSystem: "Any",
+                  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+                  author: { "@type": "Person", name: "FXY", url: "https://www.xpy.me" },
+                },
+                // WebSite + SearchAction — eligible for the Google "sitelinks
+                // search box" treatment in SERP, letting users search the
+                // site directly from search results.
+                {
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  name: "NBA Tracker",
+                  url: "https://nba.xpy.me",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: "https://nba.xpy.me/search?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ]),
             }}
           />
           <Navbar />

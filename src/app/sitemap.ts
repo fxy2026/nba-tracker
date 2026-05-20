@@ -94,10 +94,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (isPreseason(g.gameId)) continue;
         // Skip "if necessary" placeholder games (ghost games)
         if (g.ifNecessary === true && g.gameStatus === 1) continue;
+        // Finished games freeze on their game date — feeding Google the real
+        // date stops it treating every box score as "updated today" and lets
+        // search results show accurate recency.
+        const lastModified = g.gameStatus === 3 && g.gameDateTimeUTC
+          ? new Date(g.gameDateTimeUTC)
+          : undefined;
         gamePages.push({
           url: `${BASE}/game/${g.gameId}`,
           changeFrequency: g.gameStatus === 3 ? "monthly" : "daily",
           priority: g.gameStatus === 3 ? 0.5 : 0.6,
+          lastModified,
         });
       }
     }

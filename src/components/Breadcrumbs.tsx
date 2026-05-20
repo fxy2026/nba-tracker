@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
+const SITE_URL = "https://nba.xpy.me";
+
 export interface Crumb {
   label: string;
   href?: string;
@@ -8,13 +10,34 @@ export interface Crumb {
 
 // Lightweight breadcrumb trail. Pass items in order from root to current
 // page. The last item is rendered without a link and as the current page.
+// Also emits BreadcrumbList JSON-LD so Google can show the trail in SERP
+// instead of the raw URL.
 export default function Breadcrumbs({ items }: { items: Crumb[] }) {
   if (items.length === 0) return null;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      ...items.map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 2,
+        name: c.label,
+        ...(c.href ? { item: `${SITE_URL}${c.href}` } : {}),
+      })),
+    ],
+  };
+
   return (
     <nav
       className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] text-text-secondary mb-4 overflow-x-auto"
       aria-label="Breadcrumb"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link
         href="/"
         className="hover:text-accent transition-colors cursor-pointer flex items-center gap-1 shrink-0"

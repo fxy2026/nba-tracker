@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tricode: 
   return {
     title: `${team.city} ${team.name}`,
     description: locale === "zh" ? t.teamPage.teamDesc : t.teamPage.teamDescEn,
+    alternates: { canonical: `/team/${team.tricode}` },
   };
 }
 
