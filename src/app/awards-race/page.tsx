@@ -10,6 +10,7 @@ import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 
 // Derive season start year from CURRENT_SEASON e.g. "2025-26" → 2025
 const CURRENT_SEASON_START_YEAR = parseInt(CURRENT_SEASON.split("-")[0], 10);
@@ -335,6 +336,9 @@ export default function AwardsRacePage() {
         </div>
       )}
 
+      {/* Past MVP wall — sourced from iconicSeasons.mvp = true */}
+      <PastMvpWall isZh={isZh} />
+
       {/* Formula footer */}
       <div className="mt-8 glass-tile p-4">
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法论" : "Methodology"}</p>
@@ -353,7 +357,7 @@ export default function AwardsRacePage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
-          { href: "/iconic-seasons", label: isZh ? "历史 MVP 赛季" : "Historic MVP Seasons", description: isZh ? "34 个经典赛季 — 含每位 MVP 的当年数据线" : "34 hand-curated peak campaigns — MVP-winning seasons included", icon: Crown },
+          { href: "/iconic-seasons", label: isZh ? "历史 MVP 赛季" : "Historic MVP Seasons", description: isZh ? "经典赛季 — 含每位 MVP 的当年数据线" : "Hand-curated peak campaigns — MVP seasons included", icon: Crown },
           { href: "/milestones", label: isZh ? "生涯轨迹" : "Milestones", description: isZh ? "生涯里程碑投影" : "Career milestone projections", icon: TrendingUp },
           { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
           { href: "/stats", label: isZh ? "联盟数据" : "League Stats", description: isZh ? "完整联盟统计" : "Full league statistics", icon: Award },
@@ -361,6 +365,81 @@ export default function AwardsRacePage() {
           { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", description: isZh ? "本届新秀表现" : "Top rookies this season", icon: Activity },
         ]}
       />
+    </div>
+  );
+}
+
+// Historical MVP wall — pulls from the iconic-seasons dataset and renders
+// the most recent MVP campaigns as a horizontal scrollable rail. Each card
+// deep-links into /compare so you can stack the current race leader against
+// past winners.
+function PastMvpWall({ isZh }: { isZh: boolean }) {
+  const mvps = useMemo(() => {
+    return [...ICONIC_SEASONS]
+      .filter((s) => s.mvp)
+      .sort((a, b) => b.seasonYear - a.seasonYear)
+      .slice(0, 16);
+  }, []);
+
+  if (mvps.length === 0) return null;
+
+  return (
+    <div className="mt-8">
+      <div className="flex items-baseline justify-between mb-3">
+        <div>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">
+            / {isZh ? "MVP 名人堂" : "Past MVP wall"}
+          </p>
+          <h3 className="text-lg font-semibold tracking-tight text-text-primary">
+            {isZh ? "对照历史最高水准" : "Benchmark against history"}
+          </h3>
+        </div>
+        <Link
+          href="/iconic-seasons"
+          className="text-[10px] font-mono uppercase tracking-[0.15em] text-accent hover:underline cursor-pointer"
+        >
+          {isZh ? "查看全部 →" : "See all →"}
+        </Link>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
+        {mvps.map((s) => (
+          <Link
+            key={s.id}
+            href={`/compare?p1=${s.id}`}
+            className="glass-tile shrink-0 w-[180px] p-3 snap-start group cursor-pointer hover:ring-1 hover:ring-accent-amber/50 transition-all"
+          >
+            <div className="relative">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary ring-1 ring-border mx-auto">
+                <Image
+                  src={playerHeadshotUrl(s.personId)}
+                  alt={s.name}
+                  width={56}
+                  height={56}
+                  unoptimized
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+              <span className="absolute -top-1 -right-1 text-[8px] font-mono font-bold uppercase tracking-[0.15em] bg-[#FFD700]/20 text-[#FFD700] ring-1 ring-[#FFD700]/40 px-1.5 py-0.5 rounded">
+                MVP
+              </span>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-text-primary text-center truncate group-hover:text-accent transition-colors">
+              {s.name}
+            </p>
+            <p className="text-[10px] font-mono text-text-secondary text-center">{s.season}</p>
+            <div className="flex justify-center gap-2 mt-2 text-[10px] font-mono tabular-nums text-text-secondary">
+              <span><span className="font-bold text-accent-amber">{s.ppg.toFixed(1)}</span> P</span>
+              <span><span className="font-bold text-text-primary">{s.rpg.toFixed(1)}</span> R</span>
+              <span><span className="font-bold text-text-primary">{s.apg.toFixed(1)}</span> A</span>
+            </div>
+            {s.champion && (
+              <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-center text-accent-amber/80 mt-1">
+                🏆 {isZh ? "冠军" : "Champion"}
+              </p>
+            )}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
