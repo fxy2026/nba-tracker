@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { GitCompareArrows, ArrowLeftRight, Users, Award, TrendingUp, Crown, Activity } from "lucide-react";
+import { GitCompareArrows, ArrowLeftRight, Users, Award, TrendingUp, Crown, Activity, Share2, ThumbsUp } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { useToast } from "@/components/ToastProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -92,6 +93,49 @@ function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
     }
   }
   return axes;
+}
+
+// FG% / 3P% / FT% row triplet. Each line shows the two raw percentages
+// flanking a small bar where the winner side is amber.
+function ShootingSplits({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
+  const rows: { label: string; v1?: number; v2?: number }[] = [
+    { label: "FG%", v1: p1.fgPct, v2: p2.fgPct },
+    { label: "3P%", v1: p1.tpPct, v2: p2.tpPct },
+    { label: "FT%", v1: p1.ftPct, v2: p2.ftPct },
+  ].filter((r) => r.v1 !== undefined || r.v2 !== undefined);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="pt-4 mt-2 border-t border-border space-y-2.5">
+      <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">
+        / {isZh ? "投篮分布" : "Shooting splits"}
+      </p>
+      {rows.map((r) => {
+        const a = r.v1 ?? 0;
+        const b = r.v2 ?? 0;
+        const max = Math.max(a, b, 0.001);
+        const fmt = (v: number | undefined) => v === undefined ? "—" : `${(v * 100).toFixed(1)}%`;
+        return (
+          <div key={r.label}>
+            <div className="flex items-center justify-between mb-1 text-xs font-mono tabular-nums">
+              <span className={a >= b && r.v1 !== undefined ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v1)}</span>
+              <span className="text-text-secondary uppercase tracking-[0.15em]">{r.label}</span>
+              <span className={b >= a && r.v2 !== undefined ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v2)}</span>
+            </div>
+            <div className="flex gap-1 h-1.5">
+              <div className="flex-1 flex justify-end">
+                <div className={`h-full rounded-l-full ${a >= b ? "bg-accent-amber/70" : "bg-accent/30"}`} style={{ width: `${(a / max) * 100}%` }} />
+              </div>
+              <div className="flex-1">
+                <div className={`h-full rounded-r-full ${b >= a ? "bg-accent-amber/70" : "bg-success/30"}`} style={{ width: `${(b / max) * 100}%` }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // Vertical column rendering 1-3 style chips. Empty when the entry has none.
@@ -227,6 +271,10 @@ export default function ComparePage() {
 
   const searchParams = useSearchParams();
   const hydratedRef = useRef(false);
+  const { toast } = useToast();
+  // Local "who would win" pick — keyed by the comparison pair so swapping
+  // players resets the badge. localStorage only; no backend tally.
+  const [pick, setPick] = useState<"p1" | "p2" | null>(null);
 
   // One-time URL hydration on mount: ?p1=&p2= rehydrates the player slots
   // from /api/search?id=. Lets users share/bookmark a comparison.
@@ -263,6 +311,55 @@ export default function ComparePage() {
       window.history.replaceState(null, "", url);
     }
   }, [player1, player2, searchParams]);
+
+  // Restore the user's previous pick for this exact pair, if any. Setting
+  // back to null is fine here — React 19's "setState in effect" rule is a
+  // perf hint; the alternative (deriving from render) would need synchronous
+  // localStorage access during SSR which crashes.
+  useEffect(() => {
+    if (!player1 || !player2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPick(null);
+      return;
+    }
+    try {
+      const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
+      const stored = localStorage.getItem(key) as "p1" | "p2" | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPick(stored);
+    } catch { /* localStorage disabled */ }
+  }, [player1, player2]);
+
+  const recordPick = (side: "p1" | "p2") => {
+    if (!player1 || !player2) return;
+    try {
+      const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
+      localStorage.setItem(key, side);
+    } catch { /* ignore */ }
+    setPick(side);
+    const winner = side === "p1" ? player1 : player2;
+    toast(isZh ? `已记录: ${winner.firstName} ${winner.lastName}` : `Saved pick: ${winner.firstName} ${winner.lastName}`, "success");
+  };
+
+  const sharePair = async () => {
+    if (!player1 || !player2) return;
+    const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const text = `${player1.firstName} ${player1.lastName} ${isZh ? "对比" : "vs"} ${player2.firstName} ${player2.lastName}`;
+    type NavWithShare = Navigator & { share?: (data: { title: string; text: string; url: string }) => Promise<void> };
+    const nav = typeof navigator !== "undefined" ? (navigator as NavWithShare) : null;
+    if (nav?.share) {
+      try {
+        await nav.share({ title: "NBA Tracker — Player Compare", text, url });
+        return;
+      } catch { /* user cancelled — fall through to clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(isZh ? "链接已复制" : "Link copied", "success");
+    } catch {
+      toast(isZh ? "无法访问剪贴板" : "Clipboard unavailable", "warning");
+    }
+  };
 
   const search = async (q: string, setter: (r: PlayerData[]) => void) => {
     if (q.length < 2) { setter([]); return; }
@@ -420,6 +517,17 @@ export default function ComparePage() {
       {/* Comparison display */}
       {player1 && player2 && (
         <div className="glass-tile overflow-hidden">
+          {/* Toolbar — Share + (eventual) more actions */}
+          <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-bg-secondary/20">
+            <button
+              onClick={sharePair}
+              className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-md text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors cursor-pointer"
+              aria-label={isZh ? "分享对比" : "Share comparison"}
+            >
+              <Share2 size={13} />
+              {isZh ? "分享" : "Share"}
+            </button>
+          </div>
           {/* Headers */}
           <div className="grid grid-cols-[1fr_auto_1fr] p-6 border-b border-border">
             <div className="flex flex-col items-center gap-3">
@@ -601,6 +709,48 @@ export default function ComparePage() {
             </div>
           )}
 
+          {/* "Who would win" — local pick stored per pair in localStorage.
+              Two buttons, big amber highlight when picked. No backend tally. */}
+          <div className="p-6 border-b border-border">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
+                / {isZh ? "你站谁" : "Your Pick"}
+              </h3>
+              {pick && (
+                <span className="text-[10px] text-text-secondary">
+                  {isZh ? "已记录于本设备" : "Saved on this device"}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <button
+                onClick={() => recordPick("p1")}
+                className={`flex items-center justify-center gap-2 py-3 rounded-lg border transition-colors cursor-pointer ${
+                  pick === "p1"
+                    ? "bg-accent-amber/15 text-accent-amber border-accent-amber/40"
+                    : "bg-bg-secondary/40 text-text-primary border-border hover:border-accent/50"
+                }`}
+              >
+                <ThumbsUp size={14} />
+                <span className="text-sm font-medium truncate">{player1.firstName} {player1.lastName}</span>
+              </button>
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">
+                {isZh ? "或" : "or"}
+              </span>
+              <button
+                onClick={() => recordPick("p2")}
+                className={`flex items-center justify-center gap-2 py-3 rounded-lg border transition-colors cursor-pointer ${
+                  pick === "p2"
+                    ? "bg-accent-amber/15 text-accent-amber border-accent-amber/40"
+                    : "bg-bg-secondary/40 text-text-primary border-border hover:border-accent/50"
+                }`}
+              >
+                <ThumbsUp size={14} />
+                <span className="text-sm font-medium truncate">{player2.firstName} {player2.lastName}</span>
+              </button>
+            </div>
+          </div>
+
           {/* Position comparison + separator */}
           <div className="flex items-center gap-3 px-6 py-2 bg-bg-secondary/30">
             <div className="flex-1 h-px bg-border" />
@@ -641,6 +791,12 @@ export default function ComparePage() {
                 </div>
               );
             })}
+            {/* Shooting splits — rendered only when both sides carry the
+                percentage. Active-player rows from BDL don't have these, so
+                this section is iconic-vs-iconic / iconic-vs-legend territory. */}
+            {(player1.fgPct !== undefined && player2.fgPct !== undefined) && (
+              <ShootingSplits p1={player1} p2={player2} isZh={isZh} />
+            )}
           </div>
 
           {/* Winner Summary */}
