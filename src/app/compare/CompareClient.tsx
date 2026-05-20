@@ -95,6 +95,144 @@ function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
   return axes;
 }
 
+// 3-way compact comparison block — three player cards stacked horizontally,
+// each with headshot + name + key stats. Highlight columns where a player
+// has the highest value across all three.
+type CompareTranslations = {
+  comparePage: { samePosition: string; statsComparison: string };
+  common: { vs: string };
+};
+function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerData; p3: PlayerData; isZh: boolean; t: CompareTranslations }) {
+  void t;
+  const playersArr = [p1, p2, p3];
+  // For each metric, mark the index of the leader (or -1 on tie at top).
+  const leaderIdx = (vals: number[]) => {
+    const max = Math.max(...vals);
+    const tops = vals.filter((v) => v === max);
+    return tops.length > 1 ? -1 : vals.indexOf(max);
+  };
+  const statRows: { label: string; values: number[]; fmt?: (v: number) => string }[] = [
+    { label: "PPG", values: [p1.pts, p2.pts, p3.pts], fmt: (v) => v.toFixed(1) },
+    { label: "RPG", values: [p1.reb, p2.reb, p3.reb], fmt: (v) => v.toFixed(1) },
+    { label: "APG", values: [p1.ast, p2.ast, p3.ast], fmt: (v) => v.toFixed(1) },
+  ];
+  // Defensive splits if any side has them
+  if (p1.spg !== undefined || p2.spg !== undefined || p3.spg !== undefined) {
+    statRows.push({ label: "SPG", values: [p1.spg ?? 0, p2.spg ?? 0, p3.spg ?? 0], fmt: (v) => v.toFixed(1) });
+  }
+  if (p1.bpg !== undefined || p2.bpg !== undefined || p3.bpg !== undefined) {
+    statRows.push({ label: "BPG", values: [p1.bpg ?? 0, p2.bpg ?? 0, p3.bpg ?? 0], fmt: (v) => v.toFixed(1) });
+  }
+  if (p1.fgPct !== undefined || p2.fgPct !== undefined || p3.fgPct !== undefined) {
+    statRows.push({ label: "FG%", values: [p1.fgPct ?? 0, p2.fgPct ?? 0, p3.fgPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  }
+  if (p1.tpPct !== undefined || p2.tpPct !== undefined || p3.tpPct !== undefined) {
+    statRows.push({ label: "3P%", values: [p1.tpPct ?? 0, p2.tpPct ?? 0, p3.tpPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  }
+  if (p1.ftPct !== undefined || p2.ftPct !== undefined || p3.ftPct !== undefined) {
+    statRows.push({ label: "FT%", values: [p1.ftPct ?? 0, p2.ftPct ?? 0, p3.ftPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  }
+
+  // Tally categorical wins (highlight whoever leads the most rows)
+  const wins = [0, 0, 0];
+  for (const row of statRows) {
+    const idx = leaderIdx(row.values);
+    if (idx >= 0) wins[idx]++;
+  }
+  const overallLeader = leaderIdx(wins);
+
+  const accRows: { label: string; key: keyof PlayerAccolades }[] = [
+    { label: isZh ? "总冠军" : "Rings", key: "championships" },
+    { label: "MVP", key: "mvps" },
+    { label: "FMVP", key: "finalsMvps" },
+    { label: isZh ? "全明星" : "All-Star", key: "allStars" },
+    { label: "All-NBA", key: "allNba" },
+  ];
+
+  return (
+    <div className="glass-tile overflow-hidden">
+      <div className="grid grid-cols-3 gap-px bg-border">
+        {playersArr.map((p, i) => (
+          <div key={i} className={`bg-bg-card p-4 flex flex-col items-center text-center ${overallLeader === i ? "ring-1 ring-accent-amber/40" : ""}`}>
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-secondary mb-2">
+              <Image src={playerHeadshotUrl(p.personId)} alt={`${p.firstName} ${p.lastName}`} width={64} height={64} unoptimized className="w-full h-full object-cover object-top" />
+            </div>
+            <p className="font-bold text-text-primary text-sm truncate w-full">{p.firstName} {p.lastName}</p>
+            {p.isIconicSeason ? (
+              <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded mt-1 bg-accent/15 text-accent">{p.season}</span>
+            ) : p.isLegend ? (
+              <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full mt-1 bg-accent-amber/15 text-accent-amber">{isZh ? "传奇" : "Legend"}</span>
+            ) : null}
+            <p className="text-[10px] text-text-secondary mt-1">{p.teamAbbr}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Stat rows */}
+      <div className="divide-y divide-border/40">
+        {statRows.map((row) => {
+          const idx = leaderIdx(row.values);
+          return (
+            <div key={row.label} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 px-4 py-2.5">
+              <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary w-12">{row.label}</span>
+              {row.values.map((v, i) => {
+                const fmt = row.fmt ?? ((x: number) => String(x));
+                const isLeader = idx === i;
+                return (
+                  <span key={i} className={`text-center text-sm font-mono tabular-nums ${isLeader ? "text-accent-amber font-bold" : "text-text-primary"}`}>
+                    {fmt(v)}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Accolades row */}
+      {(p1.accolades || p2.accolades || p3.accolades) && (
+        <div className="border-t border-border bg-bg-secondary/20">
+          <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 px-4 pt-3">
+            / {isZh ? "生涯成就" : "Career Accolades"}
+          </p>
+          <div className="divide-y divide-border/40 mt-1">
+            {accRows.map((acc) => {
+              const vals = [p1.accolades?.[acc.key] ?? 0, p2.accolades?.[acc.key] ?? 0, p3.accolades?.[acc.key] ?? 0];
+              const idx = leaderIdx(vals);
+              return (
+                <div key={acc.key} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 px-4 py-2">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary w-16">{acc.label}</span>
+                  {vals.map((v, i) => (
+                    <span key={i} className={`text-center text-sm font-light font-mono tabular-nums ${idx === i ? "text-accent-amber font-bold" : "text-text-primary"}`}>
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Overall verdict */}
+      <div className="px-4 py-3 bg-bg-secondary/40 border-t border-border text-center">
+        {overallLeader >= 0 ? (
+          <p className="text-sm">
+            <span className="text-accent-amber font-bold">
+              {playersArr[overallLeader].firstName} {playersArr[overallLeader].lastName}
+            </span>
+            <span className="text-text-secondary"> {isZh ? `统治 ${wins[overallLeader]}/${statRows.length} 项数据` : `leads ${wins[overallLeader]}/${statRows.length} categories`}</span>
+          </p>
+        ) : (
+          <p className="text-sm text-text-secondary">
+            {isZh ? "数据各有千秋——平分秋色" : "Each holds their own"}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // FG% / 3P% / FT% row triplet. Each line shows the two raw percentages
 // flanking a small bar where the winner side is amber.
 function ShootingSplits({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
@@ -265,6 +403,12 @@ export default function ComparePage() {
   const [results2, setResults2] = useState<PlayerData[]>([]);
   const [player1, setPlayer1] = useState<PlayerData | null>(null);
   const [player2, setPlayer2] = useState<PlayerData | null>(null);
+  // Optional 3rd slot — when set, the page collapses the rich radar/era/
+  // story sections (designed for pairwise debate) and switches to a
+  // compact 3-column tile grid for headline numbers + accolades + pick.
+  const [player3, setPlayer3] = useState<PlayerData | null>(null);
+  const [query3, setQuery3] = useState("");
+  const [results3, setResults3] = useState<PlayerData[]>([]);
   // Toggle the radar chart between regular-season per-game and playoff
   // per-game (only when both selected players carry playoff stats).
   const [radarMode, setRadarMode] = useState<"RS" | "PO">("RS");
@@ -283,6 +427,7 @@ export default function ComparePage() {
     hydratedRef.current = true;
     const p1Id = searchParams.get("p1");
     const p2Id = searchParams.get("p2");
+    const p3Id = searchParams.get("p3");
     const resolve = async (id: string, setter: (p: PlayerData) => void) => {
       try {
         const res = await fetch(`/api/search?id=${encodeURIComponent(id)}`);
@@ -293,6 +438,7 @@ export default function ComparePage() {
     };
     if (p1Id) resolve(p1Id, setPlayer1);
     if (p2Id) resolve(p2Id, setPlayer2);
+    if (p3Id) resolve(p3Id, setPlayer3);
   }, [searchParams]);
 
   // Reflect selection state into the URL with replaceState (no router push,
@@ -304,13 +450,14 @@ export default function ComparePage() {
     const idFor = (p: PlayerData) => p.iconicId ?? String(p.personId);
     if (player1) params.set("p1", idFor(player1));
     if (player2) params.set("p2", idFor(player2));
+    if (player3) params.set("p3", idFor(player3));
     const next = params.toString();
     const current = searchParams.toString();
     if (next !== current) {
       const url = next ? `?${next}` : window.location.pathname;
       window.history.replaceState(null, "", url);
     }
-  }, [player1, player2, searchParams]);
+  }, [player1, player2, player3, searchParams]);
 
   // Restore the user's previous pick for this exact pair, if any. Setting
   // back to null is fine here — React 19's "setState in effect" rule is a
@@ -381,6 +528,11 @@ export default function ComparePage() {
     const t = setTimeout(() => search(query2, setResults2), 300);
     return () => clearTimeout(t);
   }, [query2]);
+
+  useEffect(() => {
+    const t = setTimeout(() => search(query3, setResults3), 300);
+    return () => clearTimeout(t);
+  }, [query3]);
 
   const headshotUrl = (id: number) => playerHeadshotUrl(id);
 
@@ -488,6 +640,48 @@ export default function ComparePage() {
         </div>
       </div>
 
+      {/* Optional 3rd slot — only surfaced once the user has at least one
+          of the first two picked. Adding a 3rd switches the comparison
+          view into a compact 3-column tile layout. */}
+      {(player1 || player2) && (
+        <div className="mb-6 -mt-2">
+          <div className="relative max-w-md">
+            <input
+              type="text"
+              value={player3 ? `${player3.firstName} ${player3.lastName}` : query3}
+              onChange={(e) => { setQuery3(e.target.value); setPlayer3(null); }}
+              placeholder={isZh ? "（可选）加入第 3 个球员对比" : "(optional) add a 3rd player"}
+              className="w-full glass-tile px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary/70 focus:outline-none focus:border-accent"
+            />
+            {player3 && (
+              <button
+                onClick={() => { setPlayer3(null); setQuery3(""); setResults3([]); }}
+                aria-label={isZh ? "移除第三人" : "Remove third player"}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent px-2 py-1 cursor-pointer"
+              >
+                {isZh ? "移除" : "Remove"}
+              </button>
+            )}
+            {results3.length > 0 && !player3 && (
+              <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+                {results3.map((p) => (
+                  <button key={p.personId} onClick={() => { setPlayer3(p); setResults3([]); setQuery3(""); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
+                    <span className="font-medium">{p.firstName} {p.lastName}</span>
+                    {p.isIconicSeason ? (
+                      <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">{p.season}</span>
+                    ) : p.isLegend ? (
+                      <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">{isZh ? "传奇" : "Legend"}</span>
+                    ) : null}
+                    <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Popular Matchups */}
       <div className="mb-6">
         <p className="text-xs text-text-secondary font-medium mb-2">{t.comparePage.popularMatchups}</p>
@@ -514,8 +708,17 @@ export default function ComparePage() {
         </div>
       </div>
 
+      {/* Three-way compact view — replaces the rich pairwise comparison
+          when a 3rd player is selected. The pairwise UI was designed for
+          GOAT-style head-to-head debate; adding a third axis muddies the
+          radar/era/story sections, so those collapse here in favor of a
+          dense headline-stats + accolades + pick grid. */}
+      {player1 && player2 && player3 && (
+        <ThreeWayCompare p1={player1} p2={player2} p3={player3} isZh={isZh} t={t} />
+      )}
+
       {/* Comparison display */}
-      {player1 && player2 && (
+      {player1 && player2 && !player3 && (
         <div className="glass-tile overflow-hidden">
           {/* Toolbar — Share + (eventual) more actions */}
           <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-bg-secondary/20">
