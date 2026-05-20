@@ -101,6 +101,32 @@ export default async function PlayerPage({ params }: PageProps) {
   const rebCtx = statContext("reb", rpg);
   const astCtx = statContext("ast", apg);
 
+  // Similar players — 4 closest active players by normalized stat distance.
+  // Each axis (PPG/RPG/APG) divided by league std so categories scale evenly
+  // (a 5-point PPG gap means less than a 5-rebound RPG gap; this fixes that).
+  const similarPlayers = (() => {
+    if (ppg <= 0) return [];
+    const peers = allPlayers.filter((p) => p.personId !== personId && p.pts > 0);
+    if (peers.length === 0) return [];
+    const stddev = (vals: number[]) => {
+      const m = vals.reduce((s, v) => s + v, 0) / vals.length;
+      const variance = vals.reduce((s, v) => s + (v - m) ** 2, 0) / vals.length;
+      return Math.sqrt(variance) || 1;
+    };
+    const pStd = stddev(peers.map((p) => p.pts));
+    const rStd = stddev(peers.map((p) => p.reb));
+    const aStd = stddev(peers.map((p) => p.ast));
+    const scored = peers.map((p) => ({
+      player: p,
+      distance:
+        ((p.pts - ppg) / pStd) ** 2 +
+        ((p.reb - rpg) / rStd) ** 2 +
+        ((p.ast - apg) / aStd) ** 2,
+    }));
+    scored.sort((a, b) => a.distance - b.distance);
+    return scored.slice(0, 5).map((s) => s.player);
+  })();
+
   // JSON-LD structured data — Person schema (athlete) for rich snippets
   const structuredData = {
     "@context": "https://schema.org",
@@ -606,6 +632,52 @@ export default async function PlayerPage({ params }: PageProps) {
           </Link>
         )}
       </section>
+
+      {/* Similar players — derived from the league index by normalized
+          PPG/RPG/APG distance. Surfaces 5 statistical comparisons one tap
+          away into /compare?p1=this&p2=that. */}
+      {similarPlayers.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center gap-3 mb-3">
+            <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">
+              / {isZh ? "数据相近的球员" : "Statistical Peers"}
+            </h2>
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[10px] text-text-secondary">
+              {isZh ? "按 PPG/RPG/APG 标准化距离" : "By normalized PPG/RPG/APG distance"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {similarPlayers.map((p) => (
+              <Link
+                key={p.personId}
+                href={`/compare?p1=${player.personId}&p2=${p.personId}`}
+                className="glass-tile p-3 flex flex-col items-center text-center cursor-pointer hover:border-accent/40 transition-colors group"
+              >
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-border">
+                  <Image
+                    src={playerHeadshotUrl(p.personId)}
+                    alt={`${p.firstName} ${p.lastName}`}
+                    width={56}
+                    height={56}
+                    unoptimized
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <p className="text-xs font-medium text-text-primary mt-2 truncate w-full">
+                  {p.firstName} {p.lastName}
+                </p>
+                <p className="text-[10px] font-mono tabular-nums text-text-secondary">
+                  {p.pts.toFixed(1)} / {p.reb.toFixed(1)} / {p.ast.toFixed(1)}
+                </p>
+                <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-1">
+                  {p.teamAbbr}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
