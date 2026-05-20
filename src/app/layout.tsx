@@ -50,7 +50,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: t.meta.ogTitle,
       description: t.meta.ogDescription,
       siteName: "NBA Tracker",
+      url: "https://nba.xpy.me",
       locale: locale === "zh" ? "zh_CN" : "en_US",
+      alternateLocale: locale === "zh" ? ["en_US"] : ["zh_CN"],
       type: "website",
     },
     twitter: {
@@ -98,6 +100,11 @@ export default async function RootLayout({
       <head>
         <ThemeScript />
         <SpeculationRules />
+        {/* Warm up the connection to cdn.nba.com before the first <img>
+            request — team logos and player headshots ship from here on
+            every page, so preconnect shaves ~100-300ms TTFB on first paint. */}
+        <link rel="preconnect" href="https://cdn.nba.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn.nba.com" />
       </head>
       <body className="min-h-full flex flex-col pb-14 sm:pb-0">
         {/* Scroll-driven progress indicator — pure CSS, no JS listener */}
