@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
+import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, type LucideIcon } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -101,13 +102,13 @@ export default async function PlayerPage({ params }: PageProps) {
   const rebCtx = statContext("reb", rpg);
   const astCtx = statContext("ast", apg);
 
-  // Similar players — 4 closest active players by normalized stat distance.
-  // Each axis (PPG/RPG/APG) divided by league std so categories scale evenly
-  // (a 5-point PPG gap means less than a 5-rebound RPG gap; this fixes that).
-  const similarPlayers = (() => {
-    if (ppg <= 0) return [];
+  // Similar players — 3 closest active peers + 2 closest historical legends
+  // by normalized PPG/RPG/APG distance. Cross-era reach lets "who plays like
+  // this active player?" land on a retired great when the shape matches.
+  const { activePeers: similarPlayers, legendPeers: similarLegends } = (() => {
+    if (ppg <= 0) return { activePeers: [], legendPeers: [] };
     const peers = allPlayers.filter((p) => p.personId !== personId && p.pts > 0);
-    if (peers.length === 0) return [];
+    if (peers.length === 0) return { activePeers: [], legendPeers: [] };
     const stddev = (vals: number[]) => {
       const m = vals.reduce((s, v) => s + v, 0) / vals.length;
       const variance = vals.reduce((s, v) => s + (v - m) ** 2, 0) / vals.length;
@@ -116,15 +117,29 @@ export default async function PlayerPage({ params }: PageProps) {
     const pStd = stddev(peers.map((p) => p.pts));
     const rStd = stddev(peers.map((p) => p.reb));
     const aStd = stddev(peers.map((p) => p.ast));
-    const scored = peers.map((p) => ({
-      player: p,
-      distance:
-        ((p.pts - ppg) / pStd) ** 2 +
-        ((p.reb - rpg) / rStd) ** 2 +
-        ((p.ast - apg) / aStd) ** 2,
-    }));
-    scored.sort((a, b) => a.distance - b.distance);
-    return scored.slice(0, 5).map((s) => s.player);
+    const dist2 = (p: { pts: number; reb: number; ast: number }) =>
+      ((p.pts - ppg) / pStd) ** 2 +
+      ((p.reb - rpg) / rStd) ** 2 +
+      ((p.ast - apg) / aStd) ** 2;
+    const activeScored = peers
+      .map((p) => ({ player: p, distance: dist2(p) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 4);
+    // Legend pool — retired entries from ALL_TIME_LEADERS that carry a
+    // valid CDN headshot. Reuse the active stddevs so distances stay
+    // comparable across eras (no separate normalization).
+    const legendScored = ALL_TIME_LEADERS
+      .filter((l) => !l.active && l.personId > 0)
+      .map((l) => ({
+        legend: l,
+        distance: dist2({ pts: l.ppg, reb: l.rpg, ast: l.apg }),
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 3);
+    return {
+      activePeers: activeScored.map((s) => s.player),
+      legendPeers: legendScored.map((s) => s.legend),
+    };
   })();
 
   // JSON-LD structured data — Person schema (athlete) for rich snippets
@@ -633,10 +648,9 @@ export default async function PlayerPage({ params }: PageProps) {
         )}
       </section>
 
-      {/* Similar players — derived from the league index by normalized
-          PPG/RPG/APG distance. Surfaces 5 statistical comparisons one tap
-          away into /compare?p1=this&p2=that. */}
-      {similarPlayers.length > 0 && (
+      {/* Similar players — closest current peers (top row) + closest
+          historical legends (bottom row). Both rows linked into /compare. */}
+      {(similarPlayers.length > 0 || similarLegends.length > 0) && (
         <section className="mt-8">
           <div className="flex items-center gap-3 mb-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">
@@ -647,35 +661,81 @@ export default async function PlayerPage({ params }: PageProps) {
               {isZh ? "按 PPG/RPG/APG 标准化距离" : "By normalized PPG/RPG/APG distance"}
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {similarPlayers.map((p) => (
-              <Link
-                key={p.personId}
-                href={`/compare?p1=${player.personId}&p2=${p.personId}`}
-                className="glass-tile p-3 flex flex-col items-center text-center cursor-pointer hover:border-accent/40 transition-colors group"
-              >
-                <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-border">
-                  <Image
-                    src={playerHeadshotUrl(p.personId)}
-                    alt={`${p.firstName} ${p.lastName}`}
-                    width={56}
-                    height={56}
-                    unoptimized
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
-                <p className="text-xs font-medium text-text-primary mt-2 truncate w-full">
-                  {p.firstName} {p.lastName}
-                </p>
-                <p className="text-[10px] font-mono tabular-nums text-text-secondary">
-                  {p.pts.toFixed(1)} / {p.reb.toFixed(1)} / {p.ast.toFixed(1)}
-                </p>
-                <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-1">
-                  {p.teamAbbr}
-                </p>
-              </Link>
-            ))}
-          </div>
+
+          {similarPlayers.length > 0 && (
+            <>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary mb-2">
+                {isZh ? "现役球员" : "Active"}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                {similarPlayers.map((p) => (
+                  <Link
+                    key={p.personId}
+                    href={`/compare?p1=${player.personId}&p2=${p.personId}`}
+                    className="glass-tile p-3 flex flex-col items-center text-center cursor-pointer hover:border-accent/40 transition-colors group"
+                  >
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-border">
+                      <Image
+                        src={playerHeadshotUrl(p.personId)}
+                        alt={`${p.firstName} ${p.lastName}`}
+                        width={56}
+                        height={56}
+                        unoptimized
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <p className="text-xs font-medium text-text-primary mt-2 truncate w-full">
+                      {p.firstName} {p.lastName}
+                    </p>
+                    <p className="text-[10px] font-mono tabular-nums text-text-secondary">
+                      {p.pts.toFixed(1)} / {p.reb.toFixed(1)} / {p.ast.toFixed(1)}
+                    </p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-1">
+                      {p.teamAbbr}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+
+          {similarLegends.length > 0 && (
+            <>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent-amber mb-2 flex items-center gap-1.5">
+                <Crown size={11} />
+                {isZh ? "数据最相近的历史传奇" : "Closest historical legends"}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {similarLegends.map((l) => (
+                  <Link
+                    key={l.personId}
+                    href={`/compare?p1=${player.personId}&p2=${l.personId}`}
+                    className="glass-tile p-3 flex items-center gap-3 cursor-pointer hover:border-accent-amber/40 transition-colors group"
+                  >
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary border border-accent-amber/40 shrink-0">
+                      <Image
+                        src={playerHeadshotUrl(l.personId)}
+                        alt={l.name}
+                        width={48}
+                        height={48}
+                        unoptimized
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-text-primary truncate">{l.name}</p>
+                      <p className="text-[10px] font-mono tabular-nums text-text-secondary">
+                        {l.ppg.toFixed(1)} / {l.rpg.toFixed(1)} / {l.apg.toFixed(1)}
+                      </p>
+                      <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
+                        {l.team} · {l.fromYear}-{l.toYear}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       )}
 
