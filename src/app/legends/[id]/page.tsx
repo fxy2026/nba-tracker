@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Crown, TrendingUp, GitCompareArrows, Users, Trophy, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Crown, TrendingUp, GitCompareArrows, Users, Trophy, Sparkles, ArrowRight } from "lucide-react";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
@@ -109,6 +110,18 @@ export default async function LegendPage({ params }: PageProps) {
           { label: player.name },
         ]}
       />
+
+      {/* Quick-action — one-click GOAT-debate launcher with this legend pre-loaded */}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Link
+          href={`/compare?p1=${player.personId}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.15em] rounded-md bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors cursor-pointer"
+        >
+          <GitCompareArrows size={12} />
+          {isZh ? "对比此球员" : "Compare with…"}
+          <ArrowRight size={11} />
+        </Link>
+      </div>
 
       <PageHeader
         eyebrow={isZh ? "传奇" : "Legend"}

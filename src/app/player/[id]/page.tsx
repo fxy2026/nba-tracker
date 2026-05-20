@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, type LucideIcon } from "lucide-react";
+import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -135,6 +135,18 @@ export default async function PlayerPage({ params }: PageProps) {
           { label: fullName },
         ]}
       />
+
+      {/* Quick-action row — one-click into /compare with this player primed */}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Link
+          href={`/compare?p1=${personId}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.15em] rounded-md bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors cursor-pointer"
+        >
+          <GitCompareArrows size={12} />
+          {isZh ? "对比此球员" : "Compare with…"}
+          <ArrowRight size={11} />
+        </Link>
+      </div>
 
       {/* ─── Bento Hero ─────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">

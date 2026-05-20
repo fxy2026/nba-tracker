@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Flame, Crown, Trophy, GitCompareArrows, Calendar, Activity } from "lucide-react";
-import { ICONIC_GAMES, GAME_TAG_LABEL, type IconicGame } from "@/lib/iconicGames";
+import { ICONIC_GAMES, GAME_TAG_LABEL, type IconicGame, type GameTag } from "@/lib/iconicGames";
+import GamesFilter from "./GamesFilter";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
@@ -28,6 +29,13 @@ export default async function IconicGamesPage() {
 
   // Chronological — narrative arc from Wilt 1962 to modern night.
   const sorted = [...ICONIC_GAMES].sort((a, b) => a.date.localeCompare(b.date));
+
+  // Unique set of tags that actually appear in the dataset — passed to the
+  // client filter so we don't render chips for tag types nobody uses.
+  const allTags = Array.from(
+    new Set(sorted.flatMap((g) => g.tags ?? [])),
+  ) as GameTag[];
+  const ids = sorted.map((g) => g.id);
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -61,8 +69,13 @@ export default async function IconicGamesPage() {
         }
       />
 
+      {/* Client filter — pure CSS-driven so the SSR list stays intact */}
+      <div className="mt-6">
+        <GamesFilter availableTags={allTags} ids={ids} />
+      </div>
+
       {/* Game list — chronological, card-per-game */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {sorted.map((g) => (
           <GameCard key={g.id} game={g} isZh={isZh} />
         ))}
@@ -96,7 +109,11 @@ function GameCard({ game, isZh }: { game: IconicGame; isZh: boolean }) {
   });
 
   return (
-    <div className="glass-tile relative overflow-hidden">
+    <div
+      className="glass-tile relative overflow-hidden"
+      data-game-card
+      data-tags={(game.tags ?? []).join(" ")}
+    >
       {/* Team color tint */}
       <div
         className="absolute inset-0 opacity-12 pointer-events-none"

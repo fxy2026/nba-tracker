@@ -19,6 +19,7 @@ import Last10Streak from "./_components/Last10Streak";
 import TeamScheduleCard, { type RecentGame, type UpcomingGame } from "./_components/TeamScheduleCard";
 import TeamTrendsPanel, { type Rivalry } from "./_components/TeamTrendsPanel";
 import TeamRoster from "./_components/TeamRoster";
+import TeamLegends from "./_components/TeamLegends";
 
 // ISR: serve cached page, revalidate every 10 minutes
 export const revalidate = 600;
@@ -288,6 +289,19 @@ export default async function TeamPage({ params }: PageProps) {
       <TeamTrendsPanel t={t} recentGames={recentGames} rivalries={rivalries} />
 
       <TeamRoster roster={roster} t={t} />
+
+      {/* Map current franchises to their historical aliases for the legacy
+          tricodes that appear in our hand-curated datasets. */}
+      <TeamLegends
+        tricode={team.tricode}
+        legacyAliases={
+          team.tricode === "UTA" ? ["NOJ"]
+            : team.tricode === "ATL" ? ["STL"]
+            : team.tricode === "BKN" ? ["NJN"]
+            : []
+        }
+        isZh={isZh}
+      />
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
