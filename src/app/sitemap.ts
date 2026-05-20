@@ -144,7 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/iconic-games`, changeFrequency: "monthly", priority: 0.7 },
     // Per-decade landing pages — each is its own SEO target with an
     // editorial narrative and filtered card grid.
-    ...(["1960s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const).map((d) => ({
+    ...(["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const).map((d) => ({
       url: `${BASE}/iconic-seasons/${d}`,
       changeFrequency: "monthly" as ChangeFreq,
       priority: 0.6,

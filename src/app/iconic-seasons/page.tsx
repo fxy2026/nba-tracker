@@ -10,12 +10,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
-  title: "Iconic NBA Seasons — 26 Peak Campaigns",
-  description: "Hand-curated single-season snapshots: Jordan '96, Curry '16, LeBron's bubble run, Kobe's 81, and 22 more. Click any card to compare.",
+  title: "Iconic NBA Seasons — Peak Campaign Snapshots",
+  description: "Hand-curated single-season snapshots: Jordan '96, Curry '16, LeBron's bubble run, Kobe's 81, Jokić's MVP three-peat, SGA's 2025 title — and many more. Click any card to compare.",
   alternates: { canonical: "/iconic-seasons" },
   openGraph: {
     title: "Iconic NBA Seasons",
-    description: "26 peak campaigns from Wilt's 50.4 PPG to Jokić's first MVP — each with trophy flags, career narrative, and side-by-side compare.",
+    description: "Peak campaigns from Wilt's 50.4 PPG to SGA's 2024-25 MVP ring — each with trophy flags, career narrative, and side-by-side compare.",
   },
 };
 
@@ -23,9 +23,10 @@ export const revalidate = 86400;
 
 // Era buckets — shown as quick filter chips. Each iconic season falls into
 // exactly one based on seasonYear.
-type Era = "60s" | "80s" | "90s" | "2000s" | "2010s" | "2020s";
+type Era = "60s" | "70s" | "80s" | "90s" | "2000s" | "2010s" | "2020s";
 function eraOf(year: number): Era {
   if (year < 1970) return "60s";
+  if (year < 1980) return "70s";
   if (year < 1990) return "80s";
   if (year < 2000) return "90s";
   if (year < 2010) return "2000s";
@@ -42,10 +43,10 @@ export default async function IconicSeasonsPage() {
 
   // Group by era for editorial section dividers.
   const byEra: Record<Era, IconicSeason[]> = {
-    "60s": [], "80s": [], "90s": [], "2000s": [], "2010s": [], "2020s": [],
+    "60s": [], "70s": [], "80s": [], "90s": [], "2000s": [], "2010s": [], "2020s": [],
   };
   for (const s of sorted) byEra[eraOf(s.seasonYear)].push(s);
-  const eraOrder: Era[] = ["60s", "80s", "90s", "2000s", "2010s", "2020s"];
+  const eraOrder: Era[] = ["60s", "70s", "80s", "90s", "2000s", "2010s", "2020s"];
 
   // Aggregate trophy counts across the dataset — surfaced as a stat strip
   // so the page feels like a museum index, not a flat list.
@@ -56,6 +57,7 @@ export default async function IconicSeasonsPage() {
   const eraLabel = (e: Era): string => {
     if (isZh) {
       return e === "60s" ? "60 年代"
+        : e === "70s" ? "70 年代"
         : e === "80s" ? "80 年代"
         : e === "90s" ? "90 年代"
         : e === "2000s" ? "00 年代"
@@ -69,6 +71,7 @@ export default async function IconicSeasonsPage() {
   // actually populated.
   const decadeKeyOf = (e: Era): string =>
     e === "60s" ? "1960s"
+      : e === "70s" ? "1970s"
       : e === "80s" ? "1980s"
       : e === "90s" ? "1990s"
       : e === "2000s" ? "2000s"
