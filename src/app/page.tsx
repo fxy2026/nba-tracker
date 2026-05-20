@@ -1,5 +1,6 @@
 import { formatDate } from "@/lib/api";
 import HomeClient from "@/components/HomeClient";
+import DailyIconicPick from "@/components/DailyIconicPick";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -44,6 +45,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <HomeClient initialDate={initialDate} />
+      <DailyIconicPick />
     </div>
   );
 }
