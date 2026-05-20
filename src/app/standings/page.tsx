@@ -99,14 +99,15 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
         <h3 className="text-sm font-semibold text-text-primary tracking-tight mt-0.5">{division}</h3>
       </div>
       <div className="divide-y divide-border/30">
-        {/* Header row */}
-        <div className="grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
+        {/* Header row — GB column hidden on small screens to free space for the
+            team name; brings back below `sm` once viewport can fit it. */}
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_36px_36px_48px] sm:grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
           <span className="w-5">#</span>
           <span>{t.common.team}</span>
           <span className="text-center">{t.common.wins}</span>
           <span className="text-center">{t.common.losses}</span>
           <span className="text-center">{t.standingsPage.pct}</span>
-          <span className="text-center">{t.standingsPage.gb}</span>
+          <span className="text-center hidden sm:block">{t.standingsPage.gb}</span>
         </div>
         {sorted.map((team, idx) => {
           const winPct = calcWinPct(team.wins, team.losses);
@@ -119,21 +120,24 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
             <Link
               key={team.tricode}
               href={`/team/${team.tricode}`}
-              className={`grid grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2.5 hover:bg-bg-hover transition-colors ${
+              className={`grid grid-cols-[auto_minmax(0,1fr)_36px_36px_48px] sm:grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2.5 hover:bg-bg-hover transition-colors ${
                 isPlayoff ? "border-l-2 border-l-accent" : isPlayIn ? "border-l-2 border-l-accent-amber" : "border-l-2 border-l-transparent"
               }`}
             >
               <span className="text-xs text-text-secondary w-5">{idx + 1}</span>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <Image
                   src={teamLogoUrl(team.teamId)}
                   alt={team.tricode}
                   width={24}
                   height={24}
                   unoptimized
+                  className="shrink-0"
                 />
-                <div>
-                  <span className="text-sm font-medium text-text-primary">{team.teamCity} {team.teamName}</span>
+                <div className="min-w-0 flex-1">
+                  {/* Show tricode on phones, full city + name once we have room */}
+                  <span className="text-sm font-medium text-text-primary truncate inline sm:hidden">{team.tricode}</span>
+                  <span className="text-sm font-medium text-text-primary truncate hidden sm:inline">{team.teamCity} {team.teamName}</span>
                   {isPlayoff && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
                   {isPlayIn && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{t.standingsPage.playIn}</span>}
                   {streaks.get(team.tricode) && (() => {
@@ -150,7 +154,7 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
               <span className="text-center text-sm font-medium font-mono tabular-nums">{team.wins}</span>
               <span className="text-center text-sm text-text-secondary font-mono tabular-nums">{team.losses}</span>
               <span className="text-center text-sm font-mono tabular-nums">{winPct.toFixed(3).slice(1)}</span>
-              <div className="text-center">
+              <div className="text-center hidden sm:block">
                 <span className="text-xs text-text-secondary font-mono tabular-nums">{gb}</span>
                 {idx > 0 && (() => {
                   const gbNum = ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2;

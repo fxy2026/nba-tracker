@@ -23,7 +23,6 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const teamsDialogRef = useRef<HTMLDivElement>(null);
   const teamsCloseBtnRef = useRef<HTMLButtonElement>(null);
@@ -31,24 +30,17 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    // Perf: rAF-throttle the scroll handler. Previously fired setState 60-120
-    // times/sec on fast scroll, each triggering Navbar (35-item moreGroups) re-render.
+    // rAF-throttled — only flips `scrolled` when crossing the 8px threshold.
+    // Per-scroll progress is handled by the pure-CSS .scroll-progress-rail in
+    // the root layout (no JS needed for that).
     let ticking = false;
-    let lastPct = -1;
     let lastScrolled = false;
     function handleScroll() {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const nextPct = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
         const nextScrolled = scrollTop > 8;
-        // Only setState when value actually changed — avoid pointless re-renders
-        if (nextPct !== lastPct) {
-          lastPct = nextPct;
-          setScrollPct(nextPct);
-        }
         if (nextScrolled !== lastScrolled) {
           lastScrolled = nextScrolled;
           setScrolled(nextScrolled);
@@ -281,11 +273,6 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-      {/* Scroll progress bar */}
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-transparent">
-        <div className="h-full bg-accent transition-[width] duration-75" style={{ width: `${scrollPct}%` }} />
-      </div>
-
       {/* Command palette (renders to document.body via portal — escapes nav containment) */}
       <CommandPalette open={moreOpen} onClose={() => setMoreOpen(false)} groups={moreGroups} />
 
