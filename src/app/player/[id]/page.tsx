@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, Sparkles, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -767,6 +768,43 @@ export default async function PlayerPage({ params }: PageProps) {
                   <ArrowRight size={11} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {(() => {
+        const games = ICONIC_GAMES
+          .filter((g) => g.personId === player.personId)
+          .sort((a, b) => b.date.localeCompare(a.date));
+        if (games.length === 0) return null;
+        return (
+          <section className="mt-8">
+            <SectionHeader
+              icon={Trophy}
+              eyebrow={isZh ? "单场神迹" : "Single-night brilliance"}
+              title={isZh ? "经典之夜" : "Iconic Games"}
+            />
+            <div className="flex flex-col gap-2">
+              {games.map((g) => {
+                const dt = new Date(g.date + "T12:00:00");
+                const dateLabel = dt.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+                  year: "numeric", month: "short", day: "numeric",
+                });
+                const title = isZh && g.titleZh ? g.titleZh : g.title;
+                return (
+                  <Link
+                    key={g.id}
+                    href={g.gameId ? `/game/${g.gameId}` : "/iconic-games"}
+                    className="glass-tile px-3 py-2 text-xs inline-flex items-center gap-3 hover:border-accent/40 transition-colors cursor-pointer group"
+                  >
+                    <span className="font-mono tabular-nums text-text-secondary shrink-0 w-24">{dateLabel}</span>
+                    <span className="text-text-primary font-medium flex-1 truncate">{title}</span>
+                    <span className="font-mono tabular-nums text-accent-amber shrink-0">{g.pts} pts</span>
+                    <ArrowRight size={11} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  </Link>
+                );
+              })}
             </div>
           </section>
         );
