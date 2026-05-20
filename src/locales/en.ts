@@ -523,6 +523,8 @@ const en: Translations = {
   scoringFlow: {
     title: "Scoring Flow",
     ledBy: "led by",
+    leadChanges: "lead changes",
+    ties: "ties",
   },
 
   quarterScores: {

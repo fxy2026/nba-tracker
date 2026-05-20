@@ -556,6 +556,8 @@ export interface Translations {
   scoringFlow: {
     title: string;
     ledBy: string;
+    leadChanges: string;
+    ties: string;
   };
 
   // ---- Quarter Scores ----

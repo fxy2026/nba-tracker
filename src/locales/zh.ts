@@ -523,6 +523,8 @@ const zh: Translations = {
   scoringFlow: {
     title: "得分走势",
     ledBy: "领先",
+    leadChanges: "次领先易主",
+    ties: "次平分",
   },
 
   quarterScores: {

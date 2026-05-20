@@ -88,13 +88,80 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
   for (let q = 1; q <= Math.min(numPeriods, 4); q++) qLines.push({ t: q * 12, label: `${t.playByPlayComp.quarter}${q}` });
   for (let ot = 1; ot <= numPeriods - 4; ot++) qLines.push({ t: 48 + ot * 5, label: `${t.playByPlayComp.overtime}${ot}` });
 
-  // Find max lead for each team
+  // Single pass: max leads, lead changes, ties, plus an expanded point list
+  // with linear-interpolated crossings inserted at every sign reversal — used
+  // below to build per-side lead-area polygons.
   let maxHomeLead = 0, maxAwayLead = 0;
-  for (const p of points) {
+  let leadChanges = 0;
+  let ties = 0;
+  let prevSign = 0;
+  let prevTied = false;
+  const expanded: { t: number; home: number; away: number }[] = [];
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    expanded.push(p);
     const diff = p.home - p.away;
     if (diff > maxHomeLead) maxHomeLead = diff;
     if (-diff > maxAwayLead) maxAwayLead = -diff;
+    const sign = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+    if (sign === 0 && p.home > 0) {
+      if (!prevTied) ties++;
+      prevTied = true;
+    } else {
+      prevTied = false;
+    }
+    if (prevSign !== 0 && sign !== 0 && sign !== prevSign) leadChanges++;
+    if (sign !== 0) prevSign = sign;
+
+    if (i < points.length - 1) {
+      const pNext = points[i + 1];
+      const dNext = pNext.home - pNext.away;
+      if (diff * dNext < 0) {
+        const r = diff / (diff - dNext);
+        const tCross = p.t + (pNext.t - p.t) * r;
+        const vCross = p.home + (pNext.home - p.home) * r;
+        expanded.push({ t: tCross, home: vCross, away: vCross });
+      }
+    }
   }
+
+  // Slice expanded points into one polygon per lead run (one side strictly
+  // ahead of the other). Sign-zero anchors are shared between adjacent runs
+  // so the shading meets cleanly at ties.
+  const leadSegs: { sign: 1 | -1; seg: { t: number; home: number; away: number }[] }[] = [];
+  {
+    let currentSign: 0 | 1 | -1 = 0;
+    let seg: { t: number; home: number; away: number }[] = [];
+    for (const p of expanded) {
+      const d = p.home - p.away;
+      const sign: 0 | 1 | -1 = d > 0 ? 1 : d < 0 ? -1 : 0;
+      if (sign === 0) {
+        seg.push(p);
+        if (currentSign !== 0) {
+          leadSegs.push({ sign: currentSign, seg });
+          seg = [p];
+          currentSign = 0;
+        }
+      } else if (currentSign === 0) {
+        seg.push(p);
+        currentSign = sign;
+      } else if (sign === currentSign) {
+        seg.push(p);
+      } else {
+        // Without a cross point this shouldn't happen, but guard anyway
+        leadSegs.push({ sign: currentSign, seg });
+        seg = [p];
+        currentSign = sign;
+      }
+    }
+    if (currentSign !== 0 && seg.length > 1) leadSegs.push({ sign: currentSign, seg });
+  }
+
+  const buildLeadArea = (seg: { t: number; home: number; away: number }[]) => {
+    const top = seg.map((p, i) => `${i === 0 ? "M" : "L"}${toX(p.t).toFixed(1)},${toY(Math.max(p.home, p.away)).toFixed(1)}`).join(" ");
+    const bot = seg.slice().reverse().map((p) => `L${toX(p.t).toFixed(1)},${toY(Math.min(p.home, p.away)).toFixed(1)}`).join(" ");
+    return `${top} ${bot} Z`;
+  };
 
   const isDetailed = scoreEvents && scoreEvents.length > 10;
   const last = points[points.length - 1];
@@ -107,9 +174,15 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
           {t.scoringFlow.title}
           {isDetailed && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-normal">{points.length} plays</span>}
         </h3>
-        <div className="flex items-center gap-3 text-[10px] text-text-secondary">
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[10px] text-text-secondary justify-end">
           {maxHomeLead > 0 && <span>{homeTricode} {t.scoringFlow.ledBy} {maxHomeLead}</span>}
           {maxAwayLead > 0 && <span>{awayTricode} {t.scoringFlow.ledBy} {maxAwayLead}</span>}
+          {isDetailed && leadChanges > 0 && (
+            <span className="tabular-nums">{leadChanges} {t.scoringFlow.leadChanges}</span>
+          )}
+          {isDetailed && ties > 0 && (
+            <span className="tabular-nums">{ties} {t.scoringFlow.ties}</span>
+          )}
         </div>
       </div>
       <svg
@@ -139,9 +212,16 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
             <text x={toX(t)} y={h - 6} textAnchor="middle" fill="var(--text-secondary)" fontSize={8}>{label}</text>
           </g>
         ))}
-        {/* Area fills */}
-        <path d={`${homeLine} L${toX(maxT).toFixed(1)},${toY(0).toFixed(1)} L${toX(0).toFixed(1)},${toY(0).toFixed(1)} Z`} fill="var(--accent)" fillOpacity={0.05} />
-        <path d={`${awayLine} L${toX(maxT).toFixed(1)},${toY(0).toFixed(1)} L${toX(0).toFixed(1)},${toY(0).toFixed(1)} Z`} fill="var(--success)" fillOpacity={0.05} />
+        {/* Lead-area shading — fills the gap between the two lines, colored by
+            who is ahead in that run. Replaces the old per-team area fills. */}
+        {leadSegs.map(({ sign, seg }, i) => (
+          <path
+            key={`lead-${i}`}
+            d={buildLeadArea(seg)}
+            fill={sign === 1 ? "var(--accent)" : "var(--success)"}
+            fillOpacity={0.14}
+          />
+        ))}
         {/* Lines */}
         <path d={homeLine} fill="none" stroke="var(--accent)" strokeWidth={isDetailed ? 1.5 : 2} strokeLinejoin="round" strokeLinecap="round" />
         <path d={awayLine} fill="none" stroke="var(--success)" strokeWidth={isDetailed ? 1.5 : 2} strokeLinejoin="round" strokeLinecap="round" />
