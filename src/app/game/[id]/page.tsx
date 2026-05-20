@@ -218,7 +218,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {isFinal && <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} seasonRank={seasonRank} t={t} />}
 
-      {isFinal && <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
+      {isFinal && <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} t={t} />}
 
       {/* Replay links — streamed (Supabase fetch is independent) */}
       <Suspense fallback={null}>
