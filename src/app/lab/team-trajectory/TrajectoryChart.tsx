@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import type { TeamTrajectory } from "@/lib/team-trajectory";
 
@@ -59,6 +59,19 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
       ),
     [trajectories, conf]
   );
+
+  // Spotlight only applies when the selected team is in the current filter —
+  // otherwise switching conference would dim every line to 0.12 with nothing lit.
+  const effectiveSelected = useMemo(
+    () => (selected && visible.some((t) => t.tricode === selected) ? selected : null),
+    [selected, visible]
+  );
+
+  // A stale hover marker (cx/cy computed for the old metric/domain) must clear
+  // when the plotted data changes, or it floats at a position with no line.
+  useEffect(() => {
+    setHover(null);
+  }, [metric, conf, selected]);
 
   // SVG geometry — viewBox scales to container width; pad leaves room for axes.
   const w = 720;
@@ -186,7 +199,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
               {isZh ? c.zh : c.en}
             </button>
           ))}
-          {selected && (
+          {effectiveSelected && (
             <button
               onClick={() => setSelected(null)}
               className="ml-auto text-[11px] text-text-secondary hover:text-accent transition-colors cursor-pointer underline underline-offset-2"
@@ -264,8 +277,8 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
           {/* Team lines — faint by default; spotlight the selected team and
               fade the rest when one is picked. */}
           {lines.map(({ tri, team, d }) => {
-            const isSel = selected === tri;
-            const dim = selected !== null && !isSel;
+            const isSel = effectiveSelected === tri;
+            const dim = effectiveSelected !== null && !isSel;
             return (
               <path
                 key={tri}
@@ -275,17 +288,37 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
                 strokeWidth={isSel ? 2.4 : 1.2}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                opacity={dim ? 0.12 : selected === null ? 0.5 : 1}
+                opacity={dim ? 0.12 : effectiveSelected === null ? 0.5 : 1}
                 style={{ transition: "opacity 0.15s, stroke-width 0.15s" }}
+              />
+            );
+          })}
+
+          {/* End-of-line marker so single-game (one-point) series stay visible
+              and the latest standing reads at a glance. */}
+          {lines.map(({ tri, team }) => {
+            const last = team.points.at(-1);
+            if (!last) return null;
+            const isSel = effectiveSelected === tri;
+            const dim = effectiveSelected !== null && !isSel;
+            return (
+              <circle
+                key={`end-${tri}`}
+                cx={toX(last.game)}
+                cy={toY(metricValue(last, metric))}
+                r={isSel ? 3 : 2}
+                fill={team.primaryColor}
+                opacity={dim ? 0.12 : effectiveSelected === null ? 0.5 : 1}
+                style={{ transition: "opacity 0.15s" }}
               />
             );
           })}
 
           {/* Hover hit-points for the highlighted team only (keeps the DOM
               light — thousands of dots across 30 lines would be costly). */}
-          {selected !== null &&
+          {effectiveSelected !== null &&
             lines
-              .filter((l) => l.tri === selected)
+              .filter((l) => l.tri === effectiveSelected)
               .flatMap(({ tri, team }) =>
                 team.points.map((p) => {
                   const cx = toX(p.game);
@@ -359,7 +392,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
       {/* Legend — click a team to spotlight its line, others fade. */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {visible.map((t) => {
-          const isSel = selected === t.tricode;
+          const isSel = effectiveSelected === t.tricode;
           const last = t.points.at(-1);
           return (
             <button
@@ -374,7 +407,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
               className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium transition-all cursor-pointer ${
                 isSel
                   ? "bg-bg-hover text-text-primary ring-1 ring-accent"
-                  : selected !== null
+                  : effectiveSelected !== null
                   ? "text-text-secondary/50 hover:text-text-primary"
                   : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}

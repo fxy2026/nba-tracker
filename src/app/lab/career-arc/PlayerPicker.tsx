@@ -35,6 +35,9 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Monotonic id so a slow earlier query can't overwrite newer results, and a
+  // fetch in flight when the user picks/clears can't re-open the dropdown.
+  const searchReqId = useRef(0);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -59,14 +62,17 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
     }
 
     debounceRef.current = setTimeout(async () => {
+      const reqId = ++searchReqId.current;
       setLoading(true);
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
         clearTimeout(timeout);
+        if (reqId !== searchReqId.current) return; // a newer query (or a pick/clear) superseded us
         if (res.ok) {
           const json = await res.json();
+          if (reqId !== searchReqId.current) return;
           // De-dupe by personId — search can return the same player as both an
           // active entry and a legend/iconic-season entry.
           const seen = new Set<number>();
@@ -81,7 +87,7 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
       } catch {
         /* timeout or network error — leave previous results */
       }
-      setLoading(false);
+      if (reqId === searchReqId.current) setLoading(false);
     }, 250);
 
     return () => {
@@ -90,6 +96,7 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
   }, [query]);
 
   const pick = (id: number) => {
+    searchReqId.current++; // invalidate any in-flight search so it can't re-open the dropdown
     setOpen(false);
     setQuery("");
     router.push(`/lab/career-arc?id=${id}`);
@@ -114,7 +121,7 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); setResults([]); setOpen(false); }}
+            onClick={() => { searchReqId.current++; setQuery(""); setResults([]); setOpen(false); }}
             aria-label={isZh ? "清除" : "Clear"}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
           >

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/components/LocaleProvider";
@@ -39,6 +39,12 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
   const isZh = locale === "zh";
   // Hovered x-step (action index). null = nothing hovered.
   const [hover, setHover] = useState<number | null>(null);
+
+  // Navigating between games is a soft nav that reuses this instance — clear a
+  // stale hover index or it reads `points[oldIndex]` (undefined → NaN coords).
+  useEffect(() => {
+    setHover(null);
+  }, [series, steps]);
 
   if (series.length === 0 || steps < 2) return null;
 

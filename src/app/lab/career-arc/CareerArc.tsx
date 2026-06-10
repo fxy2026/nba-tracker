@@ -129,8 +129,11 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     setShotGames({ loaded: 0, total: 0 });
     try {
       const params = new URLSearchParams({ playerId: String(playerId), team: shotTeam, seasonType: "regular" });
-      // Current season → omit season (CDN schedule path); historical → pass it.
-      if (seasonId !== CURRENT_SEASON) params.set("season", seasonId);
+      // Current season → omit season (fast CDN schedule path). Exception: a
+      // current-season TOT (mid-season trade) needs the team-agnostic
+      // playerId+season path, else the CDN scan only sees the current team's
+      // games and drops the pre-trade stint.
+      if (seasonId !== CURRENT_SEASON || seasonTeam === "TOT") params.set("season", seasonId);
       const res = await fetch(`/api/player-shots?${params}`);
       if (reqId !== shotReqId.current) return; // a newer scrub superseded us
       if (!res.ok) throw new Error("API error");
@@ -149,7 +152,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     } finally {
       if (reqId === shotReqId.current) setShotLoading(false);
     }
-  }, [playerId, shotTeam, seasonId, isZh]);
+  }, [playerId, shotTeam, seasonTeam, seasonId, isZh]);
 
   useEffect(() => {
     if (!seasonId) return;

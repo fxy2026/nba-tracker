@@ -118,9 +118,16 @@ function AxisPicker({
 
 // "Nice" axis bounds + step for the tick grid. Pads the data range slightly so
 // extreme dots aren't glued to the frame, then rounds to a readable increment.
-function niceScale(min: number, max: number): { lo: number; hi: number; ticks: number[] } {
+function niceScale(min: number, max: number, pct = false): { lo: number; hi: number; ticks: number[] } {
   if (!isFinite(min) || !isFinite(max) || min === max) {
     const c = isFinite(min) ? min : 0;
+    // A pct axis must stay bounded near [0,1] — a ±1 fallback would render a
+    // single perfect-FT shooter on a 0–200% axis.
+    if (pct) {
+      const lo = Math.max(0, c - 0.05);
+      const hi = Math.min(1, c + 0.05);
+      return { lo, hi, ticks: [lo, (lo + hi) / 2, hi] };
+    }
     return { lo: c - 1, hi: c + 1, ticks: [c - 1, c, c + 1] };
   }
   const span = max - min;
@@ -235,8 +242,8 @@ export default function ScatterExplorer() {
     const xs = points.map((r) => xMeta.get(r));
     const ys = points.map((r) => yMeta.get(r));
     return {
-      x: niceScale(Math.min(...xs), Math.max(...xs)),
-      y: niceScale(Math.min(...ys), Math.max(...ys)),
+      x: niceScale(Math.min(...xs), Math.max(...xs), xMeta.pct),
+      y: niceScale(Math.min(...ys), Math.max(...ys), yMeta.pct),
     };
   }, [points, xMeta, yMeta]);
 
@@ -365,9 +372,13 @@ export default function ScatterExplorer() {
 
       {/* Scatter plot */}
       <div className="glass-tile p-4">
-        {points.length === 0 || !scales ? (
+        {points.length === 0 || !scales || xKey === yKey ? (
           <div className="py-16 text-center text-sm text-text-secondary">
-            {isZh
+            {xKey === yKey
+              ? isZh
+                ? "X 轴和 Y 轴选了同一项，所有点会落在一条直线上 —— 请选择两个不同的数据项。"
+                : "X and Y are the same stat, so every dot falls on one line — pick two different stats."
+              : isZh
               ? "当前出场时间下限下没有球员，调低门槛试试。"
               : "No players meet the current minutes threshold — try lowering it."}
           </div>
