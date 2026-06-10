@@ -74,18 +74,38 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          // Cache successful HTML in pages bucket for offline fallback.
+          // Cache successful HTML in pages bucket for offline fallback, with a
+          // bounded FIFO trim so the per-page navigation cache can't grow
+          // unbounded between deploys. Cache.keys() is insertion-ordered, so
+          // deleting the oldest beyond MAX_PAGES is an adequate FIFO.
           if (res.ok) {
             const copy = res.clone();
-            caches.open(CACHE_PAGES).then((cache) => cache.put(req, copy));
+            caches.open(CACHE_PAGES).then(async (cache) => {
+              await cache.put(req, copy);
+              const keys = await cache.keys();
+              const MAX_PAGES = 30;
+              if (keys.length > MAX_PAGES) {
+                for (const k of keys.slice(0, keys.length - MAX_PAGES)) {
+                  await cache.delete(k);
+                }
+              }
+            }).catch(() => { /* QuotaExceeded etc. — caching is best-effort */ });
           }
           return res;
         })
-        .catch(() =>
+        .catch(async () => {
           // Prefer a cached copy of the requested page; if we never saw it,
-          // show the dedicated offline page instead of a stale homepage.
-          caches.match(req).then((cached) => cached || caches.match("/offline") || caches.match("/"))
-        )
+          // fall back to the dedicated offline page, then the homepage shell.
+          // Awaiting each step guarantees respondWith gets a real Response
+          // (never undefined → thrown) and makes every fallback reachable.
+          const cached = await caches.match(req);
+          if (cached) return cached;
+          const offline = await caches.match("/offline");
+          if (offline) return offline;
+          const home = await caches.match("/");
+          if (home) return home;
+          return Response.error();
+        })
     );
     return;
   }

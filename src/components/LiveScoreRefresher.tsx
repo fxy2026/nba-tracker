@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -9,6 +9,9 @@ const REFRESH_INTERVAL = 30;
 export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiveGames: boolean; onRefresh: () => void }) {
   const { t } = useLocale();
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+  // Single source of truth shared by the tick and the manual button so a
+  // manual refresh resets the countdown without the next tick snapping back.
+  const remainingRef = useRef(REFRESH_INTERVAL);
 
   useEffect(() => {
     if (!hasLiveGames) return;
@@ -16,15 +19,15 @@ export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiv
     // Add ±3s jitter to avoid thundering herd
     const jitter = Math.floor(Math.random() * 6) - 3;
     const interval = REFRESH_INTERVAL + jitter;
-    let remaining = interval;
+    remainingRef.current = interval;
 
     const tick = setInterval(() => {
-      remaining--;
-      setCountdown(remaining);
-      if (remaining <= 0) {
+      remainingRef.current--;
+      setCountdown(remainingRef.current);
+      if (remainingRef.current <= 0) {
         onRefresh();
-        remaining = interval;
-        setCountdown(remaining);
+        remainingRef.current = interval;
+        setCountdown(interval);
       }
     }, 1000);
 
@@ -40,6 +43,7 @@ export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiv
       <button
         onClick={() => {
           onRefresh();
+          remainingRef.current = REFRESH_INTERVAL;
           setCountdown(REFRESH_INTERVAL);
         }}
         className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"

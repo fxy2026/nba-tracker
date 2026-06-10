@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -10,21 +10,24 @@ const INTERVAL = 15;
 export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   const router = useRouter();
   const [countdown, setCountdown] = useState(INTERVAL);
+  // Single source of truth shared by the tick and the manual button so a
+  // manual refresh resets the countdown without the next tick snapping back.
+  const remainingRef = useRef(INTERVAL);
   const { t } = useLocale();
 
   useEffect(() => {
     if (!isLive) return;
-    let remaining = INTERVAL;
+    remainingRef.current = INTERVAL;
 
     const tick = setInterval(() => {
-      remaining--;
-      setCountdown(remaining);
-      if (remaining <= 0) {
+      remainingRef.current--;
+      setCountdown(remainingRef.current);
+      if (remainingRef.current <= 0) {
         if (typeof navigator === "undefined" || navigator.onLine !== false) {
           router.refresh();
         }
-        remaining = INTERVAL;
-        setCountdown(remaining);
+        remainingRef.current = INTERVAL;
+        setCountdown(INTERVAL);
       }
     }, 1000);
 
@@ -41,6 +44,7 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
           if (typeof navigator === "undefined" || navigator.onLine !== false) {
             router.refresh();
           }
+          remainingRef.current = INTERVAL;
           setCountdown(INTERVAL);
         }}
         className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"
