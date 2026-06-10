@@ -4,7 +4,7 @@ import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import CompareClient from "./CompareClient";
 
 interface PageProps {
-  searchParams: Promise<{ p1?: string; p2?: string }>;
+  searchParams: Promise<{ p1?: string; p2?: string; p3?: string }>;
 }
 
 function lookupName(id: string | undefined): string | null {
@@ -23,20 +23,23 @@ function lookupName(id: string | undefined): string | null {
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const { p1, p2 } = await searchParams;
+  const { p1, p2, p3 } = await searchParams;
   const n1 = lookupName(p1);
   const n2 = lookupName(p2);
+  const n3 = lookupName(p3);
 
   // When both sides resolve, mint a per-comparison OG image so social shares
-  // show the two players + their numbers. Otherwise the static /api/og/compare
-  // fallback (without p1/p2) returns a generic cover.
+  // show the players + their numbers. p3 is forwarded as-is — the OG route
+  // falls back to the 2-way card when it can't resolve it. Otherwise the
+  // static /api/og/compare fallback (without p1/p2) returns a generic cover.
   const ogUrl = p1 && p2
-    ? `/api/og/compare?p1=${encodeURIComponent(p1)}&p2=${encodeURIComponent(p2)}`
+    ? `/api/og/compare?p1=${encodeURIComponent(p1)}&p2=${encodeURIComponent(p2)}${p3 ? `&p3=${encodeURIComponent(p3)}` : ""}`
     : `/api/og/compare`;
 
-  const title = n1 && n2 ? `${n1} vs ${n2}` : "Player Compare";
-  const description = n1 && n2
-    ? `Side-by-side career stats, trophies, era context and radar overlay for ${n1} vs ${n2}.`
+  const matchup = n1 && n2 ? (n3 ? `${n1} vs ${n2} vs ${n3}` : `${n1} vs ${n2}`) : null;
+  const title = matchup ?? "Player Compare";
+  const description = matchup
+    ? `Side-by-side career stats, trophies, era context and radar overlay for ${matchup}.`
     : "Compare any two NBA players — active stars, retired legends, or peak iconic seasons.";
 
   return {

@@ -394,6 +394,82 @@ function TrophyRow({ p }: { p: PlayerData }) {
   );
 }
 
+const search = async (q: string, setter: (r: PlayerData[]) => void) => {
+  if (q.length < 2) { setter([]); return; }
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    if (res.ok) {
+      const json = await res.json();
+      setter(json.data || []);
+    }
+  } catch { /* ignore */ }
+};
+
+function useDebouncedSearch(query: string, setResults: (r: PlayerData[]) => void) {
+  useEffect(() => {
+    const t = setTimeout(() => search(query, setResults), 300);
+    return () => clearTimeout(t);
+  }, [query, setResults]);
+}
+
+// Search input + results dropdown shared by all three player slots.
+// `compact` is the deliberate smaller styling for the optional 3rd slot;
+// `onClear` renders the inline Remove button (3rd slot only).
+function PlayerSearchBox({ player, query, results, placeholder, isZh, compact, onQuery, onPick, onClear }: {
+  player: PlayerData | null;
+  query: string;
+  results: PlayerData[];
+  placeholder: string;
+  isZh: boolean;
+  compact?: boolean;
+  onQuery: (q: string) => void;
+  onPick: (p: PlayerData) => void;
+  onClear?: () => void;
+}) {
+  return (
+    <>
+      <input
+        type="text"
+        value={player ? `${player.firstName} ${player.lastName}` : query}
+        onChange={(e) => onQuery(e.target.value)}
+        placeholder={placeholder}
+        className={compact
+          ? "w-full glass-tile px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary/70 focus:outline-none focus:border-accent"
+          : "w-full glass-tile px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"}
+      />
+      {player && onClear && (
+        <button
+          onClick={onClear}
+          aria-label={isZh ? "移除第三人" : "Remove third player"}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent px-2 py-1 cursor-pointer"
+        >
+          {isZh ? "移除" : "Remove"}
+        </button>
+      )}
+      {results.length > 0 && !player && (
+        <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+          {results.map((p) => (
+            <button key={p.personId} onClick={() => onPick(p)}
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
+              <span className="font-medium">{p.firstName} {p.lastName}</span>
+              {p.isIconicSeason ? (
+                <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
+                  {p.season}
+                </span>
+              ) : p.isLegend ? (
+                <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
+                  {isZh ? "传奇" : "Legend"}
+                </span>
+              ) : null}
+              <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ComparePage() {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
@@ -472,7 +548,6 @@ export default function ComparePage() {
     try {
       const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
       const stored = localStorage.getItem(key) as "p1" | "p2" | null;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPick(stored);
     } catch { /* localStorage disabled */ }
   }, [player1, player2]);
@@ -508,31 +583,9 @@ export default function ComparePage() {
     }
   };
 
-  const search = async (q: string, setter: (r: PlayerData[]) => void) => {
-    if (q.length < 2) { setter([]); return; }
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-      if (res.ok) {
-        const json = await res.json();
-        setter(json.data || []);
-      }
-    } catch { /* ignore */ }
-  };
-
-  useEffect(() => {
-    const t = setTimeout(() => search(query1, setResults1), 300);
-    return () => clearTimeout(t);
-  }, [query1]);
-
-  useEffect(() => {
-    const t = setTimeout(() => search(query2, setResults2), 300);
-    return () => clearTimeout(t);
-  }, [query2]);
-
-  useEffect(() => {
-    const t = setTimeout(() => search(query3, setResults3), 300);
-    return () => clearTimeout(t);
-  }, [query3]);
+  useDebouncedSearch(query1, setResults1);
+  useDebouncedSearch(query2, setResults2);
+  useDebouncedSearch(query3, setResults3);
 
   const headshotUrl = (id: number) => playerHeadshotUrl(id);
 
@@ -561,33 +614,15 @@ export default function ComparePage() {
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 mb-8 items-start">
         {/* Player 1 */}
         <div className="relative">
-          <input
-            type="text"
-            value={player1 ? `${player1.firstName} ${player1.lastName}` : query1}
-            onChange={(e) => { setQuery1(e.target.value); setPlayer1(null); }}
+          <PlayerSearchBox
+            player={player1}
+            query={query1}
+            results={results1}
             placeholder={t.comparePage.searchPlayer1}
-            className="w-full glass-tile px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
+            isZh={isZh}
+            onQuery={(q) => { setQuery1(q); setPlayer1(null); }}
+            onPick={(p) => { setPlayer1(p); setResults1([]); setQuery1(""); }}
           />
-          {results1.length > 0 && !player1 && (
-            <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
-              {results1.map((p) => (
-                <button key={p.personId} onClick={() => { setPlayer1(p); setResults1([]); setQuery1(""); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
-                  <span className="font-medium">{p.firstName} {p.lastName}</span>
-                  {p.isIconicSeason ? (
-                    <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
-                      {p.season}
-                    </span>
-                  ) : p.isLegend ? (
-                    <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
-                      {isZh ? "传奇" : "Legend"}
-                    </span>
-                  ) : null}
-                  <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Swap button */}
@@ -610,33 +645,15 @@ export default function ComparePage() {
 
         {/* Player 2 */}
         <div className="relative">
-          <input
-            type="text"
-            value={player2 ? `${player2.firstName} ${player2.lastName}` : query2}
-            onChange={(e) => { setQuery2(e.target.value); setPlayer2(null); }}
+          <PlayerSearchBox
+            player={player2}
+            query={query2}
+            results={results2}
             placeholder={t.comparePage.searchPlayer2}
-            className="w-full glass-tile px-4 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
+            isZh={isZh}
+            onQuery={(q) => { setQuery2(q); setPlayer2(null); }}
+            onPick={(p) => { setPlayer2(p); setResults2([]); setQuery2(""); }}
           />
-          {results2.length > 0 && !player2 && (
-            <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
-              {results2.map((p) => (
-                <button key={p.personId} onClick={() => { setPlayer2(p); setResults2([]); setQuery2(""); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
-                  <span className="font-medium">{p.firstName} {p.lastName}</span>
-                  {p.isIconicSeason ? (
-                    <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
-                      {p.season}
-                    </span>
-                  ) : p.isLegend ? (
-                    <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">
-                      {isZh ? "传奇" : "Legend"}
-                    </span>
-                  ) : null}
-                  <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -646,38 +663,17 @@ export default function ComparePage() {
       {(player1 || player2) && (
         <div className="mb-6 -mt-2">
           <div className="relative max-w-md">
-            <input
-              type="text"
-              value={player3 ? `${player3.firstName} ${player3.lastName}` : query3}
-              onChange={(e) => { setQuery3(e.target.value); setPlayer3(null); }}
+            <PlayerSearchBox
+              player={player3}
+              query={query3}
+              results={results3}
               placeholder={isZh ? "（可选）加入第 3 个球员对比" : "(optional) add a 3rd player"}
-              className="w-full glass-tile px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary/70 focus:outline-none focus:border-accent"
+              isZh={isZh}
+              compact
+              onQuery={(q) => { setQuery3(q); setPlayer3(null); }}
+              onPick={(p) => { setPlayer3(p); setResults3([]); setQuery3(""); }}
+              onClear={() => { setPlayer3(null); setQuery3(""); setResults3([]); }}
             />
-            {player3 && (
-              <button
-                onClick={() => { setPlayer3(null); setQuery3(""); setResults3([]); }}
-                aria-label={isZh ? "移除第三人" : "Remove third player"}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent px-2 py-1 cursor-pointer"
-              >
-                {isZh ? "移除" : "Remove"}
-              </button>
-            )}
-            {results3.length > 0 && !player3 && (
-              <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
-                {results3.map((p) => (
-                  <button key={p.personId} onClick={() => { setPlayer3(p); setResults3([]); setQuery3(""); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
-                    <span className="font-medium">{p.firstName} {p.lastName}</span>
-                    {p.isIconicSeason ? (
-                      <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">{p.season}</span>
-                    ) : p.isLegend ? (
-                      <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber">{isZh ? "传奇" : "Legend"}</span>
-                    ) : null}
-                    <span className="text-text-secondary text-xs ml-auto">{p.teamAbbr}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}
