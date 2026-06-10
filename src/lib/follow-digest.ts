@@ -2,10 +2,11 @@
 // helpers (no external calls) plus playergamelog parsing helpers shared by the
 // /api/follow-digest route. Numbers mirror /standings (computeStandingsRows +
 // per-conference rank) so a followed team's record/streak/rank match the table.
-import type { ScheduleDate, ScheduleGame } from "@/lib/api";
+import type { ScheduleDate, ScheduleGame, BoxScore } from "@/lib/api";
 import type { DigestGame, TeamDigest, PlayerLine } from "@/lib/follow-digest-types";
 import { TEAM_META } from "@/lib/teams";
 import { isCountedSeason } from "@/lib/games";
+import { minutesFromIso } from "@/lib/game-stats";
 import { computeStandingsRows, type StandingsRow } from "@/lib/standings-splits";
 
 /** Build a DigestGame for a finished/live game from the followed team's POV. */
@@ -77,6 +78,62 @@ function findTeamGames(schedule: ScheduleDate[], tricode: string): TeamGames {
   }
 
   return { last: last?.game ?? null, next: next?.game ?? null };
+}
+
+/**
+ * A team's most recent FINISHED game (status 3 only — a live game has no
+ * complete box line). Used to derive a followed player's last line from the
+ * CDN box score, since stats.nba.com playergamelog is blackholed from Vercel.
+ */
+export function teamLastFinishedGame(schedule: ScheduleDate[], tricode: string): DigestGame | null {
+  let best: { utc: string; game: DigestGame } | null = null;
+  for (const gd of schedule) {
+    for (const g of gd.games) {
+      if (!isCountedSeason(g.gameId) || g.gameStatus !== 3) continue;
+      const isHome = g.homeTeam.teamTricode === tricode;
+      const isAway = g.awayTeam.teamTricode === tricode;
+      if (!isHome && !isAway) continue;
+      const utc = g.gameDateTimeUTC;
+      if (!best || utc.localeCompare(best.utc) > 0) {
+        best = { utc, game: scoredGame(g, isHome) };
+      }
+    }
+  }
+  return best?.game ?? null;
+}
+
+/**
+ * Extract a player's box line from a CDN box score (cdn.nba.com — reachable
+ * from Vercel, unlike playergamelog). Returns null when the player didn't
+ * appear or logged no minutes (DNP).
+ */
+export function playerLineFromBoxScore(box: BoxScore, personId: number): PlayerLine | null {
+  const homeP = box.homeTeam.players.find((p) => p.personId === personId);
+  const onHome = !!homeP;
+  const player = homeP ?? box.awayTeam.players.find((p) => p.personId === personId);
+  if (!player) return null;
+  const myTeam = onHome ? box.homeTeam : box.awayTeam;
+  const oppTeam = onHome ? box.awayTeam : box.homeTeam;
+  const min = minutesFromIso(player.statistics.minutes);
+  if (min <= 0) return null; // DNP
+  const s = player.statistics;
+  return {
+    gameId: box.gameId,
+    dateUTC: box.gameTimeUTC,
+    opponentTricode: oppTeam.teamTricode,
+    home: onHome,
+    win: myTeam.score > oppTeam.score,
+    min: Math.round(min),
+    pts: s.points,
+    reb: s.reboundsTotal,
+    ast: s.assists,
+    stl: s.steals,
+    blk: s.blocks,
+    fgm: s.fieldGoalsMade,
+    fga: s.fieldGoalsAttempted,
+    tpm: s.threePointersMade,
+    tpa: s.threePointersAttempted,
+  };
 }
 
 /**

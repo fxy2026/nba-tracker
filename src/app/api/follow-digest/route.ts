@@ -1,38 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFullSchedule, getPlayerInfo } from "@/lib/api";
+import { getFullSchedule, getPlayerInfo, getBoxScore } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
-import { CURRENT_SEASON } from "@/lib/constants";
 import {
   buildTeamDigests,
   teamNextGame,
-  parseLatestPlayerLine,
+  teamLastFinishedGame,
+  playerLineFromBoxScore,
 } from "@/lib/follow-digest";
-import type { FollowDigest, PlayerDigest } from "@/lib/follow-digest-types";
+import type { FollowDigest, PlayerDigest, PlayerLine } from "@/lib/follow-digest-types";
 
-// Players hit stats.nba.com (slow cold upstream) — give the route headroom,
-// matching /api/stats. Teams alone come from the in-memory schedule cache.
+// getBoxScore hits cdn.nba.com (reachable from Vercel); give headroom anyway.
 export const maxDuration = 30;
-
-// stats.nba.com — same upstream the /api/stats proxy targets. Called directly
-// here so a server-side fetch's Next data-cache is shared across visitors.
-const STATS_BASE = "https://stats.nba.com/stats";
-const STATS_HEADERS: HeadersInit = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-  Referer: "https://www.nba.com/",
-  Origin: "https://www.nba.com",
-  Accept: "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  "x-nba-stats-origin": "stats",
-  "x-nba-stats-token": "true",
-};
 
 // Bound cost: cap how many entries we'll process per request.
 const MAX_TEAMS = 30;
 const MAX_PLAYERS = 30;
-// Per-player upstream timeout — stats.nba.com can hang. Fail this player fast
-// and degrade (lastLine=null) rather than blow the whole route's budget.
-const PLAYER_TIMEOUT_MS = 7000;
 
 function parseIdList(raw: string | null, max: number): string[] {
   if (!raw) return [];
@@ -48,44 +30,30 @@ function parseIdList(raw: string | null, max: number): string[] {
   return out;
 }
 
-// Fetch + parse one player's most recent playergamelog row. Any failure
-// (timeout, non-2xx, blackholed endpoint, malformed JSON) → null so the
-// player still appears in the digest, just without a last line.
-async function fetchLastLine(personId: number) {
-  const qs = new URLSearchParams({
-    PlayerID: String(personId),
-    Season: CURRENT_SEASON,
-    SeasonType: "Regular Season",
-  });
-  try {
-    const res = await fetch(`${STATS_BASE}/playergamelog?${qs}`, {
-      headers: STATS_HEADERS,
-      next: { revalidate: 300 },
-      signal: AbortSignal.timeout(PLAYER_TIMEOUT_MS),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return parseLatestPlayerLine(data);
-  } catch {
-    return null;
-  }
-}
-
 // Build one PlayerDigest. Resilient: a single player's failure degrades that
 // entry (lastLine/team/avg may be partial) but never rejects.
 async function buildPlayerDigest(
   schedule: Awaited<ReturnType<typeof getFullSchedule>>,
   personId: number,
 ): Promise<PlayerDigest> {
-  // Name/team/season-avg from the player index; gamelog from stats.nba.com —
-  // run both so a slow gamelog doesn't serialize behind the (cached) index.
-  const [info, lastLine] = await Promise.all([
-    getPlayerInfo(personId).catch(() => null),
-    fetchLastLine(personId),
-  ]);
+  // Name/team/season-avg come from the in-app player index.
+  const info = await getPlayerInfo(personId).catch(() => null);
 
   const tricode = info?.teamAbbr?.toUpperCase() ?? "";
   const meta = TEAM_META[tricode];
+
+  // Last line: stats.nba.com playergamelog is blackholed from Vercel, so derive
+  // it from the player's team's most recent finished game via the CDN box score
+  // (cdn.nba.com is reachable). null = team unknown, no finished game, or DNP.
+  let lastLine: PlayerLine | null = null;
+  if (meta) {
+    const lastFinished = teamLastFinishedGame(schedule, meta.tricode);
+    if (lastFinished) {
+      const box = await getBoxScore(lastFinished.gameId).catch(() => null);
+      if (box) lastLine = playerLineFromBoxScore(box, personId);
+    }
+  }
+
   const name = info ? `${info.firstName} ${info.lastName}`.trim() : String(personId);
   // Player index pts/reb/ast are season per-game averages — surface only when
   // the player actually has a season (any non-zero), else null.
