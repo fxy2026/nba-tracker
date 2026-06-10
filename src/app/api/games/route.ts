@@ -65,8 +65,9 @@ export async function GET(request: NextRequest) {
             ...g,
             gameStatus: live.gameStatus,
             gameStatusText: live.gameStatusText,
-            homeTeam: { ...g.homeTeam, score: live.homeTeam.score },
-            awayTeam: { ...g.awayTeam, score: live.awayTeam.score },
+            homeTeam: { ...g.homeTeam, score: live.homeTeam.score, periods: live.homeTeam.periods },
+            awayTeam: { ...g.awayTeam, score: live.awayTeam.score, periods: live.awayTeam.periods },
+            gameLeaders: live.gameLeaders,
           };
         });
       }
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
         homeTeam: { ...g.homeTeam, teamSlug: "", wins: g.homeTeam.wins || 0, losses: g.homeTeam.losses || 0, seed: g.homeTeam.seed || 0 },
         awayTeam: { ...g.awayTeam, teamSlug: "", wins: g.awayTeam.wins || 0, losses: g.awayTeam.losses || 0, seed: g.awayTeam.seed || 0 },
         seriesText: g.seriesText,
+        gameLeaders: g.gameLeaders,
       }));
     } else {
       games = await getGamesByDate(date);

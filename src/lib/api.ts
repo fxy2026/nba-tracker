@@ -21,6 +21,29 @@ export interface NbaTeam {
   wins: number;
   losses: number;
   seed: number;
+  periods?: PeriodScore[];
+}
+
+// Featured performer per team from the live scoreboard feed — each team's top
+// player with PTS/REB/AST. personId is 0 until the game tips off.
+export interface GameLeader {
+  personId: number;
+  name: string;
+  teamTricode: string;
+  points: number;
+  rebounds: number;
+  assists: number;
+}
+
+// Game-high scorer entries from the cached schedule (finished games on past
+// dates). Multiple entries when tied; points only — no rebounds/assists here.
+export interface PointsLeader {
+  personId: number;
+  firstName: string;
+  lastName: string;
+  teamId: number;
+  teamTricode: string;
+  points: number;
 }
 
 export interface NbaGame {
@@ -34,6 +57,7 @@ export interface NbaGame {
   gameTimeUTC: string;
   seriesText?: string;
   ifNecessary?: boolean;
+  gameLeaders?: { homeLeaders?: GameLeader; awayLeaders?: GameLeader };
 }
 
 export interface PlayerStats {
@@ -128,6 +152,7 @@ export interface ScheduleGame {
     wins: number;
     losses: number;
     seed: number;
+    periods?: PeriodScore[];
   };
   awayTeam: {
     teamId: number;
@@ -139,9 +164,14 @@ export interface ScheduleGame {
     wins: number;
     losses: number;
     seed: number;
+    periods?: PeriodScore[];
   };
   seriesText?: string;
   ifNecessary?: boolean;
+  // Today's games (live scoreboard): per-team featured leaders w/ PTS+REB+AST.
+  gameLeaders?: { homeLeaders?: GameLeader; awayLeaders?: GameLeader };
+  // Past finished games (schedule cache): game-high scorer(s), points only.
+  pointsLeaders?: PointsLeader[];
 }
 
 export interface ScheduleDate {
