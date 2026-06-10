@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Trophy } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { PLAYER_ACCOLADES } from "@/lib/playerAccolades";
 
 type Tier = "gold" | "silver" | "plain";
 
@@ -119,6 +120,28 @@ function parseHonors(data: unknown): HonorChip[] | null {
     .sort((a, b) => a.rank - b.rank || b.count - a.count || a.en.localeCompare(b.en));
 }
 
+// stats.nba.com blackholes the playerawards endpoint for datacenter IPs, so
+// in production the live fetch usually fails — the hand-curated counts in
+// PLAYER_ACCOLADES keep the wall alive for the ~50 star players people visit.
+// No per-season tooltips in this mode (counts only).
+function staticHonors(playerId: number): HonorChip[] | null {
+  const a = PLAYER_ACCOLADES[playerId];
+  if (!a) return null;
+  const chips: HonorChip[] = [];
+  const push = (count: number | undefined, key: string, zh: string, en: string, rank: number, tier: Tier) => {
+    if (count && count > 0) chips.push({ key, zh, en, rank, tier, count, seasons: [] });
+  };
+  push(a.championships, "nba champion", "NBA 总冠军", "NBA Champion", 10, "gold");
+  push(a.mvps, "nba most valuable player", "常规赛 MVP", "MVP", 20, "gold");
+  push(a.finalsMvps, "nba finals most valuable player", "总决赛 MVP (FMVP)", "Finals MVP", 30, "gold");
+  push(a.allNba, "all-nba", "最佳阵容", "All-NBA Team", 130, "silver");
+  push(a.dpoy, "nba defensive player of the year", "最佳防守球员 (DPOY)", "Defensive Player of the Year", 200, "silver");
+  push(a.allStars, "nba all-star", "全明星", "All-Star", 400, "silver");
+  push(a.statTitles, "stat-titles", "数据王", "Stat Titles", 425, "silver");
+  if (chips.length === 0) return null;
+  return chips.sort((x, y) => x.rank - y.rank);
+}
+
 const TIER_CLASS: Record<Tier, string> = {
   gold: "border-[#FFD700]/40 bg-[#FFD700]/10 text-[#FFD700]",
   silver: "border-[#C0C0C0]/40 bg-[#C0C0C0]/10 text-[#C0C0C0]",
@@ -135,17 +158,15 @@ export default function PlayerHonors({ playerId }: { playerId: number }) {
     setLoading(true);
     try {
       const qs = new URLSearchParams({ endpoint: "playerawards", PlayerID: String(playerId) });
-      // No client-side timeout needed — /api/stats aborts upstream at 8s and
-      // returns 504, which lands in the silent-hide branch below.
       const res = await fetch(`/api/stats?${qs}`, { signal });
       if (!res.ok) {
-        if (!signal?.aborted) { setHonors(null); setLoading(false); }
+        if (!signal?.aborted) { setHonors(staticHonors(playerId)); setLoading(false); }
         return;
       }
       const data = await res.json();
-      if (!signal?.aborted) { setHonors(parseHonors(data)); setLoading(false); }
+      if (!signal?.aborted) { setHonors(parseHonors(data) ?? staticHonors(playerId)); setLoading(false); }
     } catch {
-      if (!signal?.aborted) { setHonors(null); setLoading(false); }
+      if (!signal?.aborted) { setHonors(staticHonors(playerId)); setLoading(false); }
     }
   }, [playerId]);
 

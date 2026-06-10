@@ -41,6 +41,12 @@ const REVALIDATE: Record<string, number> = {
 };
 const DEFAULT_REVALIDATE = 300;
 
+// stats.nba.com blackholes some endpoints for datacenter IPs (request hangs
+// until our abort). After a timeout, fail fast for 15 min instead of burning
+// a 20s serverless invocation per visitor. Per warm instance — good enough.
+const BLACKHOLED_UNTIL = new Map<string, number>();
+const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
+
 export async function GET(request: NextRequest) {
   const endpoint = request.nextUrl.searchParams.get("endpoint");
   if (!endpoint) {
@@ -66,6 +72,11 @@ export async function GET(request: NextRequest) {
   const timeout = TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT;
   const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
 
+  const blockedUntil = BLACKHOLED_UNTIL.get(endpoint);
+  if (blockedUntil && Date.now() < blockedUntil) {
+    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
+  }
+
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
@@ -82,6 +93,7 @@ export async function GET(request: NextRequest) {
       );
     }
     const data = await res.json();
+    BLACKHOLED_UNTIL.delete(endpoint);
     if (Number.isInteger(limit) && limit > 0) {
       const rs = data.resultSet ?? data.resultSets?.[0];
       if (rs?.rowSet) rs.rowSet = rs.rowSet.slice(0, limit);
@@ -90,6 +102,7 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": `public, s-maxage=${revalidate}, stale-while-revalidate=${revalidate * 2}` },
     });
   } catch {
+    BLACKHOLED_UNTIL.set(endpoint, Date.now() + BLACKHOLE_TTL_MS);
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }

@@ -28,6 +28,12 @@ const TIMEOUT_MS = 20000;
 // responses cheap for browsers.
 const UPSTREAM_REVALIDATE = 900;
 
+// stats.nba.com blackholes this endpoint for some datacenter IPs (hangs until
+// our abort). After a timeout, fail fast for 15 min per warm instance instead
+// of burning a 20s invocation per visitor.
+let blackholedUntil = 0;
+const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
+
 export interface MatchupDefenderRow {
   personId: number;
   /** nameI, e.g. "A. Green" */
@@ -114,6 +120,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "gameId must be 10 digits" }, { status: 400 });
   }
 
+  if (Date.now() < blackholedUntil) {
+    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
+  }
+
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -126,6 +136,7 @@ export async function GET(request: NextRequest) {
     if (!res.ok) {
       return NextResponse.json({ error: `NBA API returned ${res.status}` }, { status: res.status });
     }
+    blackholedUntil = 0;
     const players = parseMatchups(await res.json());
     if (!players) {
       return NextResponse.json({ error: "unexpected upstream shape" }, { status: 502 });
@@ -138,6 +149,7 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": `public, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 2}` },
     });
   } catch {
+    blackholedUntil = Date.now() + BLACKHOLE_TTL_MS;
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }
