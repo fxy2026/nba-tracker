@@ -540,6 +540,9 @@ export interface Translations {
     noPlayData: string;
     quarter: string;
     overtime: string;
+    fullFeed: string;
+    scoringOnly: string;
+    live: string;
   };
 
   // ---- Key Moments ----

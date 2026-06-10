@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
-import type { PlayAction } from "@/components/PlayByPlay";
+import { describeAction, type PlayAction } from "@/components/PlayByPlay";
 
 interface Props {
   actions: PlayAction[];
@@ -42,7 +42,8 @@ function clockToSeconds(clock: string, period: number): number {
 }
 
 export default memo(function KeyMoments({ actions }: Props) {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
+  const isZh = locale === "zh";
   const moments = useMemo(() => {
     if (actions.length === 0) return [];
 
@@ -68,7 +69,9 @@ export default memo(function KeyMoments({ actions }: Props) {
         keyMoments.push({
           period: action.period,
           clock: action.clock,
-          description: `Lead change! ${action.teamTricode} takes the lead${action.description ? ` - ${action.description}` : ""}`,
+          description: isZh
+            ? `${action.teamTricode} 反超比分${action.description ? ` —— ${describeAction(action, true)}` : ""}`
+            : `Lead change! ${action.teamTricode} takes the lead${action.description ? ` - ${action.description}` : ""}`,
           scoreAway,
           scoreHome,
           type: "lead_change",
@@ -86,7 +89,7 @@ export default memo(function KeyMoments({ actions }: Props) {
             keyMoments.push({
               period: startAction?.period || action.period,
               clock: startAction?.clock || action.clock,
-              description: `${runTeam} goes on a ${runPoints}-0 run`,
+              description: isZh ? `${runTeam} 打出 ${runPoints}-0 攻击波` : `${runTeam} goes on a ${runPoints}-0 run`,
               scoreAway: parseInt(actions[i - 1]?.scoreAway) || scoreAway,
               scoreHome: parseInt(actions[i - 1]?.scoreHome) || scoreHome,
               type: "run",
@@ -109,7 +112,9 @@ export default memo(function KeyMoments({ actions }: Props) {
             keyMoments.push({
               period: action.period,
               clock: action.clock,
-              description: action.description || `${action.playerNameI} scores in the clutch`,
+              description: isZh
+                ? describeAction(action, true) || `${action.playerNameI} 关键时刻得分`
+                : action.description || `${action.playerNameI} scores in the clutch`,
               scoreAway,
               scoreHome,
               type: "clutch",
@@ -127,7 +132,7 @@ export default memo(function KeyMoments({ actions }: Props) {
       keyMoments.push({
         period: startAction?.period || 1,
         clock: startAction?.clock || "",
-        description: `${runTeam} goes on a ${runPoints}-0 run`,
+        description: isZh ? `${runTeam} 打出 ${runPoints}-0 攻击波` : `${runTeam} goes on a ${runPoints}-0 run`,
         scoreAway: parseInt(actions[actions.length - 1]?.scoreAway) || 0,
         scoreHome: parseInt(actions[actions.length - 1]?.scoreHome) || 0,
         type: "run",
@@ -148,7 +153,7 @@ export default memo(function KeyMoments({ actions }: Props) {
     });
 
     return unique.slice(0, 15);
-  }, [actions]);
+  }, [actions, isZh]);
 
   if (moments.length === 0) return null;
 

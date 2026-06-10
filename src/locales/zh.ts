@@ -219,7 +219,7 @@ const zh: Translations = {
   },
 
   standingsPage: {
-    divisionStandings: "分区排名",
+    divisionStandings: "球队战绩",
     top6Hint: "每个分区前六名高亮显示，自动获得季后赛资格",
     playoff: "季后赛",
     playIn: "附加赛",
@@ -510,6 +510,9 @@ const zh: Translations = {
     noPlayData: "该节无回放数据",
     quarter: "Q",
     overtime: "OT",
+    fullFeed: "全部",
+    scoringOnly: "得分",
+    live: "直播中",
   },
 
   keyMoments: {

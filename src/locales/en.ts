@@ -219,7 +219,7 @@ const en: Translations = {
   },
 
   standingsPage: {
-    divisionStandings: "Division Standings",
+    divisionStandings: "League Standings",
     top6Hint: "Top 6 in each conference highlighted for playoff eligibility",
     playoff: "Playoff",
     playIn: "Play-In",
@@ -510,6 +510,9 @@ const en: Translations = {
     noPlayData: "No play data for this period",
     quarter: "Q",
     overtime: "OT",
+    fullFeed: "All",
+    scoringOnly: "Scoring",
+    live: "Live",
   },
 
   keyMoments: {

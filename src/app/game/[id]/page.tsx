@@ -106,6 +106,13 @@ export default async function GamePage({ params }: PageProps) {
     scoreHome: a.scoreHome,
     scoreAway: a.scoreAway,
     isFieldGoal: a.isFieldGoal,
+    // zh text-feed templating inputs (see describeAction in PlayByPlay.tsx).
+    // Qualifiers are trimmed to the two the templates read — the raw array
+    // carries noise like "pointsinthepaint" on most shots.
+    descriptor: a.descriptor || undefined,
+    qualifiers: a.qualifiers?.filter((q) => q === "fastbreak" || q === "2ndchance"),
+    assistPlayerNameInitial: a.assistPlayerNameInitial || undefined,
+    shotDistance: a.shotDistance || undefined,
   }));
 
   const playerInfoMap = new Map<number, PlayerInfo>();
@@ -274,7 +281,7 @@ export default async function GamePage({ params }: PageProps) {
       </div>
 
       <div className="mt-6">
-        <PlayByPlaySection actions={slimActions} />
+        <PlayByPlaySection actions={slimActions} isLive={boxScore.gameStatus === 2} />
       </div>
 
       <RelatedPages eyebrow={isZh ? "继续探索" : "Keep exploring"} pages={relatedPages} />
