@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState, memo } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
 import type { Translations } from "@/locales/types";
+import PlayerCareerChart from "@/components/player/PlayerCareerChart";
+import PlayerRankBadges from "@/components/player/PlayerRankBadges";
 
 interface SeasonRow {
   SEASON_ID: string;
@@ -114,6 +117,9 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
 
   return (
     <div className="space-y-6">
+      {/* Current-season league-rank badges (silent-hide when not a leader) */}
+      <PlayerRankBadges playerId={playerId} />
+
       {/* Scoring Trend Chart */}
       {games && games.length >= 3 && (
         <GameTrendChart games={games} t={t} />
@@ -191,12 +197,40 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
         </div>
       )}
 
-      {/* Career Stats */}
+      {/* Career Stats — table by default, with an opt-in chart view */}
       {seasons && seasons.length > 0 && (
-        <CareerStatsTable seasons={seasons} t={t} />
+        <CareerSection seasons={seasons} t={t} isZh={locale === "zh"} />
       )}
     </div>
   );
+}
+
+// Owns the 表格/图表 view state so the default table render stays untouched.
+function CareerSection({ seasons, t, isZh }: { seasons: SeasonRow[]; t: Translations; isZh: boolean }) {
+  const [view, setView] = useState<"table" | "chart">("table");
+  const canChart = seasons.length >= 2;
+
+  const toggle = canChart ? (
+    <div className="flex items-center gap-0.5 bg-bg-secondary/60 rounded-lg p-0.5">
+      {([["table", isZh ? "表格" : "Table"], ["chart", isZh ? "图表" : "Chart"]] as const).map(([k, label]) => (
+        <button
+          key={k}
+          onClick={() => setView(k)}
+          aria-pressed={view === k}
+          className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+            view === k ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  if (view === "chart" && canChart) {
+    return <PlayerCareerChart seasons={seasons} headerExtra={toggle} />;
+  }
+  return <CareerStatsTable seasons={seasons} t={t} headerExtra={toggle} />;
 }
 
 const GameTrendChart = memo(function GameTrendChart({ games, t }: { games: GameLogRow[]; t: Translations }) {
@@ -274,7 +308,7 @@ function CompareArrow({ current, career }: { current: number; career: number }) 
   return null;
 }
 
-function CareerStatsTable({ seasons, t }: { seasons: SeasonRow[]; t: Translations }) {
+function CareerStatsTable({ seasons, t, headerExtra }: { seasons: SeasonRow[]; t: Translations; headerExtra?: ReactNode }) {
   // Find best season by PPG
   let bestIdx = 0;
   let bestPts = 0;
@@ -331,8 +365,9 @@ function CareerStatsTable({ seasons, t }: { seasons: SeasonRow[]; t: Translation
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t.playerStats.seasonBySeasonStats}</h3>
+        {headerExtra}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
