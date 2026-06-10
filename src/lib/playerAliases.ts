@@ -301,9 +301,14 @@ export function expandQuery(qLower: string): string[] {
   // exact alias match
   const exact = PLAYER_ALIASES[qLower];
   if (exact) expansions.add(exact);
-  // partial — try each alias key as a substring of the query
+  // partial — single-word ASCII keys must match a whole token: raw substring
+  // matching made "james" hit "ja" (Morant) and "wade" hit "ad" (Davis).
+  // CJK and multi-word keys keep substring semantics ("老詹比赛", "kd shot chart").
+  const tokens = qLower.split(/\s+/);
   for (const key of Object.keys(PLAYER_ALIASES)) {
-    if (qLower.includes(key)) expansions.add(PLAYER_ALIASES[key]);
+    const singleAsciiWord = !key.includes(" ") && /^[\x20-\x7e]+$/.test(key);
+    const hit = singleAsciiWord ? tokens.includes(key) : qLower.includes(key);
+    if (hit) expansions.add(PLAYER_ALIASES[key]);
   }
   return [...expansions];
 }
