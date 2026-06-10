@@ -690,10 +690,8 @@ body {
 
 /* Navbar scroll state — applies via JS `data-scrolled` */
 nav.sticky[data-scrolled="true"] {
-  background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+  background: var(--bg-secondary);
   border-bottom-color: var(--border-strong);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 /* DateNav sticky helper — clean shadow under sticky element */

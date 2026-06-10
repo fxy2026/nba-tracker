@@ -66,7 +66,7 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+          <thead className="sticky top-0 z-10 bg-bg-card">
             <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
               <th className="text-left py-2.5 px-4">{t.playerSalary.seasonCol}</th>
               <th className="text-right py-2.5 px-4">{t.playerSalary.baseSalary}</th>
