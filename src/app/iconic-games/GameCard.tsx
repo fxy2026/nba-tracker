@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { GitCompareArrows, Activity } from "lucide-react";
 import { GAME_TAG_LABEL, type IconicGame } from "@/lib/iconicGames";
+import { decadeOfYear } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 
@@ -23,7 +24,7 @@ export default function GameCard({ game, isZh }: { game: IconicGame; isZh: boole
       className="glass-tile relative overflow-hidden"
       data-game-card
       data-tags={(game.tags ?? []).join(" ")}
-      data-decade={`${game.date.slice(0, 3)}0s`}
+      data-decade={decadeOfYear(parseInt(game.date.slice(0, 4), 10))}
     >
       <div
         className="absolute inset-0 opacity-12 pointer-events-none"

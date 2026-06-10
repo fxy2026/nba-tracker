@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { TEAM_META } from "@/lib/teams";
 import { getFullSchedule, getPlayerIndex } from "@/lib/api";
-import { isPreseason } from "@/lib/games";
+import { isPlayoff, isPreseason } from "@/lib/games";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { GAME_DECADES, SEASON_DECADES } from "@/lib/decades";
 
 const BASE = "https://nba.xpy.me";
 
@@ -87,8 +88,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic: every individual game page (regular season + playoffs only, finished games
   // have the most SEO value because they have full box scores; upcoming games are useful too).
   const gamePages: SitemapEntry[] = [];
+  const seriesPages: SitemapEntry[] = [];
   try {
     const schedule = await getFullSchedule();
+    // Playoff series hubs — the 9-char series id is a playoff gameId minus
+    // its final game digit. Only series with at least one finished game are
+    // emitted, which skips TBD/ifNecessary placeholder rows.
+    const seriesLatest = new Map<string, Date | undefined>();
     for (const gd of schedule) {
       for (const g of gd.games) {
         // Skip preseason (001) — those are exhibition vs international teams
@@ -107,7 +113,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: g.gameStatus === 3 ? 0.5 : 0.6,
           lastModified,
         });
+        if (g.gameStatus === 3 && isPlayoff(g.gameId)) {
+          const seriesId = g.gameId.slice(0, 9);
+          const prev = seriesLatest.get(seriesId);
+          if (lastModified && (!prev || lastModified > prev)) seriesLatest.set(seriesId, lastModified);
+          else if (!seriesLatest.has(seriesId)) seriesLatest.set(seriesId, undefined);
+        }
       }
+    }
+    for (const [seriesId, lastModified] of seriesLatest) {
+      seriesPages.push({
+        url: `${BASE}/series/${seriesId}`,
+        changeFrequency: "weekly",
+        priority: 0.5,
+        lastModified,
+      });
     }
   } catch {
     // If schedule fetch fails during build, just skip game pages — they'll be indexed via crawl
@@ -143,19 +163,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/iconic-seasons`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/iconic-games`, changeFrequency: "monthly", priority: 0.7 },
     // Per-decade landing pages — each is its own SEO target with an
-    // editorial narrative and filtered card grid.
-    ...(["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const).flatMap((d) => [
-      {
-        url: `${BASE}/iconic-seasons/${d}`,
-        changeFrequency: "monthly" as ChangeFreq,
-        priority: 0.6,
-      },
-      {
-        url: `${BASE}/iconic-games/${d}`,
-        changeFrequency: "monthly" as ChangeFreq,
-        priority: 0.6,
-      },
-    ]),
+    // editorial narrative and filtered card grid. The two routes have
+    // independent decade coverage, derived from the datasets so an empty
+    // decade (which the page 404s) is never advertised.
+    ...SEASON_DECADES.map((d) => ({
+      url: `${BASE}/iconic-seasons/${d}`,
+      changeFrequency: "monthly" as ChangeFreq,
+      priority: 0.6,
+    })),
+    ...GAME_DECADES.map((d) => ({
+      url: `${BASE}/iconic-games/${d}`,
+      changeFrequency: "monthly" as ChangeFreq,
+      priority: 0.6,
+    })),
   ];
 
   return [
@@ -167,6 +187,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...tools,
     ...teamPages,
     ...gamePages,
+    ...seriesPages,
     ...playerPages,
     ...legendPages,
     ...iconicSeasonsIndex,

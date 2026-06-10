@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Flame, Crown, Trophy, GitCompareArrows, Calendar } from "lucide-react";
-import { ICONIC_GAMES, type IconicGame, type GameTag } from "@/lib/iconicGames";
+import { ICONIC_GAMES, type GameTag } from "@/lib/iconicGames";
+import { GAME_DECADES } from "@/lib/decades";
 import GamesFilter from "./GamesFilter";
 import GameCard from "./GameCard";
 import { getLocale } from "@/lib/locale";
@@ -15,11 +16,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/iconic-games" },
   openGraph: {
     title: "Iconic NBA Games",
-    description: "Sixteen single-night performances that defined careers — Wilt 100, Kobe 81, MJ flu game, The Block, Tatum 51 in a Game 7, and more.",
+    description: `${ICONIC_GAMES.length} single-night performances that defined careers — Wilt 100, Kobe 81, MJ flu game, The Block, Tatum 51 in a Game 7, and more.`,
   },
 };
-
-export const revalidate = 86400;
 
 export default async function IconicGamesPage() {
   const locale = await getLocale();
@@ -34,10 +33,9 @@ export default async function IconicGamesPage() {
     new Set(sorted.flatMap((g) => g.tags ?? [])),
   ) as GameTag[];
 
-  // Decade labels — "1960s", "2010s", etc. Computed once + passed to the
-  // filter so chips only show decades that have at least one entry.
-  const decadeOf = (g: IconicGame) => `${g.date.slice(0, 3)}0s`;
-  const allDecades = Array.from(new Set(sorted.map(decadeOf))).sort();
+  // Decade labels — "1960s", "2010s", etc. Derived from the dataset so chips
+  // only show decades that have at least one entry.
+  const allDecades = GAME_DECADES;
 
   const itemListJsonLd = {
     "@context": "https://schema.org",

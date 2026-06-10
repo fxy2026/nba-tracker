@@ -2,28 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Crown, Flame, GitCompareArrows, Trophy, Activity, ArrowLeft } from "lucide-react";
-import { ICONIC_SEASONS, type IconicSeason } from "@/lib/iconicSeasons";
+import { DECADE_SLUGS, type DecadeSlug, seasonsForDecade, SEASON_DECADES } from "@/lib/decades";
 import SeasonCard from "../SeasonCard";
+import StatTile from "../StatTile";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
-
-export const revalidate = 86400;
-
-const DECADE_SLUGS = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const;
-type DecadeSlug = typeof DECADE_SLUGS[number];
-
-function startYearOfSlug(slug: DecadeSlug): number {
-  return parseInt(slug.slice(0, 4), 10);
-}
-
-function seasonsForDecade(slug: DecadeSlug): IconicSeason[] {
-  const start = startYearOfSlug(slug);
-  return ICONIC_SEASONS
-    .filter((s) => s.seasonYear >= start && s.seasonYear < start + 10)
-    .sort((a, b) => a.seasonYear - b.seasonYear);
-}
 
 // Editorial blurbs per decade — gives each page a distinct narrative voice
 // instead of being a thin filter view.
@@ -72,18 +57,22 @@ interface PageProps {
   params: Promise<{ decade: string }>;
 }
 
+// Decade set is fully known at build time — hard-404 unknown slugs at the
+// routing layer (a streamed notFound() would still send HTTP 200).
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-  return DECADE_SLUGS
-    .filter((slug) => seasonsForDecade(slug).length > 0)
-    .map((decade) => ({ decade }));
+  return SEASON_DECADES.map((decade) => ({ decade }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { decade } = await params;
-  if (!DECADE_SLUGS.includes(decade as DecadeSlug)) return {};
+  // notFound() here (pre-streaming) sets a real 404 status; the in-body
+  // guard alone would stream a 200 shell first via the root loading boundary.
+  if (!DECADE_SLUGS.includes(decade as DecadeSlug)) notFound();
   const slug = decade as DecadeSlug;
   const seasons = seasonsForDecade(slug);
-  if (seasons.length === 0) return {};
+  if (seasons.length === 0) notFound();
   const meta = DECADE_TITLE[slug];
   const names = seasons.slice(0, 4).map((s) => s.name).join(", ");
   return {
@@ -110,7 +99,7 @@ export default async function DecadeIconicSeasonsPage({ params }: PageProps) {
   const blurb = isZh ? DECADE_BLURB[slug].zh : DECADE_BLURB[slug].en;
 
   // Cross-link to adjacent decades for navigation flow
-  const availableDecades = DECADE_SLUGS.filter((s) => seasonsForDecade(s).length > 0);
+  const availableDecades = SEASON_DECADES;
 
   // Trophy + champion tallies for this decade — gives the page a top-line
   // narrative beyond a card list.
@@ -162,9 +151,9 @@ export default async function DecadeIconicSeasonsPage({ params }: PageProps) {
 
       {/* Decade tally strip */}
       <div className="grid grid-cols-3 gap-3 mt-6">
-        <Tile label={isZh ? "MVP 赛季" : "MVP Seasons"} value={mvpCount} icon={Crown} />
-        <Tile label={isZh ? "夺冠赛季" : "Title Runs"} value={champCount} icon={Trophy} />
-        <Tile label={isZh ? "FMVP" : "Finals MVP"} value={fmvpCount} icon={Activity} />
+        <StatTile label={isZh ? "MVP 赛季" : "MVP Seasons"} value={mvpCount} icon={Crown} />
+        <StatTile label={isZh ? "夺冠赛季" : "Title Runs"} value={champCount} icon={Trophy} />
+        <StatTile label={isZh ? "FMVP" : "Finals MVP"} value={fmvpCount} icon={Activity} />
       </div>
 
       {/* Adjacent decades nav */}
@@ -207,20 +196,6 @@ export default async function DecadeIconicSeasonsPage({ params }: PageProps) {
           { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },
         ]}
       />
-    </div>
-  );
-}
-
-function Tile({ label, value, icon: Icon }: { label: string; value: number; icon: typeof Crown }) {
-  return (
-    <div className="glass-tile p-4 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-accent-amber/15 flex items-center justify-center text-accent-amber">
-        <Icon size={18} />
-      </div>
-      <div>
-        <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">{label}</p>
-        <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{value}</p>
-      </div>
     </div>
   );
 }

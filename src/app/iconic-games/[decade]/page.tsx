@@ -2,31 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Crown, Flame, GitCompareArrows, ArrowLeft, Calendar } from "lucide-react";
-import { ICONIC_GAMES, type IconicGame } from "@/lib/iconicGames";
+import { DECADE_SLUGS, type DecadeSlug, gamesForDecade, GAME_DECADES, SEASON_DECADES } from "@/lib/decades";
 import GameCard from "../GameCard";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
-
-export const revalidate = 86400;
-
-const DECADE_SLUGS = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const;
-type DecadeSlug = typeof DECADE_SLUGS[number];
-
-function startYearOfSlug(slug: DecadeSlug): number {
-  return parseInt(slug.slice(0, 4), 10);
-}
-
-function gamesForDecade(slug: DecadeSlug): IconicGame[] {
-  const start = startYearOfSlug(slug);
-  return ICONIC_GAMES
-    .filter((g) => {
-      const y = parseInt(g.date.slice(0, 4), 10);
-      return y >= start && y < start + 10;
-    })
-    .sort((a, b) => a.date.localeCompare(b.date));
-}
 
 const DECADE_BLURB: Record<DecadeSlug, { en: string; zh: string }> = {
   "1960s": {
@@ -73,18 +54,22 @@ interface PageProps {
   params: Promise<{ decade: string }>;
 }
 
+// Decade set is fully known at build time — hard-404 unknown slugs at the
+// routing layer (a streamed notFound() would still send HTTP 200).
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-  return DECADE_SLUGS
-    .filter((slug) => gamesForDecade(slug).length > 0)
-    .map((decade) => ({ decade }));
+  return GAME_DECADES.map((decade) => ({ decade }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { decade } = await params;
-  if (!DECADE_SLUGS.includes(decade as DecadeSlug)) return {};
+  // notFound() here (pre-streaming) sets a real 404 status; the in-body
+  // guard alone would stream a 200 shell first via the root loading boundary.
+  if (!DECADE_SLUGS.includes(decade as DecadeSlug)) notFound();
   const slug = decade as DecadeSlug;
   const games = gamesForDecade(slug);
-  if (games.length === 0) return {};
+  if (games.length === 0) notFound();
   const meta = DECADE_TITLE[slug];
   const names = games.slice(0, 4).map((g) => g.name).join(", ");
   return {
@@ -110,7 +95,7 @@ export default async function DecadeIconicGamesPage({ params }: PageProps) {
   const title = isZh ? DECADE_TITLE[slug].zh : DECADE_TITLE[slug].en;
   const blurb = isZh ? DECADE_BLURB[slug].zh : DECADE_BLURB[slug].en;
 
-  const availableDecades = DECADE_SLUGS.filter((s) => gamesForDecade(s).length > 0);
+  const availableDecades = GAME_DECADES;
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -187,7 +172,9 @@ export default async function DecadeIconicGamesPage({ params }: PageProps) {
         pages={[
           { href: "/iconic-games", label: isZh ? "全部经典之夜" : "All iconic games", icon: Flame },
           { href: "/iconic-seasons", label: isZh ? "经典赛季" : "Iconic seasons", icon: Crown },
-          { href: `/iconic-seasons/${slug}`, label: isZh ? `${slug} 经典赛季` : `${slug} iconic seasons`, icon: Calendar },
+          ...(SEASON_DECADES.includes(slug)
+            ? [{ href: `/iconic-seasons/${slug}`, label: isZh ? `${slug} 经典赛季` : `${slug} iconic seasons`, icon: Calendar }]
+            : []),
           { href: "/compare", label: isZh ? "球员对比" : "Player compare", icon: GitCompareArrows },
         ]}
       />

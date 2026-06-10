@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { PLAY_STYLE_LABEL, type IconicSeason } from "@/lib/iconicSeasons";
+import { decadeOfYear } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 
@@ -9,7 +10,7 @@ export default function SeasonCard({ season, isZh }: { season: IconicSeason; isZ
   const teamColor = team?.primaryColor || "#94A3B8";
   const story = isZh && season.storyZh ? season.storyZh : season.story;
 
-  const decade = `${Math.floor(season.seasonYear / 10) * 10}s`;
+  const decade = decadeOfYear(season.seasonYear);
   const trophyFlags = [
     season.mvp && "mvp",
     season.champion && "champion",

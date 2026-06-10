@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Crown, GitCompareArrows, Trophy, Flame, Activity, Star } from "lucide-react";
-import { ICONIC_SEASONS, type IconicSeason, type PlayStyle } from "@/lib/iconicSeasons";
+import { ICONIC_SEASONS, type PlayStyle } from "@/lib/iconicSeasons";
+import { type DecadeSlug, seasonsForDecade, SEASON_DECADES } from "@/lib/decades";
 import SeasonsFilter from "./SeasonsFilter";
 import SeasonCard from "./SeasonCard";
+import StatTile from "./StatTile";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -19,21 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 86400;
-
-// Era buckets — shown as quick filter chips. Each iconic season falls into
-// exactly one based on seasonYear.
-type Era = "60s" | "70s" | "80s" | "90s" | "2000s" | "2010s" | "2020s";
-function eraOf(year: number): Era {
-  if (year < 1970) return "60s";
-  if (year < 1980) return "70s";
-  if (year < 1990) return "80s";
-  if (year < 2000) return "90s";
-  if (year < 2010) return "2000s";
-  if (year < 2020) return "2010s";
-  return "2020s";
-}
-
 export default async function IconicSeasonsPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
@@ -41,43 +28,22 @@ export default async function IconicSeasonsPage() {
   // Sort chronologically — natural narrative when scrolling top-to-bottom.
   const sorted = [...ICONIC_SEASONS].sort((a, b) => a.seasonYear - b.seasonYear);
 
-  // Group by era for editorial section dividers.
-  const byEra: Record<Era, IconicSeason[]> = {
-    "60s": [], "70s": [], "80s": [], "90s": [], "2000s": [], "2010s": [], "2020s": [],
-  };
-  for (const s of sorted) byEra[eraOf(s.seasonYear)].push(s);
-  const eraOrder: Era[] = ["60s", "70s", "80s", "90s", "2000s", "2010s", "2020s"];
-
   // Aggregate trophy counts across the dataset — surfaced as a stat strip
   // so the page feels like a museum index, not a flat list.
   const totalMvp = ICONIC_SEASONS.filter((s) => s.mvp).length;
   const totalChamp = ICONIC_SEASONS.filter((s) => s.champion).length;
   const totalFmvp = ICONIC_SEASONS.filter((s) => s.finalsMvp).length;
 
-  const eraLabel = (e: Era): string => {
-    if (isZh) {
-      return e === "60s" ? "60 年代"
-        : e === "70s" ? "70 年代"
-        : e === "80s" ? "80 年代"
-        : e === "90s" ? "90 年代"
-        : e === "2000s" ? "00 年代"
-        : e === "2010s" ? "10 年代"
-        : "20 年代";
-    }
-    return e;
+  // Short display form of a decade slug ("1960s" → "60s") — keeps the
+  // section labels as compact as the original era chips.
+  const eraLabel = (d: DecadeSlug): string => {
+    if (isZh) return `${d.slice(2, 4)} 年代`;
+    return d.startsWith("19") ? d.slice(2) : d;
   };
 
   // Filter input axes — derived from the dataset so chips only show what's
   // actually populated.
-  const decadeKeyOf = (e: Era): string =>
-    e === "60s" ? "1960s"
-      : e === "70s" ? "1970s"
-      : e === "80s" ? "1980s"
-      : e === "90s" ? "1990s"
-      : e === "2000s" ? "2000s"
-      : e === "2010s" ? "2010s"
-      : "2020s";
-  const availableDecades = eraOrder.filter((e) => byEra[e].length > 0).map(decadeKeyOf);
+  const availableDecades = SEASON_DECADES;
   const availableStyles = Array.from(
     new Set(sorted.flatMap((s) => s.styles ?? [])),
   ) as PlayStyle[];
@@ -137,14 +103,13 @@ export default async function IconicSeasonsPage() {
 
       {/* Era sections */}
       <div className="mt-6 space-y-12">
-        {eraOrder.map((era) => {
-          const seasons = byEra[era];
-          if (seasons.length === 0) return null;
+        {SEASON_DECADES.map((era) => {
+          const seasons = seasonsForDecade(era);
           return (
             <section key={era}>
               <div className="flex items-center gap-3 mb-4">
                 <Link
-                  href={`/iconic-seasons/${decadeKeyOf(era)}`}
+                  href={`/iconic-seasons/${era}`}
                   className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber hover:text-accent transition-colors cursor-pointer"
                 >
                   / {eraLabel(era)} →
@@ -173,20 +138,6 @@ export default async function IconicSeasonsPage() {
           { href: "/records", label: isZh ? "赛季纪录" : "Season Records", icon: Activity },
         ]}
       />
-    </div>
-  );
-}
-
-function StatTile({ label, value, icon: Icon }: { label: string; value: number; icon: typeof Crown }) {
-  return (
-    <div className="glass-tile p-4 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-accent-amber/15 flex items-center justify-center text-accent-amber">
-        <Icon size={18} />
-      </div>
-      <div>
-        <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">{label}</p>
-        <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{value}</p>
-      </div>
     </div>
   );
 }

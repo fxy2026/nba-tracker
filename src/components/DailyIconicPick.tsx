@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Flame, GitCompareArrows, ArrowRight, Crown } from "lucide-react";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
+import { SEASON_DECADES } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
@@ -148,7 +149,7 @@ export default async function DailyIconicPick() {
         <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60 mr-1">
           {isZh ? "按年代浏览" : "Browse by decade"}
         </span>
-        {(["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"] as const).map((d) => (
+        {SEASON_DECADES.map((d) => (
           <Link
             key={d}
             href={`/iconic-seasons/${d}`}
