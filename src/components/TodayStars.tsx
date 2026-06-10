@@ -6,6 +6,7 @@ import PlayerHeadshot from "./PlayerHeadshot";
 import { Star, ArrowUpRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { TEAM_META } from "@/lib/teams";
+import { localToday, localTz } from "@/lib/timezone";
 
 interface StarPlayer {
   personId: number;
@@ -26,10 +27,10 @@ export default function TodayStars() {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch("/api/games", { signal: controller.signal });
+        const res = await fetch(`/api/games?date=${localToday()}&tz=${encodeURIComponent(localTz())}`, { signal: controller.signal });
         if (!res.ok) return;
         const data = await res.json();
-        const games = data.games || [];
+        const games = data.data || [];
         const finalGames = games.filter((g: { gameStatus: number }) => g.gameStatus === 3);
         if (finalGames.length === 0) return;
 

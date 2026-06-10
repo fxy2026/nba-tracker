@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import { localToday } from "@/lib/timezone";
+import { localToday, localTz } from "@/lib/timezone";
 
 interface DateNavProps {
   selectedDate: string;
@@ -18,8 +18,28 @@ function offsetDate(base: string, offset: number): string {
 }
 
 export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const router = useRouter();
+
+  // Timezone caption: localTz() reads Intl at runtime, so it can differ between
+  // SSR and client. Defer to a post-mount flag to avoid a hydration mismatch on
+  // this display-only label; the chip row itself renders unchanged on the server.
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag: localTz() is unknowable during SSR
+  useEffect(() => setMounted(true), []);
+  const tzLabel = useMemo(() => {
+    const tz = localTz();
+    if (tz === "Asia/Shanghai" || tz === "Asia/Hong_Kong" || tz === "Asia/Macau") {
+      return t.common.beijingTime;
+    }
+    const short = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+      timeZoneName: "short",
+      timeZone: tz,
+    })
+      .formatToParts(new Date())
+      .find((p) => p.type === "timeZoneName")?.value;
+    return short ? `${t.dateNav.localTimeZone} ${short}` : t.dateNav.localTimeZone;
+  }, [locale, t]);
 
   const navigate = useCallback((date: string) => {
     if (onDateChange) {
@@ -149,6 +169,17 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
         >
           {t.dateNav.today}
         </button>
+      )}
+
+      {/* Which timezone the date chips are grouped by — removes "is this last
+          night or tonight?" ambiguity for non-ET (e.g. Beijing) users. */}
+      {mounted && (
+        <span
+          aria-hidden
+          className="shrink-0 ml-2 text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 hidden sm:inline"
+        >
+          {tzLabel}
+        </span>
       )}
     </div>
   );

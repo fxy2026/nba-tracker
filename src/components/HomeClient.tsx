@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import DateNav from "./DateNav";
 import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
@@ -9,12 +10,14 @@ import StandingsMini from "./StandingsMini";
 import RecentlyViewed from "./RecentlyViewed";
 import { useLocale } from "@/components/LocaleProvider";
 import { localTz as getLocalTz, dateInTz } from "@/lib/timezone";
+import type { ScheduleGame } from "@/lib/api";
 
 interface HomeClientProps {
   initialDate: string;
+  initialGames?: ScheduleGame[];
 }
 
-export default function HomeClient({ initialDate }: HomeClientProps) {
+export default function HomeClient({ initialDate, initialGames }: HomeClientProps) {
   const { t } = useLocale();
   const searchParams = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(initialDate);
@@ -41,14 +44,28 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
         yesterday.setDate(yesterday.getDate() - 1);
         const yStr = dateInTz(yesterday, getLocalTz());
         return (
-          <div className="mt-1 mb-1">
-            <button onClick={() => setSelectedDate(yStr)} className="text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer">
-              {t.home.yesterdayLink}{yStr})
+          <div className="mt-2 mb-1">
+            {/* The single most common morning action for a tz-shifted audience —
+                "show me last night's finals" — promoted from a footnote link to a
+                prominent glass-tile pill matching the DateNav "Today" reset chip. */}
+            <button
+              onClick={() => setSelectedDate(yStr)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 glass-tile text-xs font-medium text-text-primary hover:border-accent/50 hover:text-accent transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={14} className="shrink-0" />
+              {t.home.yesterdayResults}
+              <span className="text-text-secondary font-mono tabular-nums">{yStr}</span>
             </button>
           </div>
         );
       })()}
-      <GamesList selectedDate={selectedDate} />
+      {/* SSR'd games only apply to the server-rendered date. If the client
+          tz-correction snapped to a different local "today", GamesList falls
+          back to its own fetch for the new date. */}
+      <GamesList
+        selectedDate={selectedDate}
+        initialGames={selectedDate === initialDate ? initialGames : undefined}
+      />
 
       {/* User's recent visits — only renders when localStorage has data */}
       <RecentlyViewed />

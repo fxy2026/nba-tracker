@@ -174,6 +174,7 @@ const zh: Translations = {
 
   dateNav: {
     today: "今天",
+    localTimeZone: "当地时间",
   },
 
   gameDetail: {
@@ -678,6 +679,7 @@ const zh: Translations = {
 
   export: {
     copied: "已复制！",
+    clipboardError: "无法访问剪贴板",
     exportBtn: "导出",
     eastConf: "东部联盟：",
     westConf: "西部联盟：",

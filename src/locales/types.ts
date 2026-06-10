@@ -183,6 +183,7 @@ export interface Translations {
   // ---- DateNav ----
   dateNav: {
     today: string;
+    localTimeZone: string;
   };
 
   // ---- Game Detail Page ----
@@ -727,6 +728,7 @@ export interface Translations {
   // ---- Export ----
   export: {
     copied: string;
+    clipboardError: string;
     exportBtn: string;
     eastConf: string;
     westConf: string;

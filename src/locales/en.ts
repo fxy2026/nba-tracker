@@ -174,6 +174,7 @@ const en: Translations = {
 
   dateNav: {
     today: "Today",
+    localTimeZone: "Local time",
   },
 
   gameDetail: {
@@ -678,6 +679,7 @@ const en: Translations = {
 
   export: {
     copied: "Copied!",
+    clipboardError: "Clipboard unavailable",
     exportBtn: "Export",
     eastConf: "Eastern Conference:",
     westConf: "Western Conference:",

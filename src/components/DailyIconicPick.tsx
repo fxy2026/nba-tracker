@@ -6,11 +6,12 @@ import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { SEASON_DECADES } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import { formatDate } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 
 // Deterministic pick of the day. Hashing on the calendar date gives every
 // visitor the same picks for the same day, so two friends loading the home
-// page within the same UTC day see identical iconic-of-the-day surfaces —
+// page on the same NBA game day (ET) see identical iconic-of-the-day surfaces —
 // makes the "did you see today's matchup?" social moment work.
 function pickFor(dateStr: string) {
   let hash = 0;
@@ -23,7 +24,7 @@ function pickFor(dateStr: string) {
 export default async function DailyIconicPick() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const { season, game } = pickFor(today);
 
   const sTeam = TEAM_META[season.team];
