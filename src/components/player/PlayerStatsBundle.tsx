@@ -56,7 +56,8 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
     setLoading(true);
     setError(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 8000);
 
     (async () => {
       try {
@@ -65,16 +66,16 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
         if (teamTricode) qs.set("team", teamTricode);
         const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
-        if (!res.ok) { if (!controller.signal.aborted) { setError(true); setLoading(false); } return; }
+        if (!res.ok) { if (timedOut || !controller.signal.aborted) { setError(true); setLoading(false); } return; }
         const data = await res.json();
         if (!controller.signal.aborted) {
           setSeasons(data.careerSeasons || []);
           setGames(data.recentGames || []);
         }
       } catch {
-        if (!controller.signal.aborted) setError(true);
+        if (timedOut || !controller.signal.aborted) setError(true);
       }
-      if (!controller.signal.aborted) setLoading(false);
+      if (timedOut || !controller.signal.aborted) setLoading(false);
     })();
     return () => { controller.abort(); clearTimeout(timeout); };
   }, [playerId, playerName, teamTricode, retryKey]);

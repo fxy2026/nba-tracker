@@ -85,11 +85,11 @@ function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
     push("PPG", p1.pts, p2.pts);
     push("RPG", p1.reb, p2.reb);
     push("APG", p1.ast, p2.ast);
-    if (p1.spg !== undefined || p2.spg !== undefined) {
-      push("SPG", p1.spg ?? 0, p2.spg ?? 0);
+    if (p1.spg !== undefined && p2.spg !== undefined) {
+      push("SPG", p1.spg, p2.spg);
     }
-    if (p1.bpg !== undefined || p2.bpg !== undefined) {
-      push("BPG", p1.bpg ?? 0, p2.bpg ?? 0);
+    if (p1.bpg !== undefined && p2.bpg !== undefined) {
+      push("BPG", p1.bpg, p2.bpg);
     }
   }
   return axes;
@@ -116,21 +116,23 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
     { label: "RPG", values: [p1.reb, p2.reb, p3.reb], fmt: (v) => v.toFixed(1) },
     { label: "APG", values: [p1.ast, p2.ast, p3.ast], fmt: (v) => v.toFixed(1) },
   ];
-  // Defensive splits if any side has them
-  if (p1.spg !== undefined || p2.spg !== undefined || p3.spg !== undefined) {
-    statRows.push({ label: "SPG", values: [p1.spg ?? 0, p2.spg ?? 0, p3.spg ?? 0], fmt: (v) => v.toFixed(1) });
+  // Optional rows only render when ALL THREE players carry the field —
+  // active-player entries from /api/search lack shooting splits and SPG/BPG,
+  // so coercing those to 0 would mark them false losers and skew the verdict.
+  if (p1.spg !== undefined && p2.spg !== undefined && p3.spg !== undefined) {
+    statRows.push({ label: "SPG", values: [p1.spg, p2.spg, p3.spg], fmt: (v) => v.toFixed(1) });
   }
-  if (p1.bpg !== undefined || p2.bpg !== undefined || p3.bpg !== undefined) {
-    statRows.push({ label: "BPG", values: [p1.bpg ?? 0, p2.bpg ?? 0, p3.bpg ?? 0], fmt: (v) => v.toFixed(1) });
+  if (p1.bpg !== undefined && p2.bpg !== undefined && p3.bpg !== undefined) {
+    statRows.push({ label: "BPG", values: [p1.bpg, p2.bpg, p3.bpg], fmt: (v) => v.toFixed(1) });
   }
-  if (p1.fgPct !== undefined || p2.fgPct !== undefined || p3.fgPct !== undefined) {
-    statRows.push({ label: "FG%", values: [p1.fgPct ?? 0, p2.fgPct ?? 0, p3.fgPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  if (p1.fgPct !== undefined && p2.fgPct !== undefined && p3.fgPct !== undefined) {
+    statRows.push({ label: "FG%", values: [p1.fgPct, p2.fgPct, p3.fgPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
   }
-  if (p1.tpPct !== undefined || p2.tpPct !== undefined || p3.tpPct !== undefined) {
-    statRows.push({ label: "3P%", values: [p1.tpPct ?? 0, p2.tpPct ?? 0, p3.tpPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  if (p1.tpPct !== undefined && p2.tpPct !== undefined && p3.tpPct !== undefined) {
+    statRows.push({ label: "3P%", values: [p1.tpPct, p2.tpPct, p3.tpPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
   }
-  if (p1.ftPct !== undefined || p2.ftPct !== undefined || p3.ftPct !== undefined) {
-    statRows.push({ label: "FT%", values: [p1.ftPct ?? 0, p2.ftPct ?? 0, p3.ftPct ?? 0], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  if (p1.ftPct !== undefined && p2.ftPct !== undefined && p3.ftPct !== undefined) {
+    statRows.push({ label: "FT%", values: [p1.ftPct, p2.ftPct, p3.ftPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
   }
 
   // Tally categorical wins (highlight whoever leads the most rows)
@@ -491,6 +493,10 @@ export default function ComparePage() {
 
   const searchParams = useSearchParams();
   const hydratedRef = useRef(false);
+  // Gate URL reflection until the on-mount ?p1/p2/p3 resolves settle, so the
+  // reflection effect can't wipe the shared params before the slots fill.
+  // Starts true when there are no params to resolve (nothing to wait for).
+  const [urlSyncReady, setUrlSyncReady] = useState(() => !searchParams.toString());
   const { toast } = useToast();
   // Local "who would win" pick — keyed by the comparison pair so swapping
   // players resets the badge. localStorage only; no backend tally.
@@ -512,16 +518,18 @@ export default function ComparePage() {
         if (json.data) setter(json.data);
       } catch { /* ignore */ }
     };
-    if (p1Id) resolve(p1Id, setPlayer1);
-    if (p2Id) resolve(p2Id, setPlayer2);
-    if (p3Id) resolve(p3Id, setPlayer3);
+    const jobs: Promise<void>[] = [];
+    if (p1Id) jobs.push(resolve(p1Id, setPlayer1));
+    if (p2Id) jobs.push(resolve(p2Id, setPlayer2));
+    if (p3Id) jobs.push(resolve(p3Id, setPlayer3));
+    Promise.allSettled(jobs).then(() => setUrlSyncReady(true));
   }, [searchParams]);
 
   // Reflect selection state into the URL with replaceState (no router push,
   // no scroll reset). Uses iconicId for season snapshots, raw personId for
   // active/legend entries.
   useEffect(() => {
-    if (!hydratedRef.current) return;
+    if (!urlSyncReady) return;
     const params = new URLSearchParams();
     const idFor = (p: PlayerData) => p.iconicId ?? String(p.personId);
     if (player1) params.set("p1", idFor(player1));
@@ -533,7 +541,7 @@ export default function ComparePage() {
       const url = next ? `?${next}` : window.location.pathname;
       window.history.replaceState(null, "", url);
     }
-  }, [player1, player2, player3, searchParams]);
+  }, [player1, player2, player3, searchParams, urlSyncReady]);
 
   // Restore the user's previous pick for this exact pair, if any. Setting
   // back to null is fine here — React 19's "setState in effect" rule is a
@@ -695,7 +703,7 @@ export default function ComparePage() {
           ].map((preset) => (
             <button
               key={preset.label}
-              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); setPlayer1(null); setPlayer2(null); }}
+              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); setPlayer1(null); setPlayer2(null); setPlayer3(null); setQuery3(""); setResults3([]); }}
               className="px-3 py-1.5 glass-tile text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer"
             >
               {preset.label}

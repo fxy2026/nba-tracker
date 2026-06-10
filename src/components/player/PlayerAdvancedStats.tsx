@@ -44,7 +44,8 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
     setLoading(true);
     setError(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
     (async () => {
       try {
         const qs = new URLSearchParams({ id: String(playerId) });
@@ -52,13 +53,13 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
         if (teamTricode) qs.set("team", teamTricode);
         const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
-        if (!res.ok) { if (!controller.signal.aborted) setLoading(false); return; }
+        if (!res.ok) { if (timedOut || !controller.signal.aborted) setLoading(false); return; }
         const data = await res.json();
         if (!controller.signal.aborted) setStats(computeAdvanced(data.careerSeasons || []));
       } catch {
-        if (!controller.signal.aborted) setError(true);
+        if (timedOut || !controller.signal.aborted) setError(true);
       }
-      if (!controller.signal.aborted) setLoading(false);
+      if (timedOut || !controller.signal.aborted) setLoading(false);
     })();
     return () => { controller.abort(); clearTimeout(timeout); };
   }, [playerId, playerName, teamTricode]);

@@ -129,7 +129,8 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
     setLoading(true);
     setError(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
 
     (async () => {
       try {
@@ -142,15 +143,15 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
         clearTimeout(timeout);
         if (!res.ok) {
-          if (!controller.signal.aborted) { setError(true); setLoading(false); }
+          if (timedOut || !controller.signal.aborted) { setError(true); setLoading(false); }
           return;
         }
         const data = await res.json();
         if (!controller.signal.aborted) setRows(parseRows(data));
       } catch {
-        if (!controller.signal.aborted) setError(true);
+        if (timedOut || !controller.signal.aborted) setError(true);
       }
-      if (!controller.signal.aborted) setLoading(false);
+      if (timedOut || !controller.signal.aborted) setLoading(false);
     })();
     return () => { controller.abort(); clearTimeout(timeout); };
   }, [playerId, seasonType, retryKey]);
@@ -186,18 +187,43 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
     return { splits, season: aggregate(-1, -1, rows) };
   }, [rows]);
 
+  const monthLabel = (m: number) => (isZh ? `${m + 1}月` : MONTH_EN[m]);
+
+  // The season-type toggle renders unconditionally so a user who errored on
+  // one season type can always switch back to the other.
+  const toggle = (
+    <div className="glass-tile inline-flex overflow-hidden p-1">
+      {SEASON_TYPES.map((st) => (
+        <button
+          key={st}
+          onClick={() => setSeasonType(st)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+            seasonType === st
+              ? "bg-accent text-white shadow-md"
+              : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+          }`}
+        >
+          {st === "Regular Season" ? t.statsPage.regularSeason : t.statsPage.playoffs}
+        </button>
+      ))}
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="glass-tile h-28 w-32 shrink-0 skeleton-shimmer" />
-          ))}
-        </div>
-        <div className="space-y-2">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="glass-tile h-10 skeleton-shimmer" />
-          ))}
+      <div className="space-y-6">
+        {toggle}
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="glass-tile h-28 w-32 shrink-0 skeleton-shimmer" />
+            ))}
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="glass-tile h-10 skeleton-shimmer" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -206,45 +232,31 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
   if (error) {
     const encodedName = encodeURIComponent(playerName || "");
     return (
-      <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
-        <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
-            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-            {t.playerStats.viewOnNba}
-          </a>
-          <a href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodedName}`} target="_blank" rel="noopener noreferrer"
-            className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-            {t.playerStats.basketballRef}
-          </a>
-          <button onClick={() => setRetryKey((k) => k + 1)} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors cursor-pointer">
-            {t.common.retry}
-          </button>
+      <div className="space-y-6">
+        {toggle}
+        <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
+          <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
+              {t.playerStats.viewOnNba}
+            </a>
+            <a href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodedName}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
+              {t.playerStats.basketballRef}
+            </a>
+            <button onClick={() => setRetryKey((k) => k + 1)} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors cursor-pointer">
+              {t.common.retry}
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const monthLabel = (m: number) => (isZh ? `${m + 1}月` : MONTH_EN[m]);
-
   return (
     <div className="space-y-6">
-      {/* Season type toggle */}
-      <div className="glass-tile inline-flex overflow-hidden p-1">
-        {SEASON_TYPES.map((st) => (
-          <button
-            key={st}
-            onClick={() => setSeasonType(st)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              seasonType === st
-                ? "bg-accent text-white shadow-md"
-                : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-            }`}
-          >
-            {st === "Regular Season" ? t.statsPage.regularSeason : t.statsPage.playoffs}
-          </button>
-        ))}
-      </div>
+      {toggle}
 
       {!rows || rows.length === 0 ? (
         <EmptyState

@@ -82,7 +82,6 @@ export default function PlayerRankBadges({ playerId }: { playerId: number }) {
           Season: CURRENT_SEASON,
           SeasonType: "Regular Season",
           StatCategory: "PTS",
-          limit: "250",
         });
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
         if (!res.ok) return;
