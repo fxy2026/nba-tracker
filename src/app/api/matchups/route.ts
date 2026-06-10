@@ -17,6 +17,9 @@ const HEADERS: HeadersInit = {
   "x-nba-stats-token": "true",
 };
 
+// Vercel kills functions at 10s by default — upstream needs longer cold.
+export const maxDuration = 30;
+
 // Matchup payloads are large like shotchartdetail — give upstream more time.
 const TIMEOUT_MS = 20000;
 // Finished-game matchups are immutable, but the feed lands with a lag after

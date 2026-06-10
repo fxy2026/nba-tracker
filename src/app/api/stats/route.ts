@@ -20,9 +20,14 @@ const ALLOWED_ENDPOINTS = new Set([
   "shotchartdetail", "leaguedashteamstats", "playerawards",
 ]);
 
-// shotchartdetail is slow (large payload) — give it more time
+// Vercel kills functions at 10s by default — these upstreams are slower cold
+export const maxDuration = 30;
+
+// slow endpoints (large payload / cold upstream) — give them more time
 const TIMEOUT_MS: Record<string, number> = {
   shotchartdetail: 20000,
+  playerawards: 20000,
+  leaguedashteamstats: 20000,
 };
 const DEFAULT_TIMEOUT = 8000;
 
