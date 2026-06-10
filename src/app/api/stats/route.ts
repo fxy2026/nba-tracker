@@ -26,6 +26,12 @@ const TIMEOUT_MS: Record<string, number> = {
 };
 const DEFAULT_TIMEOUT = 8000;
 
+// Draft combine anthro data for a past draft year never changes — long TTL
+const REVALIDATE: Record<string, number> = {
+  draftcombineplayeranthro: 86400,
+};
+const DEFAULT_REVALIDATE = 300;
+
 export async function GET(request: NextRequest) {
   const endpoint = request.nextUrl.searchParams.get("endpoint");
   if (!endpoint) {
@@ -37,21 +43,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "endpoint not allowed" }, { status: 403 });
   }
 
+  // "limit" is ours, not stats.nba.com's — keep it out of the upstream URL
+  // so it doesn't fragment the data-cache key per limit value.
+  const limit = Number(request.nextUrl.searchParams.get("limit"));
+
   // Build query string from remaining params
   const params = new URLSearchParams();
   request.nextUrl.searchParams.forEach((v, k) => {
-    if (k !== "endpoint") params.set(k, v);
+    if (k !== "endpoint" && k !== "limit") params.set(k, v);
   });
 
   const url = `${STATS_BASE}/${endpoint}?${params.toString()}`;
   const timeout = TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT;
+  const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
 
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
     const res = await fetch(url, {
       headers: HEADERS,
-      next: { revalidate: 300 },
+      next: { revalidate },
       signal: controller.signal,
     });
     clearTimeout(timer);
@@ -62,8 +73,12 @@ export async function GET(request: NextRequest) {
       );
     }
     const data = await res.json();
+    if (Number.isInteger(limit) && limit > 0) {
+      const rs = data.resultSet ?? data.resultSets?.[0];
+      if (rs?.rowSet) rs.rowSet = rs.rowSet.slice(0, limit);
+    }
     return NextResponse.json(data, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+      headers: { "Cache-Control": `public, s-maxage=${revalidate}, stale-while-revalidate=${revalidate * 2}` },
     });
   } catch {
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });

@@ -44,7 +44,7 @@ function headshotUrl(id: number) {
 }
 
 export default function PlayerLeaders() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [cat, setCat] = useState("PTS");
   const [rows, setRows] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +63,7 @@ export default function PlayerLeaders() {
         Season: CURRENT_SEASON,
         SeasonType: seasonType,
         StatCategory: cat,
+        limit: "50",
       }).toString();
       const res = await fetch(`${STATS_API}?${qs}`, { signal });
       if (!res.ok) throw new Error(`${res.status}`);
@@ -113,6 +114,7 @@ export default function PlayerLeaders() {
           ))}
         </div>
         <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)}
+          aria-label={locale === "zh" ? "赛季类型" : "Season type"}
           className="glass-tile px-3 py-1.5 text-xs text-text-primary cursor-pointer">
           <option value="Regular Season">{t.statsPage.regularSeason}</option>
           <option value="Playoffs">{t.statsPage.playoffs}</option>

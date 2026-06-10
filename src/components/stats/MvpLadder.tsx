@@ -45,6 +45,7 @@ export default function MvpLadder() {
           Season: CURRENT_SEASON,
           SeasonType: "Regular Season",
           StatCategory: "EFF",
+          limit: "50",
         });
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");

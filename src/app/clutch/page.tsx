@@ -46,6 +46,7 @@ export default function ClutchPage() {
           PerMode: "PerGame",
           Scope: "S",
           StatCategory: category,
+          limit: "25",
         });
         const res = await fetch(`/api/stats?${params}`, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");
