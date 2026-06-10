@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import DateNav from "./DateNav";
+import FollowStrip from "./FollowStrip";
 import GamesList from "./GamesList";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
@@ -55,6 +56,9 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday }
   return (
     <>
       <DateNav selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      {/* Personalized "Following" strip — renders nothing for users without
+          followed teams, so the scoreboard stays at the top for everyone else. */}
+      <FollowStrip />
       {mounted && isToday && (() => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
