@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { formatDate } from "@/lib/api";
 import HomeClient from "@/components/HomeClient";
 import DailyIconicPick from "@/components/DailyIconicPick";
+import BestOfNightCard from "@/components/BestOfNightCard";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -57,6 +59,10 @@ export default async function HomePage({ searchParams }: PageProps) {
       <h1 className="sr-only">{t.meta.siteTitle}</h1>
       <HomeClient initialDate={initialDate} />
       <DailyIconicPick />
+      {/* Streams in after the shell — schedule/box-score fetches never block the home page */}
+      <Suspense fallback={null}>
+        <BestOfNightCard />
+      </Suspense>
     </div>
   );
 }
