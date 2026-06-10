@@ -34,13 +34,6 @@ const UPSTREAM_REVALIDATE = 900;
 let blackholedUntil = 0;
 const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
-// Relay (SJTU egress) reaches this endpoint; Vercel IPs are blackholed.
-// The relay's campus IP rejects inbound from outside China (GFW), so it's
-// unreachable from Vercel — production leaves these UNSET on purpose; only
-// .env.local enables it for local development.
-const RELAY_URL = process.env.STATS_RELAY_URL;
-const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
-
 export interface MatchupDefenderRow {
   personId: number;
   /** nameI, e.g. "A. Green" */
@@ -135,22 +128,6 @@ export async function GET(request: NextRequest) {
   // Single hard-coded upstream endpoint + strict GameID pattern = no open proxy.
   if (!/^\d{10}$/.test(gameId)) {
     return NextResponse.json({ error: "gameId must be 10 digits" }, { status: 400 });
-  }
-
-  if (RELAY_URL && RELAY_TOKEN) {
-    try {
-      const res = await fetch(`${RELAY_URL}/stats/boxscorematchupsv3?GameID=${gameId}`, {
-        headers: { "X-Relay-Token": RELAY_TOKEN },
-        next: { revalidate: UPSTREAM_REVALIDATE },
-        signal: AbortSignal.timeout(20000),
-      });
-      if (res.ok) {
-        const players = parseMatchups(await res.json());
-        if (players) return respondWith(gameId, players);
-      }
-    } catch {
-      // relay down — fall through to the direct path (its breaker applies)
-    }
   }
 
   // When the breaker is open we still attempt the fetch, but with a short

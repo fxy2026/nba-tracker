@@ -24,11 +24,10 @@ const ALLOWED_ENDPOINTS = new Set([
 export const maxDuration = 30;
 
 // shotchartdetail is a genuinely large payload that's reachable but slow.
-// playerawards/leaguedashteamstats are blackholed from Vercel IPs, so direct
-// requests never succeed in prod — keep their timeout short so the client
-// fetch fails fast and the UI's fallback (static honor wall / schedule-only
-// team boards) appears quickly instead of after a 20s hang. (Local dev reaches
-// them via the relay before this direct path is tried.)
+// playerawards/leaguedashteamstats are blackholed from Vercel IPs and never
+// succeed in prod — keep their timeout short so the client fetch fails fast and
+// the UI's fallback (static honor wall / schedule-only team boards) appears
+// quickly instead of after a 20s hang.
 const TIMEOUT_MS: Record<string, number> = {
   shotchartdetail: 20000,
   playerawards: 6000,
@@ -51,16 +50,6 @@ const DEFAULT_REVALIDATE = 300;
 // a 20s serverless invocation per visitor. Per warm instance — good enough.
 const BLACKHOLED_UNTIL = new Map<string, number>();
 const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
-
-// Endpoints stats.nba.com blackholes for datacenter IPs — route them through
-// the relay (SJTU egress) when configured; everything else stays direct.
-// NOTE: the relay lives on a campus IP that resets inbound connections from
-// outside China (GFW), so it is UNREACHABLE from Vercel — production
-// intentionally leaves these env vars UNSET (clean circuit-breaker behavior).
-// Only .env.local sets them, lighting up real data for local development.
-const RELAY_URL = process.env.STATS_RELAY_URL;
-const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
-const RELAY_VIA = new Set(["playerawards", "leaguedashteamstats"]);
 
 function respond(data: unknown, limit: number, revalidate: number) {
   if (Number.isInteger(limit) && limit > 0) {
@@ -97,19 +86,6 @@ export async function GET(request: NextRequest) {
   const url = `${STATS_BASE}/${endpoint}?${params.toString()}`;
   const timeout = TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT;
   const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
-
-  if (RELAY_URL && RELAY_TOKEN && RELAY_VIA.has(endpoint)) {
-    try {
-      const res = await fetch(`${RELAY_URL}/stats/${endpoint}?${params.toString()}`, {
-        headers: { "X-Relay-Token": RELAY_TOKEN },
-        next: { revalidate },
-        signal: AbortSignal.timeout(20000),
-      });
-      if (res.ok) return respond(await res.json(), limit, revalidate);
-    } catch {
-      // relay down — fall through to the direct path (its breaker applies)
-    }
-  }
 
   // When the breaker is open we still attempt the fetch, but with a short
   // timeout: Next's data-cache hits return in milliseconds and succeed, while
