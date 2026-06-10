@@ -34,6 +34,10 @@ const UPSTREAM_REVALIDATE = 900;
 let blackholedUntil = 0;
 const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
+// Relay (SJTU egress) reaches this endpoint; Vercel IPs are blackholed.
+const RELAY_URL = process.env.STATS_RELAY_URL;
+const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
+
 export interface MatchupDefenderRow {
   personId: number;
   /** nameI, e.g. "A. Green" */
@@ -113,11 +117,40 @@ function parseMatchups(data: unknown): Record<string, MatchupDefenderRow[]> | nu
   return out;
 }
 
+function respondWith(gameId: string, players: Record<string, MatchupDefenderRow[]>) {
+  const payload: MatchupsPayload = { gameId, players };
+  // Rich data never changes for a finished game; an empty answer is likely
+  // "tracking feed not published yet" and must expire fast.
+  const sMaxAge = Object.keys(players).length > 0 ? 86400 : 300;
+  return NextResponse.json(payload, {
+    headers: { "Cache-Control": `public, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 2}` },
+  });
+}
+
 export async function GET(request: NextRequest) {
   const gameId = request.nextUrl.searchParams.get("gameId") ?? "";
   // Single hard-coded upstream endpoint + strict GameID pattern = no open proxy.
   if (!/^\d{10}$/.test(gameId)) {
     return NextResponse.json({ error: "gameId must be 10 digits" }, { status: 400 });
+  }
+
+  if (RELAY_URL && RELAY_TOKEN) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      const res = await fetch(`${RELAY_URL}/stats/boxscorematchupsv3?GameID=${gameId}`, {
+        headers: { "X-Relay-Token": RELAY_TOKEN },
+        next: { revalidate: UPSTREAM_REVALIDATE },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        const players = parseMatchups(await res.json());
+        if (players) return respondWith(gameId, players);
+      }
+    } catch {
+      // relay down — fall through to the direct path (its breaker applies)
+    }
   }
 
   if (Date.now() < blackholedUntil) {
@@ -141,13 +174,7 @@ export async function GET(request: NextRequest) {
     if (!players) {
       return NextResponse.json({ error: "unexpected upstream shape" }, { status: 502 });
     }
-    const payload: MatchupsPayload = { gameId, players };
-    // Rich data never changes for a finished game; an empty answer is likely
-    // "tracking feed not published yet" and must expire fast.
-    const sMaxAge = Object.keys(players).length > 0 ? 86400 : 300;
-    return NextResponse.json(payload, {
-      headers: { "Cache-Control": `public, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 2}` },
-    });
+    return respondWith(gameId, players);
   } catch {
     blackholedUntil = Date.now() + BLACKHOLE_TTL_MS;
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });

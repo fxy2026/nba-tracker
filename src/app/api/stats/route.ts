@@ -47,6 +47,23 @@ const DEFAULT_REVALIDATE = 300;
 const BLACKHOLED_UNTIL = new Map<string, number>();
 const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
+// Endpoints stats.nba.com blackholes for datacenter IPs — route them through
+// the relay (SJTU egress) when configured; everything else stays direct.
+const RELAY_URL = process.env.STATS_RELAY_URL;
+const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
+const RELAY_VIA = new Set(["playerawards", "leaguedashteamstats"]);
+
+function respond(data: unknown, limit: number, revalidate: number) {
+  if (Number.isInteger(limit) && limit > 0) {
+    const d = data as { resultSet?: { rowSet?: unknown[][] }; resultSets?: { rowSet?: unknown[][] }[] };
+    const rs = d.resultSet ?? d.resultSets?.[0];
+    if (rs?.rowSet) rs.rowSet = rs.rowSet.slice(0, limit);
+  }
+  return NextResponse.json(data, {
+    headers: { "Cache-Control": `public, s-maxage=${revalidate}, stale-while-revalidate=${revalidate * 2}` },
+  });
+}
+
 export async function GET(request: NextRequest) {
   const endpoint = request.nextUrl.searchParams.get("endpoint");
   if (!endpoint) {
@@ -72,6 +89,22 @@ export async function GET(request: NextRequest) {
   const timeout = TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT;
   const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
 
+  if (RELAY_URL && RELAY_TOKEN && RELAY_VIA.has(endpoint)) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      const res = await fetch(`${RELAY_URL}/stats/${endpoint}?${params.toString()}`, {
+        headers: { "X-Relay-Token": RELAY_TOKEN },
+        next: { revalidate },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) return respond(await res.json(), limit, revalidate);
+    } catch {
+      // relay down — fall through to the direct path (its breaker applies)
+    }
+  }
+
   const blockedUntil = BLACKHOLED_UNTIL.get(endpoint);
   if (blockedUntil && Date.now() < blockedUntil) {
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
@@ -94,13 +127,7 @@ export async function GET(request: NextRequest) {
     }
     const data = await res.json();
     BLACKHOLED_UNTIL.delete(endpoint);
-    if (Number.isInteger(limit) && limit > 0) {
-      const rs = data.resultSet ?? data.resultSets?.[0];
-      if (rs?.rowSet) rs.rowSet = rs.rowSet.slice(0, limit);
-    }
-    return NextResponse.json(data, {
-      headers: { "Cache-Control": `public, s-maxage=${revalidate}, stale-while-revalidate=${revalidate * 2}` },
-    });
+    return respond(data, limit, revalidate);
   } catch {
     BLACKHOLED_UNTIL.set(endpoint, Date.now() + BLACKHOLE_TTL_MS);
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });

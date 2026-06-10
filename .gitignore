@@ -48,3 +48,5 @@ next-env.d.ts
 article-wx.md
 article-images/*.mmd
 article-images/frames/
+
+.vercel
