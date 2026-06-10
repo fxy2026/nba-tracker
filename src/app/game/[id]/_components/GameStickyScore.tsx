@@ -12,6 +12,7 @@ interface Props {
   homeScore: number;
   homeTeamId: number;
   statusText: string;
+  isLive: boolean;
 }
 
 // Slides in from above the page once the GameHero scrolls past the viewport.
@@ -25,6 +26,7 @@ export default function GameStickyScore({
   homeScore,
   homeTeamId,
   statusText,
+  isLive,
 }: Props) {
   const [visible, setVisible] = useState(false);
 
@@ -58,9 +60,19 @@ export default function GameStickyScore({
           <span className="font-mono text-xs font-bold text-text-primary">{awayTricode}</span>
           <span className="font-mono text-base font-bold tabular-nums text-text-primary">{awayScore}</span>
         </div>
-        <span className="text-[9px] uppercase tracking-[0.2em] text-text-secondary font-mono truncate shrink-0 max-w-[40%] text-center">
-          {statusText}
-        </span>
+        {isLive ? (
+          <span className="flex items-center gap-1.5 shrink-0 max-w-[50%] min-w-0 justify-center text-xs font-bold font-mono tabular-nums text-success">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+            </span>
+            {statusText}
+          </span>
+        ) : (
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-text-secondary font-mono truncate shrink-0 max-w-[40%] text-center">
+            {statusText}
+          </span>
+        )}
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
           <span className="font-mono text-base font-bold tabular-nums text-text-primary">{homeScore}</span>
           <span className="font-mono text-xs font-bold text-text-primary">{homeTricode}</span>

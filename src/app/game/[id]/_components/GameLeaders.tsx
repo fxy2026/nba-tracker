@@ -9,11 +9,14 @@ export default async function GameLeaders({
   homeTeam,
   awayTeam,
   playerInfoMap,
+  isLive = false,
   t,
 }: {
   homeTeam: BoxScoreTeam;
   awayTeam: BoxScoreTeam;
   playerInfoMap?: Map<number, PlayerInfo>;
+  // Live games aren't over, so the #1 player isn't yet "Player of the Game".
+  isLive?: boolean;
   t: Translations;
 }) {
   const isZh = (await getLocale()) === "zh";
@@ -61,7 +64,7 @@ export default async function GameLeaders({
               {p.name}
               {i === 0 && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber border border-accent-amber/30 font-bold">
-                  ★ {isZh ? "本场最佳" : "POTG"}
+                  ★ {isLive ? (isZh ? "暂列第一" : "Leading") : isZh ? "本场最佳" : "POTG"}
                 </span>
               )}
               {p.hot && (

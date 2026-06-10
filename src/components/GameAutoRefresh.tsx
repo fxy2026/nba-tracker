@@ -36,6 +36,17 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
     <div className="flex items-center gap-2 text-xs text-success mb-3 mt-2">
       <Radio size={12} className="animate-pulse" />
       <span>{t.liveScore.autoRefreshing}</span>
+      <button
+        onClick={() => {
+          if (typeof navigator === "undefined" || navigator.onLine !== false) {
+            router.refresh();
+          }
+          setCountdown(INTERVAL);
+        }}
+        className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"
+      >
+        {t.liveScore.refreshNow}
+      </button>
       <span className="text-text-secondary tabular-nums">({countdown}s)</span>
     </div>
   );

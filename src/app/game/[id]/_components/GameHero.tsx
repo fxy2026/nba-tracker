@@ -6,7 +6,7 @@ import QuarterScores from "@/components/QuarterScores";
 import ShareButton from "@/components/ShareButton";
 import { TEAM_META } from "@/lib/teams";
 import { toBeijingTime, type BoxScore, type ShotAction } from "@/lib/api";
-import { getLeadChanges, getQuarterMvp, getPlayerOfTheGame, gradeColorClass } from "@/lib/game-stats";
+import { getLeadChanges, getQuarterMvp } from "@/lib/game-stats";
 import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
 
@@ -37,7 +37,24 @@ export default async function GameHero({
 
   const leadChanges = isFinal ? getLeadChanges(boxScore.homeTeam, boxScore.awayTeam) : 0;
   const quarterMvp = isFinal ? getQuarterMvp(shots) : null;
-  const potg = isFinal ? getPlayerOfTheGame(boxScore.homeTeam, boxScore.awayTeam) : null;
+
+  // Share text adapts to game state — live nailbiters and tip-off reminders are
+  // the most shareable moments, not just finals.
+  const awayTri = boxScore.awayTeam.teamTricode;
+  const homeTri = boxScore.homeTeam.teamTricode;
+  const statusLabel = boxScore.gameStatusText.trim();
+  let shareText: string;
+  if (boxScore.gameStatus === 3) {
+    shareText = `${awayTri} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${homeTri} | NBA Tracker`;
+  } else if (boxScore.gameStatus === 2) {
+    shareText = isZh
+      ? `${awayTri} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${homeTri} · 直播中 ${statusLabel} | NBA Tracker`
+      : `${awayTri} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${homeTri} · LIVE ${statusLabel} | NBA Tracker`;
+  } else {
+    shareText = isZh
+      ? `${awayTri} @ ${homeTri} · ${beijingTime || statusLabel} 开打 | NBA Tracker`
+      : `${awayTri} @ ${homeTri} · ${beijingTime || statusLabel} | NBA Tracker`;
+  }
 
   return (
     <div
@@ -95,11 +112,7 @@ export default async function GameHero({
           {boxScore.gameStatus !== 2 && (
             <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">{boxScore.gameStatusText.trim()}</span>
           )}
-          {isFinal && (
-            <ShareButton
-              text={`${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score} - ${boxScore.homeTeam.score} ${boxScore.homeTeam.teamTricode} | NBA Tracker`}
-            />
-          )}
+          <ShareButton text={shareText} />
         </div>
       </div>
 
@@ -153,18 +166,6 @@ export default async function GameHero({
           {isFinal && (
             <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
               <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">Lead Changes: {leadChanges}</span>
-            </div>
-          )}
-          {isFinal && potg && (
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
-              <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">
-                ★ {isZh ? "本场最佳" : "Player of the Game"}
-              </span>
-              <span className="font-medium text-text-primary">{potg.name}</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono font-bold tabular-nums ${gradeColorClass(potg.grade)}`}>
-                {potg.grade.toFixed(1)}
-              </span>
-              <span>{potg.teamTricode}</span>
             </div>
           )}
           {isFinal && quarterMvp && (

@@ -6,8 +6,6 @@ import type { PlayAction } from "@/components/PlayByPlay";
 import { getSeasonRank } from "@/lib/season-ranks";
 import { isPlayoff, findScheduleGame } from "@/lib/games";
 import { buildRecap } from "@/lib/recap";
-import TeamLogo from "@/components/TeamLogo";
-import GameCountdown from "@/components/GameCountdown";
 import QuarterBars from "@/components/QuarterBars";
 import TeamCompare from "@/components/TeamCompare";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
@@ -20,6 +18,7 @@ import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
 import GameHero from "./_components/GameHero";
+import PreGameHero from "./_components/PreGameHero";
 import GameStickyScore from "./_components/GameStickyScore";
 import GameHeadlines from "./_components/GameHeadlines";
 import GameRecap from "./_components/GameRecap";
@@ -171,34 +170,13 @@ export default async function GamePage({ params }: PageProps) {
               { label: `${sg.awayTeam.teamTricode} @ ${sg.homeTeam.teamTricode}` },
             ]}
           />
-          <div className="glass-tile glass-tile-featured p-5 sm:p-6 mt-4">
-            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">
-                <span>{isZh ? "未开始" : "Upcoming"}</span>
-                {beijingTime && <span className="text-text-secondary/60">· {beijingTime}</span>}
-              </div>
-              <GameCountdown gameTimeUTC={sg.gameDateTimeUTC} />
-            </div>
-            <div className="flex items-center justify-center gap-6 sm:gap-10 py-4">
-              <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
-                <TeamLogo teamId={sg.awayTeam.teamId} tricode={sg.awayTeam.teamTricode} size={64} />
-                <Link href={`/team/${sg.awayTeam.teamTricode}`} className="text-center hover:text-accent transition-colors">
-                  <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Away</p>
-                  <p className="font-bold text-sm">{sg.awayTeam.teamCity}</p>
-                  <p className="font-bold text-sm">{sg.awayTeam.teamName}</p>
-                </Link>
-              </div>
-              <span className="text-3xl sm:text-4xl font-extralight text-text-secondary/30">–</span>
-              <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
-                <TeamLogo teamId={sg.homeTeam.teamId} tricode={sg.homeTeam.teamTricode} size={64} />
-                <Link href={`/team/${sg.homeTeam.teamTricode}`} className="text-center hover:text-accent transition-colors">
-                  <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Home</p>
-                  <p className="font-bold text-sm">{sg.homeTeam.teamCity}</p>
-                  <p className="font-bold text-sm">{sg.homeTeam.teamName}</p>
-                </Link>
-              </div>
-            </div>
-          </div>
+          <PreGameHero
+            away={sg.awayTeam}
+            home={sg.homeTeam}
+            gameTimeUTC={sg.gameDateTimeUTC}
+            beijingTime={beijingTime}
+            isZh={isZh}
+          />
           <div className="mt-6">
             <Suspense fallback={<div className="min-h-[32rem] glass-tile skeleton-shimmer" />}>
               <GamePreview
@@ -242,6 +220,10 @@ export default async function GamePage({ params }: PageProps) {
 
   const isFinal = boxScore.gameStatus === 3;
   const isUpcoming = boxScore.gameStatus === 1;
+  const isLive = boxScore.gameStatus === 2;
+  // Leaders/headlines/shooting splits compute fine from an in-progress box
+  // score, so a live viewer gets the same "who's balling" summary as a final.
+  const isLiveOrFinal = boxScore.gameStatus >= 2;
   const isPlayoffs = isPlayoff(boxScore.gameId);
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
@@ -341,7 +323,17 @@ export default async function GamePage({ params }: PageProps) {
       <Breadcrumbs items={breadcrumbItems} />
       <GameAutoRefresh isLive={boxScore.gameStatus === 2} />
 
-      <GameHero boxScore={boxScore} shots={shots} isPlayoffs={isPlayoffs} t={t} />
+      {isUpcoming ? (
+        <PreGameHero
+          away={boxScore.awayTeam}
+          home={boxScore.homeTeam}
+          gameTimeUTC={boxScore.gameTimeUTC}
+          beijingTime={toBeijingTime(boxScore.gameTimeUTC)}
+          isZh={isZh}
+        />
+      ) : (
+        <GameHero boxScore={boxScore} shots={shots} isPlayoffs={isPlayoffs} t={t} />
+      )}
       <div id="game-hero-sentinel" />
       <GameStickyScore
         awayTricode={boxScore.awayTeam.teamTricode}
@@ -351,6 +343,7 @@ export default async function GamePage({ params }: PageProps) {
         homeScore={boxScore.homeTeam.score}
         homeTeamId={boxScore.homeTeam.teamId}
         statusText={boxScore.gameStatusText}
+        isLive={isLive}
       />
 
       {isFinal && boxScore.homeTeam.periods?.length > 0 && (
@@ -361,15 +354,18 @@ export default async function GamePage({ params }: PageProps) {
           awayTricode={boxScore.awayTeam.teamTricode}
         />
       )}
-      {isFinal && <ScoringFlowSection homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} scoreEvents={scoreEvents} />}
-
-      {isFinal && <GameMeta homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
       {isFinal && <GameRecap boxScore={boxScore} actions={slimActions} isPlayoffs={isPlayoffs} isZh={isZh} />}
 
-      {isFinal && <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} seasonRank={seasonRank} t={t} />}
+      {/* Leaders/headlines render for live games too — seasonRank is final-only
+          (mid-game season ranks would mislead), so suppress it when not final. */}
+      {isLiveOrFinal && (
+        <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} seasonRank={isFinal ? seasonRank : null} t={t} />
+      )}
 
-      {isFinal && <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} t={t} />}
+      {isLiveOrFinal && (
+        <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} isLive={isLive} t={t} />
+      )}
 
       {/* Replay links — streamed (Supabase fetch is independent) */}
       <Suspense fallback={null}>
@@ -381,12 +377,6 @@ export default async function GamePage({ params }: PageProps) {
           <TeamCompare homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
         </div>
       )}
-
-      {isFinal && <StatsRadar homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
-
-      {isFinal && <ShootingEfficiency homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
-
-      {isFinal && <KeyMomentsSection actions={slimActions} />}
 
       {isUpcoming ? (
         /* Pre-game: the box score is an empty shell, so swap the stats body for the preview */
@@ -404,6 +394,8 @@ export default async function GamePage({ params }: PageProps) {
         </div>
       ) : (
         <>
+          {/* Box score + shot chart come right after the leaders — the #1 thing
+              a fan wants. Deeper analytics charts follow below it. */}
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <ShotChartSection
@@ -420,6 +412,16 @@ export default async function GamePage({ params }: PageProps) {
             </div>
           </div>
 
+          {isFinal && <ScoringFlowSection homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} scoreEvents={scoreEvents} />}
+
+          {isFinal && <GameMeta homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
+
+          {isFinal && <StatsRadar homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
+
+          {isLiveOrFinal && <ShootingEfficiency homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
+
+          {isFinal && <KeyMomentsSection actions={slimActions} />}
+
           {isFinal && topScorers.length > 0 && (
             <div className="mt-6">
               <MatchupSection gameId={id} scorers={topScorers} />
@@ -427,7 +429,7 @@ export default async function GamePage({ params }: PageProps) {
           )}
 
           <div className="mt-6">
-            <PlayByPlaySection actions={slimActions} isLive={boxScore.gameStatus === 2} />
+            <PlayByPlaySection actions={slimActions} isLive={isLive} />
           </div>
         </>
       )}

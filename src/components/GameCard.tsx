@@ -283,7 +283,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
                 aria-expanded={expanded}
-                className="relative z-[2] flex items-center gap-0.5 text-[10px] text-text-secondary hover:text-accent transition-colors"
+                className="relative z-[2] touch-target inline-flex items-center justify-center gap-0.5 px-2 text-[10px] text-text-secondary hover:text-accent transition-colors"
               >
                 {hasPeriods
                   ? (isZh ? "节次·得分王" : "Quarters · Top scorer")
