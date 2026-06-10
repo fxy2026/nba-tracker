@@ -1,6 +1,9 @@
+import dynamic from "next/dynamic";
 import { parseMinutes, type PlayerStats, type ShotAction, type PlayerInfo } from "@/lib/api";
-import PlayerShotChart from "@/components/PlayerShotChart";
 import type { Translations } from "@/locales";
+
+const NamePlaceholder = () => <span className="skeleton-shimmer inline-block h-4 w-24 rounded" />;
+const PlayerShotChart = dynamic(() => import("@/components/PlayerShotChart"), { loading: NamePlaceholder });
 
 export default function StatsTable({
   players,

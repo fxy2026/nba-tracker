@@ -1,7 +1,7 @@
 // NBA Official CDN API — completely free, no key needed
 // Data source: cdn.nba.com
 
-import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
+import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
 const HEADERS: HeadersInit = {
@@ -303,21 +303,12 @@ export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   return game;
 }
 
-// Get play-by-play (for shot chart)
-export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
-  const cached = pbpCache.get(gameId);
-  // Final-game check piggybacks on box score cache (cheap lookup).
-  if (cached && boxScoreCache.get(gameId)?.gameStatus === 3) return cached;
-  const res = await fetch(
-    `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
-    { headers: HEADERS, next: { revalidate: 60 } }
-  );
-  if (!res.ok) return cached ?? [];
-  const data = await res.json();
-  const actions = data.game?.actions || [];
-  const shots: ShotAction[] = actions
-    .filter((a: Record<string, unknown>) => a.shotResult)
-    .map((a: Record<string, unknown>) => ({
+// Map raw PBP actions to the slim shot shape — shared with the game page,
+// which already holds raw actions and derives shots instead of re-downloading.
+export function extractShots(actions: Record<string, unknown>[]): ShotAction[] {
+  return actions
+    .filter((a) => a.shotResult)
+    .map((a) => ({
       personId: a.personId,
       playerNameI: a.playerNameI,
       teamTricode: a.teamTricode,
@@ -330,7 +321,21 @@ export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
       y: a.y,
       shotDistance: a.shotDistance,
       description: a.description,
-    }));
+    })) as ShotAction[];
+}
+
+// Get play-by-play (for shot chart)
+export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
+  const cached = pbpCache.get(gameId);
+  // Final-game check piggybacks on box score cache (cheap lookup).
+  if (cached && boxScoreCache.get(gameId)?.gameStatus === 3) return cached;
+  const res = await fetch(
+    `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
+    { headers: HEADERS, next: { revalidate: 60 } }
+  );
+  if (!res.ok) return cached ?? [];
+  const data = await res.json();
+  const shots = extractShots(data.game?.actions || []);
   lruSet(pbpCache, gameId, shots);
   return shots;
 }
@@ -458,27 +463,6 @@ export function parseMinutes(min: string): string {
   const m = match[1];
   const s = Math.floor(parseFloat(match[2]));
   return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-// Team logo URL from team ID
-export function getTeamLogoUrl(teamId: number): string {
-  return teamLogoUrl(teamId);
-}
-
-// Team logo URL from tricode
-export function getTeamLogoByTricode(tricode: string): string {
-  const teamIdMap: Record<string, number> = {
-    ATL: 1610612737, BOS: 1610612738, BKN: 1610612751, CHA: 1610612766,
-    CHI: 1610612741, CLE: 1610612739, DAL: 1610612742, DEN: 1610612743,
-    DET: 1610612765, GSW: 1610612744, HOU: 1610612745, IND: 1610612754,
-    LAC: 1610612746, LAL: 1610612747, MEM: 1610612763, MIA: 1610612748,
-    MIL: 1610612749, MIN: 1610612750, NOP: 1610612740, NYK: 1610612752,
-    OKC: 1610612760, ORL: 1610612753, PHI: 1610612755, PHX: 1610612756,
-    POR: 1610612757, SAC: 1610612758, SAS: 1610612759, TOR: 1610612761,
-    UTA: 1610612762, WAS: 1610612764,
-  };
-  const id = teamIdMap[tricode];
-  return id ? getTeamLogoUrl(id) : "";
 }
 
 // Get game status display

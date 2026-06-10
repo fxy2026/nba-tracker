@@ -1,7 +1,7 @@
 import KeyMoments from "@/components/KeyMoments";
+import type { PlayAction } from "@/components/PlayByPlay";
 
-export default function KeyMomentsSection({ actions }: { actions: Record<string, unknown>[] }) {
+export default function KeyMomentsSection({ actions }: { actions: PlayAction[] }) {
   if (actions.length === 0) return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <KeyMoments actions={actions as any} />;
+  return <KeyMoments actions={actions} />;
 }

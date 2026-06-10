@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getBoxScore, getPlayByPlay, getPlayerIndex, type PlayerInfo } from "@/lib/api";
+import { getBoxScore, getPlayerIndex, extractShots, type PlayerInfo } from "@/lib/api";
+import type { PlayAction } from "@/components/PlayByPlay";
 import { getSeasonRank } from "@/lib/season-ranks";
 import { isPlayoff } from "@/lib/games";
 import QuarterBars from "@/components/QuarterBars";
@@ -56,22 +57,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export const revalidate = 60;
-
 export default async function GamePage({ params }: PageProps) {
   const { id } = await params;
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  // Box score + shots + player index + raw PBP + season-wide rank in parallel.
+  // Box score + player index + raw PBP + season-wide rank in parallel.
   // PBP comes straight from cdn.nba.com (the only place exposing score events
-  // with clocks). Season rank reads the schedule cache only — no extra fetch.
-  const [boxScore, shots, playerIndex, pbpActions, seasonRank] = await Promise.all([
+  // with clocks); shots are derived from the same payload — one download, not
+  // two. Season rank reads the schedule cache only — no extra fetch.
+  const [boxScore, playerIndex, pbpActions, seasonRank] = await Promise.all([
     getBoxScore(id),
-    getPlayByPlay(id).catch(() => []),
     getPlayerIndex().catch(() => []),
     fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json`, {
-      headers: { "User-Agent": "Mozilla/5.0", Referer: "https://www.nba.com/" },
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
       next: { revalidate: 60 },
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -79,6 +78,8 @@ export default async function GamePage({ params }: PageProps) {
       .catch(() => []),
     getSeasonRank(id).catch(() => null),
   ]);
+
+  const shots = extractShots(pbpActions);
 
   const scoreEvents = (pbpActions as { period: number; clock: string; scoreHome: string; scoreAway: string }[])
     .filter((a) => a.scoreHome != null && a.scoreAway != null)
@@ -88,6 +89,24 @@ export default async function GamePage({ params }: PageProps) {
       scoreHome: parseInt(a.scoreHome) || 0,
       scoreAway: parseInt(a.scoreAway) || 0,
     }));
+
+  // Trim raw CDN actions to the fields the client components actually read —
+  // the full objects (~2x larger) would otherwise be serialized into the page payload.
+  const slimActions: PlayAction[] = pbpActions.map((a: PlayAction) => ({
+    actionNumber: a.actionNumber,
+    clock: a.clock,
+    period: a.period,
+    teamTricode: a.teamTricode,
+    actionType: a.actionType,
+    subType: a.subType,
+    description: a.description,
+    personId: a.personId,
+    playerNameI: a.playerNameI,
+    shotResult: a.shotResult,
+    scoreHome: a.scoreHome,
+    scoreAway: a.scoreAway,
+    isFieldGoal: a.isFieldGoal,
+  }));
 
   const playerInfoMap = new Map<number, PlayerInfo>();
   for (const pi of playerIndex) playerInfoMap.set(pi.personId, pi);
@@ -236,7 +255,7 @@ export default async function GamePage({ params }: PageProps) {
 
       {isFinal && <ShootingEfficiency homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
-      {isFinal && <KeyMomentsSection actions={pbpActions as Record<string, unknown>[]} />}
+      {isFinal && <KeyMomentsSection actions={slimActions} />}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
@@ -255,7 +274,7 @@ export default async function GamePage({ params }: PageProps) {
       </div>
 
       <div className="mt-6">
-        <PlayByPlaySection actions={pbpActions as Record<string, unknown>[]} />
+        <PlayByPlaySection actions={slimActions} />
       </div>
 
       <RelatedPages eyebrow={isZh ? "继续探索" : "Keep exploring"} pages={relatedPages} />

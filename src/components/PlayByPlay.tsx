@@ -12,7 +12,7 @@ function formatClock(raw: string): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-interface PlayAction {
+export interface PlayAction {
   actionNumber: number;
   clock: string;
   period: number;
@@ -85,6 +85,7 @@ export default memo(function PlayByPlay({ actions }: Props) {
             <button
               key={p}
               onClick={() => setSelectedPeriod(p)}
+              aria-pressed={selectedPeriod === p}
               className={`px-3 py-1 text-xs font-medium font-mono rounded-md transition-all cursor-pointer ${
                 selectedPeriod === p ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}

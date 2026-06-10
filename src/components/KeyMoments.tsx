@@ -2,22 +2,7 @@
 
 import { useMemo, memo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
-
-interface PlayAction {
-  actionNumber: number;
-  clock: string;
-  period: number;
-  teamTricode: string;
-  actionType: string;
-  subType: string;
-  description: string;
-  personId: number;
-  playerNameI: string;
-  shotResult?: string;
-  scoreHome: string;
-  scoreAway: string;
-  isFieldGoal?: number;
-}
+import type { PlayAction } from "@/components/PlayByPlay";
 
 interface Props {
   actions: PlayAction[];
