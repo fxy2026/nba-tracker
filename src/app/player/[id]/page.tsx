@@ -22,6 +22,7 @@ import { getTranslations } from "@/locales";
 // Heavy player subcomponents are code-split — each ships its own chunk
 // instead of bloating the player page bundle. They all fetch on mount,
 // so deferring the JS doesn't change behavior.
+const PlayerHonors = nextDynamic(() => import("@/components/player/PlayerHonors"));
 const PlayerMeasurements = nextDynamic(() => import("@/components/player/PlayerMeasurements"));
 const PlayerSalary = nextDynamic(() => import("@/components/player/PlayerSalary"));
 const PlayerNews = nextDynamic(() => import("@/components/player/PlayerNews"));
@@ -355,6 +356,9 @@ export default async function PlayerPage({ params }: PageProps) {
           </div>
         </Link>
       </div>
+
+      {/* ─── Honor wall (real awards via stats proxy — hides itself on failure) ─ */}
+      <PlayerHonors playerId={personId} />
 
       {/* ─── Profile (archetype + scoring DNA + body metrics) ─── */}
       {(() => {

@@ -17,7 +17,7 @@ const HEADERS: HeadersInit = {
 const ALLOWED_ENDPOINTS = new Set([
   "leagueleaders", "playercareerstats", "playergamelog",
   "draftcombineplayeranthro", "commonplayerinfo",
-  "shotchartdetail", "leaguedashteamstats",
+  "shotchartdetail", "leaguedashteamstats", "playerawards",
 ]);
 
 // shotchartdetail is slow (large payload) — give it more time
@@ -31,6 +31,8 @@ const REVALIDATE: Record<string, number> = {
   draftcombineplayeranthro: 86400,
   // league-wide team averages move slowly — hourly is plenty
   leaguedashteamstats: 3600,
+  // career awards change at most a few times per year — daily is plenty
+  playerawards: 86400,
 };
 const DEFAULT_REVALIDATE = 300;
 
