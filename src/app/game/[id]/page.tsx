@@ -32,6 +32,7 @@ import BoxScoreSection from "./_components/BoxScoreSection";
 import ShotChartSection from "./_components/ShotChartSection";
 import PlayByPlaySection from "./_components/PlayByPlaySection";
 import KeyMomentsSection from "./_components/KeyMomentsSection";
+import MatchupSection from "./_components/MatchupSection";
 import ReplaySection from "./_components/ReplaySection";
 import ScoringFlowSection from "./_components/ScoringFlowSection";
 
@@ -277,6 +278,25 @@ export default async function GamePage({ params }: PageProps) {
       .map((p) => ({ personId: p.personId, nameI: p.nameI, teamTricode: boxScore.homeTeam.teamTricode })),
   ];
 
+  // Top 3 scorers per team (merged, points desc) for the matchup section —
+  // chosen here so only ~6 slim rows cross the server/client boundary.
+  const topScorers = isFinal
+    ? [boxScore.awayTeam, boxScore.homeTeam]
+        .flatMap((team) =>
+          [...team.players]
+            .filter((p) => p.played === "1" && p.statistics.points > 0)
+            .sort((a, b) => b.statistics.points - a.statistics.points)
+            .slice(0, 3)
+            .map((p) => ({
+              personId: p.personId,
+              name: p.nameI,
+              teamTricode: team.teamTricode,
+              points: p.statistics.points,
+            }))
+        )
+        .sort((a, b) => b.points - a.points)
+    : [];
+
   // JSON-LD structured data — SportsEvent schema for rich snippets
   const structuredData = {
     "@context": "https://schema.org",
@@ -399,6 +419,12 @@ export default async function GamePage({ params }: PageProps) {
               <BoxScoreSection team={boxScore.homeTeam} shots={shots} playerInfoMap={playerInfoMap} t={t} />
             </div>
           </div>
+
+          {isFinal && topScorers.length > 0 && (
+            <div className="mt-6">
+              <MatchupSection gameId={id} scorers={topScorers} />
+            </div>
+          )}
 
           <div className="mt-6">
             <PlayByPlaySection actions={slimActions} isLive={boxScore.gameStatus === 2} />
