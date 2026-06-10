@@ -23,7 +23,8 @@ interface GamesListProps {
 }
 
 export default function GamesList({ selectedDate, initialGames, initialReplayIds }: GamesListProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const today = localToday();
   const isToday = selectedDate === today;
   const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
@@ -288,12 +289,12 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
                     <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
                   </span>
-                  Live Now
+                  {t.home.liveNow}
                 </h2>
                 <span className="h-px flex-1 bg-success/30" />
                 <span className="text-[10px] font-mono tabular-nums text-success/80">
-                  {liveNow.length} {liveNow.length === 1 ? "game" : "games"}
-                  {isToday && <span className="text-text-secondary/60 ml-2">· auto</span>}
+                  {liveNow.length} {isZh ? "场比赛" : liveNow.length === 1 ? "game" : "games"}
+                  {isToday && <span className="text-text-secondary/60 ml-2">· {isZh ? "自动刷新" : "auto"}</span>}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -309,11 +310,11 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               <div className="flex items-center gap-3 mb-3">
                 <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
-                  Upcoming
+                  {t.common.upcoming}
                 </h2>
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
-                  {upcoming.length} {upcoming.length === 1 ? "game" : "games"}
+                  {upcoming.length} {isZh ? "场比赛" : upcoming.length === 1 ? "game" : "games"}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -329,11 +330,11 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               <div className="flex items-center gap-3 mb-3">
                 <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-text-secondary/50" />
-                  Final
+                  {t.common.final}
                 </h2>
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
-                  {final.length} {final.length === 1 ? "game" : "games"}
+                  {final.length} {isZh ? "场比赛" : final.length === 1 ? "game" : "games"}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

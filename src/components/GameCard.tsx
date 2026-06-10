@@ -36,26 +36,24 @@ interface CategoryLeader {
 
 interface GameLeaders {
   pts?: CategoryLeader;
-  reb?: CategoryLeader;
-  ast?: CategoryLeader;
   ptsTied?: boolean;
 }
 
-// Best PTS/REB/AST performer from the data this card has. Today's games carry
-// scoreboard gameLeaders (one featured player per team with PTS+REB+AST), so
-// REB/AST picks are the better of the two featured players — the exact
-// category leader would need the box score, too heavy for a card. Past dates
-// only know the schedule cache's game-high scorer(s).
+// Game scoring leader from the data this card has. Today's games carry
+// scoreboard gameLeaders (one featured player per team — normally each team's
+// points leader), so the higher of the two IS the game's scoring leader. We
+// deliberately do NOT surface REB/AST from this feed: the featured player is
+// his team's top scorer, not necessarily its rebound/assist leader, so those
+// values would mislabel a featured stat as a category leader. Past dates only
+// know the schedule cache's game-high scorer(s).
 function pickLeaders(game: ScheduleGame): GameLeaders {
   const featured = [game.gameLeaders?.homeLeaders, game.gameLeaders?.awayLeaders].filter(
     (l): l is GameLeader => !!l && l.personId > 0
   );
   if (featured.length > 0) {
-    const best = (key: "points" | "rebounds" | "assists"): CategoryLeader => {
-      const top = featured.reduce((a, b) => (b[key] > a[key] ? b : a));
-      return { personId: top.personId, name: top.name, value: top[key] };
-    };
-    return { pts: best("points"), reb: best("rebounds"), ast: best("assists") };
+    const top = featured.reduce((a, b) => (b.points > a.points ? b : a));
+    const tied = featured.length > 1 && featured.some((l) => l !== top && l.points === top.points);
+    return { pts: { personId: top.personId, name: top.name, value: top.points }, ptsTied: tied };
   }
   const scorers = (game.pointsLeaders || []).filter((l) => l.personId > 0);
   if (scorers.length > 0) {
@@ -108,7 +106,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
   const hasPeriods =
     isFinal && (game.homeTeam.periods?.length ?? 0) > 0 && (game.awayTeam.periods?.length ?? 0) > 0;
   const leaders: GameLeaders = isFinal ? pickLeaders(game) : {};
-  const hasLeaders = !!(leaders.pts || leaders.reb || leaders.ast);
+  const hasLeaders = !!leaders.pts;
   const hasDetails = hasPeriods || hasLeaders;
 
   // Determine playoff round from game ID
@@ -288,7 +286,7 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                 className="relative z-[2] flex items-center gap-0.5 text-[10px] text-text-secondary hover:text-accent transition-colors"
               >
                 {hasPeriods
-                  ? (isZh ? "节次·数据王" : "Quarters · Leaders")
+                  ? (isZh ? "节次·得分王" : "Quarters · Top scorer")
                   : (isZh ? "得分王" : "Top scorer")}
                 <ChevronDown
                   size={10}
@@ -339,8 +337,6 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
                   tiedText={leaders.ptsTied ? (isZh ? "并列" : "tied") : undefined}
                 />
               )}
-              {leaders.reb && <LeaderItem label={isZh ? "篮板" : "REB"} leader={leaders.reb} />}
-              {leaders.ast && <LeaderItem label={isZh ? "助攻" : "AST"} leader={leaders.ast} />}
             </div>
           )}
         </div>

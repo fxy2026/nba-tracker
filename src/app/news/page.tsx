@@ -64,6 +64,7 @@ async function getNews(): Promise<{ articles: NewsArticle[]; fetchedAt: number }
     const res = await fetch(ESPN_NEWS, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
       next: { revalidate: 600 },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return { articles: [], fetchedAt };
     const json = await res.json();

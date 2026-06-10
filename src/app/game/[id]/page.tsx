@@ -200,7 +200,7 @@ export default async function GamePage({ params }: PageProps) {
             </div>
           </div>
           <div className="mt-6">
-            <Suspense fallback={<div className="h-64 glass-tile skeleton-shimmer" />}>
+            <Suspense fallback={<div className="min-h-[32rem] glass-tile skeleton-shimmer" />}>
               <GamePreview
                 home={{ tricode: sg.homeTeam.teamTricode, teamId: sg.homeTeam.teamId, teamCity: sg.homeTeam.teamCity, teamName: sg.homeTeam.teamName }}
                 away={{ tricode: sg.awayTeam.teamTricode, teamId: sg.awayTeam.teamId, teamCity: sg.awayTeam.teamCity, teamName: sg.awayTeam.teamName }}

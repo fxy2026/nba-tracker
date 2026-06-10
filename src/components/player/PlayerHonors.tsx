@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { PLAYER_ACCOLADES } from "@/lib/playerAccolades";
@@ -151,38 +151,28 @@ const TIER_CLASS: Record<Tier, string> = {
 export default function PlayerHonors({ playerId }: { playerId: number }) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
-  const [honors, setHonors] = useState<HonorChip[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Render the curated counts immediately so the wall never blocks on the
+  // (production-blackholed) playerawards fetch; upgrade to the live,
+  // per-season-tooltip version only if that fetch actually lands.
+  const [honors, setHonors] = useState<HonorChip[] | null>(() => staticHonors(playerId));
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true);
-    try {
-      const qs = new URLSearchParams({ endpoint: "playerawards", PlayerID: String(playerId) });
-      const res = await fetch(`/api/stats?${qs}`, { signal });
-      if (!res.ok) {
-        if (!signal?.aborted) { setHonors(staticHonors(playerId)); setLoading(false); }
-        return;
-      }
-      const data = await res.json();
-      if (!signal?.aborted) { setHonors(parseHonors(data) ?? staticHonors(playerId)); setLoading(false); }
-    } catch {
-      if (!signal?.aborted) { setHonors(staticHonors(playerId)); setLoading(false); }
-    }
-  }, [playerId]);
-
-  // load() internally calls setLoading(true) → intentional dep-change refetch.
   useEffect(() => {
     const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load(controller.signal);
+    (async () => {
+      try {
+        const qs = new URLSearchParams({ endpoint: "playerawards", PlayerID: String(playerId) });
+        const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
+        if (!res.ok) return;
+        const live = parseHonors(await res.json());
+        if (live && !controller.signal.aborted) setHonors(live);
+      } catch {
+        // keep the static fallback already on screen
+      }
+    })();
     return () => controller.abort();
-  }, [load]);
+  }, [playerId]);
 
-  if (loading) {
-    return <div className="mt-8 sm:mt-10 h-16 rounded-lg bg-bg-secondary/60 skeleton-shimmer" />;
-  }
-
-  // Upstream blocked / no awards → the honor wall simply doesn't exist
+  // No curated counts and no live data → the honor wall simply doesn't exist
   if (!honors || honors.length === 0) return null;
 
   return (

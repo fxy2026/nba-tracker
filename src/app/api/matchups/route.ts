@@ -139,14 +139,11 @@ export async function GET(request: NextRequest) {
 
   if (RELAY_URL && RELAY_TOKEN) {
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 20000);
       const res = await fetch(`${RELAY_URL}/stats/boxscorematchupsv3?GameID=${gameId}`, {
         headers: { "X-Relay-Token": RELAY_TOKEN },
         next: { revalidate: UPSTREAM_REVALIDATE },
-        signal: controller.signal,
+        signal: AbortSignal.timeout(20000),
       });
-      clearTimeout(timer);
       if (res.ok) {
         const players = parseMatchups(await res.json());
         if (players) return respondWith(gameId, players);
@@ -156,19 +153,18 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  if (Date.now() < blackholedUntil) {
-    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
-  }
+  // When the breaker is open we still attempt the fetch, but with a short
+  // timeout: Next's data-cache hits return in milliseconds and succeed, while
+  // upstream misses fail fast instead of being denied cheap cached responses.
+  const breakerOpen = Date.now() < blackholedUntil;
+  const fetchTimeout = breakerOpen ? 1500 : TIMEOUT_MS;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     const res = await fetch(`${UPSTREAM}?GameID=${gameId}`, {
       headers: HEADERS,
       next: { revalidate: UPSTREAM_REVALIDATE },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(fetchTimeout),
     });
-    clearTimeout(timer);
     if (!res.ok) {
       return NextResponse.json({ error: `NBA API returned ${res.status}` }, { status: res.status });
     }
@@ -179,7 +175,9 @@ export async function GET(request: NextRequest) {
     }
     return respondWith(gameId, players);
   } catch {
-    blackholedUntil = Date.now() + BLACKHOLE_TTL_MS;
+    // Only a full-timeout failure arms the breaker — the short probe must
+    // leave the existing deadline so the breaker still half-opens on time.
+    if (!breakerOpen) blackholedUntil = Date.now() + BLACKHOLE_TTL_MS;
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }

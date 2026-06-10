@@ -23,11 +23,16 @@ const ALLOWED_ENDPOINTS = new Set([
 // Vercel kills functions at 10s by default — these upstreams are slower cold
 export const maxDuration = 30;
 
-// slow endpoints (large payload / cold upstream) — give them more time
+// shotchartdetail is a genuinely large payload that's reachable but slow.
+// playerawards/leaguedashteamstats are blackholed from Vercel IPs, so direct
+// requests never succeed in prod — keep their timeout short so the client
+// fetch fails fast and the UI's fallback (static honor wall / schedule-only
+// team boards) appears quickly instead of after a 20s hang. (Local dev reaches
+// them via the relay before this direct path is tried.)
 const TIMEOUT_MS: Record<string, number> = {
   shotchartdetail: 20000,
-  playerawards: 20000,
-  leaguedashteamstats: 20000,
+  playerawards: 6000,
+  leaguedashteamstats: 6000,
 };
 const DEFAULT_TIMEOUT = 8000;
 
@@ -95,34 +100,30 @@ export async function GET(request: NextRequest) {
 
   if (RELAY_URL && RELAY_TOKEN && RELAY_VIA.has(endpoint)) {
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 20000);
       const res = await fetch(`${RELAY_URL}/stats/${endpoint}?${params.toString()}`, {
         headers: { "X-Relay-Token": RELAY_TOKEN },
         next: { revalidate },
-        signal: controller.signal,
+        signal: AbortSignal.timeout(20000),
       });
-      clearTimeout(timer);
       if (res.ok) return respond(await res.json(), limit, revalidate);
     } catch {
       // relay down — fall through to the direct path (its breaker applies)
     }
   }
 
+  // When the breaker is open we still attempt the fetch, but with a short
+  // timeout: Next's data-cache hits return in milliseconds and succeed, while
+  // upstream misses fail fast instead of being denied data that costs nothing.
   const blockedUntil = BLACKHOLED_UNTIL.get(endpoint);
-  if (blockedUntil && Date.now() < blockedUntil) {
-    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
-  }
+  const breakerOpen = !!blockedUntil && Date.now() < blockedUntil;
+  const fetchTimeout = breakerOpen ? 1500 : timeout;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
     const res = await fetch(url, {
       headers: HEADERS,
       next: { revalidate },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(fetchTimeout),
     });
-    clearTimeout(timer);
     if (!res.ok) {
       return NextResponse.json(
         { error: `NBA API returned ${res.status}` },
@@ -133,7 +134,9 @@ export async function GET(request: NextRequest) {
     BLACKHOLED_UNTIL.delete(endpoint);
     return respond(data, limit, revalidate);
   } catch {
-    BLACKHOLED_UNTIL.set(endpoint, Date.now() + BLACKHOLE_TTL_MS);
+    // Only a full-timeout failure arms/extends the breaker — the short probe
+    // must leave the existing deadline so the breaker still half-opens on time.
+    if (!breakerOpen) BLACKHOLED_UNTIL.set(endpoint, Date.now() + BLACKHOLE_TTL_MS);
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }

@@ -120,7 +120,9 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         onClose();
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        setActiveIdx((i) => Math.min(i + 1, items.length - 1));
+        // Clamp to >= 0 so the no-results state (items.length - 1 === -1)
+        // never produces a negative activeIdx / invalid aria-activedescendant.
+        setActiveIdx((i) => Math.max(0, Math.min(i + 1, items.length - 1)));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setActiveIdx((i) => Math.max(i - 1, 0));
