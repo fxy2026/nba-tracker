@@ -35,6 +35,9 @@ let blackholedUntil = 0;
 const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
 // Relay (SJTU egress) reaches this endpoint; Vercel IPs are blackholed.
+// The relay's campus IP rejects inbound from outside China (GFW), so it's
+// unreachable from Vercel — production leaves these UNSET on purpose; only
+// .env.local enables it for local development.
 const RELAY_URL = process.env.STATS_RELAY_URL;
 const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
 

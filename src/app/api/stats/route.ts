@@ -49,6 +49,10 @@ const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
 // Endpoints stats.nba.com blackholes for datacenter IPs — route them through
 // the relay (SJTU egress) when configured; everything else stays direct.
+// NOTE: the relay lives on a campus IP that resets inbound connections from
+// outside China (GFW), so it is UNREACHABLE from Vercel — production
+// intentionally leaves these env vars UNSET (clean circuit-breaker behavior).
+// Only .env.local sets them, lighting up real data for local development.
 const RELAY_URL = process.env.STATS_RELAY_URL;
 const RELAY_TOKEN = process.env.STATS_RELAY_TOKEN;
 const RELAY_VIA = new Set(["playerawards", "leaguedashteamstats"]);
