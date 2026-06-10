@@ -280,17 +280,25 @@ export default async function GamePage({ params }: PageProps) {
     : [];
 
   // JSON-LD structured data — SportsEvent schema for rich snippets
+  const eventDescription = isFinal
+    ? `Final: ${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score}, ${boxScore.homeTeam.teamTricode} ${boxScore.homeTeam.score}.`
+    : isLive
+    ? `Live: ${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score} – ${boxScore.homeTeam.teamTricode} ${boxScore.homeTeam.score}, ${boxScore.gameStatusText}.`
+    : `${boxScore.awayTeam.teamTricode} at ${boxScore.homeTeam.teamTricode} — ${boxScore.arena.arenaName}.`;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${boxScore.awayTeam.teamCity} ${boxScore.awayTeam.teamName} vs ${boxScore.homeTeam.teamCity} ${boxScore.homeTeam.teamName}`,
     sport: "Basketball",
     startDate: boxScore.gameTimeUTC,
-    eventStatus: isFinal
-      ? "https://schema.org/EventCompleted"
-      : boxScore.gameStatus === 2
-      ? "https://schema.org/EventScheduled"
-      : "https://schema.org/EventScheduled",
+    // schema.org has no "in progress" value — a live game is still best
+    // described as Scheduled-then-running; only completed/postponed differ.
+    eventStatus: isFinal ? "https://schema.org/EventCompleted" : "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    description: eventDescription,
+    // The dynamic OG card — lets Google show a thumbnail in sports rich results.
+    image: `https://nba.xpy.me/game/${id}/opengraph-image`,
+    url: `https://nba.xpy.me/game/${id}`,
     location: {
       "@type": "Place",
       name: boxScore.arena.arenaName,
@@ -307,9 +315,6 @@ export default async function GamePage({ params }: PageProps) {
       url: `https://nba.xpy.me/team/${boxScore.awayTeam.teamTricode}`,
     },
     organizer: { "@type": "SportsOrganization", name: "NBA", url: "https://www.nba.com" },
-    ...(isFinal && {
-      description: `${boxScore.awayTeam.teamTricode} ${boxScore.awayTeam.score}, ${boxScore.homeTeam.teamTricode} ${boxScore.homeTeam.score} — Final`,
-    }),
   };
 
   return (
