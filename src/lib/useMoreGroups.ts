@@ -33,6 +33,7 @@ export function useMoreGroups(): PaletteGroup[] {
         { href: "/momentum", label: isZh ? "趋势" : "Momentum", icon: TrendingUp, keywords: "momentum trend" },
         { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", icon: Target, keywords: "clutch close games" },
         { href: "/scoring-output", label: isZh ? "攻防输出" : "Scoring Output", icon: Shield, keywords: "scoring offense defense net" },
+        { href: "/team-stats", label: isZh ? "球队数据榜" : "Team Stat Boards", icon: Layers, keywords: "team stats rankings ppg fg3 rebounds" },
       ],
     },
     {
@@ -41,6 +42,7 @@ export function useMoreGroups(): PaletteGroup[] {
       color: "#A855F7",
       items: [
         { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race", icon: Award, keywords: "MVP ROY DPOY 6MOY MIP" },
+        { href: "/best-of-night", label: isZh ? "今日最佳" : "Player of the Night", icon: Sparkles, keywords: "player of the night best performer game score" },
         { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-Time Leaders", icon: Crown, keywords: "all time leaders PPG career" },
         { href: "/milestones", label: isZh ? "里程碑" : "Milestones", icon: TrendingUp, keywords: "milestones career thresholds" },
         { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", icon: Flame, keywords: "best games closest blowouts OT" },

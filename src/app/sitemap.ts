@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/momentum`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/clutch-teams`, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE}/scoring-output`, changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE}/team-stats`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/home-vs-road`, changeFrequency: "daily", priority: 0.5 },
     { url: `${BASE}/rivalries`, changeFrequency: "weekly", priority: 0.5 },
   ];
@@ -45,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/all-time-leaders`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/milestones`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE}/clutch`, changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE}/best-of-night`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/best-games`, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE}/records`, changeFrequency: "weekly", priority: 0.5 },
   ];
@@ -63,6 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // News & history
   const news: SitemapEntry[] = [
+    { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/injuries`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/transactions`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/this-day`, changeFrequency: "daily", priority: 0.5 },
