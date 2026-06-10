@@ -8,6 +8,7 @@ import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, Sparkles, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
+import ShareButton from "@/components/ShareButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import RecentVisitTracker from "@/components/RecentVisitTracker";
@@ -246,7 +247,12 @@ export default async function PlayerPage({ params }: PageProps) {
               {player.teamCity} {player.teamName}
             </Link>
           </div>
-          <FavoriteButton type="player" id={personId} className="absolute top-2 right-2 z-10 bg-bg-card/60 backdrop-blur-md" />
+          {/* Favorite + Share share one glass pill. Share embeds the canonical
+              URL inside the text body so the link travels with the payload. */}
+          <div className="absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg">
+            <FavoriteButton type="player" id={personId} />
+            <ShareButton text={`${fullName} — ${ppg} PPG · ${rpg} RPG · ${apg} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
+          </div>
         </div>
 
         {/* Tile 2 — PPG HERO (the star number, with rank + delta + percentile bar) */}

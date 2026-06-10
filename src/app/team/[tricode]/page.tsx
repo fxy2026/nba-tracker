@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getFullSchedule, getPlayerIndex, formatDate } from "@/lib/api";
+import { getFullSchedule, getPlayerIndex, formatDate, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
@@ -260,6 +260,7 @@ export default async function TeamPage({ params }: PageProps) {
         awayWins={awayWins} awayLosses={awayLosses}
         streakType={streakType} streakDisplay={streakDisplay}
         longestWinStreak={longestWinStreak} longestLossStreak={longestLossStreak}
+        updatedAt={getScheduleAge()}
       />
 
       <TeamPace wins={wins} losses={losses} w10={w10} l10={l10} t={t} />

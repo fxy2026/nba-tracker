@@ -5,7 +5,7 @@ import {
   Trophy, Search, GitCompareArrows, Users, AlertTriangle, History, Target, Swords,
   ArrowLeftRight, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen,
   GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat,
-  HelpCircle, Book, Map as MapIcon,
+  HelpCircle, Book, Map as MapIcon, ListOrdered,
 } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import type { PaletteGroup } from "@/components/CommandPalette";
@@ -21,13 +21,31 @@ export function useMoreGroups(): PaletteGroup[] {
 
   return useMemo<PaletteGroup[]>(() => [
     {
+      // Marquee destinations surfaced first so the palette opens on the 6
+      // tools most users want, rather than a flat wall of 37 equal links.
+      // These items are MOVED out of their categorized groups below (not
+      // duplicated) — CommandPalette keys by href, so a repeated href would
+      // break keyboard nav and throw a React key warning.
+      title: isZh ? "常用" : "Popular",
+      eyebrow: isZh ? "精选" : "Featured",
+      color: "#F97316",
+      items: [
+        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows, keywords: "compare player stats" },
+        { href: "/h2h", label: t.nav.h2h, icon: Swords, keywords: "head to head h2h matchup" },
+        { href: "/power-rankings", label: isZh ? "战力榜" : "Power Rankings", icon: Crown, keywords: "power rankings" },
+        { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race", icon: Award, keywords: "MVP ROY DPOY 6MOY MIP" },
+        { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", icon: Flame, keywords: "best games closest blowouts OT" },
+        { href: "/best-of-night", label: isZh ? "今日最佳" : "Player of the Night", icon: Sparkles, keywords: "player of the night best performer game score" },
+      ],
+    },
+    {
       title: isZh ? "联赛排序" : "League Order",
       eyebrow: isZh ? "排名" : "Standings",
       color: "#FFD700",
       items: [
+        { href: "/standings", label: t.nav.standings, icon: ListOrdered, keywords: "standings table conference rank" },
         { href: "/conference-race", label: isZh ? "分区赛" : "Conference Race", icon: Trophy, keywords: "conference race playoff seeding" },
         { href: "/divisions", label: isZh ? "六分区" : "Divisions", icon: MapIcon, keywords: "divisions atlantic central southeast" },
-        { href: "/power-rankings", label: isZh ? "战力榜" : "Power Rankings", icon: Crown, keywords: "power rankings" },
         { href: "/tier-list", label: isZh ? "等级表" : "Tier List", icon: Layers, keywords: "tier list S A B C" },
         { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", icon: Flame, keywords: "streaks hot cold" },
         { href: "/momentum", label: isZh ? "趋势" : "Momentum", icon: TrendingUp, keywords: "momentum trend" },
@@ -41,11 +59,8 @@ export function useMoreGroups(): PaletteGroup[] {
       eyebrow: isZh ? "奖项" : "Hardware",
       color: "#A855F7",
       items: [
-        { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race", icon: Award, keywords: "MVP ROY DPOY 6MOY MIP" },
-        { href: "/best-of-night", label: isZh ? "今日最佳" : "Player of the Night", icon: Sparkles, keywords: "player of the night best performer game score" },
         { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-Time Leaders", icon: Crown, keywords: "all time leaders PPG career" },
         { href: "/milestones", label: isZh ? "里程碑" : "Milestones", icon: TrendingUp, keywords: "milestones career thresholds" },
-        { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", icon: Flame, keywords: "best games closest blowouts OT" },
         { href: "/records", label: isZh ? "赛季纪录" : "Season Records", icon: BookOpen, keywords: "records highest lowest" },
         { href: "/clutch", label: t.nav.playoffLeaders, icon: Target, keywords: "playoff leaders clutch" },
       ],
@@ -56,8 +71,6 @@ export function useMoreGroups(): PaletteGroup[] {
       color: "#3B82F6",
       items: [
         { href: "/search", label: t.nav.playerSearch, icon: Search, keywords: "search player" },
-        { href: "/compare", label: t.nav.compare, icon: GitCompareArrows, keywords: "compare player stats" },
-        { href: "/h2h", label: t.nav.h2h, icon: Swords, keywords: "head to head h2h matchup" },
         { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", icon: Sparkles, keywords: "rookie watch first year" },
         { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", icon: GraduationCap, keywords: "draft classes year" },
         { href: "/by-position", label: isZh ? "按位置" : "By Position", icon: Users, keywords: "position guard forward center" },

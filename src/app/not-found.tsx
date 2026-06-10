@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Search, Trophy } from "lucide-react";
+import { Home, Search, BarChart3, ListOrdered, Compass } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -31,8 +31,14 @@ export default async function NotFound() {
               <Home size={14} />
               {t.common.home}
             </Link>
+            <Link href="/standings" className="chip cursor-pointer">
+              <ListOrdered size={14} /> {t.nav.standings}
+            </Link>
             <Link href="/stats" className="chip cursor-pointer">
-              <Trophy size={14} /> {t.nav.standings}
+              <BarChart3 size={14} /> {t.nav.stats}
+            </Link>
+            <Link href="/explore" className="chip cursor-pointer">
+              <Compass size={14} /> {t.nav.explore}
             </Link>
             <Link href="/search" className="chip cursor-pointer">
               <Search size={14} /> {t.nav.search}

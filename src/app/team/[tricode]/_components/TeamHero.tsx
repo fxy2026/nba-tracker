@@ -1,6 +1,8 @@
 import Link from "next/link";
 import TeamLogo from "@/components/TeamLogo";
 import FavoriteButton from "@/components/FavoriteButton";
+import UpdatedPill from "@/components/UpdatedPill";
+import ShareButton from "@/components/ShareButton";
 import type { TeamMeta } from "@/lib/teams";
 import type { Translations } from "@/locales";
 
@@ -29,6 +31,8 @@ interface TeamHeroProps {
   streakDisplay: string;
   longestWinStreak: number;
   longestLossStreak: number;
+  // Age of the schedule cache the record is computed from (ms), or null.
+  updatedAt: number | null;
 }
 
 /**
@@ -43,6 +47,7 @@ export default function TeamHero({
   playoffWins, playoffLosses, rosterCount, confRank,
   gamesPlayed, ppg, oppPpg, homeWins, homeLosses, awayWins, awayLosses,
   streakType, streakDisplay, longestWinStreak, longestLossStreak,
+  updatedAt,
 }: TeamHeroProps) {
   return (
     <div
@@ -64,9 +69,10 @@ export default function TeamHero({
           <TeamLogo teamId={team.teamId} tricode={team.tricode} size={88} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2 flex-wrap">
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: team.primaryColor }} />
             {team.tricode} · {team.conference}ern · {team.division}
+            <UpdatedPill ageMs={updatedAt} />
           </p>
           <h1 className="leading-[0.9] tracking-[-0.03em] mt-1.5">
             <span className="block text-sm sm:text-base font-extralight text-text-secondary">{team.city}</span>
@@ -86,6 +92,9 @@ export default function TeamHero({
               → {t.teamPage.scheduleLink}
             </Link>
             <FavoriteButton type="team" id={team.tricode} />
+            {/* Share embeds the canonical URL inside the text body so the link
+                travels with the share/clipboard payload. */}
+            <ShareButton text={`${team.city} ${team.name} ${wins}-${losses} | NBA Tracker\nhttps://nba.xpy.me/team/${team.tricode}`} />
           </div>
         </div>
       </div>

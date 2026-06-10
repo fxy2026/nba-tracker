@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
+import { useToast } from "@/components/ToastProvider";
 
 interface TeamRecord { tricode: string; wins: number; losses: number; }
 
 export default function ExportStandings({ east, west }: { east: TeamRecord[]; west: TeamRecord[] }) {
   const [copied, setCopied] = useState(false);
   const { t } = useLocale();
+  const { toast } = useToast();
 
   const handleExport = () => {
     const lines = [`NBA Standings ${CURRENT_SEASON}`, ""];
@@ -22,8 +24,9 @@ export default function ExportStandings({ east, west }: { east: TeamRecord[]; we
 
     navigator.clipboard.writeText(lines.join("\n")).then(() => {
       setCopied(true);
+      toast(t.export.copied);
       setTimeout(() => setCopied(false), 2000);
-    });
+    }).catch(() => toast(t.export.clipboardError, "warning"));
   };
 
   return (

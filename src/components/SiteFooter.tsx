@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, ExternalLink } from "lucide-react";
+import { Trophy, ExternalLink, Compass, ArrowRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
 export default function SiteFooter() {
@@ -73,7 +73,32 @@ export default function SiteFooter() {
   ];
 
   return (
-    <footer className="border-t border-border relative hidden sm:block pb-4 mt-12 safe-area-bottom">
+    <>
+      {/* Mobile-only onward-navigation entry point. The full 5-column sitemap
+          below is desktop-only (would collide with the fixed MobileNav), so on
+          phones we surface a single tile to /explore — the canonical feature
+          index — with bottom clearance for the 56px bottom nav. */}
+      <Link
+        href="/explore"
+        className="sm:hidden glass-tile mt-12 mb-20 mx-4 p-4 flex items-center justify-between group cursor-pointer safe-area-bottom"
+      >
+        <span className="flex items-center gap-3 min-w-0">
+          <span className="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+            <Compass size={16} className="text-accent" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-text-primary">
+              {isZh ? "浏览全部" : "Explore All"}
+            </span>
+            <span className="block text-[11px] text-text-secondary truncate">
+              {isZh ? "NBATracker 全部功能" : "Every feature on NBATracker"}
+            </span>
+          </span>
+        </span>
+        <ArrowRight size={16} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
+      </Link>
+
+      <footer className="border-t border-border relative hidden sm:block pb-4 mt-12 safe-area-bottom">
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Top: brand + group columns */}
         <div className="grid grid-cols-12 gap-x-6 gap-y-8 mb-8">
@@ -143,5 +168,6 @@ export default function SiteFooter() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

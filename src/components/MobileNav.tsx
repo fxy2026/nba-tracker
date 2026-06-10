@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, Newspaper } from "lucide-react";
+import { Trophy, Calendar, BarChart3, ListOrdered, MoreHorizontal, Newspaper } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import CommandPalette from "@/components/CommandPalette";
@@ -14,6 +14,9 @@ export default function MobileNav() {
   const isZh = locale === "zh";
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // Standings takes the final slot (not Search) — search is already reachable
+  // via the top-bar icon, so it's redundant in the bottom nav, while standings
+  // is a top-intent destination for a scores site.
   // /news label is an inline ternary: t.nav has no "news" key and locales are
   // a shared file this component must not edit.
   const mainLinks = useMemo(() => [
@@ -21,7 +24,7 @@ export default function MobileNav() {
     { href: "/calendar", label: t.nav.calendar, icon: Calendar },
     { href: "/stats", label: t.nav.stats, icon: BarChart3 },
     { href: "/news", label: isZh ? "资讯" : "News", icon: Newspaper },
-    { href: "/search", label: t.nav.search, icon: Search },
+    { href: "/standings", label: t.nav.standings, icon: ListOrdered },
   ], [t, isZh]);
 
   // Reuse the SAME nav groups + CommandPalette as desktop. Previously mobile
