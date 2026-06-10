@@ -81,25 +81,25 @@ function findTeamGames(schedule: ScheduleDate[], tricode: string): TeamGames {
 }
 
 /**
- * A team's most recent FINISHED game (status 3 only — a live game has no
- * complete box line). Used to derive a followed player's last line from the
- * CDN box score, since stats.nba.com playergamelog is blackholed from Vercel.
+ * A team's most recent N finished games (status 3), newest-first. Used to find
+ * a followed player's most recent APPEARANCE — the literal last team game may
+ * be one the player rested/DNP'd or pre-dated a trade to the team.
  */
-export function teamLastFinishedGame(schedule: ScheduleDate[], tricode: string): DigestGame | null {
-  let best: { utc: string; game: DigestGame } | null = null;
+export function teamRecentFinishedGameIds(
+  schedule: ScheduleDate[],
+  tricode: string,
+  n: number,
+): string[] {
+  const games: { utc: string; gameId: string }[] = [];
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (!isCountedSeason(g.gameId) || g.gameStatus !== 3) continue;
-      const isHome = g.homeTeam.teamTricode === tricode;
-      const isAway = g.awayTeam.teamTricode === tricode;
-      if (!isHome && !isAway) continue;
-      const utc = g.gameDateTimeUTC;
-      if (!best || utc.localeCompare(best.utc) > 0) {
-        best = { utc, game: scoredGame(g, isHome) };
-      }
+      if (g.homeTeam.teamTricode !== tricode && g.awayTeam.teamTricode !== tricode) continue;
+      games.push({ utc: g.gameDateTimeUTC, gameId: g.gameId });
     }
   }
-  return best?.game ?? null;
+  games.sort((a, b) => b.utc.localeCompare(a.utc));
+  return games.slice(0, n).map((g) => g.gameId);
 }
 
 /**

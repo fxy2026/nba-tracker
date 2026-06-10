@@ -4,7 +4,7 @@ import { TEAM_META } from "@/lib/teams";
 import {
   buildTeamDigests,
   teamNextGame,
-  teamLastFinishedGame,
+  teamRecentFinishedGameIds,
   playerLineFromBoxScore,
 } from "@/lib/follow-digest";
 import type { FollowDigest, PlayerDigest, PlayerLine } from "@/lib/follow-digest-types";
@@ -43,18 +43,25 @@ async function buildPlayerDigest(
   const meta = TEAM_META[tricode];
 
   // Last line: stats.nba.com playergamelog is blackholed from Vercel, so derive
-  // it from the player's team's most recent finished game via the CDN box score
-  // (cdn.nba.com is reachable). null = team unknown, no finished game, or DNP.
+  // it from the CDN box score (reachable). The literal last team game may be one
+  // the player rested/DNP'd, so walk back the last few finished games until the
+  // player actually appears. null = team unknown / no appearance found.
   let lastLine: PlayerLine | null = null;
   if (meta) {
-    const lastFinished = teamLastFinishedGame(schedule, meta.tricode);
-    if (lastFinished) {
-      const box = await getBoxScore(lastFinished.gameId).catch(() => null);
-      if (box) lastLine = playerLineFromBoxScore(box, personId);
+    const recent = teamRecentFinishedGameIds(schedule, meta.tricode, 3);
+    for (const gid of recent) {
+      const box = await getBoxScore(gid).catch(() => null);
+      const line = box ? playerLineFromBoxScore(box, personId) : null;
+      if (line) {
+        lastLine = line;
+        break;
+      }
     }
   }
 
-  const name = info ? `${info.firstName} ${info.lastName}`.trim() : String(personId);
+  // Empty name = unresolved player (not in the active CDN index — retired /
+  // two-way). The client localizes this to "Player #id" rather than a bare id.
+  const name = info ? `${info.firstName} ${info.lastName}`.trim() : "";
   // Player index pts/reb/ast are season per-game averages — surface only when
   // the player actually has a season (any non-zero), else null.
   const seasonAvg =
@@ -100,10 +107,11 @@ export async function GET(request: NextRequest) {
     if (r.status === "fulfilled") {
       players.push(r.value);
     } else {
-      // Last-resort degrade: keep the id visible with everything blank.
+      // Last-resort degrade: keep the entry with everything blank; empty name
+      // signals the client to show a localized "Player #id" placeholder.
       players.push({
         personId: playerIds[i],
-        name: String(playerIds[i]),
+        name: "",
         teamTricode: "",
         teamId: 0,
         lastLine: null,

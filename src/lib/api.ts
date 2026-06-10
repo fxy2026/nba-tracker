@@ -319,18 +319,33 @@ function lruSet<V>(cache: Map<string, V>, key: string, value: V): void {
   }
 }
 
+// Collapse concurrent fetches of the same gameId into one request (e.g. several
+// followed teammates resolving to the same box score in one /api/follow-digest
+// call). Mirrors the getPlayerIndex inflight-dedup pattern.
+const boxScoreInflight = new Map<string, Promise<BoxScore | null>>();
+
 export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   const cached = boxScoreCache.get(gameId);
   if (cached && cached.gameStatus === 3) return cached;
-  const res = await fetch(
-    `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
-    { headers: HEADERS, next: { revalidate: 30 } }
-  );
-  if (!res.ok) return cached ?? null;
-  const data = await res.json();
-  const game: BoxScore | null = data.game || null;
-  if (game) lruSet(boxScoreCache, gameId, game);
-  return game;
+  const existing = boxScoreInflight.get(gameId);
+  if (existing) return existing;
+  const p = (async (): Promise<BoxScore | null> => {
+    const res = await fetch(
+      `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
+      { headers: HEADERS, next: { revalidate: 30 } }
+    );
+    if (!res.ok) return cached ?? null;
+    const data = await res.json();
+    const game: BoxScore | null = data.game || null;
+    if (game) lruSet(boxScoreCache, gameId, game);
+    return game;
+  })();
+  boxScoreInflight.set(gameId, p);
+  try {
+    return await p;
+  } finally {
+    boxScoreInflight.delete(gameId);
+  }
 }
 
 // Map raw PBP actions to the slim shot shape — shared with the game page,
