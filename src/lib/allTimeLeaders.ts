@@ -30,7 +30,7 @@ export interface AllTimeLeader {
   totalBlk?: number;
 }
 
-// 45 entries: 20 active superstars (with their real NBA personIds) + 25
+// 47 entries: 20 active superstars (with their real NBA personIds) + 27
 // retired legends (personId=0). Career averages from NBA-official sources.
 export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   // ─── Active superstars (real personIds for headshots + /player linking) ───
@@ -96,6 +96,12 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   { personId: 977, name: "Kobe Bryant", fromYear: 1996, toYear: 2016, active: false, team: "LAL",
     ppg: 24.99, rpg: 5.2, apg: 4.7, spg: 1.4, bpg: 0.5,
     totalPts: 33643, totalReb: 7047, totalAst: 6306 },
+  { personId: 951, name: "Ray Allen", fromYear: 1996, toYear: 2014, active: false, team: "MIA",
+    ppg: 18.9, rpg: 4.1, apg: 3.4,
+    totalPts: 24505 },
+  { personId: 1503, name: "Tracy McGrady", fromYear: 1997, toYear: 2012, active: false, team: "HOU",
+    ppg: 19.6, rpg: 5.6, apg: 4.4,
+    totalPts: 18381 },
   { personId: 76375, name: "Wilt Chamberlain", fromYear: 1959, toYear: 1973, active: false, team: "LAL",
     ppg: 30.07, rpg: 22.9, apg: 4.4,
     totalPts: 31419, totalReb: 23924, totalAst: 4643 },

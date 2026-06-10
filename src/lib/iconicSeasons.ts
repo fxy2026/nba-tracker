@@ -242,7 +242,7 @@ export const ICONIC_SEASONS: IconicSeason[] = [
     story: "Player-coach. Last title of his 11. Beat the Lakers in 7 with Wilt on the other side.",
     storyZh: "球员兼教练。11 冠收官之作。G7 客场击败有张大帅的湖人。",
     champion: true },
-  { id: "0-1977", personId: 0, name: "Bill Walton", season: "1977-78", seasonYear: 1977, team: "POR",
+  { id: "78318-1977", personId: 78318, name: "Bill Walton", season: "1977-78", seasonYear: 1977, team: "POR",
     ppg: 18.9, rpg: 13.2, apg: 5.0, bpg: 2.5, fgPct: 0.522,
     styles: ["rim-protector", "playmaking-big"],
     story: "MVP. Foot injury cut the season short; otherwise would've been a likely repeat title.",
@@ -331,11 +331,11 @@ export const ICONIC_SEASONS: IconicSeason[] = [
 
   // ── 2020s addendum — Jokić era + Embiid MVP
   { id: "203954-2022", personId: 203954, name: "Joel Embiid", season: "2022-23", seasonYear: 2022, team: "PHI",
-    ppg: 33.1, rpg: 10.2, apg: 4.2, spg: 1.0, bpg: 1.7, fgPct: 0.548,
-    playoffPpg: 23.7, playoffRpg: 10.2, playoffApg: 4.5, playoffGp: 9,
+    ppg: 33.1, rpg: 10.2, apg: 4.2, spg: 1.0, bpg: 1.7, fgPct: 0.548, ftPct: 0.857,
+    playoffPpg: 23.7, playoffRpg: 9.8, playoffApg: 2.7, playoffGp: 9,
     styles: ["post-scorer", "rim-protector", "high-usage-scorer"],
-    story: "First MVP. Led the league in scoring as a center — first since Shaq.",
-    storyZh: "首个 MVP，得分王 — 中锋拿得分王，自奥尼尔之后首人。",
+    story: "First MVP. Led the league in scoring for a second straight year — uncommon for a center.",
+    storyZh: "首座 MVP；中锋身份连续两年得分王，史所罕见。",
     mvp: true, scoringTitle: true },
   { id: "203999-2021", personId: 203999, name: "Nikola Jokić", season: "2021-22", seasonYear: 2021, team: "DEN",
     ppg: 27.1, rpg: 13.8, apg: 7.9, spg: 1.5, bpg: 0.9, fgPct: 0.583,
@@ -360,13 +360,6 @@ export const ICONIC_SEASONS: IconicSeason[] = [
     story: "Carried OKC's young core to a 1 seed. Top-3 MVP finish.",
     storyZh: "带雷霆年轻核心打出西部第一；MVP 前三。",
     scoringTitle: true },
-  { id: "203954-2022", personId: 203954, name: "Joel Embiid", season: "2022-23", seasonYear: 2022, team: "PHI",
-    ppg: 33.1, rpg: 10.2, apg: 4.2, spg: 1.0, bpg: 1.7, fgPct: 0.548, ftPct: 0.857,
-    playoffPpg: 23.7, playoffRpg: 10.5, playoffApg: 4.1, playoffGp: 10,
-    styles: ["post-scorer", "rim-protector", "high-usage-scorer"],
-    story: "First MVP. Led the league in scoring for a second straight year — uncommon for a center.",
-    storyZh: "首座 MVP；中锋身份连续两年得分王，史所罕见。",
-    mvp: true, scoringTitle: true },
   { id: "203999-2022", personId: 203999, name: "Nikola Jokić", season: "2022-23", seasonYear: 2022, team: "DEN",
     ppg: 24.5, rpg: 11.8, apg: 9.8, spg: 1.3, bpg: 0.7, fgPct: 0.632,
     playoffPpg: 30.0, playoffRpg: 13.5, playoffApg: 9.5, playoffGp: 20,
@@ -413,9 +406,3 @@ export const PLAY_STYLE_LABEL: Record<PlayStyle, { en: string; zh: string }> = {
   "switchable-big": { en: "Switchable Big", zh: "换防型内线" },
   "playmaking-big": { en: "Playmaking Big", zh: "组织型内线" },
 };
-
-// Map an iconic-season id back to its full record. Used by compare-page
-// search results once the user picks an entry.
-export function findIconicSeason(id: string): IconicSeason | undefined {
-  return ICONIC_SEASONS.find((s) => s.id === id);
-}
