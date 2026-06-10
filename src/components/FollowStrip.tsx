@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { getFavoriteTeams } from "@/lib/favorites";
+import { isPlayoff, isPlayIn } from "@/lib/games";
 import { localTz } from "@/lib/timezone";
 import TeamLogo from "@/components/TeamLogo";
 import type { FollowDigest, TeamDigest, DigestGame } from "@/lib/follow-digest-types";
@@ -202,6 +203,10 @@ function LastRow({ game, isZh }: { game: DigestGame | null; isZh: boolean }) {
   }
   const won = game.win === true;
   const live = game.status === 2;
+  // Postseason result: a small accent pill so a reg.-season streak shown beside
+  // a playoff/play-in loss isn't read as a contradiction.
+  const playoff = isPlayoff(game.gameId);
+  const playIn = isPlayIn(game.gameId);
   return (
     <div className="flex items-center gap-2 text-[11px] min-w-0">
       <RowLabel>{label}</RowLabel>
@@ -222,6 +227,14 @@ function LastRow({ game, isZh }: { game: DigestGame | null; isZh: boolean }) {
           }`}
         >
           {won ? (isZh ? "胜" : "W") : isZh ? "负" : "L"}
+        </span>
+      )}
+      {(playoff || playIn) && (
+        <span
+          className="px-1 py-0.5 rounded bg-accent/15 text-accent text-[9px] font-bold uppercase tracking-wide shrink-0"
+          title={playIn ? (isZh ? "附加赛" : "Play-In") : isZh ? "季后赛" : "Playoffs"}
+        >
+          {playIn ? (isZh ? "附" : "PI") : isZh ? "季" : "PO"}
         </span>
       )}
       <span className="font-mono tabular-nums text-text-primary shrink-0">

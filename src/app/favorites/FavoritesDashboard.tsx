@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   Heart, Users, User, Copy, Check, Search, ListOrdered, Compass,
@@ -10,6 +10,7 @@ import {
   getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer,
 } from "@/lib/favorites";
 import { TEAM_META } from "@/lib/teams";
+import { isPlayoff, isPlayIn } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { useLocale } from "@/components/LocaleProvider";
@@ -33,15 +34,20 @@ interface NewsItem {
   published: string;
 }
 
-// Match an ESPN injuries-team displayName ("Boston Celtics") to a tricode the
-// same way the /injuries page does — nickname OR city, both unique enough here.
+// Match an ESPN injuries-team displayName ("Boston Celtics") to a tricode by
+// the NBA nickname first — nicknames are unique league-wide, so this avoids the
+// bare 2-char "LA" city substring matching "Orlando" (or-LA-ndo). City is only a
+// fallback for displayNames missing the nickname, and never the 2-char "LA".
 function tricodeForInjuryTeam(displayName: string | undefined): string | null {
   if (!displayName) return null;
   const lower = displayName.toLowerCase();
+  // Nickname match (unique: Clippers / Lakers / Magic are all distinct).
   for (const meta of Object.values(TEAM_META)) {
-    if (lower.includes(meta.name.toLowerCase()) || lower.includes(meta.city.toLowerCase())) {
-      return meta.tricode;
-    }
+    if (lower.includes(meta.name.toLowerCase())) return meta.tricode;
+  }
+  // City fallback only when the city token is unambiguous (excludes "LA").
+  for (const meta of Object.values(TEAM_META)) {
+    if (meta.city.length > 3 && lower.includes(meta.city.toLowerCase())) return meta.tricode;
   }
   return null;
 }
@@ -77,6 +83,9 @@ export default function FavoritesDashboard() {
   // tricode → injuries[], tricode → latest 1-2 headlines
   const [injuriesByTeam, setInjuriesByTeam] = useState<Record<string, InjuryItem[]>>({});
   const [newsByTeam, setNewsByTeam] = useState<Record<string, NewsItem[]>>({});
+  // Teams whose news we've already fan-out'd this session, so a single unfollow
+  // (which re-runs the favTeams effect) doesn't re-request every remaining team.
+  const newsFetched = useRef(new Set<string>());
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -147,10 +156,15 @@ export default function FavoritesDashboard() {
       .catch(() => {});
 
     // News: per-team query against the existing /api/news (name-filtered).
+    // Query by the unambiguous nickname only ("Lakers"), NOT "Los Angeles
+    // Lakers" — the route OR-matches query words, so a city like "Los Angeles"
+    // would surface Clippers / generic-LA headlines on the Lakers card.
     for (const tri of favTeams) {
+      if (newsFetched.current.has(tri)) continue; // already fetched this session
       const meta = TEAM_META[tri];
       if (!meta) continue;
-      const q = `${meta.city} ${meta.name}`;
+      newsFetched.current.add(tri); // mark BEFORE fetch so effect re-runs skip it
+      const q = meta.name;
       fetch(`/api/news?q=${encodeURIComponent(q)}`, { signal: controller.signal })
         .then((r) => (r.ok ? r.json() : { data: [] }))
         .then((json: { data?: NewsItem[] }) => {
@@ -158,7 +172,9 @@ export default function FavoritesDashboard() {
           const items = (json.data ?? []).filter((n) => n.headline && n.link).slice(0, 2);
           if (items.length) setNewsByTeam((prev) => ({ ...prev, [tri]: items }));
         })
-        .catch(() => {});
+        .catch(() => {
+          newsFetched.current.delete(tri); // allow retry if aborted/failed
+        });
     }
 
     return () => controller.abort();
@@ -166,9 +182,13 @@ export default function FavoritesDashboard() {
 
   const removeTeam = useCallback((tricode: string) => {
     setFavTeams(toggleFavoriteTeam(tricode).slice());
+    // Optimistic splice so removal is instant — the remaining cards' data is
+    // unchanged by dropping one follow, so we don't wait on the background refetch.
+    setDigest((d) => (d ? { ...d, teams: d.teams.filter((t) => t.tricode !== tricode) } : d));
   }, []);
   const removePlayer = useCallback((id: number) => {
     setFavPlayers(toggleFavoritePlayer(id).slice());
+    setDigest((d) => (d ? { ...d, players: d.players.filter((p) => p.personId !== id) } : d));
   }, []);
 
   // ── Export-to-text (carried over from the old page) ────────────────────────
@@ -184,7 +204,8 @@ export default function FavoritesDashboard() {
     if (digest?.players.length) {
       lines.push(isZh ? "球员:" : "Players:");
       for (const p of digest.players) {
-        lines.push(`  - ${p.name} (${p.teamTricode})`);
+        const pName = p.name || (isZh ? `球员 #${p.personId}` : `Player #${p.personId}`);
+        lines.push(p.teamTricode ? `  - ${pName} (${p.teamTricode})` : `  - ${pName}`);
       }
     }
     navigator.clipboard?.writeText(lines.join("\n")).then(() => {
@@ -193,29 +214,27 @@ export default function FavoritesDashboard() {
     }).catch(() => {});
   }, [digest, isZh]);
 
-  const counts = useMemo(
-    () => ({ teams: favTeams.length, players: favPlayers.length }),
-    [favTeams.length, favPlayers.length],
-  );
-
   // ── Pre-mount + loading: stable skeleton so SSR HTML matches first paint ──
   if (!mounted) return <DashboardSkeleton />;
 
-  if (!hasAny && !loading) return <EmptyFeed isZh={isZh} />;
+  // hasAny is localStorage-derived (reliable past the mounted gate) and gates
+  // the fetch; a zero-follow user goes straight to EmptyFeed with no skeleton flash.
+  if (!hasAny) return <EmptyFeed isZh={isZh} />;
 
   return (
     <div>
-      {/* Toolbar: counts + export */}
-      {hasAny && (
+      {/* Toolbar: counts + export. Gated on the RESOLVED digest (not localStorage)
+          so a stale/unknown tricode can't show "1 team" above the empty state. */}
+      {!loading && !errored && digest && (digest.teams.length > 0 || digest.players.length > 0) && (
         <div className="flex items-center gap-2.5 mb-6 flex-wrap">
-          {counts.teams > 0 && (
+          {digest.teams.length > 0 && (
             <span className="text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-full bg-accent/15 text-accent font-semibold tabular-nums">
-              {counts.teams} {isZh ? "支球队" : counts.teams === 1 ? "team" : "teams"}
+              {digest.teams.length} {isZh ? "支球队" : digest.teams.length === 1 ? "team" : "teams"}
             </span>
           )}
-          {counts.players > 0 && (
+          {digest.players.length > 0 && (
             <span className="text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-full bg-accent-amber/15 text-accent-amber font-semibold tabular-nums">
-              {counts.players} {isZh ? "位球员" : counts.players === 1 ? "player" : "players"}
+              {digest.players.length} {isZh ? "位球员" : digest.players.length === 1 ? "player" : "players"}
             </span>
           )}
           <button
@@ -228,9 +247,11 @@ export default function FavoritesDashboard() {
         </div>
       )}
 
-      {loading && <DashboardSkeleton />}
+      {/* Skeleton only blocks on the very first load; during a refetch (e.g. after
+          an unfollow) the stale digest below stays mounted instead of blanking. */}
+      {loading && !digest && <DashboardSkeleton />}
 
-      {!loading && errored && (
+      {errored && !digest && (
         <div className="glass-tile p-8 text-center">
           <AlertTriangle size={28} className="mx-auto text-accent-amber mb-3" />
           <p className="text-sm text-text-primary font-medium">
@@ -242,7 +263,7 @@ export default function FavoritesDashboard() {
         </div>
       )}
 
-      {!loading && !errored && digest && (
+      {!errored && digest && (
         <div className="space-y-10">
           {/* TEAMS */}
           {digest.teams.length > 0 && (
@@ -467,14 +488,35 @@ function GameRow({ label, game, isZh, kind }: {
 
   const oppPrefix = game.home ? (isZh ? "对阵 " : "vs ") : "@ ";
   const date = fmtGameDate(game.dateUTC, isZh);
+  // A live game can be the "last" game — don't label its in-progress score W/L.
+  const live = kind === "last" && game.status === 2;
+  // Postseason results: tag the row so a reg.-season streak shown beside a
+  // playoff/play-in loss isn't read as a contradiction.
+  const playoff = isPlayoff(game.gameId);
+  const playIn = isPlayIn(game.gameId);
 
   const inner = (
     <>
       <span className="font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0">{label}</span>
       <RowIcon size={12} className="text-text-secondary/50 shrink-0" />
-      {kind === "last" && game.win !== undefined && (
-        <span className={`font-mono font-bold ${game.win ? "text-success" : "text-danger"}`}>
-          {game.win ? (isZh ? "胜" : "W") : (isZh ? "负" : "L")}
+      {live ? (
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wide bg-success/15 text-success shrink-0">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
+          </span>
+          {isZh ? "进行中" : "Live"}
+        </span>
+      ) : (
+        kind === "last" && game.win !== undefined && (
+          <span className={`font-mono font-bold ${game.win ? "text-success" : "text-danger"}`}>
+            {game.win ? (isZh ? "胜" : "W") : (isZh ? "负" : "L")}
+          </span>
+        )
+      )}
+      {(playoff || playIn) && (
+        <span className="px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[9px] font-mono font-semibold uppercase tracking-[0.08em] shrink-0">
+          {playIn ? (isZh ? "附加赛" : "Play-In") : (isZh ? "季后赛" : "Playoffs")}
         </span>
       )}
       {kind === "last" && game.teamScore != null && game.oppScore != null && (
@@ -512,6 +554,10 @@ function PlayerCard({ player, isZh, onRemove, delay }: {
   const meta = TEAM_META[player.teamTricode];
   const color = meta?.primaryColor || "#3B82F6";
   const line = player.lastLine;
+  // The backend emits "" for a personId not in the active CDN player index
+  // (retired / two-way / pre-trade). Show a stable placeholder, not a bare id.
+  const displayName = player.name || (isZh ? `球员 #${player.personId}` : `Player #${player.personId}`);
+  const unresolved = !player.name;
 
   return (
     <div
@@ -528,21 +574,27 @@ function PlayerCard({ player, isZh, onRemove, delay }: {
       {/* Header */}
       <div className="relative flex items-start gap-3">
         <Link href={`/player/${player.personId}`} className="shrink-0">
-          <PlayerHeadshot personId={player.personId} name={player.name} size={52} />
+          <PlayerHeadshot personId={player.personId} name={displayName} size={52} />
         </Link>
         <div className="min-w-0 flex-1">
           <Link href={`/player/${player.personId}`} className="group block">
             <h3 className="text-base font-bold text-text-primary leading-tight group-hover:text-accent transition-colors truncate">
-              {player.name}
+              {displayName}
             </h3>
           </Link>
-          <Link
-            href={`/team/${player.teamTricode}`}
-            className="inline-flex items-center gap-1.5 mt-0.5 text-[11px] text-text-secondary hover:text-accent transition-colors"
-          >
-            <TeamLogo teamId={player.teamId} tricode={player.teamTricode} size={14} />
-            {meta ? `${meta.city} ${meta.name}` : player.teamTricode}
-          </Link>
+          {unresolved ? (
+            <span className="inline-block mt-0.5 text-[11px] text-text-secondary/70 italic">
+              {isZh ? "暂不可用" : "No longer available"}
+            </span>
+          ) : (
+            <Link
+              href={`/team/${player.teamTricode}`}
+              className="inline-flex items-center gap-1.5 mt-0.5 text-[11px] text-text-secondary hover:text-accent transition-colors"
+            >
+              <TeamLogo teamId={player.teamId} tricode={player.teamTricode} size={14} />
+              {meta ? `${meta.city} ${meta.name}` : player.teamTricode}
+            </Link>
+          )}
         </div>
         <RemoveButton onRemove={onRemove} label={isZh ? "取消关注" : "Unfollow"} />
       </div>
