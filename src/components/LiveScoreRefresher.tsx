@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
 const REFRESH_INTERVAL = 30;
 
-export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boolean }) {
+export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiveGames: boolean; onRefresh: () => void }) {
   const { t } = useLocale();
-  const router = useRouter();
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
 
   useEffect(() => {
@@ -24,14 +22,14 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
       remaining--;
       setCountdown(remaining);
       if (remaining <= 0) {
-        router.refresh();
+        onRefresh();
         remaining = interval;
         setCountdown(remaining);
       }
     }, 1000);
 
     return () => clearInterval(tick);
-  }, [hasLiveGames, router]);
+  }, [hasLiveGames, onRefresh]);
 
   if (!hasLiveGames) return null;
 
@@ -41,7 +39,7 @@ export default function LiveScoreRefresher({ hasLiveGames }: { hasLiveGames: boo
       <span>{t.liveScore.autoRefreshing}</span>
       <button
         onClick={() => {
-          router.refresh();
+          onRefresh();
           setCountdown(REFRESH_INTERVAL);
         }}
         className="text-text-secondary hover:text-accent transition-colors underline decoration-dashed"

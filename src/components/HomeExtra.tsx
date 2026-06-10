@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import type { ScheduleGame } from "@/lib/api";
-import BracketTree from "./BracketTree";
 import RecentHighlights from "./RecentHighlights";
+
+const BracketPlaceholder = () => <div className="skeleton-shimmer rounded-xl" style={{ minHeight: 400 }} />;
+const BracketTree = dynamic(() => import("./BracketTree"), { loading: BracketPlaceholder });
 
 /**
  * Perf rebuild:
  *  - Doesn't fetch /api/extra until the placeholder is intersection-visible.
- *  - That delays BracketTree mount (the heaviest client component on the home
- *    page — 100+ DOM nodes + SVG connectors + projection cascade) until the
- *    user has actually scrolled near it.
+ *  - BracketTree (the heaviest client component on the home page — 100+ DOM
+ *    nodes + SVG connectors + projection cascade) is a dynamic() import, so
+ *    its bytes stay out of the initial home chunk and only download once
+ *    playoff data actually renders it.
  *  - Once data lands the section is content-visibility:auto so the browser
  *    can still skip layout/paint when off-screen.
  */

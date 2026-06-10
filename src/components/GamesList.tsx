@@ -69,6 +69,10 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     return () => controller.abort();
   }, [selectedDate, fetchGames]);
 
+  const refreshGames = useCallback(() => {
+    fetchGames(selectedDate);
+  }, [fetchGames, selectedDate]);
+
   const replaySet = useMemo(() => new Set(replayIds), [replayIds]);
   const { liveNow, upcoming, final } = useMemo(() => ({
     liveNow: games.filter((g) => g.gameStatus === 2),
@@ -159,7 +163,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           </button>
         </div>
       )}
-      <LiveScoreRefresher hasLiveGames={hasLiveGames} />
+      <LiveScoreRefresher hasLiveGames={hasLiveGames} onRefresh={refreshGames} />
 
       {/* Live score ticker (only when live games — high-signal real-time element) */}
       {hasLiveGames && (
@@ -279,13 +283,13 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           {liveNow.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-success flex items-center gap-2">
+                <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-success flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
                   </span>
                   Live Now
-                </h3>
+                </h2>
                 <span className="h-px flex-1 bg-success/30" />
                 <span className="text-[10px] font-mono tabular-nums text-success/80">
                   {liveNow.length} {liveNow.length === 1 ? "game" : "games"}
@@ -303,10 +307,10 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           {upcoming.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+                <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
                   Upcoming
-                </h3>
+                </h2>
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
                   {upcoming.length} {upcoming.length === 1 ? "game" : "games"}
@@ -323,10 +327,10 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           {final.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
+                <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-text-secondary/50" />
                   Final
-                </h3>
+                </h2>
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-[10px] font-mono tabular-nums text-text-secondary/70">
                   {final.length} {final.length === 1 ? "game" : "games"}
