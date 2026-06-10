@@ -345,12 +345,13 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
 
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <select value={season} onChange={(e) => setSeason(e.target.value)}
+          aria-label={locale === "zh" ? "选择赛季" : "Season"}
           className="bg-bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary">
           {seasons.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <div className="flex rounded-lg overflow-hidden border border-border">
           {(["regular", "playoffs", "all"] as const).map((st) => (
-            <button key={st} onClick={() => setSeasonType(st)}
+            <button key={st} onClick={() => setSeasonType(st)} aria-pressed={seasonType === st}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${seasonType === st ? "bg-accent text-white" : "bg-bg-secondary text-text-secondary hover:text-text-primary"}`}>
               {stLabel(st)}
             </button>

@@ -32,7 +32,10 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   // Keyboard navigation: left/right arrows
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Modifier combos (Alt+Left = browser Back) must reach the browser
+      if (e.altKey || e.metaKey || e.ctrlKey) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.closest('[role="dialog"]'))) return;
       if (e.key === "ArrowLeft") { e.preventDefault(); navigate(offsetDate(selectedDate, -1)); }
       if (e.key === "ArrowRight") { e.preventDefault(); navigate(offsetDate(selectedDate, 1)); }
     };

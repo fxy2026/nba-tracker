@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -44,6 +44,8 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerElRef = useRef<HTMLElement | null>(null);
+  const baseId = useId();
+  const listboxId = `${baseId}-results`;
 
   // Reset query/focus on open transition (false → true).
   // Also capture the trigger element so we can restore focus on close.
@@ -198,6 +200,11 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isZh ? "跳转到任意页面 · 搜索 35+ 个页面..." : "Jump to anywhere · search 35+ pages..."}
             aria-label={isZh ? "搜索页面" : "Search pages"}
+            role="combobox"
+            aria-expanded="true"
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-activedescendant={activeIdx < flatItems.length ? `${baseId}-opt-${activeIdx}` : undefined}
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
             autoComplete="off"
           />
@@ -219,8 +226,13 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
           </button>
         </div>
 
+        {/* Screen-reader result count — visual count lives in the footer */}
+        <span className="sr-only" aria-live="polite">
+          {flatItems.length} {isZh ? "个页面" : "pages"}
+        </span>
+
         {/* Results scroll area */}
-        <div className="flex-1 overflow-y-auto p-2" onMouseEnter={handleEnter}>
+        <div id={listboxId} role="listbox" className="flex-1 overflow-y-auto p-2" onMouseEnter={handleEnter}>
           {filtered.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-text-secondary">
@@ -229,19 +241,19 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
               </p>
             </div>
           ) : (
-            <div className="space-y-3" onMouseOver={handleEnter}>
-              {filtered.map((group) => (
-                <section key={group.title}>
-                  <div className="px-2 py-1 mb-1 flex items-center gap-2">
+            <div className="space-y-3" onMouseOver={handleEnter} role="presentation">
+              {filtered.map((group, gi) => (
+                <section key={group.title} role="group" aria-labelledby={`${baseId}-grp-${gi}`}>
+                  <div className="px-2 py-1 mb-1 flex items-center gap-2" role="presentation">
                     <span className="w-1 h-1 rounded-full" style={{ background: group.color }} />
-                    <p className="text-[9px] font-mono uppercase tracking-[0.25em]" style={{ color: group.color }}>
+                    <p id={`${baseId}-grp-${gi}`} className="text-[9px] font-mono uppercase tracking-[0.25em]" style={{ color: group.color }}>
                       {group.title}
                     </p>
                     {group.eyebrow && (
                       <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-text-secondary/40">/ {group.eyebrow}</p>
                     )}
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5" role="presentation">
                     {group.items.map((it) => {
                       const Icon = it.icon;
                       const globalIdx = idxByHref.get(it.href) ?? 0;
@@ -253,6 +265,9 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
                           href={it.href}
                           onClick={onClose}
                           data-idx={globalIdx}
+                          id={`${baseId}-opt-${globalIdx}`}
+                          role="option"
+                          aria-selected={isActive}
                           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer ${
                             isActive
                               ? "bg-accent/15 text-accent"

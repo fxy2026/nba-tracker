@@ -245,8 +245,12 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
               )}
             </div>
 
-            <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-bg-hover text-text-secondary hover:text-text-primary transition-colors shrink-0">
-              <X size={18} />
+            <button
+              onClick={() => setOpen(false)}
+              aria-label={isZh ? "关闭投篮图" : "Close shot chart"}
+              className="p-1.5 rounded-lg hover:bg-bg-hover text-text-secondary hover:text-text-primary transition-colors shrink-0"
+            >
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
         </div>

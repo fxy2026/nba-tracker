@@ -98,6 +98,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             <button
               key={f}
               onClick={() => { setFilter(f); setSelectedPlayer(null); }}
+              aria-pressed={filter === f}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                 filter === f ? "bg-accent text-white" : "bg-bg-card text-text-secondary hover:text-text-primary"
               }`}
@@ -111,6 +112,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
           <select
             value={selectedPlayer || ""}
             onChange={(e) => setSelectedPlayer(e.target.value ? parseInt(e.target.value) : null)}
+            aria-label={isZh ? "按球员筛选" : "Filter by player"}
             className="bg-bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
           >
             <option value="">{t.shotChartComp.allPlayers}</option>
