@@ -161,7 +161,7 @@ function ConferenceTable({ title, teams, t, isZh }: { title: string; teams: Stan
           <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-accent-amber">★ {t.standingsPage.best}{leader.tricode} <span className="tabular-nums">({leader.wins}-{leader.losses})</span></span>
         )}
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto table-scroll-x">
         <table className="w-full text-sm min-w-[820px]">
           <thead>
             <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">

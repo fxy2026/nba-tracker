@@ -311,12 +311,13 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
                 {isZh ? `${rows.length} 场` : `${rows.length} games`}
               </span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto table-scroll-x">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border text-text-secondary">
-                    <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">{t.playerStats.date}</th>
-                    <th className="text-left py-2.5 px-2">{isZh ? "对手" : "OPP"}</th>
+                    {/* OPP pinned (game identity survives horizontal scroll), date scrolls */}
+                    <th className="text-left py-2.5 px-2 sticky left-0 bg-bg-card min-w-[88px]">{isZh ? "对手" : "OPP"}</th>
+                    <th className="text-left py-2.5 px-3">{t.playerStats.date}</th>
                     <th className="text-center py-2.5 px-2">{t.playerStats.wl}</th>
                     <th className="text-center py-2.5 px-2">MIN</th>
                     <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
@@ -334,15 +335,12 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
                     const oppMeta = TEAM_META[g.opponent];
                     return (
                       <tr key={g.gameId} className="border-b border-border/30 hover:bg-bg-hover/50">
-                        <td className="py-2 px-3 text-text-secondary sticky left-0 bg-bg-card whitespace-nowrap font-mono tabular-nums">
-                          {g.date.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "short", day: "numeric" })}
-                        </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 sticky left-0 bg-bg-card min-w-[88px]">
                           <Link
                             href={`/game/${g.gameId}`}
                             className="inline-flex items-center gap-1.5 text-text-primary hover:text-accent transition-colors whitespace-nowrap cursor-pointer"
                           >
-                            <span className="text-[9px] text-text-secondary w-4 shrink-0">
+                            <span className="text-[10px] text-text-secondary w-4 shrink-0">
                               {g.home ? (isZh ? "主" : "vs") : (isZh ? "客" : "@")}
                             </span>
                             {oppMeta && (
@@ -357,6 +355,9 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
                             )}
                             <span className="font-medium">{g.opponent}</span>
                           </Link>
+                        </td>
+                        <td className="py-2 px-3 text-text-secondary whitespace-nowrap font-mono tabular-nums">
+                          {g.date.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className={`text-center py-2 px-2 font-bold ${g.wl === "W" ? "text-success" : g.wl === "L" ? "text-danger" : "text-text-secondary"}`}>
                           {g.wl || "-"}
@@ -385,10 +386,10 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
                   {/* Season averages footer */}
                   {season && (
                     <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
-                      <td className="py-2 px-3 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold whitespace-nowrap">
+                      <td className="py-2 px-2 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold whitespace-nowrap min-w-[88px]">
                         {isZh ? "场均" : "Avg"}
                       </td>
-                      <td className="py-2 px-2 text-text-secondary whitespace-nowrap">
+                      <td className="py-2 px-3 text-text-secondary whitespace-nowrap">
                         {season.gp} {isZh ? "场" : "GP"}
                       </td>
                       <td className="text-center py-2 px-2 font-mono tabular-nums whitespace-nowrap">

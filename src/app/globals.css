@@ -420,6 +420,33 @@ main { contain: layout style; }
    VRAM. Chrome already promotes sticky elements when they actually stick. */
 .box-score-wrap { contain: layout style; }
 
+/* ── Wide-table mobile affordances (pure CSS, zero JS, SSR-safe) ──────
+   The box-score grid (.box-score-wrap), standings conference table and the
+   player game-log (.table-scroll-x) are all `overflow-x-auto` tables wider
+   than a phone, where the hidden right-hand columns are otherwise undiscoverable.
+
+   1. Right-edge fade that self-hides at scroll-end: a radial shadow attached
+      to the scroll layer (background-attachment: local) retracts as the user
+      reaches the right edge. rgba(0,0,0,0.12) reads on both dark + light cards.
+   2. Sticky-column seam shadow: the frozen first column gets a right shadow so
+      it reads as a separate layer over the scrolling numbers. Tailwind emits
+      the literal `sticky` class on those cells, so td.sticky / th.sticky match. */
+.box-score-wrap,
+.table-scroll-x {
+  background:
+    /* opaque card fill so the fade only shows over real content, not the gap */
+    linear-gradient(to right, var(--bg-card), var(--bg-card)) 0 0 / 100% 100%,
+    radial-gradient(farthest-side at right, rgba(0,0,0,0.12), transparent) right / 24px 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, scroll;
+}
+.box-score-wrap td.sticky,
+.box-score-wrap th.sticky,
+.table-scroll-x td.sticky,
+.table-scroll-x th.sticky {
+  box-shadow: 2px 0 4px rgba(0,0,0,0.12);
+}
+
 .stats-table {
   content-visibility: auto;
   contain-intrinsic-size: auto 800px;

@@ -735,14 +735,17 @@ export default function ComparePage() {
               {isZh ? "分享" : "Share"}
             </button>
           </div>
-          {/* Headers */}
-          <div className="grid grid-cols-[1fr_auto_1fr] p-6 border-b border-border">
+          {/* Headers — stays side-by-side (the VS framing is the point), but
+              tightens below sm: smaller headshot, less padding, narrower VS
+              gutter, and the city/team subline hides so two-word names don't
+              wrap. teamAbbr still conveys the team on mobile. */}
+          <div className="grid grid-cols-[1fr_auto_1fr] p-4 sm:p-6 border-b border-border">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-bg-secondary">
                 <Image src={headshotUrl(player1.personId)} alt={`${player1.firstName} ${player1.lastName}`} width={80} height={80} unoptimized className="w-full h-full object-cover object-top" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-text-primary">{player1.firstName} {player1.lastName}</p>
+                <p className="font-bold text-text-primary text-sm sm:text-base leading-tight">{player1.firstName} {player1.lastName}</p>
                 {player1.isIconicSeason ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded bg-accent/15 text-accent text-xs font-mono font-bold tabular-nums">{player1.season}</span>
                 ) : player1.isLegend ? (
@@ -751,24 +754,24 @@ export default function ComparePage() {
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player1.position}</span>
                 ) : null}
                 <p className="text-sm font-semibold text-text-primary mt-1">{player1.teamAbbr}</p>
-                <p className="text-[10px] text-text-secondary">
+                <p className="hidden sm:block text-[10px] text-text-secondary">
                   {player1.teamCity} {player1.teamName}
                   {player1.jersey && <> &middot; #{player1.jersey}</>}
                 </p>
                 {player1.isIconicSeason && <TrophyRow p={player1} />}
               </div>
             </div>
-            <div className="flex flex-col items-center justify-center gap-2 px-4">
+            <div className="flex flex-col items-center justify-center gap-2 px-2 sm:px-4">
               <div className="w-px h-8 bg-border" />
               <span className="text-xl font-light font-mono uppercase tracking-[0.2em] text-accent-amber">{t.common.vs}</span>
               <div className="w-px h-8 bg-border" />
             </div>
             <div className="flex flex-col items-center gap-3">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-bg-secondary">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-bg-secondary">
                 <Image src={headshotUrl(player2.personId)} alt={`${player2.firstName} ${player2.lastName}`} width={80} height={80} unoptimized className="w-full h-full object-cover object-top" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-text-primary">{player2.firstName} {player2.lastName}</p>
+                <p className="font-bold text-text-primary text-sm sm:text-base leading-tight">{player2.firstName} {player2.lastName}</p>
                 {player2.isIconicSeason ? (
                   <span className="inline-block mt-1 px-2 py-0.5 rounded bg-accent/15 text-accent text-xs font-mono font-bold tabular-nums">{player2.season}</span>
                 ) : player2.isLegend ? (
@@ -777,7 +780,7 @@ export default function ComparePage() {
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold">{player2.position}</span>
                 ) : null}
                 <p className="text-sm font-semibold text-text-primary mt-1">{player2.teamAbbr}</p>
-                <p className="text-[10px] text-text-secondary">
+                <p className="hidden sm:block text-[10px] text-text-secondary">
                   {player2.teamCity} {player2.teamName}
                   {player2.jersey && <> &middot; #{player2.jersey}</>}
                 </p>
