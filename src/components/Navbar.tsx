@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
-import { Trophy, Calendar, Search, BarChart3, Users, MoreHorizontal } from "lucide-react";
+import { Trophy, Calendar, Search, BarChart3, Users, MoreHorizontal, Newspaper } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -119,12 +119,15 @@ export default function Navbar() {
   }, [teamsOpen]);
 
   // Primary nav — always visible
+  // /news label is an inline ternary: t.nav has no "news" key and locales are
+  // a shared file this component must not edit.
   const primaryLinks = useMemo(() => [
     { href: "/", label: t.nav.today, icon: Trophy },
     { href: "/calendar", label: t.nav.calendar, icon: Calendar },
     { href: "/stats", label: t.nav.stats, icon: BarChart3 },
     { href: "/standings", label: t.nav.standings, icon: BarChart3 },
-  ], [t]);
+    { href: "/news", label: isZh ? "资讯" : "News", icon: Newspaper },
+  ], [t, isZh]);
 
   // Portal target available only on client. By the time user clicks a button to open
   // the dropdown, hydration is complete and document.body exists.

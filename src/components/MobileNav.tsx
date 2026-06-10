@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Calendar, BarChart3, Search, MoreHorizontal } from "lucide-react";
+import { Trophy, Calendar, BarChart3, Search, MoreHorizontal, Newspaper } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import CommandPalette from "@/components/CommandPalette";
@@ -14,12 +14,15 @@ export default function MobileNav() {
   const isZh = locale === "zh";
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // /news label is an inline ternary: t.nav has no "news" key and locales are
+  // a shared file this component must not edit.
   const mainLinks = useMemo(() => [
     { href: "/", label: t.nav.today, icon: Trophy },
     { href: "/calendar", label: t.nav.calendar, icon: Calendar },
     { href: "/stats", label: t.nav.stats, icon: BarChart3 },
+    { href: "/news", label: isZh ? "资讯" : "News", icon: Newspaper },
     { href: "/search", label: t.nav.search, icon: Search },
-  ], [t]);
+  ], [t, isZh]);
 
   // Reuse the SAME nav groups + CommandPalette as desktop. Previously mobile
   // had its own bottom-sheet implementation with hardcoded English labels and
