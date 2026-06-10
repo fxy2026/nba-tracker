@@ -75,6 +75,8 @@ export default function StatsPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/team-stats", label: isZh ? "球队数据榜" : "Team stat rankings", icon: BarChart3 },
+          { href: "/best-of-night", label: isZh ? "今日最佳球员" : "Player of the Night", icon: Medal },
           { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards race", icon: Award },
           { href: "/milestones", label: isZh ? "生涯里程碑" : "Milestones", icon: TrendingUp },
           { href: "/all-time-leaders", label: isZh ? "历史排行" : "All-time leaders", icon: Crown },

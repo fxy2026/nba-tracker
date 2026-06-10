@@ -209,6 +209,7 @@ export default async function ThisDayPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/best-of-night", label: isZh ? "今日最佳球员" : "Player of the Night", description: isZh ? "每个比赛日的算法十佳" : "Nightly algorithmic top 10", icon: Crown },
           { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic Games", description: isZh ? "改变生涯的夜晚" : "Single-night iconic performances", icon: Flame },
           { href: "/iconic-seasons", label: isZh ? "经典赛季" : "Iconic Seasons", description: isZh ? "巅峰赛季快照" : "Peak-campaign snapshots", icon: Crown },
           { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季最精彩对决" : "Season highlights and standout matchups", icon: Trophy },

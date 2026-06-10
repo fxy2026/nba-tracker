@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Map as MapIcon, type LucideIcon } from "lucide-react";
+import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Newspaper, Map as MapIcon, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 
@@ -32,6 +32,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
       color: "#DF1B41",
       features: [
         { href: "/", label: isZh ? "今日比赛" : "Today", description: isZh ? "实时比分、已结束比赛与即将开打的对决" : "Live scores, finished games, upcoming tip-offs", icon: Trophy, badge: "LIVE" },
+        { href: "/best-of-night", label: isZh ? "今日最佳球员" : "Player of the Night", description: isZh ? "每个比赛日的算法十佳表现" : "Algorithmic top performances for each game day", icon: Crown },
         { href: "/calendar", label: isZh ? "日历" : "Calendar", description: isZh ? "选择任意日期查看比赛与结果" : "Pick any date to see games and results", icon: Calendar },
         { href: "/schedule", label: isZh ? "赛程" : "Schedule", description: isZh ? "全部球队的未来比赛" : "Upcoming games across all teams", icon: Clock },
         { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule Heatmap", description: isZh ? "比赛密度日历 —— 一眼看清最忙夜" : "Game density calendar — busy nights at a glance", icon: Activity },
@@ -53,6 +54,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
         { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "上升与下滑球队 · 近 5 场对比前 10 场" : "Teams trending up or down · L5 vs prior 10", icon: TrendingUp },
         { href: "/clutch-teams", label: isZh ? "关键球" : "Clutch Teams", description: isZh ? "焦灼比赛与加时赛战绩" : "Records in close games and overtime", icon: Target },
         { href: "/scoring-output", label: isZh ? "得失分" : "Scoring Output", description: isZh ? "进攻、防守与净得分差" : "Offense, defense, and net point differential", icon: Shield },
+        { href: "/team-stats", label: isZh ? "球队数据榜" : "Team Stat Rankings", description: isZh ? "11 项类别 · 30 队全榜 · 含联盟平均线" : "11 categories · all 30 teams ranked · league-average marker", icon: BarChart3 },
         { href: "/home-vs-road", label: isZh ? "主场与客场" : "Home vs Road", description: isZh ? "最强主场堡垒与客场杀手" : "Best home fortresses and road warriors", icon: Home },
         { href: "/rivalries", label: isZh ? "宿敌对阵" : "Rivalries", description: isZh ? "交锋最多、最胶着的对阵" : "Most-played and tightest matchups", icon: Swords },
       ],
@@ -100,6 +102,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
       eyebrow: isZh ? "联盟动态" : "Around the league",
       color: "#F59E0B",
       features: [
+        { href: "/news", label: isZh ? "联盟资讯" : "League News", description: isZh ? "来自 ESPN 的最新联盟头条" : "Latest league headlines from ESPN", icon: Newspaper },
         { href: "/injuries", label: isZh ? "伤病" : "Injuries", description: isZh ? "联盟最新伤病报告" : "Latest injury reports across the league", icon: AlertTriangle },
         { href: "/transactions", label: isZh ? "交易动态" : "Transactions", description: isZh ? "交易、签约、裁员" : "Trades, signings, waivers", icon: ArrowLeftRight },
         { href: "/favorites", label: isZh ? "我的关注" : "Favorites", description: isZh ? "你收藏的球队和球员" : "Your saved teams and players", icon: Heart },

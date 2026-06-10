@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, ArrowLeftRight, Repeat, ListOrdered, Heart, TrendingUp } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowLeftRight, Repeat, ListOrdered, Heart, TrendingUp, Newspaper } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -286,6 +286,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/news", label: isZh ? "联盟资讯" : "League news", icon: Newspaper },
           { href: "/transactions", label: isZh ? "交易动态" : "Transactions", icon: ArrowLeftRight },
           { href: "/back-to-back", label: isZh ? "背靠背" : "B2B fatigue", icon: Repeat },
           { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },

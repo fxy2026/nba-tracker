@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { TrendingUp, Shield, Trophy, Crown, MapPin, Activity } from "lucide-react";
+import { TrendingUp, Shield, Trophy, Crown, MapPin, Activity, BarChart3 } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -179,6 +179,7 @@ export default async function ScoringOutputPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/team-stats", label: isZh ? "球队数据榜" : "Team Stat Rankings", description: isZh ? "11 项类别 · 30 队全榜" : "11 categories · all 30 teams ranked", icon: BarChart3 },
           { href: "/power-rankings", label: isZh ? "实力榜" : "Power Rankings", description: isZh ? "联盟实力排序" : "League-wide strength ranking", icon: TrendingUp },
           { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", description: isZh ? "本赛季最精彩对决" : "Season's standout matchups", icon: Trophy },
           { href: "/records", label: isZh ? "赛季纪录" : "Records", description: isZh ? "赛季单场纪录" : "Single-game season records", icon: Crown },

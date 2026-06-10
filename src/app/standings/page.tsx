@@ -9,7 +9,7 @@ import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
-import { TrendingUp, Activity, Users, Crown, Award } from "lucide-react";
+import { TrendingUp, Activity, Users, Crown, Award, BarChart3 } from "lucide-react";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import type { Translations } from "@/locales";
@@ -396,6 +396,7 @@ export default async function StandingsPage() {
         eyebrow={locale === "zh" ? "继续探索" : "Keep exploring"}
         pages={[
           { href: "/power-rankings", label: locale === "zh" ? "实力榜" : "Power Rankings", description: locale === "zh" ? "综合表现排名" : "Composite team rankings", icon: TrendingUp },
+          { href: "/team-stats", label: locale === "zh" ? "球队数据榜" : "Team Stat Rankings", description: locale === "zh" ? "11 项类别 · 30 队全榜" : "11 categories · all 30 teams ranked", icon: BarChart3 },
           { href: "/conference-race", label: locale === "zh" ? "季后赛席位竞争" : "Playoff race", description: locale === "zh" ? "1-6 锁定 · 7-10 附加" : "1-6 locked · 7-10 play-in", icon: Users },
           { href: "/streaks", label: locale === "zh" ? "连胜连败" : "Streaks", description: locale === "zh" ? "近期火热与低迷" : "Hot and cold runs", icon: Activity },
           { href: "/momentum", label: locale === "zh" ? "球队趋势" : "Team momentum", description: locale === "zh" ? "近 5 场 vs 前 10 场" : "Last 5 vs prior 10", icon: Activity },

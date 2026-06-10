@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy } from "lucide-react";
+import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy, BarChart3 } from "lucide-react";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -343,13 +343,15 @@ export default async function PowerRankingsPage() {
       </div>
 
       <RelatedPages
+        eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
-          { href: "/tier-list", label: "Tier List", description: "Teams bucketed S/A/B/C/D", icon: Layers },
-          { href: "/conference-race", label: "Conference Race", description: "Playoff seeding 1-15 per side", icon: Trophy },
-          { href: "/streaks", label: "Streaks", description: "Active win/loss runs", icon: Flame },
-          { href: "/momentum", label: "Momentum", description: "Trending up or down · L5 vs prior 10", icon: TrendingUp },
-          { href: "/clutch-teams", label: "Clutch Teams", description: "Records in close games and OT", icon: Target },
-          { href: "/scoring-output", label: "Scoring Output", description: "Off/def per-game rankings", icon: Crown },
+          { href: "/team-stats", label: isZh ? "球队数据榜" : "Team Stat Rankings", description: isZh ? "11 项类别 · 30 队全榜" : "11 categories · all 30 teams ranked", icon: BarChart3 },
+          { href: "/tier-list", label: isZh ? "分级榜" : "Tier List", description: isZh ? "球队按 S/A/B/C/D 等级分类" : "Teams bucketed S/A/B/C/D", icon: Layers },
+          { href: "/conference-race", label: isZh ? "分区排位战" : "Conference Race", description: isZh ? "东西部 1-15 排位" : "Playoff seeding 1-15 per side", icon: Trophy },
+          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "进行中的连胜与连败" : "Active win/loss runs", icon: Flame },
+          { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "近 5 场对比前 10 场" : "Trending up or down · L5 vs prior 10", icon: TrendingUp },
+          { href: "/clutch-teams", label: isZh ? "关键球" : "Clutch Teams", description: isZh ? "焦灼比赛与加时赛战绩" : "Records in close games and OT", icon: Target },
+          { href: "/scoring-output", label: isZh ? "得失分" : "Scoring Output", description: isZh ? "场均攻防排名" : "Off/def per-game rankings", icon: Crown },
         ]}
       />
     </div>

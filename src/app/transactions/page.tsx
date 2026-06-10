@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award, Newspaper } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
@@ -197,6 +197,7 @@ export default function TransactionsPage() {
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
         pages={[
+          { href: "/news", label: isZh ? "联盟资讯" : "League news", icon: Newspaper },
           { href: "/injuries", label: isZh ? "伤病报告" : "Injuries", icon: Activity },
           { href: "/standings", label: isZh ? "排行榜" : "Standings", icon: ListOrdered },
           { href: "/history", label: isZh ? "历届冠军" : "Champions", icon: Crown },
