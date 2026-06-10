@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
-import { localTz, localToday } from "@/lib/timezone";
+import { localTz } from "@/lib/timezone";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
@@ -20,13 +20,15 @@ interface GamesListProps {
   selectedDate: string;
   initialGames?: ScheduleGame[];
   initialReplayIds?: string[];
+  // Computed in HomeClient behind a post-mount flag (false until hydration) so
+  // the tz-dependent live UI — ScoreTicker/LiveScoreRefresher/auto badge/
+  // TodayStars — stays absent on first paint and matches the SSR HTML.
+  isToday: boolean;
 }
 
-export default function GamesList({ selectedDate, initialGames, initialReplayIds }: GamesListProps) {
+export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const today = localToday();
-  const isToday = selectedDate === today;
   const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
   const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
   const [loading, setLoading] = useState(!initialGames);

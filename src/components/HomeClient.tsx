@@ -15,12 +15,24 @@ import type { ScheduleGame } from "@/lib/api";
 interface HomeClientProps {
   initialDate: string;
   initialGames?: ScheduleGame[];
+  // Whether initialDate was the server's ET-today. Used as the server-stable
+  // first-paint value for isToday so the SSR HTML and the client's pre-effect
+  // render agree (the real local-tz "today" is unknowable until mount).
+  initialIsToday: boolean;
 }
 
-export default function HomeClient({ initialDate, initialGames }: HomeClientProps) {
+export default function HomeClient({ initialDate, initialGames, initialIsToday }: HomeClientProps) {
   const { t } = useLocale();
   const searchParams = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(initialDate);
+  // localTz() reads Intl at runtime → unknowable during SSR (server resolves to
+  // UTC, client to the browser tz). Gate every tz-dependent branch behind this
+  // post-mount flag so server HTML and the client's first paint agree; otherwise
+  // an ET viewer in the prime NBA window (e.g. 9pm ET = next-day UTC) gets a
+  // hydration mismatch that discards the warm SSR'd scoreboard.
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag: local tz is unknowable during SSR
+  useEffect(() => setMounted(true), []);
 
   // On mount, if the URL has no explicit ?date and the server-rendered initial
   // (ET-today) differs from the user's local "today", jump to local today.
@@ -33,13 +45,17 @@ export default function HomeClient({ initialDate, initialGames }: HomeClientProp
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const today = dateInTz(new Date(), getLocalTz());
-  const isToday = selectedDate === today;
+  // Server-stable on first paint (uses the server's own isToday verdict), then
+  // switch to the real local tz post-mount so the snap-to-local-today correction
+  // and a tz-shifted user's true "today" are honored.
+  const isToday = mounted
+    ? selectedDate === dateInTz(new Date(), getLocalTz())
+    : initialIsToday;
 
   return (
     <>
       <DateNav selectedDate={selectedDate} onDateChange={setSelectedDate} />
-      {isToday && (() => {
+      {mounted && isToday && (() => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yStr = dateInTz(yesterday, getLocalTz());
@@ -65,6 +81,7 @@ export default function HomeClient({ initialDate, initialGames }: HomeClientProp
       <GamesList
         selectedDate={selectedDate}
         initialGames={selectedDate === initialDate ? initialGames : undefined}
+        isToday={isToday}
       />
 
       {/* User's recent visits — only renders when localStorage has data */}

@@ -11,6 +11,10 @@ interface DateNavProps {
   onDateChange?: (date: string) => void;
 }
 
+// Sentinel that no real "YYYY-MM-DD" can equal — used pre-mount so the
+// tz-dependent "today" highlight stays absent until hydration (avoids a mismatch).
+const NO_TODAY = "";
+
 function offsetDate(base: string, offset: number): string {
   const d = new Date(base + "T12:00:00");
   d.setDate(d.getDate() + offset);
@@ -108,7 +112,11 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
 
   // Local timezone "today" — for a Beijing user, this is YYYY-MM-DD in Beijing
   // time, matching the timezone-aware grouping in /api/games and /api/calendar.
-  const today = useMemo(() => localToday(), []);
+  // localToday() reads Intl at runtime (UTC on the server, browser tz on the
+  // client), so it's only safe to compare against post-mount; pre-mount we use a
+  // sentinel that matches no date, keeping the chip highlight + reset chip absent
+  // on first paint to match the server HTML.
+  const today = useMemo(() => (mounted ? localToday() : NO_TODAY), [mounted]);
 
   const prevDate = offsetDate(selectedDate, -1);
   const nextDate = offsetDate(selectedDate, 1);
