@@ -15,15 +15,13 @@ export default function RecentlyViewed() {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   const [items, setItems] = useState<RecentItem[]>([]);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(getRecent(undefined, 8));
   }, []);
 
-  if (!mounted || items.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <section className="mt-8 mb-4">

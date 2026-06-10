@@ -62,19 +62,3 @@ export function getLeagueEra(seasonStartYear: number): LeagueEra | null {
   }
   return bestDiff <= 3 ? best : null;
 }
-
-// True Shooting % from raw shooting splits. Uses the standard formula:
-//   TS = PTS / (2 * (FGA + 0.44 * FTA))
-// We don't carry FGA/FTA in IconicSeason, so approximate from PPG and the
-// shooting splits when caller provides them. Returns null when inputs
-// can't ground the calc.
-export function approxTsPct(args: { ppg: number; fgPct?: number; tpPct?: number; ftPct?: number; tpRate?: number; ftRate?: number }): number | null {
-  // The "exact" TS% needs raw FGA + FTA. Without those we can't compute
-  // truthfully. Callers should fall back to displaying eFG-ish or skipping.
-  const { fgPct, ftPct } = args;
-  if (fgPct === undefined || ftPct === undefined) return null;
-  // Very rough eFG ≈ FG% + 0.5 * 3P-rate * 3P%. We don't have 3P-rate, so
-  // we approximate TS% as a weighted blend of FG% and FT% — only useful
-  // as a crude comparison band, not a precise number.
-  return fgPct * 0.85 + ftPct * 0.15;
-}

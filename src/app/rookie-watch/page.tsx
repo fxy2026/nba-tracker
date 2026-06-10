@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Top performing rookies and sophomores this season — ranked by per-game scoring.",
 };
 
-export const revalidate = 600;
-
 interface RookieRow {
   personId: number;
   firstName: string;
@@ -220,12 +218,12 @@ export default async function RookieWatchPage() {
           {isZh ? (
             <>新秀按 <span className="font-mono">draftYear</span> 识别（最新选秀届有数据者）。二年级生是上一届选秀。
               <br />
-              ⚠️ NBA 球员索引的场均数据滞后一个赛季 — 即"现役 2025-26 新秀"如果赛季尚未结束，其数据可能为 0 或缺失，因此榜单展示的是最近有数据的选秀届（通常是上赛季新秀）。综合得分加权篮板与助攻，强调全能表现。</>
+              ⚠️ NBA 球员索引的场均数据滞后一个赛季 — 即“现役 2025-26 新秀”如果赛季尚未结束，其数据可能为 0 或缺失，因此榜单展示的是最近有数据的选秀届（通常是上赛季新秀）。综合得分加权篮板与助攻，强调全能表现。</>
           ) : (
             <>Rookies identified by <span className="font-mono">draftYear</span> (most recent class with stats). Sophomores
               are the prior year.
               <br />
-              ⚠️ NBA's player index reports last-completed-season averages, so an in-season rookie class may show as 0
+              ⚠️ NBA&apos;s player index reports last-completed-season averages, so an in-season rookie class may show as 0
               until the season finalizes. This page surfaces the most recent class that has populated numbers. Composite
               score weights rebounds and assists for well-rounded play.</>
           )}

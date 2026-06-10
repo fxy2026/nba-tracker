@@ -45,7 +45,3 @@ export function getRecent(kind?: RecentKind, limit = 8): RecentItem[] {
   const filtered = kind ? items.filter((it) => it.kind === kind) : items;
   return filtered.sort((a, b) => b.ts - a.ts).slice(0, limit);
 }
-
-export function clearRecent(): void {
-  try { localStorage.removeItem(KEY); } catch {}
-}

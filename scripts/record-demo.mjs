@@ -163,7 +163,7 @@ async function main() {
         break;
       }
     }
-  } catch (e) { /* OK, fall through */ }
+  } catch { /* OK, fall through */ }
   await record(2000);
 
   // ─── Scene 4: Navigate to /search and bring focus (4s) ───

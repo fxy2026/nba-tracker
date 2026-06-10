@@ -236,11 +236,11 @@ export default function AllTimeLeadersPage() {
               生涯均值来自 NBA 官方历史统计，截至 2025-26 赛季。现役球员的数据会随比赛持续更新。
               想查看现役球员本赛季排行，前往{" "}
               <Link href="/stats" className="text-accent hover:underline">数据排行</Link>。
-              累计数据看不到？切换到"累计数据"分组。
+              累计数据看不到？切换到“累计数据”分组。
             </>
           ) : (
             <>
-              Career stats sourced from NBA official records, current through the 2025-26 season. Active players'
+              Career stats sourced from NBA official records, current through the 2025-26 season. Active players&apos;
               numbers update as they keep playing. For current-season league leaders, see{" "}
               <Link href="/stats" className="text-accent hover:underline">Stats</Link>.
               For active players chasing career thresholds, see{" "}

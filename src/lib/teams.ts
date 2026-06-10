@@ -40,7 +40,3 @@ export const TEAM_META: Record<string, TeamMeta> = {
   UTA: { teamId: 1610612762, tricode: "UTA", city: "Utah", name: "Jazz", conference: "West", division: "Northwest", primaryColor: "#002B5C" },
   WAS: { teamId: 1610612764, tricode: "WAS", city: "Washington", name: "Wizards", conference: "East", division: "Southeast", primaryColor: "#002B5C" },
 };
-
-export function getTeamByTricode(tricode: string): TeamMeta | null {
-  return TEAM_META[tricode.toUpperCase()] || null;
-}

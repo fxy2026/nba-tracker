@@ -14,7 +14,3 @@ export function winPct(wins: number, losses: number): number {
   const total = wins + losses;
   return total > 0 ? wins / total : 0;
 }
-
-export function formatPct(pct: number, digits: number = 3): string {
-  return pct.toFixed(digits).slice(1); // ".743" style
-}

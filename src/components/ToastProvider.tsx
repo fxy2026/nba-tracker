@@ -4,7 +4,6 @@ import {
   createContext,
   use,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -36,10 +35,7 @@ export function useToast(): ToastContextValue {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [mounted, setMounted] = useState(false);
   const idRef = useRef(0);
-
-  useEffect(() => { setMounted(true); }, []);
 
   const toast = useCallback((message: string, tone: ToastTone = "success") => {
     const id = ++idRef.current;
@@ -59,7 +55,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext value={value}>
       {children}
-      {mounted && toasts.length > 0 && createPortal(
+      {toasts.length > 0 && createPortal(
         <div
           className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 pointer-events-none"
           role="status"

@@ -24,6 +24,7 @@ export default function HomeClient({ initialDate }: HomeClientProps) {
   useEffect(() => {
     if (searchParams.get("date")) return;
     const localToday = dateInTz(new Date(), getLocalTz());
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot client correction: local tz is unknowable during SSR
     if (localToday !== initialDate) setSelectedDate(localToday);
   // Run once on mount — searchParams updating shouldn't re-snap to "today".
   // eslint-disable-next-line react-hooks/exhaustive-deps
