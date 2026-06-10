@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { formatDate } from "@/lib/api";
 import HomeClient from "@/components/HomeClient";
 import DailyIconicPick from "@/components/DailyIconicPick";
+import { getLocale } from "@/lib/locale";
+import { getTranslations } from "@/locales";
 
 interface PageProps {
   searchParams: Promise<{ date?: string }>;
@@ -8,6 +11,11 @@ interface PageProps {
 
 // Dynamic page — reads searchParams for date navigation
 export const dynamic = "force-dynamic";
+
+// ?date= variants canonicalize to the bare homepage
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -36,6 +44,8 @@ export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const today = formatDate(new Date());
   const initialDate = params.date || today;
+  const locale = await getLocale();
+  const t = getTranslations(locale);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -44,6 +54,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <h1 className="sr-only">{t.meta.siteTitle}</h1>
       <HomeClient initialDate={initialDate} />
       <DailyIconicPick />
     </div>

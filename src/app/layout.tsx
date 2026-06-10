@@ -69,9 +69,6 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: true,
     },
     metadataBase: new URL("https://nba.xpy.me"),
-    alternates: {
-      canonical: "/",
-    },
   };
 }
 
