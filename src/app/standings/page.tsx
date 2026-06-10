@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ListOrdered } from "lucide-react";
-import { TEAM_META } from "@/lib/teams";
 import { getFullSchedule, getScheduleAge } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
-import { isRegular, winPct as calcWinPct } from "@/lib/games";
+import { computeStandingsRows, gamesBehind, type StandingsRow } from "@/lib/standings-splits";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -24,66 +23,32 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-interface TeamRecord {
-  tricode: string;
-  teamId: number;
-  teamName: string;
-  teamCity: string;
-  wins: number;
-  losses: number;
-}
-
 const EAST_DIVISIONS = ["Atlantic", "Central", "Southeast"] as const;
 const WEST_DIVISIONS = ["Northwest", "Pacific", "Southwest"] as const;
 
-// Compute standings directly from the schedule (avoid SSR self-fetch which
-// fails on deployed environments where baseUrl resolution is unreliable).
-async function getStandings(): Promise<TeamRecord[]> {
-  try {
-    const dates = await getFullSchedule();
-    const teamMap: Record<string, TeamRecord> = {};
-    for (const gd of dates) {
-      for (const g of gd.games) {
-        if (g.gameStatus !== 3) continue;
-        if (!isRegular(g.gameId)) continue; // regular season only
-        const h = g.homeTeam;
-        const a = g.awayTeam;
-        if (!teamMap[h.teamTricode])
-          teamMap[h.teamTricode] = { tricode: h.teamTricode, teamId: h.teamId, teamName: h.teamName, teamCity: h.teamCity, wins: 0, losses: 0 };
-        if (!teamMap[a.teamTricode])
-          teamMap[a.teamTricode] = { tricode: a.teamTricode, teamId: a.teamId, teamName: a.teamName, teamCity: a.teamCity, wins: 0, losses: 0 };
-        if (h.score > a.score) {
-          teamMap[h.teamTricode].wins++;
-          teamMap[a.teamTricode].losses++;
-        } else {
-          teamMap[a.teamTricode].wins++;
-          teamMap[h.teamTricode].losses++;
-        }
-      }
-    }
-    return Object.values(teamMap).sort((a, b) => {
-      const wa = a.wins / (a.wins + a.losses || 1);
-      const wb = b.wins / (b.wins + b.losses || 1);
-      return wb - wa;
-    });
-  } catch {
-    return [];
-  }
+// ".683"-style win pct; an unbeaten team must read "1.000", not ".000".
+function fmtPct(pct: number): string {
+  return pct >= 1 ? "1.000" : pct.toFixed(3).slice(1);
 }
 
-function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
+function StreakBadge({ streak, compact }: { streak: string; compact?: boolean }) {
+  if (!streak) return <span className="text-text-secondary">-</span>;
+  const isWin = streak.startsWith("W");
+  return (
+    <span className={`${compact ? "text-[11px] sm:text-[9px] px-1" : "text-[11px] px-1.5"} py-0.5 rounded font-medium font-mono tabular-nums ${isWin ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+      {streak}
+    </span>
+  );
+}
+
+function DivisionCard({ division, teams, conferenceRanks, t }: {
   division: string;
-  teams: TeamRecord[];
+  teams: StandingsRow[];
   conferenceRanks: Map<string, number>;
-  streaks: Map<string, string>;
   t: Translations;
 }) {
   // Sort by win pct within the division
-  const sorted = [...teams].sort((a, b) => {
-    const wpa = a.wins / (a.wins + a.losses || 1);
-    const wpb = b.wins / (b.wins + b.losses || 1);
-    return wpb - wpa;
-  });
+  const sorted = [...teams].sort((a, b) => b.pct - a.pct || b.wins - a.wins);
 
   const leader = sorted[0];
   const leaderWins = leader?.wins || 0;
@@ -107,7 +72,6 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
           <span className="text-center hidden sm:block">{t.standingsPage.gb}</span>
         </div>
         {sorted.map((team, idx) => {
-          const winPct = calcWinPct(team.wins, team.losses);
           const gb = idx === 0 ? "-" : (((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2).toFixed(1);
           const confRank = conferenceRanks.get(team.tricode) || 99;
           const isPlayoff = confRank <= 6;
@@ -137,20 +101,12 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
                   <span className="text-sm font-medium text-text-primary truncate hidden sm:inline">{team.teamCity} {team.teamName}</span>
                   {isPlayoff && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent/10 text-accent">{t.standingsPage.playoff}</span>}
                   {isPlayIn && <span className="ml-1.5 text-[11px] sm:text-[9px] px-1 py-0.5 rounded bg-accent-amber/10 text-accent-amber">{t.standingsPage.playIn}</span>}
-                  {streaks.get(team.tricode) && (() => {
-                    const streak = streaks.get(team.tricode)!;
-                    const isWin = streak.startsWith("W");
-                    return (
-                      <span className={`ml-1 text-[11px] sm:text-[9px] px-1 py-0.5 rounded font-medium ${isWin ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
-                        {streak}
-                      </span>
-                    );
-                  })()}
+                  {team.streak && <span className="ml-1"><StreakBadge streak={team.streak} compact /></span>}
                 </div>
               </div>
               <span className="text-center text-sm font-medium font-mono tabular-nums">{team.wins}</span>
               <span className="text-center text-sm text-text-secondary font-mono tabular-nums">{team.losses}</span>
-              <span className="text-center text-sm font-mono tabular-nums">{winPct.toFixed(3).slice(1)}</span>
+              <span className="text-center text-sm font-mono tabular-nums">{fmtPct(team.pct)}</span>
               <div className="text-center hidden sm:block">
                 <span className="text-xs text-text-secondary font-mono tabular-nums">{gb}</span>
                 {idx > 0 && (() => {
@@ -172,9 +128,25 @@ function DivisionCard({ division, teams, conferenceRanks, streaks, t }: {
   );
 }
 
-function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord[]; t: Translations }) {
+// Hupu-style one-row-per-team conference table: 排名 队 胜 负 胜率 胜场差
+// 主场 客场 赛区 得分 失分 净胜 连胜/负 — wide, so it horizontally scrolls on
+// phones with the team column pinned (sticky pattern from StatsTable).
+function ConferenceTable({ title, teams, t, isZh }: { title: string; teams: StandingsRow[]; t: Translations; isZh: boolean }) {
   const leader = teams[0];
-  const leaderDiff = leader ? leader.wins - leader.losses : 0;
+
+  const headers: { key: string; label: string }[] = [
+    { key: "w", label: t.common.wins },
+    { key: "l", label: t.common.losses },
+    { key: "pct", label: t.standingsPage.pct },
+    { key: "gb", label: t.standingsPage.gb },
+    { key: "home", label: isZh ? "主场" : "Home" },
+    { key: "road", label: isZh ? "客场" : "Road" },
+    { key: "div", label: isZh ? "赛区" : "Div" },
+    { key: "pf", label: isZh ? "得分" : "PF" },
+    { key: "pa", label: isZh ? "失分" : "PA" },
+    { key: "diff", label: isZh ? "净胜" : "Diff" },
+    { key: "strk", label: isZh ? "连胜/负" : "Strk" },
+  ];
 
   return (
     <div className="glass-tile overflow-hidden">
@@ -188,22 +160,18 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
         )}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+        <table className="w-full text-sm min-w-[820px]">
+          <thead>
             <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
-              <th className="text-center py-2.5 px-2 w-8">#</th>
-              <th className="text-left py-2.5 px-3">{t.common.team}</th>
-              <th className="text-center py-2.5 px-2">{t.common.wins}</th>
-              <th className="text-center py-2.5 px-2">{t.common.losses}</th>
-              <th className="text-center py-2.5 px-2">{t.standingsPage.pct}</th>
-              <th className="text-center py-2.5 px-2">{t.standingsPage.gb}</th>
-              <th className="text-center py-2.5 px-1">{t.standingsPage.proj}</th>
+              <th className="text-left py-2.5 px-3 sticky left-0 z-10 bg-bg-card min-w-[150px]">{t.common.team}</th>
+              {headers.map((h) => (
+                <th key={h.key} className="text-center py-2.5 px-2 whitespace-nowrap">{h.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {teams.map((team, i) => {
-              const winPct = calcWinPct(team.wins, team.losses);
-              const gb = i === 0 ? "-" : ((leaderDiff - (team.wins - team.losses)) / 2).toFixed(1);
+              const gb = leader ? gamesBehind(leader, team) : "-";
               const isPlayoff = i < 6;
               const isPlayIn = i >= 6 && i < 10;
               const isTop3 = i < 3;
@@ -211,19 +179,19 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                 : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
                 : i === 2 ? "bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32]"
                 : "";
+              const diffColor = team.diff > 0 ? "text-success" : team.diff < 0 ? "text-danger" : "text-text-secondary";
               return (
+                // Hupu-style cutlines: heavier border under #6 (playoff) and #10 (play-in)
                 <tr key={team.tricode} className={`border-b border-border/30 hover:bg-bg-hover transition-colors ${i === 5 ? "border-b-2 border-b-accent/30" : ""} ${i === 9 ? "border-b-2 border-b-accent-amber/30" : ""}`}>
-                  <td className="text-center py-2 px-2">
-                    {isTop3 ? (
-                      <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full text-[11px] font-bold font-mono tabular-nums ${medalBg}`}>
-                        {i + 1}
-                      </span>
-                    ) : (
-                      <span className="text-text-secondary text-xs font-mono tabular-nums">{i + 1}</span>
-                    )}
-                  </td>
-                  <td className="py-2 px-3">
-                    <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors cursor-pointer ${i >= 10 && winPct < 0.3 ? "opacity-60" : ""}`}>
+                  <td className="py-2 px-3 sticky left-0 z-10 bg-bg-card">
+                    <Link href={`/team/${team.tricode}`} className={`flex items-center gap-2 hover:text-accent transition-colors cursor-pointer ${i >= 10 && team.pct < 0.3 ? "opacity-60" : ""}`}>
+                      {isTop3 ? (
+                        <span className={`w-6 h-6 shrink-0 inline-flex items-center justify-center rounded-full text-[11px] font-bold font-mono tabular-nums ${medalBg}`}>
+                          {i + 1}
+                        </span>
+                      ) : (
+                        <span className="w-6 shrink-0 text-center text-text-secondary text-xs font-mono tabular-nums">{i + 1}</span>
+                      )}
                       <Image src={teamLogoUrl(team.teamId)} alt={team.tricode} width={22} height={22} unoptimized />
                       <span className="font-semibold text-text-primary font-mono">{team.tricode}</span>
                       {i === 0 && <span title={t.standingsPage.confLeader} className="text-[#FFD700]">★</span>}
@@ -233,29 +201,15 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
                   </td>
                   <td className="text-center py-2 px-2 font-medium font-mono tabular-nums">{team.wins}</td>
                   <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">{team.losses}</td>
-                  <td className="py-2 px-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-mono tabular-nums w-8 text-right">{winPct.toFixed(3).slice(1)}</span>
-                      <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
-                        <div className="h-full bg-accent rounded-full" style={{ width: `${winPct * 100}%` }} />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="text-center py-2 px-2 text-text-secondary text-xs font-mono tabular-nums">
-                    {gb}
-                    {isPlayoff && (() => {
-                      const gamesLeft = 82 - team.wins - team.losses;
-                      return gamesLeft > 0 ? (
-                        <span className="block text-[11px] sm:text-[8px] text-text-secondary/60 mt-0.5">({gamesLeft}{t.standingsPage.gamesLeft})</span>
-                      ) : null;
-                    })()}
-                  </td>
-                  <td className="text-center py-2 px-1 text-[11px] sm:text-[10px] text-text-secondary/70 font-mono tabular-nums">
-                    {(() => {
-                      const projected = Math.round(winPct * 82);
-                      return <span title={t.standingsPage.proj}>&rarr; {projected}w</span>;
-                    })()}
-                  </td>
+                  <td className="text-center py-2 px-2 font-mono tabular-nums text-xs">{fmtPct(team.pct)}</td>
+                  <td className="text-center py-2 px-2 text-text-secondary text-xs font-mono tabular-nums">{gb}</td>
+                  <td className="text-center py-2 px-2 text-xs font-mono tabular-nums whitespace-nowrap">{team.homeW}-{team.homeL}</td>
+                  <td className="text-center py-2 px-2 text-xs font-mono tabular-nums whitespace-nowrap">{team.roadW}-{team.roadL}</td>
+                  <td className="text-center py-2 px-2 text-xs font-mono tabular-nums text-text-secondary whitespace-nowrap">{team.divW}-{team.divL}</td>
+                  <td className="text-center py-2 px-2 text-xs font-mono tabular-nums">{team.ppg.toFixed(1)}</td>
+                  <td className="text-center py-2 px-2 text-xs font-mono tabular-nums text-text-secondary">{team.oppg.toFixed(1)}</td>
+                  <td className={`text-center py-2 px-2 text-xs font-mono tabular-nums font-medium ${diffColor}`}>{team.diff > 0 ? "+" : ""}{team.diff.toFixed(1)}</td>
+                  <td className="text-center py-2 px-2"><StreakBadge streak={team.streak} /></td>
                 </tr>
               );
             })}
@@ -266,73 +220,38 @@ function ConferenceTable({ title, teams, t }: { title: string; teams: TeamRecord
   );
 }
 
-async function getTeamStreaks(): Promise<Map<string, string>> {
-  const { getFullSchedule } = await import("@/lib/api");
-  const schedule = await getFullSchedule().catch(() => []);
-  // Build recent results per team (most recent first)
-  const teamGames: Record<string, boolean[]> = {};
-  const gameDates: { date: string; homeTricode: string; awayTricode: string; homeWon: boolean }[] = [];
-  for (const gd of schedule) {
-    for (const g of gd.games) {
-      if (g.gameStatus !== 3) continue;
-      const dateStr = gd.gameDate.split(" ")[0];
-      const [month, day, year] = dateStr.split("/");
-      const isoDate = `${year}-${month}-${day}`;
-      gameDates.push({ date: isoDate, homeTricode: g.homeTeam.teamTricode, awayTricode: g.awayTeam.teamTricode, homeWon: g.homeTeam.score > g.awayTeam.score });
-    }
-  }
-  gameDates.sort((a, b) => b.date.localeCompare(a.date));
-  for (const g of gameDates) {
-    if (!teamGames[g.homeTricode]) teamGames[g.homeTricode] = [];
-    if (!teamGames[g.awayTricode]) teamGames[g.awayTricode] = [];
-    teamGames[g.homeTricode].push(g.homeWon);
-    teamGames[g.awayTricode].push(!g.homeWon);
-  }
-  const streaks = new Map<string, string>();
-  for (const [tri, results] of Object.entries(teamGames)) {
-    if (results.length === 0) continue;
-    const first = results[0];
-    let count = 0;
-    for (const r of results) {
-      if (r === first) count++;
-      else break;
-    }
-    streaks.set(tri, `${first ? "W" : "L"}${count}`);
-  }
-  return streaks;
-}
-
 export default async function StandingsPage() {
-  const [standings, streaks, locale] = await Promise.all([getStandings(), getTeamStreaks(), getLocale()]);
+  const [schedule, locale] = await Promise.all([
+    getFullSchedule().catch(() => []),
+    getLocale(),
+  ]);
+  const standings = computeStandingsRows(schedule);
   const t = getTranslations(locale);
 
   // Compute conference ranks
-  const eastTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "East");
-  const westTeams = standings.filter((t) => TEAM_META[t.tricode]?.conference === "West");
+  const eastTeams = standings.filter((r) => r.conference === "East");
+  const westTeams = standings.filter((r) => r.conference === "West");
 
   const conferenceRanks = new Map<string, number>();
   let eastWins = 0, eastLosses = 0, westWins = 0, westLosses = 0;
-  eastTeams.forEach((t, i) => {
-    conferenceRanks.set(t.tricode, i + 1);
-    eastWins += t.wins;
-    eastLosses += t.losses;
+  eastTeams.forEach((r, i) => {
+    conferenceRanks.set(r.tricode, i + 1);
+    eastWins += r.wins;
+    eastLosses += r.losses;
   });
-  westTeams.forEach((t, i) => {
-    conferenceRanks.set(t.tricode, i + 1);
-    westWins += t.wins;
-    westLosses += t.losses;
+  westTeams.forEach((r, i) => {
+    conferenceRanks.set(r.tricode, i + 1);
+    westWins += r.wins;
+    westLosses += r.losses;
   });
   const eastAvgW = eastTeams.length > 0 ? eastWins / eastTeams.length : 0;
   const westAvgW = westTeams.length > 0 ? westWins / westTeams.length : 0;
 
   // Group by division
-  const byDivision = new Map<string, TeamRecord[]>();
+  const byDivision = new Map<string, StandingsRow[]>();
   for (const team of standings) {
-    const meta = TEAM_META[team.tricode];
-    if (!meta) continue;
-    const div = meta.division;
-    if (!byDivision.has(div)) byDivision.set(div, []);
-    byDivision.get(div)!.push(team);
+    if (!byDivision.has(team.division)) byDivision.set(team.division, []);
+    byDivision.get(team.division)!.push(team);
   }
 
   const isZh = locale === "zh";
@@ -382,7 +301,25 @@ export default async function StandingsPage() {
         <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-accent-amber rounded" /> {t.standingsPage.playIn} (7-10)</span>
       </div>
 
-      {/* Eastern Conference */}
+      {/* Full Conference Rankings — Hupu-style one-table-per-conference */}
+      <div className="mb-4 flex items-center gap-3">
+        <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
+          <span className="w-1 h-3 bg-accent-amber rounded-full" />
+          {t.standingsPage.fullRankings}
+        </h2>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <div className="space-y-6 mb-3">
+        <ConferenceTable title={t.standingsPage.eastConference} teams={eastTeams} t={t} isZh={isZh} />
+        <ConferenceTable title={t.standingsPage.westConference} teams={westTeams} t={t} isZh={isZh} />
+      </div>
+      <p className="text-[10px] text-text-secondary/70 leading-relaxed mb-10">
+        {isZh
+          ? "得分 / 失分 / 净胜均为场均数据。排名先比胜率；胜率相同时依次比相互交手战绩、赛区战绩（同赛区时）、分区战绩与净胜分。"
+          : "PF / PA / Diff are per-game averages. Teams rank by win pct; ties break on head-to-head record, division record (same division), conference record, then point differential."}
+      </p>
+
+      {/* Eastern Conference divisions */}
       <div className="mb-3 flex items-center gap-3">
         <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
           <span className="w-1 h-3 bg-accent rounded-full" />
@@ -397,13 +334,12 @@ export default async function StandingsPage() {
             division={div}
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
-            streaks={streaks}
             t={t}
           />
         ))}
       </div>
 
-      {/* Western Conference */}
+      {/* Western Conference divisions */}
       <div className="mb-3 flex items-center gap-3">
         <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
           <span className="w-1 h-3 bg-accent rounded-full" />
@@ -418,7 +354,6 @@ export default async function StandingsPage() {
             division={div}
             teams={byDivision.get(div) || []}
             conferenceRanks={conferenceRanks}
-            streaks={streaks}
             t={t}
           />
         ))}
@@ -456,19 +391,6 @@ export default async function StandingsPage() {
           </div>
         );
       })()}
-
-      {/* Full Conference Rankings */}
-      <div className="mb-4 flex items-center gap-3">
-        <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary flex items-center gap-2">
-          <span className="w-1 h-3 bg-accent-amber rounded-full" />
-          {t.standingsPage.fullRankings}
-        </h2>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ConferenceTable title={t.standingsPage.eastConference} teams={eastTeams} t={t} />
-        <ConferenceTable title={t.standingsPage.westConference} teams={westTeams} t={t} />
-      </div>
 
       <RelatedPages
         eyebrow={locale === "zh" ? "继续探索" : "Keep exploring"}
