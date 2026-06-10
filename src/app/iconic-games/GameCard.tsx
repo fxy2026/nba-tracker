@@ -35,7 +35,7 @@ export default function GameCard({ game, isZh }: { game: IconicGame; isZh: boole
         <div className="flex items-start gap-3 mb-3">
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary shrink-0 border border-border">
             <Image
-              src={playerHeadshotUrl(game.personId)}
+              src={playerHeadshotUrl(game.personId, "260x190")}
               alt={game.name}
               width={56}
               height={56}
