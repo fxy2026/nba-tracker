@@ -47,6 +47,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/milestones`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE}/clutch`, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE}/best-of-night`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE}/lab`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE}/lab/team-trajectory`, changeFrequency: "daily", priority: 0.5 },
+    { url: `${BASE}/lab/career-arc`, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${BASE}/lab/game-impact`, changeFrequency: "daily", priority: 0.5 },
+    { url: `${BASE}/lab/explore`, changeFrequency: "daily", priority: 0.5 },
     { url: `${BASE}/best-games`, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE}/records`, changeFrequency: "weekly", priority: 0.5 },
   ];

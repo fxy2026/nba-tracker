@@ -5,7 +5,7 @@ import {
   Trophy, Search, GitCompareArrows, Users, AlertTriangle, History, Target, Swords,
   ArrowLeftRight, Flame, Award, Crown, Layers, Zap, TrendingUp, Sparkles, BookOpen,
   GraduationCap, Globe, School, CalendarDays, Compass, Activity, Home, Shield, Repeat,
-  HelpCircle, Book, Map as MapIcon, ListOrdered,
+  HelpCircle, Book, Map as MapIcon, ListOrdered, FlaskConical, LineChart, ScatterChart,
 } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import type { PaletteGroup } from "@/components/CommandPalette";
@@ -36,6 +36,18 @@ export function useMoreGroups(): PaletteGroup[] {
         { href: "/awards-race", label: isZh ? "奖项争夺" : "Awards Race", icon: Award, keywords: "MVP ROY DPOY 6MOY MIP" },
         { href: "/best-games", label: isZh ? "最佳比赛" : "Best Games", icon: Flame, keywords: "best games closest blowouts OT" },
         { href: "/best-of-night", label: isZh ? "今日最佳" : "Player of the Night", icon: Sparkles, keywords: "player of the night best performer game score" },
+      ],
+    },
+    {
+      title: isZh ? "数据实验室" : "Data Lab",
+      eyebrow: isZh ? "深度数据" : "Deep Data",
+      color: "#06B6D4",
+      items: [
+        { href: "/lab", label: isZh ? "数据实验室" : "Data Lab", icon: FlaskConical, keywords: "data lab visualization deep" },
+        { href: "/lab/explore", label: isZh ? "散点探索器" : "Scatter Explorer", icon: ScatterChart, keywords: "scatter explore stats two axis" },
+        { href: "/lab/team-trajectory", label: isZh ? "球队轨迹" : "Team Trajectory", icon: LineChart, keywords: "team trajectory season win curve" },
+        { href: "/lab/career-arc", label: isZh ? "生涯弧线" : "Career Arc", icon: TrendingUp, keywords: "career arc player shot evolution" },
+        { href: "/lab/game-impact", label: isZh ? "得分接管曲线" : "Takeover Curve", icon: Activity, keywords: "game impact takeover scoring" },
       ],
     },
     {

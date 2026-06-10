@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Newspaper, Map as MapIcon, type LucideIcon } from "lucide-react";
+import { Compass, Trophy, Calendar, BarChart3, ListOrdered, Flame, Crown, Award, Layers, Zap, TrendingUp, Sparkles, BookOpen, GraduationCap, Globe, School, CalendarDays, Users, GitCompareArrows, Swords, Target, AlertTriangle, ArrowLeftRight, History, Heart, Clock, Activity, Home, Shield, Repeat, HelpCircle, Book, Newspaper, FlaskConical, ScatterChart, LineChart, Map as MapIcon, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { getLocale } from "@/lib/locale";
 
@@ -69,6 +69,18 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
         { href: "/all-time-leaders", label: isZh ? "历史榜单" : "All-Time Leaders", description: isZh ? "生涯场均得分 / 篮板 / 助攻 / 出场年限" : "Career PPG / RPG / APG / tenure", icon: Crown },
         { href: "/milestones", label: isZh ? "里程碑" : "Milestones", description: isZh ? "现役球员冲击生涯门槛" : "Active players chasing career thresholds", icon: TrendingUp },
         { href: "/clutch", label: isZh ? "季后赛领袖" : "Playoff Leaders", description: isZh ? "季后赛表现最佳球员" : "Postseason performers", icon: Target },
+      ],
+    },
+    {
+      title: isZh ? "数据实验室" : "Data Lab",
+      eyebrow: isZh ? "深度数据" : "Deep Data",
+      color: "#06B6D4",
+      features: [
+        { href: "/lab", label: isZh ? "数据实验室" : "Data Lab", description: isZh ? "四个交互式深度可视化工具的入口" : "Hub for four interactive deep-viz tools", icon: FlaskConical },
+        { href: "/lab/explore", label: isZh ? "全联盟散点探索器" : "Scatter Explorer", description: isZh ? "任选两项数据把全联盟球员打成散点" : "Plot every player on any two stats", icon: ScatterChart },
+        { href: "/lab/team-trajectory", label: isZh ? "球队赛季轨迹" : "Team Trajectory", description: isZh ? "30 队整赛季胜率与净胜分走势" : "All 30 teams' season win/diff arcs", icon: LineChart },
+        { href: "/lab/career-arc", label: isZh ? "球员生涯弧线" : "Career Arc", description: isZh ? "逐赛季数据 + 投篮热区演变" : "Season trends + shot-zone evolution", icon: TrendingUp },
+        { href: "/lab/game-impact", label: isZh ? "得分接管曲线" : "Game Takeover", description: isZh ? "单场每位得分手的累计得分竞速" : "Cumulative-points race within a game", icon: Activity },
       ],
     },
     {
