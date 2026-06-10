@@ -17,7 +17,7 @@ const HEADERS: HeadersInit = {
 const ALLOWED_ENDPOINTS = new Set([
   "leagueleaders", "playercareerstats", "playergamelog",
   "draftcombineplayeranthro", "commonplayerinfo",
-  "shotchartdetail",
+  "shotchartdetail", "leaguedashteamstats",
 ]);
 
 // shotchartdetail is slow (large payload) — give it more time
@@ -29,6 +29,8 @@ const DEFAULT_TIMEOUT = 8000;
 // Draft combine anthro data for a past draft year never changes — long TTL
 const REVALIDATE: Record<string, number> = {
   draftcombineplayeranthro: 86400,
+  // league-wide team averages move slowly — hourly is plenty
+  leaguedashteamstats: 3600,
 };
 const DEFAULT_REVALIDATE = 300;
 
