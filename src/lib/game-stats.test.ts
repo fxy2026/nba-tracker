@@ -8,6 +8,11 @@ import {
   getGameHero,
   getLeadChanges,
   getPaceLabel,
+  minutesFromIso,
+  gameScore,
+  scoreToGrade,
+  gradeColorClass,
+  getPlayerOfTheGame,
 } from "./game-stats";
 import type { BoxScoreTeam, PlayerStats, ShotAction } from "./api";
 
@@ -271,5 +276,103 @@ describe("getPaceLabel", () => {
     const t180 = [team({ score: 90, periods: periods([23, 23, 22, 22]) }), team({ score: 90, periods: periods([23, 23, 22, 22]) })] as const;
     expect(getPaceLabel(t220[0], t220[1]).label).toBe("Normal");
     expect(getPaceLabel(t180[0], t180[1]).label).toBe("Normal");
+  });
+});
+
+describe("minutesFromIso", () => {
+  it("converts PT34M12.00S to 34.2 minutes", () => {
+    expect(minutesFromIso("PT34M12.00S")).toBeCloseTo(34.2);
+  });
+
+  it("returns 0 for empty or malformed durations", () => {
+    expect(minutesFromIso("")).toBe(0);
+    expect(minutesFromIso("12:34")).toBe(0);
+  });
+});
+
+describe("gameScore", () => {
+  it("computes the Hollinger formula for a full stat line", () => {
+    // 30 + 0.4*10 - 0.7*20 - 0.4*(6-5) + 0.7*3 + 0.3*7 + 2 + 0.7*8 + 0.7*1 - 0.4*4 - 3
+    const s = stats({
+      points: 30,
+      fieldGoalsMade: 10,
+      fieldGoalsAttempted: 20,
+      freeThrowsMade: 5,
+      freeThrowsAttempted: 6,
+      reboundsOffensive: 3,
+      reboundsDefensive: 7,
+      steals: 2,
+      assists: 8,
+      blocks: 1,
+      foulsPersonal: 4,
+      turnovers: 3,
+    });
+    expect(gameScore(s)).toBeCloseTo(27.5);
+  });
+
+  it("returns 0 for an empty line", () => {
+    expect(gameScore(stats())).toBe(0);
+  });
+
+  it("goes negative for an all-miss, turnover-heavy line", () => {
+    const s = stats({ fieldGoalsAttempted: 10, turnovers: 4, foulsPersonal: 5 });
+    expect(gameScore(s)).toBeCloseTo(-13);
+  });
+});
+
+describe("scoreToGrade", () => {
+  it("anchors the scale: GmSc 0 -> 5.0, 10 -> 7.0, 20 -> 9.0 at full minutes", () => {
+    expect(scoreToGrade(0, 36)).toBe(5);
+    expect(scoreToGrade(10, 36)).toBe(7);
+    expect(scoreToGrade(20, 36)).toBe(9);
+  });
+
+  it("clamps to the 0-10 range", () => {
+    expect(scoreToGrade(40, 38)).toBe(10);
+    expect(scoreToGrade(-40, 38)).toBe(0);
+  });
+
+  it("rounds to one decimal", () => {
+    expect(scoreToGrade(7, 30)).toBe(6.4);
+    expect(scoreToGrade(13, 30)).toBe(7.6);
+  });
+
+  it("regresses short stints toward 5.0 (half weight at 7.5 minutes)", () => {
+    expect(scoreToGrade(10, 7.5)).toBe(6);
+    expect(scoreToGrade(-10, 7.5)).toBe(4);
+    expect(scoreToGrade(10, 15)).toBe(7);
+    expect(scoreToGrade(50, 0)).toBe(5);
+  });
+});
+
+describe("gradeColorClass", () => {
+  it("bands grades Hupu-style: 9+ gold, 7+ green, 5+ neutral, <5 red", () => {
+    expect(gradeColorClass(9)).toContain("accent-amber");
+    expect(gradeColorClass(7)).toContain("success");
+    expect(gradeColorClass(5)).toContain("text-text-secondary");
+    expect(gradeColorClass(4.9)).toContain("danger");
+  });
+});
+
+describe("getPlayerOfTheGame", () => {
+  it("picks the highest grade across both teams", () => {
+    const home = team({
+      teamTricode: "BOS",
+      players: [player("Star", { minutes: "PT36M00.00S", points: 35, fieldGoalsMade: 13, fieldGoalsAttempted: 22, reboundsDefensive: 8, assists: 6 })],
+    });
+    const away = team({
+      teamTricode: "LAL",
+      players: [player("Role", { minutes: "PT28M00.00S", points: 12, fieldGoalsMade: 5, fieldGoalsAttempted: 9, reboundsDefensive: 3 })],
+    });
+    const potg = getPlayerOfTheGame(home, away);
+    expect(potg?.name).toBe("Star");
+    expect(potg?.teamTricode).toBe("BOS");
+    expect(potg?.grade).toBeGreaterThanOrEqual(9);
+  });
+
+  it("ignores DNPs and zero-minute lines, returning null when nobody played", () => {
+    const home = team({ players: [player("DNP", { points: 50 }, "0")] });
+    const away = team({ players: [player("Zero", { minutes: "PT00M00.00S", points: 50 })] });
+    expect(getPlayerOfTheGame(home, away)).toBeNull();
   });
 });

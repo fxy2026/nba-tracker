@@ -6,13 +6,14 @@ import QuarterScores from "@/components/QuarterScores";
 import ShareButton from "@/components/ShareButton";
 import { TEAM_META } from "@/lib/teams";
 import { toBeijingTime, type BoxScore, type ShotAction } from "@/lib/api";
-import { getLeadChanges, getQuarterMvp } from "@/lib/game-stats";
+import { getLeadChanges, getQuarterMvp, getPlayerOfTheGame, gradeColorClass } from "@/lib/game-stats";
+import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
 
 const ChartPlaceholder = () => <div className="h-64 bg-bg-card rounded-xl skeleton-shimmer" />;
 const WinProbability = dynamic(() => import("@/components/WinProbability"), { loading: ChartPlaceholder });
 
-export default function GameHero({
+export default async function GameHero({
   boxScore,
   shots,
   isPlayoffs,
@@ -23,6 +24,7 @@ export default function GameHero({
   isPlayoffs: boolean;
   t: Translations;
 }) {
+  const isZh = (await getLocale()) === "zh";
   const isFinal = boxScore.gameStatus === 3;
   const homeWon = boxScore.homeTeam.score > boxScore.awayTeam.score;
   const scoreDiff = Math.abs(boxScore.homeTeam.score - boxScore.awayTeam.score);
@@ -35,6 +37,7 @@ export default function GameHero({
 
   const leadChanges = isFinal ? getLeadChanges(boxScore.homeTeam, boxScore.awayTeam) : 0;
   const quarterMvp = isFinal ? getQuarterMvp(shots) : null;
+  const potg = isFinal ? getPlayerOfTheGame(boxScore.homeTeam, boxScore.awayTeam) : null;
 
   return (
     <div
@@ -150,6 +153,18 @@ export default function GameHero({
           {isFinal && (
             <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
               <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">Lead Changes: {leadChanges}</span>
+            </div>
+          )}
+          {isFinal && potg && (
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
+              <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">
+                ★ {isZh ? "本场最佳" : "Player of the Game"}
+              </span>
+              <span className="font-medium text-text-primary">{potg.name}</span>
+              <span className={`px-1.5 py-0.5 rounded font-mono font-bold tabular-nums ${gradeColorClass(potg.grade)}`}>
+                {potg.grade.toFixed(1)}
+              </span>
+              <span>{potg.teamTricode}</span>
             </div>
           )}
           {isFinal && quarterMvp && (

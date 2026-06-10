@@ -1,8 +1,11 @@
 import type { BoxScoreTeam, PlayerInfo } from "@/lib/api";
+import { gameScore, scoreToGrade, gradeColorClass, minutesFromIso } from "@/lib/game-stats";
+import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
 
-// Hollinger-ish Game Score, ranked across both rosters (top 5)
-export default function GameLeaders({
+// Hollinger Game Score normalized to a Hupu-style 0-10 grade, ranked across
+// both rosters (top 5)
+export default async function GameLeaders({
   homeTeam,
   awayTeam,
   playerInfoMap,
@@ -13,22 +16,17 @@ export default function GameLeaders({
   playerInfoMap?: Map<number, PlayerInfo>;
   t: Translations;
 }) {
+  const isZh = (await getLocale()) === "zh";
   const allPlayedPlayers = [
     ...awayTeam.players.filter((p) => p.played === "1").map((p) => ({ ...p, teamTricode: awayTeam.teamTricode })),
     ...homeTeam.players.filter((p) => p.played === "1").map((p) => ({ ...p, teamTricode: homeTeam.teamTricode })),
   ];
   const scored = allPlayedPlayers
+    .filter((p) => minutesFromIso(p.statistics.minutes) > 0)
     .map((p) => {
       const s = p.statistics;
-      const gameScore =
-        s.points +
-        0.4 * s.fieldGoalsMade -
-        0.7 * s.fieldGoalsAttempted +
-        0.3 * s.freeThrowsMade +
-        s.reboundsTotal +
-        s.steals +
-        s.blocks -
-        0.7 * s.turnovers;
+      const gs = gameScore(s);
+      const grade = scoreToGrade(gs, minutesFromIso(s.minutes));
       // Mark a performance as "hot" when scoring decisively beats the player's
       // season pace. The absolute floor (≥25 pts) guards against role-player
       // small-sample averages: 16 pts vs a 4 PPG average isn't a season highlight.
@@ -38,13 +36,14 @@ export default function GameLeaders({
       return {
         name: p.nameI,
         teamTricode: p.teamTricode,
-        gameScore: Math.round(gameScore * 10) / 10,
+        gameScore: Math.round(gs * 10) / 10,
+        grade,
         hot,
         points: s.points,
         seasonPpg,
       };
     })
-    .sort((a, b) => b.gameScore - a.gameScore)
+    .sort((a, b) => b.grade - a.grade || b.gameScore - a.gameScore)
     .slice(0, 5);
 
   if (scored.length === 0) return null;
@@ -60,6 +59,11 @@ export default function GameLeaders({
             <span className={`text-sm font-bold w-6 text-center ${i === 0 ? "text-accent" : "text-text-secondary"}`}>#{i + 1}</span>
             <span className="text-sm font-medium text-text-primary flex-1 flex items-center gap-1.5">
               {p.name}
+              {i === 0 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber border border-accent-amber/30 font-bold">
+                  ★ {isZh ? "本场最佳" : "POTG"}
+                </span>
+              )}
               {p.hot && (
                 <span
                   className="text-[10px] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber border border-accent-amber/30 font-mono tabular-nums"
@@ -70,11 +74,20 @@ export default function GameLeaders({
               )}
             </span>
             <span className="text-[10px] text-text-secondary">{p.teamTricode}</span>
-            <span className={`text-sm font-bold font-mono tabular-nums ${i === 0 ? "text-accent" : "text-text-primary"}`}>{p.gameScore}</span>
+            <span className="text-[10px] text-text-secondary font-mono tabular-nums" title="Game Score">
+              GmSc {p.gameScore}
+            </span>
+            <span className={`text-sm font-bold font-mono tabular-nums px-1.5 py-0.5 rounded ${gradeColorClass(p.grade)}`}>
+              {p.grade.toFixed(1)}
+            </span>
           </div>
         ))}
       </div>
-      <p className="text-[9px] text-text-secondary mt-2">Game Score = PTS + 0.4*FG - 0.7*FGA + 0.3*FT + REB + STL + BLK - 0.7*TO</p>
+      <p className="text-[9px] text-text-secondary mt-2">
+        {isZh
+          ? "评分 = 霍林格 Game Score 归一化到 0-10（5.0 为中性，出场不足 15 分钟向 5.0 回归）"
+          : "Grade = Hollinger Game Score normalized to 0-10 (5.0 is neutral; sub-15-minute stints regress toward 5.0)"}
+      </p>
     </div>
   );
 }

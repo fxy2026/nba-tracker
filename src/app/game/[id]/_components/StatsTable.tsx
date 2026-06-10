@@ -1,11 +1,13 @@
 import dynamic from "next/dynamic";
 import { parseMinutes, type PlayerStats, type ShotAction, type PlayerInfo } from "@/lib/api";
+import { gameScore, scoreToGrade, gradeColorClass, minutesFromIso } from "@/lib/game-stats";
+import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
 
 const NamePlaceholder = () => <span className="skeleton-shimmer inline-block h-4 w-24 rounded" />;
 const PlayerShotChart = dynamic(() => import("@/components/PlayerShotChart"), { loading: NamePlaceholder });
 
-export default function StatsTable({
+export default async function StatsTable({
   players,
   shots,
   playerInfoMap,
@@ -16,6 +18,7 @@ export default function StatsTable({
   playerInfoMap: Map<number, PlayerInfo>;
   t: Translations;
 }) {
+  const isZh = (await getLocale()) === "zh";
   const starters = players.filter((p) => p.starter === "1");
   const bench = players.filter((p) => p.starter !== "1" && p.played === "1");
   const dnp = players.filter((p) => p.played !== "1" && p.starter !== "1");
@@ -60,6 +63,11 @@ export default function StatsTable({
     const isEfficient = eff > 1.2;
     const isInefficient = minsNum > 15 && eff < 0.3;
 
+    // Hupu-style 0-10 grade off the Hollinger Game Score (precise ISO minutes,
+    // not the display string)
+    const gradeMins = minutesFromIso(s.minutes);
+    const grade = gradeMins > 0 ? scoreToGrade(gameScore(s), gradeMins) : null;
+
     return (
       <tr key={p.personId} className="border-b border-border/30 hover:bg-bg-hover/50">
         <td className="py-2.5 px-2 sticky left-0 bg-bg-card z-10">
@@ -99,6 +107,15 @@ export default function StatsTable({
           {s.plusMinusPoints > 0 ? "+" : ""}
           {s.plusMinusPoints}
         </td>
+        <td className="text-center py-2.5 px-1">
+          {grade !== null ? (
+            <span className={`inline-block min-w-9 px-1 py-0.5 rounded text-xs font-bold font-mono tabular-nums ${gradeColorClass(grade)}`}>
+              {grade.toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-text-secondary text-sm">-</span>
+          )}
+        </td>
       </tr>
     );
   };
@@ -121,12 +138,13 @@ export default function StatsTable({
             <th className="text-center py-3 px-1 font-medium w-12">TO</th>
             <th className="text-center py-3 px-1 font-medium w-12">PF</th>
             <th className="text-center py-3 px-1 font-medium w-12">+/-</th>
+            <th className="text-center py-3 px-1 font-medium w-12">{isZh ? "评分" : "Grade"}</th>
           </tr>
         </thead>
         <tbody>
           {starters.length > 0 && (
             <tr>
-              <td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-accent bg-accent/5 sticky left-0">
+              <td colSpan={14} className="py-1.5 px-2 text-xs font-medium text-accent bg-accent/5 sticky left-0">
                 {t.gameDetail.starters}
               </td>
             </tr>
@@ -134,7 +152,7 @@ export default function StatsTable({
           {starters.map(renderRow)}
           {bench.length > 0 && (
             <tr>
-              <td colSpan={13} className="py-1.5 px-2 text-xs font-medium text-text-secondary bg-bg-hover/30 sticky left-0">
+              <td colSpan={14} className="py-1.5 px-2 text-xs font-medium text-text-secondary bg-bg-hover/30 sticky left-0">
                 {t.gameDetail.bench}
               </td>
             </tr>
@@ -142,7 +160,7 @@ export default function StatsTable({
           {bench.map(renderRow)}
           {dnp.length > 0 && (
             <tr>
-              <td colSpan={13} className="py-1.5 px-2 text-xs text-text-secondary/60 sticky left-0">
+              <td colSpan={14} className="py-1.5 px-2 text-xs text-text-secondary/60 sticky left-0">
                 {t.gameDetail.dnp} {dnp.map((p) => p.nameI).join(", ")}
               </td>
             </tr>
@@ -166,6 +184,7 @@ export default function StatsTable({
             <td className="text-center py-2.5 px-1 text-sm">{totals.blk}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.tov}</td>
             <td className="text-center py-2.5 px-1 text-sm">{totals.pf}</td>
+            <td className="text-center py-2.5 px-1 text-sm text-text-secondary">-</td>
             <td className="text-center py-2.5 px-1 text-sm text-text-secondary">-</td>
           </tr>
         </tbody>

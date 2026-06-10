@@ -1,4 +1,64 @@
-import type { BoxScoreTeam, ShotAction } from "@/lib/api";
+import type { BoxScoreTeam, PlayerStats, ShotAction } from "@/lib/api";
+
+// Numeric minutes from the CDN's ISO-8601 duration ("PT34M12.00S" -> 34.2)
+export function minutesFromIso(minutes: string): number {
+  const match = /PT(\d+)M([\d.]+)S/.exec(minutes || "");
+  if (!match) return 0;
+  return parseInt(match[1], 10) + parseFloat(match[2]) / 60;
+}
+
+// Hollinger Game Score — the standard single-number read on a box score line
+export function gameScore(s: PlayerStats["statistics"]): number {
+  return (
+    s.points +
+    0.4 * s.fieldGoalsMade -
+    0.7 * s.fieldGoalsAttempted -
+    0.4 * (s.freeThrowsAttempted - s.freeThrowsMade) +
+    0.7 * s.reboundsOffensive +
+    0.3 * s.reboundsDefensive +
+    s.steals +
+    0.7 * s.assists +
+    0.7 * s.blocks -
+    0.4 * s.foulsPersonal -
+    s.turnovers
+  );
+}
+
+// Hupu-style 0-10 grade, one decimal: 5.0 is a neutral night, 7.0 a solid
+// starter line (GmSc 10), 9.0 a star night (GmSc 20). Stints under 15 minutes
+// regress toward 5.0 so a 3-minute garbage-time line can't spike the scale.
+export function scoreToGrade(gs: number, minutes: number): number {
+  const weight = Math.min(Math.max(minutes, 0), 15) / 15;
+  const grade = 5 + (gs / 5) * weight;
+  return Math.round(Math.min(10, Math.max(0, grade)) * 10) / 10;
+}
+
+// Color band for a 0-10 grade (Hupu palette: gold star night, green good,
+// neutral average, red rough outing)
+export function gradeColorClass(grade: number): string {
+  if (grade >= 9) return "text-accent-amber bg-accent-amber/10";
+  if (grade >= 7) return "text-success bg-success/10";
+  if (grade >= 5) return "text-text-secondary bg-bg-hover";
+  return "text-danger bg-danger/10";
+}
+
+// 本场最佳: highest grade across both rosters (raw Game Score breaks ties)
+export function getPlayerOfTheGame(homeTeam: BoxScoreTeam, awayTeam: BoxScoreTeam) {
+  let best: { name: string; personId: number; teamTricode: string; grade: number; gameScore: number } | null = null;
+  for (const team of [awayTeam, homeTeam]) {
+    for (const p of team.players) {
+      if (p.played !== "1") continue;
+      const mins = minutesFromIso(p.statistics.minutes);
+      if (mins <= 0) continue;
+      const gs = gameScore(p.statistics);
+      const grade = scoreToGrade(gs, mins);
+      if (!best || grade > best.grade || (grade === best.grade && gs > best.gameScore)) {
+        best = { name: p.nameI, personId: p.personId, teamTricode: team.teamTricode, grade, gameScore: gs };
+      }
+    }
+  }
+  return best;
+}
 
 // Top scorer / assist man for a team — returns null when no one played
 export function getTopScorer(team: BoxScoreTeam) {
