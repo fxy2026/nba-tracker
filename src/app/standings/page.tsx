@@ -8,6 +8,7 @@ import { computeStandingsRows, gamesBehind, type StandingsRow } from "@/lib/stan
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 import { TrendingUp, Activity, Users, Crown, Award, BarChart3 } from "lucide-react";
 import { getLocale } from "@/lib/locale";
@@ -47,8 +48,9 @@ function DivisionCard({ division, teams, conferenceRanks, t }: {
   conferenceRanks: Map<string, number>;
   t: Translations;
 }) {
-  // Sort by win pct within the division
-  const sorted = [...teams].sort((a, b) => b.pct - a.pct || b.wins - a.wins);
+  // Sort by win pct within the division (then wins, then point diff — matches
+  // the conference comparator in computeStandingsRows so ties order stably).
+  const sorted = [...teams].sort((a, b) => b.pct - a.pct || b.wins - a.wins || b.diff - a.diff);
 
   const leader = sorted[0];
   const leaderWins = leader?.wins || 0;
@@ -72,7 +74,7 @@ function DivisionCard({ division, teams, conferenceRanks, t }: {
           <span className="text-center hidden sm:block">{t.standingsPage.gb}</span>
         </div>
         {sorted.map((team, idx) => {
-          const gb = idx === 0 ? "-" : (((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2).toFixed(1);
+          const gb = idx === 0 ? "-" : Math.max(0, ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2).toFixed(1);
           const confRank = conferenceRanks.get(team.tricode) || 99;
           const isPlayoff = confRank <= 6;
           const isPlayIn = confRank >= 7 && confRank <= 10;
@@ -110,8 +112,8 @@ function DivisionCard({ division, teams, conferenceRanks, t }: {
               <div className="text-center hidden sm:block">
                 <span className="text-xs text-text-secondary font-mono tabular-nums">{gb}</span>
                 {idx > 0 && (() => {
-                  const gbNum = ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2;
-                  const maxGb = sorted.length > 1 ? ((leaderWins - leaderLosses) - (sorted[sorted.length - 1].wins - sorted[sorted.length - 1].losses)) / 2 : 1;
+                  const gbNum = Math.max(0, ((leaderWins - leaderLosses) - (team.wins - team.losses)) / 2);
+                  const maxGb = sorted.length > 1 ? Math.max(0, ((leaderWins - leaderLosses) - (sorted[sorted.length - 1].wins - sorted[sorted.length - 1].losses)) / 2) : 1;
                   const pct = maxGb > 0 ? Math.min((gbNum / maxGb) * 100, 100) : 0;
                   return (
                     <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-0.5">
@@ -227,6 +229,32 @@ export default async function StandingsPage() {
   ]);
   const standings = computeStandingsRows(schedule);
   const t = getTranslations(locale);
+  const isZh = locale === "zh";
+
+  // Cold schedule cache or an offseason rollover with no finished regular-season
+  // games yields no rows — show an empty state instead of header-only tables.
+  if (standings.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <Breadcrumbs items={[{ label: isZh ? "排名" : "Standings" }]} />
+        <PageHeader
+          eyebrow="League"
+          icon={ListOrdered}
+          title={t.standingsPage.divisionStandings}
+          subtitle={t.standingsPage.top6Hint}
+        />
+        <EmptyState
+          icon={ListOrdered}
+          title={isZh ? "暂无数据" : "No data yet"}
+          description={
+            isZh
+              ? "记录已结束比赛后，排名会显示在这里。"
+              : "Standings will populate once finished games are recorded."
+          }
+        />
+      </div>
+    );
+  }
 
   // Compute conference ranks
   const eastTeams = standings.filter((r) => r.conference === "East");
@@ -253,8 +281,6 @@ export default async function StandingsPage() {
     if (!byDivision.has(team.division)) byDivision.set(team.division, []);
     byDivision.get(team.division)!.push(team);
   }
-
-  const isZh = locale === "zh";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -315,8 +341,8 @@ export default async function StandingsPage() {
       </div>
       <p className="text-[10px] text-text-secondary/70 leading-relaxed mb-10">
         {isZh
-          ? "得分 / 失分 / 净胜均为场均数据。排名先比胜率；胜率相同时依次比相互交手战绩、赛区战绩（同赛区时）、分区战绩与净胜分。"
-          : "PF / PA / Diff are per-game averages. Teams rank by win pct; ties break on head-to-head record, division record (same division), conference record, then point differential."}
+          ? "得分 / 失分 / 净胜均为场均数据。排名按胜率排序（胜率相同时按胜场数，再按净胜分），未应用 NBA 官方同胜率排名规则。"
+          : "PF / PA / Diff are per-game averages. Teams rank by win pct (then total wins, then point differential); official NBA tiebreakers are not applied."}
       </p>
 
       {/* Eastern Conference divisions */}

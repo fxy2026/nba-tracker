@@ -157,7 +157,8 @@ function periodZh(p: number): string {
 function periodEn(p: number): string {
   const q = ["the first quarter", "the second quarter", "the third quarter", "the fourth quarter"];
   if (p <= 4) return q[p - 1];
-  return p === 5 ? "overtime" : p === 6 ? "double overtime" : "triple overtime";
+  const n = p - 4;
+  return n === 1 ? "overtime" : n === 2 ? "double overtime" : n === 3 ? "triple overtime" : `the ${n}th overtime`;
 }
 
 // ---- the recap builder ---------------------------------------------------------
@@ -240,12 +241,17 @@ export function buildRecap(box: BoxScore, actions: PlayAction[], context?: Recap
   const playoffZh = context?.isPlayoffs ? "在这场季后赛较量中" : "";
   const playoffEnSuffix = context?.isPlayoffs ? " in playoff action" : "";
   const otZh = numOt > 1 ? `经过 ${numOt} 个加时` : numOt === 1 ? "经过加时鏖战" : "";
+  const tightFinish = margin <= 5 || numOt > 0;
   const swingZh = swing
     ? `${periodZh(swing.period)}单节净胜 ${swing.diff} 分，成为本场比赛的胜负手。`
-    : "双方比分始终胶着，悬念保持到了最后。";
+    : tightFinish
+    ? "双方比分始终胶着，悬念保持到了最后。"
+    : "全场没有哪一节分出明显胜负。";
   const swingEn = swing
     ? `A ${swing.diff}-point edge in ${periodEn(swing.period)} proved to be the difference.`
-    : "Neither side ever pulled away, and the game stayed tight to the finish.";
+    : tightFinish
+    ? "Neither side ever pulled away, and the game stayed tight to the finish."
+    : "No single quarter swung the game decisively.";
   const ov = pickIndex(seed, 2, 3);
   const openerZh =
     ov === 0

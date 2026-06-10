@@ -197,6 +197,21 @@ describe("buildRecap", () => {
     expect(withoutActions.en.paragraphs[0]).toBe(withActions.en.paragraphs[0]);
   });
 
+  it("does not call a double-digit win 'tight to the finish' when no quarter swung", () => {
+    // Quarter diffs 4/4/4/4 — never a >=5 single-quarter swing, but a 16-point
+    // final margin: the tight-finish fallback must not fire.
+    const box = makeBox();
+    box.homeTeam.periods = periods([30, 28, 27, 27]);
+    box.awayTeam.periods = periods([26, 24, 23, 23]);
+    box.homeTeam.score = 112;
+    box.awayTeam.score = 96;
+    const recap = buildRecap(box, [])!;
+    const allZh = [recap.zh.title, ...recap.zh.paragraphs].join(" ");
+    const allEn = [recap.en.title, ...recap.en.paragraphs].join(" ");
+    expect(allZh).not.toContain("胶着");
+    expect(allEn.toLowerCase()).not.toContain("tight to the finish");
+  });
+
   it("flags overtime in the title", () => {
     const box = makeBox();
     box.homeTeam.periods = periods([25, 25, 25, 25, 12]);

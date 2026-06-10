@@ -137,11 +137,15 @@ export function computeStandingsRows(schedule: ScheduleDate[]): StandingsRow[] {
     });
   }
 
-  return rows.sort((x, y) => y.pct - x.pct || y.wins - x.wins);
+  // Win pct, then total wins, then point differential as a deterministic
+  // tiebreak so tied records order stably (not by Map-insertion/schedule order).
+  return rows.sort((x, y) => y.pct - x.pct || y.wins - x.wins || y.diff - x.diff);
 }
 
 /** Games behind the conference leader, formatted Hupu-style ("-" for the leader). */
 export function gamesBehind(leader: StandingsRow, team: StandingsRow): string {
   if (leader.tricode === team.tricode) return "-";
-  return (((leader.wins - leader.losses) - (team.wins - team.losses)) / 2).toFixed(1);
+  // The pct leader can trail another team in W−L with uneven games played, so
+  // clamp at 0 — a negative GB never appears in NBA/Hupu standings.
+  return Math.max(0, ((leader.wins - leader.losses) - (team.wins - team.losses)) / 2).toFixed(1);
 }
