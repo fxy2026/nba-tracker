@@ -22,7 +22,7 @@ interface SeasonRow {
 }
 
 interface GameLogRow {
-  GAME_ID: string;
+  Game_ID: string;
   GAME_DATE: string;
   MATCHUP: string;
   WL: string;
@@ -40,7 +40,7 @@ interface Props {
 }
 
 export default function PlayerStatsBundle({ playerId, playerName, teamTricode }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [seasons, setSeasons] = useState<SeasonRow[] | null>(null);
   const [games, setGames] = useState<GameLogRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,6 +140,12 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
                 </svg>
               );
             })()}
+            <Link
+              href={`/player/${playerId}/gamelog`}
+              className="ml-auto text-[11px] text-accent hover:text-accent-amber transition-colors whitespace-nowrap cursor-pointer"
+            >
+              {locale === "zh" ? "完整比赛日志 →" : "Full game log →"}
+            </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -157,12 +163,12 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
               </thead>
               <tbody>
                 {games.map((g) => (
-                  <tr key={g.GAME_ID} className="border-b border-border/30 hover:bg-bg-hover/50">
+                  <tr key={g.Game_ID} className="border-b border-border/30 hover:bg-bg-hover/50">
                     <td className="py-2 px-3 text-text-secondary sticky left-0 bg-bg-card whitespace-nowrap">
                       {g.GAME_DATE ? new Date(g.GAME_DATE).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "-"}
                     </td>
                     <td className="py-2 px-2">
-                      <Link href={`/game/${g.GAME_ID}`} className="text-text-primary hover:text-accent transition-colors whitespace-nowrap">
+                      <Link href={`/game/${g.Game_ID}`} className="text-text-primary hover:text-accent transition-colors whitespace-nowrap">
                         {g.MATCHUP}
                       </Link>
                     </td>
