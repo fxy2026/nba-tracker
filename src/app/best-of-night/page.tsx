@@ -120,7 +120,7 @@ function PerformerRow({ p, rank, isZh }: { p: NightPerformer; rank: number; isZh
       <span className="w-6 text-center font-mono tabular-nums text-sm text-text-secondary shrink-0">{rank}</span>
       <div className="w-10 h-10 rounded-lg overflow-hidden bg-bg-secondary border border-border shrink-0">
         <Image
-          src={playerHeadshotUrl(p.personId)}
+          src={playerHeadshotUrl(p.personId, "260x190")}
           alt={p.name}
           width={40}
           height={40}

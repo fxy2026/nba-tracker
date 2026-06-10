@@ -312,7 +312,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
                 </span>
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
                   <Image
-                    src={playerHeadshotUrl(p.PLAYER_ID)}
+                    src={playerHeadshotUrl(p.PLAYER_ID, "260x190")}
                     alt={p.PLAYER}
                     width={40}
                     height={40}
@@ -416,7 +416,7 @@ function PastMvpWall({ isZh, mvps }: { isZh: boolean; mvps: MvpSeason[] }) {
             <div className="relative">
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary ring-1 ring-border mx-auto">
                 <Image
-                  src={playerHeadshotUrl(s.personId)}
+                  src={playerHeadshotUrl(s.personId, "260x190")}
                   alt={s.name}
                   width={56}
                   height={56}

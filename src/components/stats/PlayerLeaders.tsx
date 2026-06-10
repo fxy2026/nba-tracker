@@ -40,7 +40,8 @@ const PLAYER_CATS = [
 ] as const;
 
 function headshotUrl(id: number) {
-  return buildHeadshotUrl(id);
+  // 32px avatars — the small CDN variant is ~10x lighter than the default 1040x760.
+  return buildHeadshotUrl(id, "260x190");
 }
 
 export default function PlayerLeaders() {

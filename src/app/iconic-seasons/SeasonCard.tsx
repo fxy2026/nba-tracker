@@ -43,7 +43,7 @@ export default function SeasonCard({ season, isZh }: { season: IconicSeason; isZ
       <div className="relative flex items-center gap-3 mb-3">
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary shrink-0 border border-border">
           <Image
-            src={playerHeadshotUrl(season.personId)}
+            src={playerHeadshotUrl(season.personId, "260x190")}
             alt={season.name}
             width={56}
             height={56}

@@ -65,7 +65,7 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
                   {hasHeadshot ? (
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-accent-amber/40">
                       <Image
-                        src={playerHeadshotUrl(p.personId)}
+                        src={playerHeadshotUrl(p.personId, "260x190")}
                         alt={p.name}
                         width={56}
                         height={56}
@@ -118,7 +118,7 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
               >
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary border border-border">
                   <Image
-                    src={playerHeadshotUrl(p.personId)}
+                    src={playerHeadshotUrl(p.personId, "260x190")}
                     alt={p.name}
                     width={48}
                     height={48}

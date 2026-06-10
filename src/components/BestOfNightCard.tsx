@@ -52,7 +52,7 @@ export default async function BestOfNightCard() {
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary border border-border shrink-0">
               <Image
-                src={playerHeadshotUrl(p.personId)}
+                src={playerHeadshotUrl(p.personId, "260x190")}
                 alt={p.name}
                 width={56}
                 height={56}

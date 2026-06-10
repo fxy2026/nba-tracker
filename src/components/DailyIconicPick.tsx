@@ -63,7 +63,7 @@ export default async function DailyIconicPick() {
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary border border-border shrink-0">
                 <Image
-                  src={playerHeadshotUrl(season.personId)}
+                  src={playerHeadshotUrl(season.personId, "260x190")}
                   alt={season.name}
                   width={56}
                   height={56}
@@ -112,7 +112,7 @@ export default async function DailyIconicPick() {
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary border border-border shrink-0">
                 <Image
-                  src={playerHeadshotUrl(game.personId)}
+                  src={playerHeadshotUrl(game.personId, "260x190")}
                   alt={game.name}
                   width={56}
                   height={56}

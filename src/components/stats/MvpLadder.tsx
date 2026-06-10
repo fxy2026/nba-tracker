@@ -122,7 +122,7 @@ export default function MvpLadder() {
               </span>
               <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0 ring-1 ring-border">
                 <Image
-                  src={playerHeadshotUrl(p.PLAYER_ID)}
+                  src={playerHeadshotUrl(p.PLAYER_ID, "260x190")}
                   alt={p.PLAYER}
                   width={40}
                   height={40}

@@ -175,7 +175,7 @@ export default function ClutchPage() {
         <div className="glass-tile overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-bg-card/95 backdrop-blur-md">
+              <thead className="sticky top-0 z-10 bg-bg-card">
                 <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
                   <th className="text-center py-3 px-2 w-12">Rank</th>
                   <th className="text-left py-3 px-3">Player</th>
@@ -208,10 +208,11 @@ export default function ClutchPage() {
                       <Link href={`/player/${p.PLAYER_ID}`} className="flex items-center gap-2 hover:text-accent transition-colors">
                         <div className="w-7 h-7 rounded-full overflow-hidden bg-bg-secondary shrink-0">
                           <Image
-                            src={playerHeadshotUrl(p.PLAYER_ID)}
+                            src={playerHeadshotUrl(p.PLAYER_ID, "260x190")}
                             alt={p.PLAYER}
                             width={28}
                             height={28}
+                            unoptimized
                             className="w-full h-full object-cover object-top"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />

@@ -30,7 +30,7 @@ export default memo(function PlayerHeadshot({ personId, name, size = 28 }: Props
   return (
     <div className="rounded-full overflow-hidden bg-bg-secondary shrink-0" style={{ width: size, height: size }}>
       <Image
-        src={playerHeadshotUrl(personId)}
+        src={playerHeadshotUrl(personId, "260x190")}
         alt={name}
         width={size}
         height={size}

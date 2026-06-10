@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import { PLAYER_ACCOLADES } from "@/lib/playerAccolades";
+import type { PlayerAccolades } from "@/lib/playerAccolades";
 
 type Tier = "gold" | "silver" | "plain";
 
@@ -124,8 +124,7 @@ function parseHonors(data: unknown): HonorChip[] | null {
 // in production the live fetch usually fails — the hand-curated counts in
 // PLAYER_ACCOLADES keep the wall alive for the ~50 star players people visit.
 // No per-season tooltips in this mode (counts only).
-function staticHonors(playerId: number): HonorChip[] | null {
-  const a = PLAYER_ACCOLADES[playerId];
+function staticHonors(a: PlayerAccolades | null): HonorChip[] | null {
   if (!a) return null;
   const chips: HonorChip[] = [];
   const push = (count: number | undefined, key: string, zh: string, en: string, rank: number, tier: Tier) => {
@@ -148,13 +147,13 @@ const TIER_CLASS: Record<Tier, string> = {
   plain: "border-border bg-bg-card/60 text-text-secondary",
 };
 
-export default function PlayerHonors({ playerId }: { playerId: number }) {
+export default function PlayerHonors({ playerId, accolades }: { playerId: number; accolades: PlayerAccolades | null }) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   // Render the curated counts immediately so the wall never blocks on the
   // (production-blackholed) playerawards fetch; upgrade to the live,
   // per-season-tooltip version only if that fetch actually lands.
-  const [honors, setHonors] = useState<HonorChip[] | null>(() => staticHonors(playerId));
+  const [honors, setHonors] = useState<HonorChip[] | null>(() => staticHonors(accolades));
 
   useEffect(() => {
     const controller = new AbortController();

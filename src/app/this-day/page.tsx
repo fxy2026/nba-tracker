@@ -240,7 +240,7 @@ function IconicGameRow({ game, isZh }: { game: IconicGame; isZh: boolean }) {
       />
       <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-bg-secondary border border-border shrink-0">
         <Image
-          src={playerHeadshotUrl(game.personId)}
+          src={playerHeadshotUrl(game.personId, "260x190")}
           alt={game.name}
           width={48}
           height={48}

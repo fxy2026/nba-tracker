@@ -16,6 +16,7 @@ import PlayerHeadshot from "@/components/PlayerHeadshot";
 import CountUpNumber from "@/components/CountUpNumber";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl, playerHeadshotUrl } from "@/lib/teamUrls";
+import { getAccolades } from "@/lib/playerAccolades";
 import nextDynamic from "next/dynamic";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
@@ -73,6 +74,10 @@ export default async function PlayerPage({ params }: PageProps) {
   const isZh = locale === "zh";
 
   const headshotUrl = getPlayerHeadshotUrl(personId);
+  // Hand-curated honor counts for this one player — passed to the (code-split)
+  // PlayerHonors client component so the full PLAYER_ACCOLADES table never
+  // enters the browser bundle.
+  const accolades = getAccolades(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
@@ -364,7 +369,7 @@ export default async function PlayerPage({ params }: PageProps) {
       </div>
 
       {/* ─── Honor wall (real awards via stats proxy — hides itself on failure) ─ */}
-      <PlayerHonors playerId={personId} />
+      <PlayerHonors playerId={personId} accolades={accolades} />
 
       {/* ─── Profile (archetype + scoring DNA + body metrics) ─── */}
       {(() => {
@@ -684,7 +689,7 @@ export default async function PlayerPage({ params }: PageProps) {
                   >
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-border">
                       <Image
-                        src={playerHeadshotUrl(p.personId)}
+                        src={playerHeadshotUrl(p.personId, "260x190")}
                         alt={`${p.firstName} ${p.lastName}`}
                         width={56}
                         height={56}
@@ -722,7 +727,7 @@ export default async function PlayerPage({ params }: PageProps) {
                   >
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary border border-accent-amber/40 shrink-0">
                       <Image
-                        src={playerHeadshotUrl(l.personId)}
+                        src={playerHeadshotUrl(l.personId, "260x190")}
                         alt={l.name}
                         width={48}
                         height={48}
