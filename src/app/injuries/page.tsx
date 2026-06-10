@@ -9,8 +9,6 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
-export const revalidate = 300;
-
 interface Athlete {
   displayName: string;
   firstName?: string;

@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Most-played matchups this season and the tightest series — find the league's biggest rivalries.",
 };
 
-export const revalidate = 600;
-
 interface SeriesData {
   key: string;
   triA: string;

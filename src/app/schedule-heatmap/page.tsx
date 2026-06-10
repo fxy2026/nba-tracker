@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   description: "Game density across the season — see which nights are stacked and which are empty.",
 };
 
-export const revalidate = 600;
-
 interface DayCell {
   date: string;     // YYYY-MM-DD
   display: string;  // MM/DD

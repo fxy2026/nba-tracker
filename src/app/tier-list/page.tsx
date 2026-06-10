@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   description: "All 30 NBA teams bucketed by competitive tier — from championship contenders to lottery teams.",
 };
 
-export const revalidate = 600;
-
 interface TeamScore {
   tricode: string;
   teamId: number;

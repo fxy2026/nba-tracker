@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   description: "Hot and cold teams across the NBA — current win/loss streaks with last-10 visualization.",
 };
 
-export const revalidate = 600;
-
 interface TeamStreak {
   tricode: string;
   teamId: number;

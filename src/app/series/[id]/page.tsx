@@ -20,8 +20,6 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import RecentVisitTracker from "@/components/RecentVisitTracker";
 
-export const revalidate = 600;
-
 // Round name from gameId char 7
 function roundName(gameId: string, isZh: boolean): { full: string; short: string } {
   const r = parseInt(gameId.charAt(7)) || 0;

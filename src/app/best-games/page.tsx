@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   description: "Season's most memorable games — biggest blowouts, closest finishes, highest scoring, overtime thrillers.",
 };
 
-export const revalidate = 600;
-
 interface GameWithMeta {
   game: ScheduleGame;
   date: string;

@@ -21,9 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Serve stale page instantly, revalidate in background every 10 min
-export const revalidate = 600;
-
 interface PageProps {
   searchParams: Promise<{ team?: string }>;
 }

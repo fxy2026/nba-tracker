@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   description: "Games that took place on today's calendar date earlier in NBA history — relive past matchups.",
 };
 
-export const revalidate = 600;
-
 interface DayGame {
   game: ScheduleGame;
   dateLabel: string;

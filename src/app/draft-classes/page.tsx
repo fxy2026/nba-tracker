@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Active NBA players grouped by their draft year — see how each class has held up.",
 };
 
-export const revalidate = 600;
-
 interface ClassPlayer {
   personId: number;
   firstName: string;

@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   description: "Team offensive and defensive output — points scored, points allowed, and net rating per game.",
 };
 
-export const revalidate = 600;
-
 interface TeamOutput {
   tricode: string;
   teamId: number;

@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   description: "How each team plays at home vs on the road — fortresses and road warriors ranked.",
 };
 
-export const revalidate = 600;
-
 interface TeamSplit {
   tricode: string;
   teamId: number;

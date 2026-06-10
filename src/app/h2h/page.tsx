@@ -20,9 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// ISR per (t1,t2) combo — head-to-head derives from the cached schedule.
-export const revalidate = 600;
-
 interface PageProps {
   searchParams: Promise<{ t1?: string; t2?: string }>;
 }

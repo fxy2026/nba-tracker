@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Teams that have played the most back-to-back games this season and upcoming B2B situations on the schedule.",
 };
 
-export const revalidate = 600;
-
 interface B2BInstance {
   teamTricode: string;
   teamId: number;

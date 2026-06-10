@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Teams trending up or down based on last 5 vs prior 10 games — who's heating up, who's cooling off.",
 };
 
-export const revalidate = 600;
-
 interface MomentumRec {
   tricode: string;
   teamId: number;

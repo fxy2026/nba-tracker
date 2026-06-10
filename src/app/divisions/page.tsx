@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Each of the NBA's six divisions ranked by win percentage — Atlantic, Central, Southeast, Northwest, Pacific, and Southwest.",
 };
 
-export const revalidate = 600;
-
 interface TeamRec {
   tricode: string;
   teamId: number;

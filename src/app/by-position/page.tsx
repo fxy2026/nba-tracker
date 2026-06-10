@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Top NBA players grouped by position — guards, forwards, and centers ranked by composite production.",
 };
 
-export const revalidate = 600;
-
 interface PosPlayer {
   personId: number;
   firstName: string;

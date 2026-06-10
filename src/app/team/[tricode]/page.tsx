@@ -21,9 +21,6 @@ import TeamTrendsPanel, { type Rivalry } from "./_components/TeamTrendsPanel";
 import TeamRoster from "./_components/TeamRoster";
 import TeamLegends from "./_components/TeamLegends";
 
-// ISR: serve cached page, revalidate every 10 minutes
-export const revalidate = 600;
-
 export async function generateMetadata({ params }: { params: Promise<{ tricode: string }> }): Promise<Metadata> {
   const { tricode } = await params;
   const [team, locale] = [TEAM_META[tricode.toUpperCase()], await getLocale()];

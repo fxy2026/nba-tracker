@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   description: "Custom NBA power rankings — combines overall win %, last-10 form, and point differential.",
 };
 
-export const revalidate = 600;
-
 interface TeamMetrics {
   tricode: string;
   teamId: number;

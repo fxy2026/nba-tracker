@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Eastern and Western conference playoff seeding race — who's in, who's on the bubble, who's headed to the lottery.",
 };
 
-export const revalidate = 600;
-
 interface TeamRec {
   tricode: string;
   teamId: number;

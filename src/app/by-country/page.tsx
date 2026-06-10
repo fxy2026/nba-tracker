@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "NBA players grouped by country of origin — global representation across the league.",
 };
 
-export const revalidate = 600;
-
 interface CountryPlayer {
   personId: number;
   firstName: string;

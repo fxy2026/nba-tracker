@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   description: "Upcoming game predictions — winner + confidence % based on each team's recent form.",
 };
 
-export const revalidate = 600;
-
 interface TeamForm {
   wins: number;
   losses: number;

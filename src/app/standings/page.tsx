@@ -24,9 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// ISR: standings derive from the cached schedule — match the team page TTL.
-export const revalidate = 600;
-
 interface TeamRecord {
   tricode: string;
   teamId: number;

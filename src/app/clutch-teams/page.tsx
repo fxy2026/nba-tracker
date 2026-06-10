@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   description: "Which teams thrive in close games — records in games decided by 5 points or fewer and overtime contests.",
 };
 
-export const revalidate = 600;
-
 interface ClutchRec {
   tricode: string;
   teamId: number;

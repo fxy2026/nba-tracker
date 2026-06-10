@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Colleges that produce the most NBA talent — ranked by current league representation.",
 };
 
-export const revalidate = 600;
-
 interface CollegePlayer {
   personId: number;
   firstName: string;

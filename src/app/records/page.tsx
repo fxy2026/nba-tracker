@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   description: "Single-game records across the season — highest team scores, biggest blowouts, longest overtimes, and more.",
 };
 
-export const revalidate = 600;
-
 interface Played {
   game: ScheduleGame;
   date: string;

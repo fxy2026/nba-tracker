@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Career totals projected from recent per-game averages — milestone projections, not official career totals.",
 };
 
-export const revalidate = 600;
-
 interface MilestoneCandidate {
   personId: number;
   firstName: string;
