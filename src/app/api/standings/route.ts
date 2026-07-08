@@ -64,7 +64,7 @@ export async function GET() {
     }
     const teams = await fetchingPromise;
 
-    standingsCache = { data: teams, ts: Date.now() };
+    if (teams.length > 0) standingsCache = { data: teams, ts: Date.now() };
     return NextResponse.json(standingsPayload(teams), {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });

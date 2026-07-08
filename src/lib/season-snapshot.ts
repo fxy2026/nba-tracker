@@ -30,7 +30,7 @@ export interface SeasonSnapshot {
   generatedAt: string;
   /** sorted by win% desc — same order /api/standings emits */
   teams: SnapshotTeam[];
-  /** ALL finished games incl. playoffs, chronological */
+  /** ALL finished games, chronological — includes preseason (001), All-Star (003), play-in (005) and NBA Cup final (006) besides regular season (002) and playoffs (004); filter by gameId prefix */
   finishedGames: SnapshotGame[];
 }
 
