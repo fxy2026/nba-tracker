@@ -4,7 +4,7 @@ import { AlertTriangle, ArrowLeft, ArrowLeftRight, Repeat, ListOrdered, Heart, T
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
-import { TEAM_META } from "@/lib/teams";
+import { findTeamByDisplayName } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
@@ -48,17 +48,6 @@ async function getInjuries(): Promise<TeamInjury[]> {
   } catch {
     return [];
   }
-}
-
-function findTeamMeta(displayName: string) {
-  if (!displayName) return null;
-  const lower = displayName.toLowerCase();
-  for (const meta of Object.values(TEAM_META)) {
-    if (lower.includes(meta.name.toLowerCase()) || lower.includes(meta.city.toLowerCase())) {
-      return meta;
-    }
-  }
-  return null;
 }
 
 function getStatusColor(status: string | undefined): string {
@@ -219,7 +208,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
               <div key={team.id || team.displayName} className="glass-tile overflow-hidden">
                 <div className="px-4 py-3 border-b border-border flex items-center gap-2">
                   {(() => {
-                    const meta = findTeamMeta(team.displayName || "");
+                    const meta = findTeamByDisplayName(team.displayName || "");
                     if (!meta) return null;
                     return (
                       <Image

@@ -40,3 +40,17 @@ export const TEAM_META: Record<string, TeamMeta> = {
   UTA: { teamId: 1610612762, tricode: "UTA", city: "Utah", name: "Jazz", conference: "West", division: "Northwest", primaryColor: "#002B5C" },
   WAS: { teamId: 1610612764, tricode: "WAS", city: "Washington", name: "Wizards", conference: "East", division: "Southeast", primaryColor: "#002B5C" },
 };
+
+// Nickname first: NBA nicknames are unique league-wide. City is only a
+// fallback, and never the 2-char "LA" — "Or-la-ndo" must not match the Clippers.
+export function findTeamByDisplayName(displayName: string): TeamMeta | null {
+  if (!displayName) return null;
+  const lower = displayName.toLowerCase();
+  for (const meta of Object.values(TEAM_META)) {
+    if (lower.includes(meta.name.toLowerCase())) return meta;
+  }
+  for (const meta of Object.values(TEAM_META)) {
+    if (meta.city.length > 3 && lower.includes(meta.city.toLowerCase())) return meta;
+  }
+  return null;
+}

@@ -9,7 +9,7 @@ import {
 import {
   getFavoriteTeams, getFavoritePlayers, toggleFavoriteTeam, toggleFavoritePlayer,
 } from "@/lib/favorites";
-import { TEAM_META } from "@/lib/teams";
+import { TEAM_META, findTeamByDisplayName } from "@/lib/teams";
 import { isPlayoff, isPlayIn } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
@@ -32,24 +32,6 @@ interface NewsItem {
   headline: string;
   link: string;
   published: string;
-}
-
-// Match an ESPN injuries-team displayName ("Boston Celtics") to a tricode by
-// the NBA nickname first — nicknames are unique league-wide, so this avoids the
-// bare 2-char "LA" city substring matching "Orlando" (or-LA-ndo). City is only a
-// fallback for displayNames missing the nickname, and never the 2-char "LA".
-function tricodeForInjuryTeam(displayName: string | undefined): string | null {
-  if (!displayName) return null;
-  const lower = displayName.toLowerCase();
-  // Nickname match (unique: Clippers / Lakers / Magic are all distinct).
-  for (const meta of Object.values(TEAM_META)) {
-    if (lower.includes(meta.name.toLowerCase())) return meta.tricode;
-  }
-  // City fallback only when the city token is unambiguous (excludes "LA").
-  for (const meta of Object.values(TEAM_META)) {
-    if (meta.city.length > 3 && lower.includes(meta.city.toLowerCase())) return meta.tricode;
-  }
-  return null;
 }
 
 function injurySeverity(status: string | undefined): "out" | "soft" | "other" {
@@ -146,7 +128,7 @@ export default function FavoritesDashboard() {
         if (controller.signal.aborted) return;
         const byTeam: Record<string, InjuryItem[]> = {};
         for (const team of json.data ?? []) {
-          const tri = tricodeForInjuryTeam(team.displayName);
+          const tri = findTeamByDisplayName(team.displayName ?? "")?.tricode;
           if (tri && followed.has(tri) && team.injuries?.length) {
             byTeam[tri] = team.injuries;
           }
