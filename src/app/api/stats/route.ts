@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const STATS_BASE = "https://stats.nba.com/stats";
-const HEADERS: HeadersInit = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-  Referer: "https://www.nba.com/",
-  Origin: "https://www.nba.com",
-  Accept: "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Accept-Encoding": "gzip, deflate, br",
-  "x-nba-stats-origin": "stats",
-  "x-nba-stats-token": "true",
-};
+import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 
 // Proxy for stats.nba.com — avoids CORS issues, adds timeout + security
 const ALLOWED_ENDPOINTS = new Set([
@@ -44,12 +32,6 @@ const REVALIDATE: Record<string, number> = {
   playerawards: 86400,
 };
 const DEFAULT_REVALIDATE = 300;
-
-// stats.nba.com blackholes some endpoints for datacenter IPs (request hangs
-// until our abort). After a timeout, fail fast for 15 min instead of burning
-// a 20s serverless invocation per visitor. Per warm instance — good enough.
-const BLACKHOLED_UNTIL = new Map<string, number>();
-const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
 function respond(data: unknown, limit: number, revalidate: number) {
   if (Number.isInteger(limit) && limit > 0) {
@@ -84,35 +66,25 @@ export async function GET(request: NextRequest) {
   });
 
   const url = `${STATS_BASE}/${endpoint}?${params.toString()}`;
-  const timeout = TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT;
   const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
 
-  // When the breaker is open we still attempt the fetch, but with a short
-  // timeout: Next's data-cache hits return in milliseconds and succeed, while
-  // upstream misses fail fast instead of being denied data that costs nothing.
-  const blockedUntil = BLACKHOLED_UNTIL.get(endpoint);
-  const breakerOpen = !!blockedUntil && Date.now() < blockedUntil;
-  const fetchTimeout = breakerOpen ? 1500 : timeout;
-
+  const res = await fetchStats(url, {
+    key: endpoint,
+    timeoutMs: TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT,
+    revalidate,
+  });
+  if (!res) {
+    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
+  }
+  if (!res.ok) {
+    return NextResponse.json(
+      { error: `NBA API returned ${res.status}` },
+      { status: res.status }
+    );
+  }
   try {
-    const res = await fetch(url, {
-      headers: HEADERS,
-      next: { revalidate },
-      signal: AbortSignal.timeout(fetchTimeout),
-    });
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: `NBA API returned ${res.status}` },
-        { status: res.status }
-      );
-    }
-    const data = await res.json();
-    BLACKHOLED_UNTIL.delete(endpoint);
-    return respond(data, limit, revalidate);
+    return respond(await res.json(), limit, revalidate);
   } catch {
-    // Only a full-timeout failure arms/extends the breaker — the short probe
-    // must leave the existing deadline so the breaker still half-opens on time.
-    if (!breakerOpen) BLACKHOLED_UNTIL.set(endpoint, Date.now() + BLACKHOLE_TTL_MS);
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
 }

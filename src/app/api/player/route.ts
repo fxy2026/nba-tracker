@@ -1,24 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findESPNId, getESPNCareerStats } from "@/lib/espn";
 import { CURRENT_SEASON } from "@/lib/constants";
-
-const NBA_STATS_BASE = "https://stats.nba.com/stats";
-const NBA_HEADERS: HeadersInit = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  Referer: "https://www.nba.com/",
-  Origin: "https://www.nba.com",
-  Accept: "application/json",
-};
-
-async function fetchSafe(url: string, headers: HeadersInit, revalidate: number): Promise<Response | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(url, { headers, next: { revalidate }, signal: controller.signal });
-    clearTimeout(timeout);
-    return res;
-  } catch { return null; }
-}
+import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 
 // Map a stats.nba.com resultSet (parallel arrays: headers + rowSet) into objects.
 function parseResultSet(rs: { headers: string[]; rowSet: unknown[][] } | undefined, limit?: number): Record<string, unknown>[] | null {
@@ -35,8 +18,8 @@ function parseResultSet(rs: { headers: string[]; rowSet: unknown[][] } | undefin
 // Try NBA Stats API (may be blocked on some hosts)
 async function fetchFromNBAStats(playerId: string) {
   const [careerRes, gameLogRes] = await Promise.all([
-    fetchSafe(`${NBA_STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`, NBA_HEADERS, 3600),
-    fetchSafe(`${NBA_STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${CURRENT_SEASON}&SeasonType=Regular+Season`, NBA_HEADERS, 300),
+    fetchStats(`${STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`, { key: "playercareerstats", timeoutMs: 4000, revalidate: 3600 }),
+    fetchStats(`${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${CURRENT_SEASON}&SeasonType=Regular+Season`, { key: "playergamelog", timeoutMs: 4000, revalidate: 300 }),
   ]);
 
   // Use `unknown[]` so the ESPN fallback in the caller can substitute its own shape.

@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 
 // Dedicated proxy for stats.nba.com boxscorematchupsv3 (who-guarded-whom
 // tracking data on finished games). Kept separate from /api/stats because the
 // response is a nested v3 document (not headers/rowSet), so it gets parsed and
 // slimmed server-side instead of being passed through raw (~10x smaller).
-const UPSTREAM = "https://stats.nba.com/stats/boxscorematchupsv3";
-const HEADERS: HeadersInit = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-  Referer: "https://www.nba.com/",
-  Origin: "https://www.nba.com",
-  Accept: "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Accept-Encoding": "gzip, deflate, br",
-  "x-nba-stats-origin": "stats",
-  "x-nba-stats-token": "true",
-};
+const UPSTREAM = `${STATS_BASE}/boxscorematchupsv3`;
 
 // Vercel kills functions at 10s by default — upstream needs longer cold.
 export const maxDuration = 30;
@@ -27,12 +17,6 @@ const TIMEOUT_MS = 20000;
 // answer from sticking, while the CDN Cache-Control below keeps rich
 // responses cheap for browsers.
 const UPSTREAM_REVALIDATE = 900;
-
-// stats.nba.com blackholes this endpoint for some datacenter IPs (hangs until
-// our abort). After a timeout, fail fast for 15 min per warm instance instead
-// of burning a 20s invocation per visitor.
-let blackholedUntil = 0;
-const BLACKHOLE_TTL_MS = 15 * 60 * 1000;
 
 export interface MatchupDefenderRow {
   personId: number;
@@ -130,31 +114,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "gameId must be 10 digits" }, { status: 400 });
   }
 
-  // When the breaker is open we still attempt the fetch, but with a short
-  // timeout: Next's data-cache hits return in milliseconds and succeed, while
-  // upstream misses fail fast instead of being denied cheap cached responses.
-  const breakerOpen = Date.now() < blackholedUntil;
-  const fetchTimeout = breakerOpen ? 1500 : TIMEOUT_MS;
-
-  try {
-    const res = await fetch(`${UPSTREAM}?GameID=${gameId}`, {
-      headers: HEADERS,
-      next: { revalidate: UPSTREAM_REVALIDATE },
-      signal: AbortSignal.timeout(fetchTimeout),
-    });
-    if (!res.ok) {
-      return NextResponse.json({ error: `NBA API returned ${res.status}` }, { status: res.status });
-    }
-    blackholedUntil = 0;
-    const players = parseMatchups(await res.json());
-    if (!players) {
-      return NextResponse.json({ error: "unexpected upstream shape" }, { status: 502 });
-    }
-    return respondWith(gameId, players);
-  } catch {
-    // Only a full-timeout failure arms the breaker — the short probe must
-    // leave the existing deadline so the breaker still half-opens on time.
-    if (!breakerOpen) blackholedUntil = Date.now() + BLACKHOLE_TTL_MS;
+  const res = await fetchStats(`${UPSTREAM}?GameID=${gameId}`, {
+    key: "boxscorematchupsv3",
+    timeoutMs: TIMEOUT_MS,
+    revalidate: UPSTREAM_REVALIDATE,
+  });
+  if (!res) {
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }
+  if (!res.ok) {
+    return NextResponse.json({ error: `NBA API returned ${res.status}` }, { status: res.status });
+  }
+  let players: Record<string, MatchupDefenderRow[]> | null;
+  try {
+    players = parseMatchups(await res.json());
+  } catch {
+    return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
+  }
+  if (!players) {
+    return NextResponse.json({ error: "unexpected upstream shape" }, { status: 502 });
+  }
+  return respondWith(gameId, players);
 }

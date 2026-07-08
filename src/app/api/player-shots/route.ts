@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFullSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
+import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 
 // Aggregate shot data for a player across multiple games.
 // Current season: schedule (CDN) → game IDs → CDN PBP
@@ -82,19 +83,11 @@ async function getGameIdsFromStatsNba(playerId: number, season: string, seasonTy
 
   const gameIds: string[] = [];
   for (const st of types) {
-    const url = `https://stats.nba.com/stats/playergamelog?PlayerID=${playerId}&Season=${encodeURIComponent(season)}&SeasonType=${encodeURIComponent(st)}`;
+    const url = `${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${encodeURIComponent(season)}&SeasonType=${encodeURIComponent(st)}`;
+    // stats.nba.com data is stable for past seasons — cache 24h
+    const res = await fetchStats(url, { key: "playergamelog", revalidate: 86400 });
+    if (!res?.ok) continue;
     try {
-      const res = await fetch(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-          Accept: "application/json",
-          Referer: "https://www.nba.com/",
-          Origin: "https://www.nba.com",
-        },
-        // stats.nba.com data is stable for past seasons — cache 24h
-        next: { revalidate: 86400 },
-      });
-      if (!res.ok) continue;
       const data = await res.json();
       const rs = data.resultSets?.[0];
       if (!rs?.rowSet) continue;
@@ -104,7 +97,7 @@ async function getGameIdsFromStatsNba(playerId: number, season: string, seasonTy
         if (row[gi]) gameIds.push(row[gi] as string);
       }
     } catch {
-      // network or parse error — try next season type
+      // parse error — try next season type
     }
   }
   return gameIds;
