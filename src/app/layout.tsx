@@ -17,6 +17,12 @@ import SpeculationRules from "@/components/SpeculationRules";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
+// Audit 2026-07-08 (batch-1 font trim): every loaded weight has real sans
+// usage — 300 on big stat numerals (TodayStars/streaks/by-country), 400 as
+// the body default, 500 via 200+ font-medium, 600 via font-semibold plus the
+// globals.css h1 rule, 700 via 300+ font-bold. Nothing safe to cut. The
+// fontWeight 200/800 in SVG charts and OG images render synthetic/own fonts
+// and were never served from here.
 const firaSans = Fira_Sans({
   variable: "--font-geist-sans",
   weight: ["300", "400", "500", "600", "700"],
