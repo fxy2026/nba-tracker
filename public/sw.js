@@ -16,7 +16,7 @@
 // purges every cache whose name doesn't match — defends against zombie
 // shells.
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_STATIC = `nba-tracker-static-${CACHE_VERSION}`;
 const CACHE_PAGES = `nba-tracker-pages-${CACHE_VERSION}`;
 const CACHE_IMAGES = `nba-tracker-images-${CACHE_VERSION}`;
@@ -133,7 +133,16 @@ self.addEventListener("fetch", (event) => {
         const fetchPromise = fetch(req).then((res) => {
           if (res.ok) {
             const copy = res.clone();
-            caches.open(CACHE_IMAGES).then((cache) => cache.put(req, copy));
+            caches.open(CACHE_IMAGES).then(async (cache) => {
+              await cache.put(req, copy);
+              const keys = await cache.keys();
+              const MAX_IMAGES = 300;
+              if (keys.length > MAX_IMAGES) {
+                for (const k of keys.slice(0, keys.length - MAX_IMAGES)) {
+                  await cache.delete(k);
+                }
+              }
+            }).catch(() => { /* QuotaExceeded etc. — caching is best-effort */ });
           }
           return res;
         }).catch(() => cached); // if network fails, fall back to cache
