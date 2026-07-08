@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFullSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
 import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { CURRENT_SEASON } from "@/lib/constants";
 
 // Aggregate shot data for a player across multiple games.
 // Current season: schedule (CDN) → game IDs → CDN PBP
@@ -30,15 +31,18 @@ export async function GET(request: NextRequest) {
     const totalGames = gameIds.length;
     const recentGames = gameIds.slice(-30);
 
+    // The schedule path (no season param) filters gameStatus===3 and past
+    // stats.nba.com seasons are finished, so those PBP entries can be pinned
+    // as final. A stats.nba.com query for CURRENT_SEASON (career-arc TOT
+    // players) can include games that aren't provably final — don't pin.
+    const final = !season || season !== CURRENT_SEASON;
+
     // Fetch PBP for each game in parallel (batches of 5)
     const allShots: ShotAction[] = [];
     for (let i = 0; i < recentGames.length; i += 5) {
       const batch = recentGames.slice(i, i + 5);
-      // Every gameId here is a finished game (the schedule path filters
-      // gameStatus===3; the historical path is past seasons only), so the
-      // PBP cache entry can be pinned as final.
       const results = await Promise.all(
-        batch.map((gid) => getPlayByPlay(gid, { final: true }).catch(() => []))
+        batch.map((gid) => getPlayByPlay(gid, { final }).catch(() => []))
       );
       for (const shots of results) {
         for (const s of shots) {

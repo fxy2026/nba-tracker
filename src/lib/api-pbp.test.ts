@@ -53,6 +53,26 @@ describe("getPlayByPlay caching", () => {
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ next: { revalidate: 60 } });
   });
 
+  it("upgrades a live entry to final on a later hinted call", async () => {
+    fetchMock.mockImplementation(async () => pbpResponse(1));
+    await api.getPlayByPlay("0022500902");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const upgraded = await api.getPlayByPlay("0022500902", { final: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(upgraded).toHaveLength(1);
+    const pinned = await api.getPlayByPlay("0022500902", { final: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(pinned).toEqual(upgraded);
+  });
+
+  it("does not pin an empty payload as final", async () => {
+    fetchMock.mockImplementation(async () => pbpResponse(0));
+    const first = await api.getPlayByPlay("0022500903", { final: true });
+    expect(first).toEqual([]);
+    await api.getPlayByPlay("0022500903", { final: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("dedupes concurrent calls into a single fetch", async () => {
     const resolvers: Array<(r: Response) => void> = [];
     fetchMock.mockImplementation(

@@ -400,7 +400,10 @@ export async function getPlayByPlay(
     if (!res.ok) return cached?.shots ?? [];
     const data = await res.json();
     const shots = extractShots(data.game?.actions || []);
-    lruSet(pbpCache, gameId, { shots, final });
+    // Never pin an empty payload as final — a transient blank CDN response
+    // must not permanently mask a game's shots (same class as the box-score
+    // cache-poisoning guard).
+    lruSet(pbpCache, gameId, { shots, final: final && shots.length > 0 });
     return shots;
   })();
   pbpInflight.set(gameId, p);
