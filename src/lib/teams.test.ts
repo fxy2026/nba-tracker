@@ -18,6 +18,22 @@ describe("findTeamByDisplayName", () => {
     expect(findTeamByDisplayName("Golden State Warriors")?.tricode).toBe("GSW");
   });
 
+  it("matches Charlotte Hornets to CHA, not BKN via the 'nets' substring in 'Hornets'", () => {
+    expect(findTeamByDisplayName("Charlotte Hornets")?.tricode).toBe("CHA");
+  });
+
+  it("matches Brooklyn Nets to BKN", () => {
+    expect(findTeamByDisplayName("Brooklyn Nets")?.tricode).toBe("BKN");
+  });
+
+  it("matches Philadelphia 76ers to PHI", () => {
+    expect(findTeamByDisplayName("Philadelphia 76ers")?.tricode).toBe("PHI");
+  });
+
+  it("matches Portland Trail Blazers to POR", () => {
+    expect(findTeamByDisplayName("Portland Trail Blazers")?.tricode).toBe("POR");
+  });
+
   it("falls back to an unambiguous city when the nickname is absent", () => {
     expect(findTeamByDisplayName("Oklahoma City")?.tricode).toBe("OKC");
   });
