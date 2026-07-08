@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   if (!playerId) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
-  if (isNaN(parseInt(playerId, 10))) {
+  if (!/^\d+$/.test(playerId)) {
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
 
