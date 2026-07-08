@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { usePlayerCareer, type CareerSeasonRow } from "@/lib/usePlayerCareer";
 
 interface AdvancedData {
   TS_PCT: number | null;
@@ -10,9 +10,9 @@ interface AdvancedData {
   USG_PCT: number | null;
 }
 
-function computeAdvanced(seasons: Record<string, unknown>[]): AdvancedData | null {
-  if (!seasons || seasons.length === 0) return null;
-  const latest = seasons[seasons.length - 1] as Record<string, number>;
+function computeAdvanced(seasons: CareerSeasonRow[]): AdvancedData | null {
+  if (seasons.length === 0) return null;
+  const latest = seasons[seasons.length - 1];
   const pts = latest.PTS;
   const fga = latest.FGA;
   const fta = latest.FTA;
@@ -34,35 +34,8 @@ function computeAdvanced(seasons: Record<string, unknown>[]): AdvancedData | nul
 
 export default function PlayerAdvancedStats({ playerId, playerName, teamTricode }: { playerId: number; playerName?: string; teamTricode?: string }) {
   const { t } = useLocale();
-  const [stats, setStats] = useState<AdvancedData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  // Loading state reset on playerId change — intentional dep-change refetch pattern.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(false);
-    const controller = new AbortController();
-    let timedOut = false;
-    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
-    (async () => {
-      try {
-        const qs = new URLSearchParams({ id: String(playerId) });
-        if (playerName) qs.set("name", playerName);
-        if (teamTricode) qs.set("team", teamTricode);
-        const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) { if (timedOut || !controller.signal.aborted) setLoading(false); return; }
-        const data = await res.json();
-        if (!controller.signal.aborted) setStats(computeAdvanced(data.careerSeasons || []));
-      } catch {
-        if (timedOut || !controller.signal.aborted) setError(true);
-      }
-      if (timedOut || !controller.signal.aborted) setLoading(false);
-    })();
-    return () => { controller.abort(); clearTimeout(timeout); };
-  }, [playerId, playerName, teamTricode]);
+  const { data, loading, error } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
+  const stats = data ? computeAdvanced(data.careerSeasons) : null;
 
   if (loading) {
     return (
