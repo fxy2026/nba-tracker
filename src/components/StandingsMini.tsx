@@ -36,9 +36,11 @@ function ConferenceColumn({ title, teams }: { title: string; teams: TeamRecord[]
 }
 
 export default function StandingsMini() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [east, setEast] = useState<TeamRecord[]>([]);
   const [west, setWest] = useState<TeamRecord[]>([]);
+  const [archivedSeason, setArchivedSeason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export default function StandingsMini() {
       .then((r) => r.json())
       .then((json) => {
         const teams: TeamRecord[] = json.data || [];
+        if (json.archived && json.season) setArchivedSeason(String(json.season));
         const eastBuf: TeamRecord[] = [];
         const westBuf: TeamRecord[] = [];
         for (const t of teams) {
@@ -91,6 +94,13 @@ export default function StandingsMini() {
 
   return (
     <div className="glass-tile p-4 h-full">
+      {archivedSeason && (
+        <p className="mb-2 text-center">
+          <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">
+            {archivedSeason} {isZh ? "赛季最终" : "Final"}
+          </span>
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <ConferenceColumn title={t.standingsMini.east} teams={east} />
         <ConferenceColumn title={t.standingsMini.west} teams={west} />

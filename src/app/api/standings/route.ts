@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getFullSchedule } from "@/lib/api";
 import { isRegular } from "@/lib/games";
+import { standingsPayload } from "@/lib/season-snapshot";
 
 interface TeamRecord {
   tricode: string;
@@ -52,7 +53,7 @@ export async function GET() {
   try {
     // Return cached data if fresh
     if (standingsCache && Date.now() - standingsCache.ts < STANDINGS_TTL) {
-      return NextResponse.json({ data: standingsCache.data }, {
+      return NextResponse.json(standingsPayload(standingsCache.data), {
         headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
       });
     }
@@ -64,7 +65,7 @@ export async function GET() {
     const teams = await fetchingPromise;
 
     standingsCache = { data: teams, ts: Date.now() };
-    return NextResponse.json({ data: teams }, {
+    return NextResponse.json(standingsPayload(teams), {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   } catch {

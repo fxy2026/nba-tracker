@@ -11,8 +11,10 @@ interface TeamRecord { tricode: string; teamId: number; teamName: string; teamCi
 const EAST = ["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
 
 export default function TeamStandings() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const [teams, setTeams] = useState<TeamRecord[]>([]);
+  const [archivedSeason, setArchivedSeason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [conf, setConf] = useState<"all" | "east" | "west">("all");
 
@@ -24,7 +26,10 @@ export default function TeamStandings() {
         const res = await fetch("/api/standings", { signal: controller.signal });
         if (!res.ok) throw new Error("Failed");
         const json = await res.json();
-        if (!controller.signal.aborted) setTeams(json.data || []);
+        if (!controller.signal.aborted) {
+          setTeams(json.data || []);
+          if (json.archived && json.season) setArchivedSeason(String(json.season));
+        }
       } catch { if (!controller.signal.aborted) setTeams([]); }
       if (!controller.signal.aborted) setLoading(false);
     })();
@@ -51,6 +56,11 @@ export default function TeamStandings() {
             </button>
           ))}
         </div>
+        {archivedSeason && (
+          <span className="self-center text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded-full bg-accent-amber/15 text-accent-amber">
+            {archivedSeason} {isZh ? "赛季最终" : "Final"}
+          </span>
+        )}
       </div>
 
       {loading ? (
