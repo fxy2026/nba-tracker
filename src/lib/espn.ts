@@ -72,35 +72,59 @@ export async function getESPNCareerStats(espnId: string): Promise<{ careerSeason
     return idx >= 0 ? vals[idx] : null;
   };
 
-  const careerSeasons: ESPNSeasonStats[] = cat.statistics.map(s => {
-    const v = s.stats;
-    const parseSplit = (raw: string | null) => {
-      if (!raw) return { m: 0, a: 0 };
-      const [m, a] = raw.split("-").map(Number);
-      return { m: m || 0, a: a || 0 };
-    };
-    const fg = parseSplit(get(v, "FG"));
-    const fg3 = parseSplit(get(v, "3PT"));
-    const ft = parseSplit(get(v, "FT"));
+  const careerSeasons = cat.statistics
+    .map((s): ESPNSeasonStats | null => {
+      const v = s.stats;
+      const num = (label: string): number | null => {
+        const raw = get(v, label);
+        if (raw == null || raw === "") return null;
+        const n = parseFloat(raw);
+        return Number.isFinite(n) ? n : null;
+      };
+      const parseSplit = (raw: string | null) => {
+        if (!raw) return { m: 0, a: 0 };
+        const [m, a] = raw.split("-").map(Number);
+        return { m: m || 0, a: a || 0 };
+      };
+      const gp = num("GP");
+      const min = num("MIN");
+      const pts = num("PTS");
+      const reb = num("REB");
+      const ast = num("AST");
+      const stl = num("STL");
+      const blk = num("BLK");
+      const fgPct = num("FG%");
+      const fg3Pct = num("3P%");
+      const ftPct = num("FT%");
+      // A missing label means ESPN changed the payload — a fake all-zero season
+      // row would silently corrupt career charts and advanced-stat math.
+      if (gp === null || min === null || pts === null || reb === null || ast === null
+        || stl === null || blk === null || fgPct === null || fg3Pct === null || ftPct === null) {
+        return null;
+      }
+      const fg = parseSplit(get(v, "FG"));
+      const fg3 = parseSplit(get(v, "3PT"));
+      const ft = parseSplit(get(v, "FT"));
 
-    return {
-      SEASON_ID: s.season?.displayName || "",
-      TEAM_ABBREVIATION: (s.teamSlug || "").replace(/-/g, " ").split(" ").map(w => w[0]?.toUpperCase() || "").join(""),
-      GP: parseFloat(get(v, "GP") || "0"),
-      MIN: parseFloat(get(v, "MIN") || "0"),
-      PTS: parseFloat(get(v, "PTS") || "0"),
-      REB: parseFloat(get(v, "REB") || "0"),
-      AST: parseFloat(get(v, "AST") || "0"),
-      STL: parseFloat(get(v, "STL") || "0"),
-      BLK: parseFloat(get(v, "BLK") || "0"),
-      FG_PCT: parseFloat(get(v, "FG%") || "0") / 100,
-      FG3_PCT: parseFloat(get(v, "3P%") || "0") / 100,
-      FT_PCT: parseFloat(get(v, "FT%") || "0") / 100,
-      FGA: fg.a,
-      FG3A: fg3.a,
-      FTA: ft.a,
-    };
-  });
+      return {
+        SEASON_ID: s.season?.displayName || "",
+        TEAM_ABBREVIATION: (s.teamSlug || "").replace(/-/g, " ").split(" ").map(w => w[0]?.toUpperCase() || "").join(""),
+        GP: gp,
+        MIN: min,
+        PTS: pts,
+        REB: reb,
+        AST: ast,
+        STL: stl,
+        BLK: blk,
+        FG_PCT: fgPct / 100,
+        FG3_PCT: fg3Pct / 100,
+        FT_PCT: ftPct / 100,
+        FGA: fg.a,
+        FG3A: fg3.a,
+        FTA: ft.a,
+      };
+    })
+    .filter((row): row is ESPNSeasonStats => row !== null);
 
   return { careerSeasons, recentGames: null };
 }
