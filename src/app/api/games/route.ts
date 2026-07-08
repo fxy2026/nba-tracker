@@ -72,8 +72,9 @@ export async function GET(request: NextRequest) {
         });
       }
     } else if (isToday) {
-      // ET path — original behavior
-      const liveGames = await getTodayScoreboard();
+      // ET path — original behavior. Degrades to an empty scoreboard on a
+      // transient CDN error instead of 500ing the endpoint (mirrors the tz path).
+      const liveGames = await getTodayScoreboard().catch(() => []);
       games = liveGames.map((g) => ({
         gameId: g.gameId,
         gameCode: g.gameCode,

@@ -185,7 +185,7 @@ export interface ScheduleDate {
 export async function getTodayScoreboard(): Promise<NbaGame[]> {
   const res = await fetch(
     `${CDN_BASE}/liveData/scoreboard/todaysScoreboard_00.json`,
-    { headers: HEADERS, next: { revalidate: 30 } }
+    { headers: HEADERS, next: { revalidate: 30 }, signal: AbortSignal.timeout(8000) }
   );
   if (!res.ok) return [];
   const data = await res.json();
@@ -336,7 +336,7 @@ export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   const p = (async (): Promise<BoxScore | null> => {
     const res = await fetch(
       `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
-      { headers: HEADERS, next: { revalidate: 30 } }
+      { headers: HEADERS, next: { revalidate: 30 }, signal: AbortSignal.timeout(8000) }
     );
     if (!res.ok) return cached ?? null;
     const data = await res.json();
@@ -395,7 +395,11 @@ export async function getPlayByPlay(
   const p = (async (): Promise<ShotAction[]> => {
     const res = await fetch(
       `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
-      { headers: HEADERS, next: { revalidate: final ? 86400 : 60 } }
+      {
+        headers: HEADERS,
+        next: { revalidate: final ? 86400 : 60 },
+        signal: AbortSignal.timeout(8000),
+      }
     );
     if (!res.ok) return cached?.shots ?? [];
     const data = await res.json();
@@ -456,7 +460,7 @@ async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
   try {
     const res = await fetch(
       `${CDN_BASE}/staticData/playerIndex.json`,
-      { headers: HEADERS, next: { revalidate: 86400 } }
+      { headers: HEADERS, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) }
     );
     if (!res.ok) return [];
     const data = await res.json();
