@@ -157,7 +157,7 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
         {playersArr.map((p, i) => (
           <div key={i} className={`bg-bg-card p-4 flex flex-col items-center text-center ${overallLeader === i ? "ring-1 ring-accent-amber/40" : ""}`}>
             <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-secondary mb-2">
-              <Image src={playerHeadshotUrl(p.personId)} alt={`${p.firstName} ${p.lastName}`} width={64} height={64} unoptimized className="w-full h-full object-cover object-top" />
+              <Image src={playerHeadshotUrl(p.personId, "260x190")} alt={`${p.firstName} ${p.lastName}`} width={64} height={64} unoptimized className="w-full h-full object-cover object-top" />
             </div>
             <p className="font-bold text-text-primary text-sm truncate w-full">{p.firstName} {p.lastName}</p>
             {p.isIconicSeason ? (
@@ -595,7 +595,7 @@ export default function ComparePage() {
   useDebouncedSearch(query2, setResults2);
   useDebouncedSearch(query3, setResults3);
 
-  const headshotUrl = (id: number) => playerHeadshotUrl(id);
+  const headshotUrl = (id: number) => playerHeadshotUrl(id, "260x190");
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
