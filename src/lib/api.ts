@@ -393,7 +393,7 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
 // route 503) falls back to the direct CDN fetch — never worse than before.
 async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
   try {
-    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim`, { next: { revalidate: 7200 } });
+    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const body = (await res.json()) as { seasonYear?: string; dates?: ScheduleDate[] };
     if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
