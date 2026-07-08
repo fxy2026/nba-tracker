@@ -76,6 +76,13 @@ describe("projectScheduleGame", () => {
     ]);
   });
 
+  it("omits pointsLeaders when the feed sends null instead of an array", () => {
+    const out = projectScheduleGame(
+      rawGame({ pointsLeaders: null as unknown as RawScheduleGame["pointsLeaders"] })
+    );
+    expect("pointsLeaders" in out).toBe(false);
+  });
+
   it("passes through declared optional arena fields for pre-game previews", () => {
     const out = projectScheduleGame(rawGame({ arenaName: "Crypto.com Arena", arenaCity: "Los Angeles" }));
     expect(out.arenaName).toBe("Crypto.com Arena");

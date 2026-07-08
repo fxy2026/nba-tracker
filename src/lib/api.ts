@@ -225,7 +225,7 @@ export function projectScheduleGame(raw: RawScheduleGame): ScheduleGame {
     ...(raw.seriesText !== undefined ? { seriesText: raw.seriesText } : {}),
     ...(raw.ifNecessary !== undefined ? { ifNecessary: raw.ifNecessary } : {}),
     ...(raw.gameLeaders !== undefined ? { gameLeaders: raw.gameLeaders } : {}),
-    ...(raw.pointsLeaders !== undefined
+    ...(Array.isArray(raw.pointsLeaders)
       ? {
           pointsLeaders: raw.pointsLeaders.map((p) => ({
             personId: p.personId,
@@ -347,7 +347,9 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
 async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
   try {
     const { dates } = await getRawScheduleDates();
-    return dates.length > 0 ? dates : scheduleCache?.data || [];
+    if (dates.length > 0) return dates;
+    console.error("schedule fetch returned no gameDates — keeping previous cache");
+    return scheduleCache?.data || [];
   } catch (err) {
     console.error("schedule fetch error:", err);
     return scheduleCache?.data || [];
