@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getBoxScore, getPlayerIndex, getFullSchedule, extractShots, toBeijingTime, type PlayerInfo, type ScheduleGame } from "@/lib/api";
+import { getBoxScore, getPlayerIndex, getFullSchedule, extractShots, toBeijingTime, type PlayerInfo } from "@/lib/api";
 import type { PlayAction } from "@/components/PlayByPlay";
-import { getSeasonRank } from "@/lib/season-ranks";
 import { isPlayoff, findScheduleGame } from "@/lib/games";
 import { buildRecap } from "@/lib/recap";
 import QuarterBars from "@/components/QuarterBars";
@@ -21,6 +20,7 @@ import GameHero from "./_components/GameHero";
 import PreGameHero from "./_components/PreGameHero";
 import GameStickyScore from "./_components/GameStickyScore";
 import GameHeadlines from "./_components/GameHeadlines";
+import SeasonRankBadge from "./_components/SeasonRankBadge";
 import GameRecap from "./_components/GameRecap";
 import GamePreview from "./_components/GamePreview";
 import GameLeaders from "./_components/GameLeaders";
@@ -96,11 +96,12 @@ export default async function GamePage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  // Box score + player index + raw PBP + season-wide rank in parallel.
+  // Box score + player index + raw PBP in parallel.
   // PBP comes straight from cdn.nba.com (the only place exposing score events
   // with clocks); shots are derived from the same payload — one download, not
-  // two. Season rank reads the schedule cache only — no extra fetch.
-  const [boxScore, playerIndex, pbpActions, seasonRank] = await Promise.all([
+  // two. Season rank streams later via <SeasonRankBadge> — it walks the full
+  // schedule and must not block first byte.
+  const [boxScore, playerIndex, pbpActions] = await Promise.all([
     getBoxScore(id),
     getPlayerIndex().catch(() => []),
     fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json`, {
@@ -111,7 +112,6 @@ export default async function GamePage({ params }: PageProps) {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.game?.actions || [])
       .catch(() => []),
-    getSeasonRank(id).catch(() => null),
   ]);
 
   const shots = extractShots(pbpActions);
@@ -160,8 +160,6 @@ export default async function GamePage({ params }: PageProps) {
     // knows the game, show a full pre-game preview instead of an empty state.
     const sg = findScheduleGame(await getFullSchedule().catch(() => []), id);
     if (sg && sg.gameStatus === 1) {
-      // The schedule feed carries arena fields the typed interface doesn't declare
-      const arena = sg as ScheduleGame & { arenaName?: string; arenaCity?: string };
       const beijingTime = toBeijingTime(sg.gameDateTimeUTC);
       return (
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -184,8 +182,8 @@ export default async function GamePage({ params }: PageProps) {
                 home={{ tricode: sg.homeTeam.teamTricode, teamId: sg.homeTeam.teamId, teamCity: sg.homeTeam.teamCity, teamName: sg.homeTeam.teamName }}
                 away={{ tricode: sg.awayTeam.teamTricode, teamId: sg.awayTeam.teamId, teamCity: sg.awayTeam.teamCity, teamName: sg.awayTeam.teamName }}
                 gameTimeUTC={sg.gameDateTimeUTC}
-                arenaName={arena.arenaName}
-                arenaCity={arena.arenaCity}
+                arenaName={sg.arenaName}
+                arenaCity={sg.arenaCity}
                 isZh={isZh}
               />
             </Suspense>
@@ -363,10 +361,22 @@ export default async function GamePage({ params }: PageProps) {
 
       {isFinal && <GameRecap boxScore={boxScore} actions={slimActions} isPlayoffs={isPlayoffs} isZh={isZh} />}
 
-      {/* Leaders/headlines render for live games too — seasonRank is final-only
+      {/* Leaders/headlines render for live games too — season rank is final-only
           (mid-game season ranks would mislead), so suppress it when not final. */}
       {isLiveOrFinal && (
-        <GameHeadlines homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} shots={shots} seasonRank={isFinal ? seasonRank : null} t={t} />
+        <GameHeadlines
+          homeTeam={boxScore.homeTeam}
+          awayTeam={boxScore.awayTeam}
+          shots={shots}
+          seasonRankBadges={
+            isFinal ? (
+              <Suspense fallback={null}>
+                <SeasonRankBadge gameId={id} t={t} />
+              </Suspense>
+            ) : null
+          }
+          t={t}
+        />
       )}
 
       {isLiveOrFinal && (
