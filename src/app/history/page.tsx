@@ -17,8 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const champions = [
-  { year: 2026, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },
-  { year: 2025, champion: "TBD", fmvp: "TBD", runnerUp: "TBD", series: "TBD" },
+  { year: 2026, champion: "New York Knicks", fmvp: "—", runnerUp: "San Antonio Spurs", series: "4-1" },
+  { year: 2025, champion: "Oklahoma City Thunder", fmvp: "Shai Gilgeous-Alexander", runnerUp: "Indiana Pacers", series: "4-3" },
   { year: 2024, champion: "Boston Celtics", fmvp: "Jaylen Brown", runnerUp: "Dallas Mavericks", series: "4-1" },
   { year: 2023, champion: "Denver Nuggets", fmvp: "Nikola Jokic", runnerUp: "Miami Heat", series: "4-1" },
   { year: 2022, champion: "Golden State Warriors", fmvp: "Stephen Curry", runnerUp: "Boston Celtics", series: "4-2" },
