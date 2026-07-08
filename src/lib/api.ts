@@ -281,6 +281,8 @@ export function getScheduleSeasonYear(): string | null {
 // this (sitemap/robots hardcode the prod domain): NEXT_PUBLIC_SITE_URL wins so
 // prod self-fetches share the public CDN cache; VERCEL_PROJECT_PRODUCTION_URL
 // covers Vercel with zero config; localhost covers dev and `next build`.
+// Caveat: on preview deploys VERCEL_PROJECT_PRODUCTION_URL is the PROD domain,
+// so previews consume prod's projection — set NEXT_PUBLIC_SITE_URL per env to override.
 function internalBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
