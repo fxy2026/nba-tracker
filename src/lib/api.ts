@@ -282,7 +282,7 @@ export function getScheduleSeasonYear(): string | null {
 // prod self-fetches share the public CDN cache; VERCEL_PROJECT_PRODUCTION_URL
 // covers Vercel with zero config; localhost covers dev and `next build`.
 function internalBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   return `http://localhost:${process.env.PORT || 3000}`;
 }
