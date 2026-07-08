@@ -172,11 +172,78 @@ export interface ScheduleGame {
   gameLeaders?: { homeLeaders?: GameLeader; awayLeaders?: GameLeader };
   // Past finished games (schedule cache): game-high scorer(s), points only.
   pointsLeaders?: PointsLeader[];
+  // Declared (not just cast-through) because the game-page pre-game preview
+  // renders the venue — the slim projection would otherwise drop it.
+  arenaName?: string;
+  arenaCity?: string;
 }
 
 export interface ScheduleDate {
   gameDate: string;
   games: ScheduleGame[];
+}
+
+// Raw feed rows are the declared shape plus dozens of undeclared keys
+// (broadcasters, gameLabel, weekNumber, ...) — modeled as open records so
+// projection call sites and test fixtures need no casts.
+export type RawScheduleTeam = ScheduleGame["homeTeam"] & Record<string, unknown>;
+export type RawScheduleGame = Omit<ScheduleGame, "homeTeam" | "awayTeam" | "pointsLeaders"> & {
+  homeTeam: RawScheduleTeam;
+  awayTeam: RawScheduleTeam;
+  pointsLeaders?: (PointsLeader & Record<string, unknown>)[];
+} & Record<string, unknown>;
+export interface RawScheduleDate {
+  gameDate: string;
+  games: RawScheduleGame[];
+  [key: string]: unknown;
+}
+
+function projectScheduleTeam(t: RawScheduleTeam): ScheduleGame["homeTeam"] {
+  return {
+    teamId: t.teamId,
+    teamTricode: t.teamTricode,
+    teamName: t.teamName,
+    teamCity: t.teamCity,
+    teamSlug: t.teamSlug,
+    score: t.score,
+    wins: t.wins,
+    losses: t.losses,
+    seed: t.seed,
+    ...(t.periods !== undefined ? { periods: t.periods } : {}),
+  };
+}
+
+export function projectScheduleGame(raw: RawScheduleGame): ScheduleGame {
+  return {
+    gameId: raw.gameId,
+    gameStatus: raw.gameStatus,
+    gameStatusText: raw.gameStatusText,
+    gameCode: raw.gameCode,
+    gameDateTimeUTC: raw.gameDateTimeUTC,
+    homeTeam: projectScheduleTeam(raw.homeTeam),
+    awayTeam: projectScheduleTeam(raw.awayTeam),
+    ...(raw.seriesText !== undefined ? { seriesText: raw.seriesText } : {}),
+    ...(raw.ifNecessary !== undefined ? { ifNecessary: raw.ifNecessary } : {}),
+    ...(raw.gameLeaders !== undefined ? { gameLeaders: raw.gameLeaders } : {}),
+    ...(raw.pointsLeaders !== undefined
+      ? {
+          pointsLeaders: raw.pointsLeaders.map((p) => ({
+            personId: p.personId,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            teamId: p.teamId,
+            teamTricode: p.teamTricode,
+            points: p.points,
+          })),
+        }
+      : {}),
+    ...(raw.arenaName !== undefined ? { arenaName: raw.arenaName } : {}),
+    ...(raw.arenaCity !== undefined ? { arenaCity: raw.arenaCity } : {}),
+  };
+}
+
+export function projectScheduleDates(rawDates: RawScheduleDate[]): ScheduleDate[] {
+  return rawDates.map((d) => ({ gameDate: d.gameDate, games: d.games.map(projectScheduleGame) }));
 }
 
 // ========== API Functions ==========
@@ -201,6 +268,14 @@ let scheduleCache: { data: ScheduleDate[]; ts: number } | null = null;
 const SCHEDULE_TTL = 2 * 60 * 60 * 1000; // 2 hours (data changes infrequently)
 let scheduleInflight: Promise<ScheduleDate[]> | null = null;
 let scheduleRevalidating = false;
+let scheduleSeasonYear: string | null = null;
+
+// Start year of the season the cached feed covers, e.g. "2025". The feed
+// reports "2025-26"; normalized to the 4-digit start year so rollover
+// checks are simple string compares.
+export function getScheduleSeasonYear(): string | null {
+  return scheduleSeasonYear;
+}
 
 // Age of the in-memory schedule cache, in ms. Returns null if no cache yet.
 // Used to render "Updated X ago" badges on cache-backed pages.
@@ -233,6 +308,28 @@ async function fetchWithRetry(
   throw lastErr;
 }
 
+// Direct download of the 11MB scheduleLeagueV2 feed, projected down to the
+// declared ScheduleGame fields immediately after parse. cache: "no-store" is
+// intentional — an 11MB body exceeds the data-cache entry limit, so the old
+// revalidate hint never cached anything and only misled readers. Used ONLY
+// by /api/schedule-slim and as the fallback when that route fails.
+export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates: ScheduleDate[] }> {
+  const res = await fetchWithRetry(
+    `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
+    { headers: HEADERS, cache: "no-store" }
+  );
+  if (!res.ok) throw new Error(`schedule fetch failed: HTTP ${res.status}`);
+  const data = await res.json();
+  const rawDates: RawScheduleDate[] = data.leagueSchedule?.gameDates || [];
+  const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4);
+  const dates = projectScheduleDates(rawDates);
+  if (dates.length > 0) {
+    scheduleCache = { data: dates, ts: Date.now() };
+    scheduleSeasonYear = seasonYear;
+  }
+  return { seasonYear, dates };
+}
+
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
   // Serve from cache immediately if available (even if stale)
   if (scheduleCache) {
@@ -249,22 +346,8 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
 
 async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
   try {
-    const res = await fetchWithRetry(
-      `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
-      { headers: HEADERS, next: { revalidate: 7200 } }
-    );
-    if (!res.ok) {
-      console.error(`schedule fetch failed: HTTP ${res.status}`);
-      return scheduleCache?.data || [];
-    }
-    const data = await res.json();
-    const dates: ScheduleDate[] = data.leagueSchedule?.gameDates || [];
-    if (dates.length === 0) {
-      console.error("schedule fetch returned no gameDates — keeping previous cache");
-      return scheduleCache?.data || [];
-    }
-    scheduleCache = { data: dates, ts: Date.now() };
-    return dates;
+    const { dates } = await getRawScheduleDates();
+    return dates.length > 0 ? dates : scheduleCache?.data || [];
   } catch (err) {
     console.error("schedule fetch error:", err);
     return scheduleCache?.data || [];
@@ -274,14 +357,7 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
 }
 
 function fetchScheduleInBackground() {
-  fetchWithRetry(`${CDN_BASE}/staticData/scheduleLeagueV2.json`, { headers: HEADERS, next: { revalidate: 7200 } })
-    .then((res) => res.ok ? res.json() : null)
-    .then((data) => {
-      const dates: ScheduleDate[] = data?.leagueSchedule?.gameDates || [];
-      if (dates.length > 0) {
-        scheduleCache = { data: dates, ts: Date.now() };
-      }
-    })
+  getRawScheduleDates()
     .catch((err) => console.error("schedule revalidate error:", err))
     .finally(() => { scheduleRevalidating = false; });
 }
