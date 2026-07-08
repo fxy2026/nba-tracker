@@ -258,7 +258,11 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
       return scheduleCache?.data || [];
     }
     const data = await res.json();
-    const dates = data.leagueSchedule?.gameDates || [];
+    const dates: ScheduleDate[] = data.leagueSchedule?.gameDates || [];
+    if (dates.length === 0) {
+      console.error("schedule fetch returned no gameDates — keeping previous cache");
+      return scheduleCache?.data || [];
+    }
     scheduleCache = { data: dates, ts: Date.now() };
     return dates;
   } catch (err) {
@@ -273,8 +277,8 @@ function fetchScheduleInBackground() {
   fetchWithRetry(`${CDN_BASE}/staticData/scheduleLeagueV2.json`, { headers: HEADERS, next: { revalidate: 7200 } })
     .then((res) => res.ok ? res.json() : null)
     .then((data) => {
-      if (data) {
-        const dates = data.leagueSchedule?.gameDates || [];
+      const dates: ScheduleDate[] = data?.leagueSchedule?.gameDates || [];
+      if (dates.length > 0) {
         scheduleCache = { data: dates, ts: Date.now() };
       }
     })
@@ -416,7 +420,7 @@ let playerIndexCache: PlayerInfo[] | null = null;
 let playerIndexInflight: Promise<PlayerInfo[]> | null = null;
 
 export async function getPlayerIndex(): Promise<PlayerInfo[]> {
-  if (playerIndexCache) return playerIndexCache;
+  if (playerIndexCache && playerIndexCache.length > 0) return playerIndexCache;
   // Deduplicate: if a fetch is already in-flight, all callers share the same promise
   if (playerIndexInflight) return playerIndexInflight;
   playerIndexInflight = fetchPlayerIndex();
@@ -432,7 +436,7 @@ async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
     if (!res.ok) return [];
     const data = await res.json();
     const rs = data.resultSets?.[0];
-    if (!rs) return [];
+    if (!rs?.rowSet) return [];
     const players = rs.rowSet.map((r: (string | number | null)[]) => ({
       personId: r[0] as number,
       lastName: r[1] as string,
@@ -457,7 +461,7 @@ async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
       reb: r[23] as number,
       ast: r[24] as number,
     }));
-    playerIndexCache = players;
+    if (players.length > 0) playerIndexCache = players;
     return players;
   } finally {
     playerIndexInflight = null;
