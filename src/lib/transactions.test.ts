@@ -30,6 +30,10 @@ describe("parseTransactionPlayers", () => {
     expect(parseTransactionPlayers("Acquired draft considerations from Atlanta Hawks.")).toEqual([]);
     expect(parseTransactionPlayers("")).toEqual([]);
   });
+
+  it("drops affiliate/team noise phrases and never fabricates players", () => {
+    expect(parseTransactionPlayers("Assigned G John Doe to G League Ignite.")).toEqual(["John Doe"]);
+  });
 });
 
 describe("classifyTransaction", () => {
@@ -57,5 +61,10 @@ describe("classifyTransaction", () => {
   it("returns 'other' on no keyword match", () => {
     expect(classifyTransaction("Exercised team option.")).toBe("other");
     expect(classifyTransaction("")).toBe("other");
+  });
+
+  it("matches keywords on word boundaries so G-League moves are not signings", () => {
+    expect(classifyTransaction("Assigned G John Doe to the G League affiliate.")).toBe("other");
+    expect(classifyTransaction("Reassigned F Jane Roe to the G League affiliate.")).toBe("other");
   });
 });

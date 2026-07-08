@@ -11,11 +11,17 @@ export type TransactionKind = "signed" | "traded" | "waived" | "claimed" | "othe
 // never absorbed and the match cannot bleed into the next capitalized word.
 const PLAYER_RE = /\b(?:PG|SG|SF|PF|C|G|F)s?\s+([A-Z][A-Za-z'-]*[a-z](?:\s+[A-Z][A-Za-z'-]*[a-z])+)/g;
 
+// Best-effort guard: the position-token regex can also latch onto affiliate/team
+// nouns ("G League Ignite" -> "League Ignite"). Drop any captured phrase whose
+// first word is an obvious non-player noun, so we never fabricate a player.
+const NON_PLAYER_FIRST_WORDS = new Set(["League", "G", "Team", "Draft"]);
+
 export function parseTransactionPlayers(description: string): string[] {
   const names: string[] = [];
   const seen = new Set<string>();
   for (const match of description.matchAll(PLAYER_RE)) {
     const name = match[1].trim();
+    if (NON_PLAYER_FIRST_WORDS.has(name.split(/\s+/)[0])) continue;
     if (!seen.has(name)) {
       seen.add(name);
       names.push(name);
@@ -26,7 +32,9 @@ export function parseTransactionPlayers(description: string): string[] {
 
 // A description may describe several actions ("Signed ... Acquired ..."); we
 // return the kind whose keyword appears EARLIEST in the text (the first/primary
-// action), or "other" on no match.
+// action), or "other" on no match. Patterns are word stems anchored on a LEADING
+// word boundary so inflections match ("sign" -> signed/signing/re-signed) while
+// embedded look-alikes do not ("assigned"/"reassigned" no longer read as signed).
 const KIND_KEYWORDS: { kind: TransactionKind; patterns: string[] }[] = [
   { kind: "signed", patterns: ["sign"] },
   { kind: "traded", patterns: ["trad", "acquir"] },
@@ -39,7 +47,7 @@ export function classifyTransaction(description: string): TransactionKind {
   let best: { kind: TransactionKind; index: number } | null = null;
   for (const { kind, patterns } of KIND_KEYWORDS) {
     for (const pattern of patterns) {
-      const index = lower.indexOf(pattern);
+      const index = lower.search(new RegExp(`\\b${pattern}`));
       if (index === -1) continue;
       if (best === null || index < best.index) best = { kind, index };
     }
