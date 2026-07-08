@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const goodSchedule = {
   leagueSchedule: {
+    seasonYear: "2025-26",
     gameDates: [{ gameDate: "10/21/2025 00:00:00", games: [] }],
   },
 };
@@ -15,6 +16,19 @@ const goodPlayerRow: (string | number | null)[] = [
 
 function jsonResponse(payload: unknown): Response {
   return { ok: true, status: 200, json: async () => payload } as unknown as Response;
+}
+
+function scheduleFetch(
+  cdn: () => Response | Promise<Response>,
+  slim?: () => Response | Promise<Response>
+) {
+  return vi.fn(async (url: RequestInfo | URL) => {
+    if (String(url).includes("/api/schedule-slim")) {
+      if (slim) return slim();
+      throw new Error("ECONNREFUSED");
+    }
+    return cdn();
+  });
 }
 
 async function loadApi() {
@@ -32,10 +46,10 @@ afterEach(() => {
 
 describe("schedule cache poisoning guards", () => {
   it("does not commit the schedule cache when gameDates is empty", async () => {
-    const fetchMock = vi.fn()
+    const cdn = vi.fn()
       .mockResolvedValueOnce(jsonResponse({}))
       .mockResolvedValueOnce(jsonResponse(goodSchedule));
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
     const first = await api.getFullSchedule();
@@ -44,26 +58,26 @@ describe("schedule cache poisoning guards", () => {
 
     const second = await api.getFullSchedule();
     expect(second).toHaveLength(1);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(cdn).toHaveBeenCalledTimes(2);
   });
 
   it("caches a non-empty schedule and serves it without refetching", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
-    vi.stubGlobal("fetch", fetchMock);
+    const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
+    vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
     await api.getFullSchedule();
     const again = await api.getFullSchedule();
     expect(again).toHaveLength(1);
     expect(api.getScheduleAge()).not.toBeNull();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(cdn).toHaveBeenCalledTimes(1);
   });
 
   it("background refresh keeps stale data when the new payload is empty", async () => {
-    const fetchMock = vi.fn()
+    const cdn = vi.fn()
       .mockResolvedValueOnce(jsonResponse(goodSchedule))
       .mockResolvedValueOnce(jsonResponse({ leagueSchedule: { gameDates: [] } }));
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
     await api.getFullSchedule();
@@ -73,12 +87,87 @@ describe("schedule cache poisoning guards", () => {
     const stale = await api.getFullSchedule();
     expect(stale).toHaveLength(1);
 
-    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(cdn).toHaveBeenCalledTimes(2));
     await new Promise((r) => setTimeout(r, 0));
     nowSpy.mockRestore();
 
     const after = await api.getFullSchedule();
     expect(after).toHaveLength(1);
+  });
+});
+
+describe("schedule slim-route consumer path", () => {
+  const slimFeed = {
+    seasonYear: "2025",
+    dates: [{ gameDate: "10/21/2025 00:00:00", games: [] }],
+  };
+
+  it("populates the in-memory cache from a slim-route hit without touching the CDN", async () => {
+    const cdn = vi.fn();
+    vi.stubGlobal("fetch", scheduleFetch(cdn, () => jsonResponse(slimFeed)));
+    const api = await loadApi();
+
+    const dates = await api.getFullSchedule();
+    expect(dates).toHaveLength(1);
+    expect(api.getScheduleAge()).not.toBeNull();
+    expect(api.getScheduleSeasonYear()).toBe("2025");
+    expect(cdn).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the CDN when the slim route responds non-200", async () => {
+    const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
+    vi.stubGlobal("fetch", scheduleFetch(cdn, () =>
+      ({ ok: false, status: 503, json: async () => ({}) } as unknown as Response)
+    ));
+    const api = await loadApi();
+
+    expect(await api.getFullSchedule()).toHaveLength(1);
+    expect(cdn).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the CDN when the slim-route fetch throws", async () => {
+    const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
+    vi.stubGlobal("fetch", scheduleFetch(cdn));
+    const api = await loadApi();
+
+    expect(await api.getFullSchedule()).toHaveLength(1);
+    expect(cdn).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the CDN when the slim route returns invalid JSON", async () => {
+    const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
+    vi.stubGlobal("fetch", scheduleFetch(cdn, () =>
+      ({ ok: true, status: 200, json: async () => { throw new Error("bad json"); } } as unknown as Response)
+    ));
+    const api = await loadApi();
+
+    expect(await api.getFullSchedule()).toHaveLength(1);
+    expect(cdn).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats a 200 slim response with empty dates as a miss instead of committing it", async () => {
+    const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
+    vi.stubGlobal("fetch", scheduleFetch(cdn, () => jsonResponse({ seasonYear: "2025", dates: [] })));
+    const api = await loadApi();
+
+    expect(await api.getFullSchedule()).toHaveLength(1);
+    expect(api.getScheduleAge()).not.toBeNull();
+    expect(cdn).toHaveBeenCalledTimes(1);
+  });
+
+  it("getCachedScheduleFeed serves the route from the CDN path only, never /api/schedule-slim", async () => {
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => {
+      urls.push(String(url));
+      return jsonResponse(goodSchedule);
+    }));
+    const api = await loadApi();
+
+    const feed = await api.getCachedScheduleFeed();
+    expect(feed.seasonYear).toBe("2025");
+    expect(feed.dates).toHaveLength(1);
+    expect(urls.some((u) => u.includes("/api/schedule-slim"))).toBe(false);
+    expect(urls.some((u) => u.includes("scheduleLeagueV2"))).toBe(true);
   });
 });
 

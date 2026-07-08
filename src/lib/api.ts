@@ -277,6 +277,47 @@ export function getScheduleSeasonYear(): string | null {
   return scheduleSeasonYear;
 }
 
+// Absolute origin for server-side self-fetches. No env pattern existed before
+// this (sitemap/robots hardcode the prod domain): NEXT_PUBLIC_SITE_URL wins so
+// prod self-fetches share the public CDN cache; VERCEL_PROJECT_PRODUCTION_URL
+// covers Vercel with zero config; localhost covers dev and `next build`.
+function internalBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  return `http://localhost:${process.env.PORT || 3000}`;
+}
+
+// Feed accessor for /api/schedule-slim ONLY. Uses its own inflight promise —
+// getFullSchedule awaits this route over HTTP, so sharing scheduleInflight
+// would deadlock the route against its own caller on a single-process server.
+let rawFeedInflight: Promise<{ seasonYear: string; dates: ScheduleDate[] }> | null = null;
+
+export async function getCachedScheduleFeed(): Promise<{ seasonYear: string; dates: ScheduleDate[] }> {
+  const cached = scheduleCache;
+  if (cached) {
+    if (Date.now() - cached.ts > SCHEDULE_TTL && !scheduleRevalidating) {
+      scheduleRevalidating = true;
+      getRawScheduleDates()
+        .catch((err) => console.error("schedule revalidate error:", err))
+        .finally(() => { scheduleRevalidating = false; });
+    }
+    return { seasonYear: scheduleSeasonYear ?? "", dates: cached.data };
+  }
+  if (!rawFeedInflight) {
+    rawFeedInflight = (async () => {
+      try {
+        return await getRawScheduleDates();
+      } catch (err) {
+        console.error("schedule fetch error:", err);
+        return { seasonYear: scheduleSeasonYear ?? "", dates: scheduleCache?.data ?? [] };
+      } finally {
+        rawFeedInflight = null;
+      }
+    })();
+  }
+  return rawFeedInflight;
+}
+
 // Age of the in-memory schedule cache, in ms. Returns null if no cache yet.
 // Used to render "Updated X ago" badges on cache-backed pages.
 export function getScheduleAge(): number | null {
@@ -344,8 +385,28 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
   return scheduleInflight;
 }
 
+// Consumer path: prefer the slim route — its <2MB response is eligible for
+// the shared Next data cache, so warm regions skip the 11MB download
+// entirely. Any failure (preview-deploy protection, build-time self-fetch,
+// route 503) falls back to the direct CDN fetch — never worse than before.
+async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
+  try {
+    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim`, { next: { revalidate: 7200 } });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { seasonYear?: string; dates?: ScheduleDate[] };
+    if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
+    scheduleCache = { data: body.dates, ts: Date.now() };
+    if (body.seasonYear) scheduleSeasonYear = body.seasonYear;
+    return body.dates;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
   try {
+    const viaRoute = await fetchSlimRouteOnce();
+    if (viaRoute) return viaRoute;
     const { dates } = await getRawScheduleDates();
     if (dates.length > 0) return dates;
     console.error("schedule fetch returned no gameDates — keeping previous cache");
@@ -359,7 +420,10 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
 }
 
 function fetchScheduleInBackground() {
-  getRawScheduleDates()
+  (async () => {
+    const viaRoute = await fetchSlimRouteOnce();
+    if (!viaRoute) await getRawScheduleDates();
+  })()
     .catch((err) => console.error("schedule revalidate error:", err))
     .finally(() => { scheduleRevalidating = false; });
 }
