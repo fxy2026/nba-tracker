@@ -1,15 +1,23 @@
 import type { ScheduleDate, ScheduleGame } from "@/lib/api";
 
-// gameId prefix predicates — the NBA encodes game type in first 3 digits.
-// 001 = preseason, 002 = regular season, 003 = all-star, 004 = playoffs, 005 = play-in
+// gameId prefix predicates — the NBA encodes game type in the leading digits.
+// 001 = preseason, 002 = regular season, 003 = all-star, 004 = playoffs,
+// 005 = play-in, 006 = NBA Cup final; 13/14/15/16 = Summer League slates.
 export function isPreseason(gameId: string): boolean { return gameId.startsWith("001"); }
 export function isRegular(gameId: string): boolean { return gameId.startsWith("002"); }
 export function isAllStar(gameId: string): boolean { return gameId.startsWith("003"); }
 export function isPlayoff(gameId: string): boolean { return gameId.startsWith("004"); }
 export function isPlayIn(gameId: string): boolean { return gameId.startsWith("005"); }
-// Exclude exhibitions (preseason + all-star — both contain non-NBA teams)
+export function isCup(gameId: string): boolean { return gameId.startsWith("006"); }
+export function isSummerLeague(gameId: string): boolean {
+  const p = gameId.slice(0, 2);
+  return p === "13" || p === "14" || p === "15" || p === "16";
+}
+// Allowlist, not denylist: only games that count toward standings/form. Anything
+// not explicitly regular/playoff/play-in (preseason, all-star, Cup, Summer League)
+// is excluded, so unseen future prefixes never leak into counted consumers.
 export function isCountedSeason(gameId: string): boolean {
-  return !isPreseason(gameId) && !isAllStar(gameId);
+  return isRegular(gameId) || isPlayoff(gameId) || isPlayIn(gameId);
 }
 
 export function winPct(wins: number, losses: number): number {
