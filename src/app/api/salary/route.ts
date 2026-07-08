@@ -14,6 +14,7 @@ function retryDelayMs(res: Response): number {
 }
 
 function bdlFailure(key: string, res: Response): NextResponse {
+  if (bdlRetryAt.size >= 500) bdlRetryAt.clear();
   bdlRetryAt.set(key, Date.now() + retryDelayMs(res));
   return NextResponse.json({ data: [] }, { headers: FAIL_HEADERS });
 }
@@ -31,7 +32,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: [] });
   }
 
-  const searchKey = `player:${playerName}`;
+  const normalizedName = playerName.trim().toLowerCase().slice(0, 100);
+  const searchKey = `player:${normalizedName}`;
   if ((bdlRetryAt.get(searchKey) ?? 0) > Date.now()) {
     return NextResponse.json({ data: [] }, { headers: FAIL_HEADERS });
   }
