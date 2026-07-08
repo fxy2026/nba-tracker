@@ -20,6 +20,7 @@ import TeamScheduleCard, { type RecentGame, type UpcomingGame } from "./_compone
 import TeamTrendsPanel, { type Rivalry } from "./_components/TeamTrendsPanel";
 import TeamRoster from "./_components/TeamRoster";
 import TeamLegends from "./_components/TeamLegends";
+import TeamDraftPicks from "./_components/TeamDraftPicks";
 
 export async function generateMetadata({ params }: { params: Promise<{ tricode: string }> }): Promise<Metadata> {
   const { tricode } = await params;
@@ -287,6 +288,8 @@ export default async function TeamPage({ params }: PageProps) {
       <TeamTrendsPanel t={t} recentGames={recentGames} rivalries={rivalries} />
 
       <TeamRoster roster={roster} t={t} />
+
+      <TeamDraftPicks tricode={team.tricode} isZh={isZh} />
 
       {/* Map current franchises to their historical aliases for the legacy
           tricodes that appear in our hand-curated datasets. */}

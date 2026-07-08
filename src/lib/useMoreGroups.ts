@@ -85,6 +85,7 @@ export function useMoreGroups(): PaletteGroup[] {
         { href: "/search", label: t.nav.playerSearch, icon: Search, keywords: "search player" },
         { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", icon: Sparkles, keywords: "rookie watch first year" },
         { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", icon: GraduationCap, keywords: "draft classes year" },
+        { href: "/draft/2026", label: isZh ? "2026 选秀" : "2026 Draft", icon: Sparkles, keywords: "2026 draft picks board lottery" },
         { href: "/by-position", label: isZh ? "按位置" : "By Position", icon: Users, keywords: "position guard forward center" },
         { href: "/by-country", label: isZh ? "按国籍" : "By Country", icon: Globe, keywords: "country international" },
         { href: "/by-college", label: isZh ? "按大学" : "By College", icon: School, keywords: "college university" },

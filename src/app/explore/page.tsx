@@ -103,6 +103,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
         { href: "/search", label: isZh ? "球员搜索" : "Player Search", description: isZh ? "按姓名查找任意现役球员" : "Find any active player by name", icon: Sparkles },
         { href: "/rookie-watch", label: isZh ? "新秀关注" : "Rookie Watch", description: isZh ? "顶级一年级与二年级球员" : "Top first- and second-year players", icon: Sparkles },
         { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份分组球员" : "Players grouped by draft year", icon: GraduationCap },
+        { href: "/draft/2026", label: isZh ? "2026 选秀" : "2026 Draft", description: isZh ? "2026 年选秀逐顺位结果" : "Every pick of the 2026 Draft", icon: Sparkles },
         { href: "/by-position", label: isZh ? "按位置" : "By Position", icon: Users, description: isZh ? "后卫 / 锋卫摇摆 / 前锋 / 内线领袖" : "Guards / Wings / Forwards / Big Men leaders" },
         { href: "/by-country", label: isZh ? "按国家" : "By Country", description: isZh ? "联盟全球版图" : "Global representation across the league", icon: Globe },
         { href: "/by-college", label: isZh ? "按学校" : "By College", description: isZh ? "NBA 输送名校与顶尖代表" : "NBA pipeline schools and top performers", icon: School },

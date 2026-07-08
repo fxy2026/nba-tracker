@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GraduationCap, Activity, Users, Globe, Crown } from "lucide-react";
+import { GraduationCap, Activity, Users, Globe, Crown, Sparkles, ArrowRight } from "lucide-react";
 import { getPlayerIndex } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
@@ -100,6 +100,21 @@ export default async function DraftClassesPage() {
             : `Active players grouped by draft year · ${groups.length} classes represented`
         }
       />
+
+      <Link
+        href="/draft/2026"
+        className="glass-tile p-5 mb-4 flex items-center gap-4 group cursor-pointer ring-1 ring-accent/20"
+      >
+        <div className="shrink-0 w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+          <Sparkles size={22} className="text-accent" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "最新一届" : "Newest class"}</p>
+          <p className="font-semibold text-text-primary group-hover:text-accent transition-colors">{isZh ? "2026 选秀 · 逐顺位结果" : "2026 Draft · pick by pick"}</p>
+          <p className="text-[11px] text-text-secondary leading-snug mt-0.5">{isZh ? "新秀尚未进入现役索引 —— 单独查看完整选秀结果。" : "Rookies aren't in the active index yet — see the full draft board."}</p>
+        </div>
+        <ArrowRight size={16} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
+      </Link>
 
       <div className="space-y-4">
         {groups.map((g) => {
