@@ -34,8 +34,11 @@ export async function GET(request: NextRequest) {
     const allShots: ShotAction[] = [];
     for (let i = 0; i < recentGames.length; i += 5) {
       const batch = recentGames.slice(i, i + 5);
+      // Every gameId here is a finished game (the schedule path filters
+      // gameStatus===3; the historical path is past seasons only), so the
+      // PBP cache entry can be pinned as final.
       const results = await Promise.all(
-        batch.map((gid) => getPlayByPlay(gid).catch(() => []))
+        batch.map((gid) => getPlayByPlay(gid, { final: true }).catch(() => []))
       );
       for (const shots of results) {
         for (const s of shots) {

@@ -309,7 +309,7 @@ export async function getGamesByDate(dateStr: string): Promise<ScheduleGame[]> {
 // Cap prevents unbounded growth on long-running lambdas; LRU via Map insertion order.
 const GAME_CACHE_MAX = 200;
 const boxScoreCache = new Map<string, BoxScore>();
-const pbpCache = new Map<string, ShotAction[]>();
+const pbpCache = new Map<string, { shots: ShotAction[]; final: boolean }>();
 
 function lruSet<V>(cache: Map<string, V>, key: string, value: V): void {
   // Refresh insertion order so this entry is most-recently used.
@@ -373,20 +373,42 @@ export function extractShots(actions: Record<string, unknown>[]): ShotAction[] {
     })) as ShotAction[];
 }
 
-// Get play-by-play (for shot chart)
-export async function getPlayByPlay(gameId: string): Promise<ShotAction[]> {
+// Collapse concurrent PBP fetches of the same gameId (player-shots fires
+// batches of 5 that can overlap across requests). Mirrors boxScoreInflight.
+const pbpInflight = new Map<string, Promise<ShotAction[]>>();
+
+// Get play-by-play (for shot chart).
+// The PBP payload carries no gameStatus (its game object is just
+// { gameId, actions }), so finality must come from the caller:
+// /api/player-shots aggregates finished games only and passes final: true,
+// which pins the cache entry and stretches the fetch revalidate to 24h
+// (final PBP is immutable).
+export async function getPlayByPlay(
+  gameId: string,
+  opts?: { final?: boolean }
+): Promise<ShotAction[]> {
   const cached = pbpCache.get(gameId);
-  // Final-game check piggybacks on box score cache (cheap lookup).
-  if (cached && boxScoreCache.get(gameId)?.gameStatus === 3) return cached;
-  const res = await fetch(
-    `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
-    { headers: HEADERS, next: { revalidate: 60 } }
-  );
-  if (!res.ok) return cached ?? [];
-  const data = await res.json();
-  const shots = extractShots(data.game?.actions || []);
-  lruSet(pbpCache, gameId, shots);
-  return shots;
+  if (cached?.final) return cached.shots;
+  const existing = pbpInflight.get(gameId);
+  if (existing) return existing;
+  const final = opts?.final === true;
+  const p = (async (): Promise<ShotAction[]> => {
+    const res = await fetch(
+      `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
+      { headers: HEADERS, next: { revalidate: final ? 86400 : 60 } }
+    );
+    if (!res.ok) return cached?.shots ?? [];
+    const data = await res.json();
+    const shots = extractShots(data.game?.actions || []);
+    lruSet(pbpCache, gameId, { shots, final });
+    return shots;
+  })();
+  pbpInflight.set(gameId, p);
+  try {
+    return await p;
+  } finally {
+    pbpInflight.delete(gameId);
+  }
 }
 
 // Player info types
