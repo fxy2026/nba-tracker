@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
-const INTERVAL = 15;
+const INTERVAL = 30;
 
 export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
   const router = useRouter();
