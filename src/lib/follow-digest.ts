@@ -1,6 +1,5 @@
 // Data layer for the personalized "follow" digest. Pure, schedule-driven team
-// helpers (no external calls) plus playergamelog parsing helpers shared by the
-// /api/follow-digest route. Numbers mirror /standings (computeStandingsRows +
+// helpers (no external calls). Numbers mirror /standings (computeStandingsRows +
 // per-conference rank) so a followed team's record/streak/rank match the table.
 import type { ScheduleDate, ScheduleGame, BoxScore } from "@/lib/api";
 import type { DigestGame, TeamDigest, PlayerLine } from "@/lib/follow-digest-types";
@@ -239,83 +238,4 @@ export function buildTeamDigests(
 /** A followed player's team's next scheduled game (null in the offseason). */
 export function teamNextGame(schedule: ScheduleDate[], tricode: string): DigestGame | null {
   return findTeamGames(schedule, tricode).next;
-}
-
-// ── playergamelog parsing ──────────────────────────────────────────────────
-// Mirrors /player/[id]/gamelog's header-driven parse: resultSets[0] carries
-// parallel `headers` + `rowSet`, so columns are resolved by name, not position.
-
-const PARSE_MONTHS: Record<string, number> = {
-  JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
-  JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
-};
-
-// GAME_DATE looks like "APR 09, 2026" — parse manually so we don't depend on
-// engine-specific Date string parsing. Returns epoch ms for ordering, or null.
-function gameDateMs(s: string): number | null {
-  const m = /^([A-Z]{3})\s+(\d{1,2}),\s*(\d{4})$/i.exec(s.trim());
-  if (m) {
-    const mo = PARSE_MONTHS[m[1].toUpperCase()];
-    if (mo != null) return new Date(Number(m[3]), mo, Number(m[2])).getTime();
-  }
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d.getTime();
-}
-
-/**
- * Parse a playergamelog response into the most recent game's PlayerLine, or
- * null when the payload is empty/malformed. Resilient: any shape error → null.
- */
-export function parseLatestPlayerLine(data: unknown): PlayerLine | null {
-  const rs = (data as { resultSets?: { headers?: string[]; rowSet?: unknown[][] }[] })
-    ?.resultSets?.[0];
-  if (!Array.isArray(rs?.headers) || !Array.isArray(rs?.rowSet) || rs.rowSet.length === 0) {
-    return null;
-  }
-  const headers = rs.headers;
-  const col = (name: string) => headers.indexOf(name);
-  // playergamelog uses mixed-case "Game_ID" — accept both casings.
-  const gi = col("Game_ID") >= 0 ? col("Game_ID") : col("GAME_ID");
-  const di = col("GAME_DATE");
-  const mi = col("MATCHUP");
-  if (gi < 0 || di < 0 || mi < 0) return null;
-
-  const num = (row: unknown[], i: number) => (i >= 0 && typeof row[i] === "number" ? (row[i] as number) : 0);
-  const idx = {
-    wl: col("WL"), min: col("MIN"), pts: col("PTS"), reb: col("REB"), ast: col("AST"),
-    stl: col("STL"), blk: col("BLK"), fgm: col("FGM"), fga: col("FGA"),
-    fg3m: col("FG3M"), fg3a: col("FG3A"),
-  };
-
-  // playergamelog returns rows most-recent-first, but don't trust order — pick
-  // the row with the latest parsed GAME_DATE so we always surface the newest.
-  let best: { ms: number; row: unknown[] } | null = null;
-  for (const row of rs.rowSet) {
-    if (!row[gi]) continue;
-    const ms = gameDateMs(String(row[di] ?? ""));
-    if (ms == null) continue;
-    if (!best || ms > best.ms) best = { ms, row };
-  }
-  if (!best) return null;
-
-  const row = best.row;
-  const matchup = String(row[mi] ?? "");
-  const opponent = matchup.split(" ").pop() || "";
-  return {
-    gameId: String(row[gi]),
-    dateUTC: new Date(best.ms).toISOString(),
-    opponentTricode: opponent,
-    home: matchup.includes(" vs"),
-    win: idx.wl >= 0 && String(row[idx.wl] ?? "") === "W",
-    min: num(row, idx.min),
-    pts: num(row, idx.pts),
-    reb: num(row, idx.reb),
-    ast: num(row, idx.ast),
-    stl: num(row, idx.stl),
-    blk: num(row, idx.blk),
-    fgm: num(row, idx.fgm),
-    fga: num(row, idx.fga),
-    tpm: num(row, idx.fg3m),
-    tpa: num(row, idx.fg3a),
-  };
 }
