@@ -106,6 +106,7 @@ export default async function GamePage({ params }: PageProps) {
     fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json`, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(8000),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.game?.actions || [])
