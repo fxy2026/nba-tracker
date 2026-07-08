@@ -36,6 +36,10 @@ export interface TeamDigest {
   streak: string;
   lastGame: DigestGame | null;
   nextGame: DigestGame | null;
+  /** record/lastGame come from the archived season-final snapshot (the feed
+   *  rolled to a new season with zero finished games) — UI labels these
+   *  "上赛季 / last season" so they aren't read as current-season data */
+  archived?: boolean;
 }
 
 export interface PlayerLine {

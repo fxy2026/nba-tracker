@@ -8,6 +8,7 @@ import { TEAM_META } from "@/lib/teams";
 import { isCountedSeason } from "@/lib/games";
 import { minutesFromIso } from "@/lib/game-stats";
 import { computeStandingsRows, type StandingsRow } from "@/lib/standings-splits";
+import { SEASON_SNAPSHOT, type SeasonSnapshot, type SnapshotGame } from "@/lib/season-snapshot";
 
 /** Build a DigestGame for a finished/live game from the followed team's POV. */
 function scoredGame(g: ScheduleGame, isHome: boolean): DigestGame {
@@ -151,12 +152,51 @@ function conferenceRanks(rows: StandingsRow[]): Map<string, number> {
 }
 
 /**
+ * Most recent archived game involving the team, mapped into the DigestGame
+ * shape. Snapshot finishedGames are chronological, so scan from the end.
+ */
+function snapshotLastGame(games: SnapshotGame[], tricode: string): DigestGame | null {
+  for (let i = games.length - 1; i >= 0; i--) {
+    const g = games[i];
+    if (!isCountedSeason(g.gameId)) continue;
+    const isHome = g.homeTricode === tricode;
+    if (!isHome && g.awayTricode !== tricode) continue;
+    const oppTricode = isHome ? g.awayTricode : g.homeTricode;
+    const teamScore = isHome ? g.homeScore : g.awayScore;
+    const oppScore = isHome ? g.awayScore : g.homeScore;
+    return {
+      gameId: g.gameId,
+      status: 3,
+      // Noon UTC keeps the snapshot's ET calendar date intact when clients
+      // render it in any timezone from UTC-11 to UTC+11 (dates, not tip times).
+      dateUTC: `${g.gameDate}T12:00:00Z`,
+      home: isHome,
+      opponentTricode: oppTricode,
+      opponentName: TEAM_META[oppTricode]?.name ?? oppTricode,
+      opponentTeamId: isHome ? g.awayTeamId : g.homeTeamId,
+      teamScore,
+      oppScore,
+      win: teamScore > oppScore,
+    };
+  }
+  return null;
+}
+
+/**
  * Build a TeamDigest for each followed tricode from the cached schedule.
  * record/streak/rank come from computeStandingsRows so they match /standings;
  * lastGame is the most recent finished/live game, nextGame the soonest upcoming
- * (null in the offseason). Unknown tricodes are skipped.
+ * (null in the offseason). Unknown tricodes are skipped. When the feed has zero
+ * finished/live games for the team (offseason rollover: the CDN doc only holds
+ * the new season), record + lastGame fall back to the season-final snapshot and
+ * the digest is marked archived; nextGame stays live — a rolled feed
+ * legitimately carries next season's scheduled games.
  */
-export function buildTeamDigests(schedule: ScheduleDate[], tricodes: string[]): TeamDigest[] {
+export function buildTeamDigests(
+  schedule: ScheduleDate[],
+  tricodes: string[],
+  snapshot: SeasonSnapshot | null = SEASON_SNAPSHOT,
+): TeamDigest[] {
   const rows = computeStandingsRows(schedule);
   const byTricode = new Map(rows.map((r) => [r.tricode, r]));
   const ranks = conferenceRanks(rows);
@@ -171,20 +211,27 @@ export function buildTeamDigests(schedule: ScheduleDate[], tricodes: string[]): 
 
     const row = byTricode.get(tricode);
     const { last, next } = findTeamGames(schedule, tricode);
-    digests.push({
+    const snapTeam =
+      !row && !last && snapshot
+        ? (snapshot.teams.find((t) => t.tricode === tricode) ?? null)
+        : null;
+
+    const digest: TeamDigest = {
       tricode,
       teamId: meta.teamId,
       city: meta.city,
       name: meta.name,
       primaryColor: meta.primaryColor,
       conference: meta.conference,
-      wins: row?.wins ?? 0,
-      losses: row?.losses ?? 0,
+      wins: row?.wins ?? snapTeam?.wins ?? 0,
+      losses: row?.losses ?? snapTeam?.losses ?? 0,
       conferenceRank: ranks.get(tricode) ?? null,
       streak: row?.streak ?? "",
-      lastGame: last,
+      lastGame: last ?? (snapTeam && snapshot ? snapshotLastGame(snapshot.finishedGames, tricode) : null),
       nextGame: next,
-    });
+    };
+    if (snapTeam) digest.archived = true;
+    digests.push(digest);
   }
   return digests;
 }

@@ -153,6 +153,12 @@ function TeamCard({ team, isZh }: { team: TeamDigest; isZh: boolean }) {
           </div>
           <div className="flex items-center gap-1.5 text-[10px] font-mono tabular-nums text-text-secondary/80">
             <span>{record}</span>
+            {team.archived && (
+              <>
+                <span className="text-text-secondary/40">·</span>
+                <span className="text-accent-amber uppercase">{isZh ? "上赛季" : "last season"}</span>
+              </>
+            )}
             {team.conferenceRank !== null && (
               <>
                 <span className="text-text-secondary/40">·</span>

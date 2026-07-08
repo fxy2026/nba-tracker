@@ -393,6 +393,11 @@ function TeamCard({ team, injuries, news, isZh, onRemove, delay }: {
               <span className="text-text-secondary/40 mx-0.5">–</span>
               <span className="text-danger font-semibold">{team.losses}</span>
             </span>
+            {team.archived && (
+              <span className="text-[10px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">
+                {isZh ? "上赛季" : "Last season"}
+              </span>
+            )}
             {team.conferenceRank != null && (
               <span className="text-[10px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary">
                 #{team.conferenceRank} {team.conference}
