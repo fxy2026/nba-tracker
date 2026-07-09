@@ -17,7 +17,11 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
 
   useEffect(() => {
     if (!isLive) return;
-    remainingRef.current = INTERVAL;
+
+    // Add ±3s jitter to avoid thundering herd
+    const jitter = Math.floor(Math.random() * 6) - 3;
+    const interval = INTERVAL + jitter;
+    remainingRef.current = interval;
 
     const tick = setInterval(() => {
       remainingRef.current--;
@@ -26,8 +30,8 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
         if (typeof navigator === "undefined" || navigator.onLine !== false) {
           router.refresh();
         }
-        remainingRef.current = INTERVAL;
-        setCountdown(INTERVAL);
+        remainingRef.current = interval;
+        setCountdown(interval);
       }
     }, 1000);
 
