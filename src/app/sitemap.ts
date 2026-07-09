@@ -76,6 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/transactions`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/this-day`, changeFrequency: "daily", priority: 0.5 },
     { url: `${BASE}/history`, changeFrequency: "yearly", priority: 0.4 },
+    { url: `${BASE}/season/2025-26`, changeFrequency: "monthly", priority: 0.5 },
   ];
 
   // Tools & meta

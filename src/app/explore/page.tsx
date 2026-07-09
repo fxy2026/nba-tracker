@@ -92,6 +92,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
         { href: "/records", label: isZh ? "赛季纪录" : "Season Records", description: isZh ? "单场最高与最低纪录" : "Single-game highs and lows", icon: BookOpen },
         { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", description: isZh ? "今天日期上的历史比赛" : "Historical games on today's date", icon: CalendarDays },
         { href: "/history", label: isZh ? "总冠军" : "Champions", description: isZh ? "历届 NBA 总冠军与总决赛" : "Past NBA champions and Finals", icon: History },
+        { href: "/season/2025-26", label: isZh ? "赛季回顾" : "Season Recap", description: isZh ? "2025-26 冠军、总决赛与赛季之最" : "2025-26 champion, Finals, and season superlatives", icon: Crown },
         { href: "/h2h", label: isZh ? "历史交锋" : "Head to Head", description: isZh ? "任意两队的对战历史" : "Series history between any two teams", icon: Swords },
       ],
     },

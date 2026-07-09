@@ -104,6 +104,7 @@ export function useMoreGroups(): PaletteGroup[] {
         { href: "/home-vs-road", label: isZh ? "主客场" : "Home vs Road", icon: Home, keywords: "home road splits" },
         { href: "/rivalries", label: isZh ? "宿敌对决" : "Rivalries", icon: Swords, keywords: "rivalries matchups" },
         { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", icon: CalendarDays, keywords: "on this day history" },
+        { href: "/season/2025-26", label: isZh ? "赛季回顾" : "Season Recap", icon: Trophy, keywords: "season recap 2025-26 champion finals knicks" },
         { href: "/history", label: t.nav.champions, icon: History, keywords: "champions finals history" },
         { href: "/injuries", label: t.nav.injuries, icon: AlertTriangle, keywords: "injuries injury report" },
         { href: "/transactions", label: t.nav.trades, icon: ArrowLeftRight, keywords: "trades transactions signings" },
