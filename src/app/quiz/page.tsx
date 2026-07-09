@@ -7,6 +7,7 @@ import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import ShareButton from "@/components/ShareButton";
 import { useLocale } from "@/components/LocaleProvider";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { readQuizStats, recordAnswer, markDailyPlayed, EMPTY_QUIZ_STATS, type QuizStats } from "@/lib/quizStats";
@@ -182,9 +183,9 @@ export default function QuizPage() {
       : val === q?.answer.personId;
     setScore((s) => correct ? { ...s, right: s.right + 1 } : { ...s, wrong: s.wrong + 1 });
     // Persist lifetime totals + streak (survives reloads / mode switches).
-    const next = recordAnswer(correct, todayStr);
+    const nextStats = recordAnswer(correct, todayStr);
     // Lock the daily for the rest of the ET day so it can't be replayed.
-    setStats(mode === "daily" && todayStr ? markDailyPlayed(todayStr) : next);
+    setStats(mode === "daily" && todayStr ? markDailyPlayed(todayStr) : nextStats);
   };
 
   const next = () => {
@@ -200,6 +201,11 @@ export default function QuizPage() {
 
   const total = score.right + score.wrong;
   const accuracy = total > 0 ? (score.right / total) * 100 : 0;
+
+  // Bilingual share blurb — this session's line + the live hot streak.
+  const shareText = isZh
+    ? `NBA 知识问答 — ${score.right}/${total}（${accuracy.toFixed(0)}%）· 连胜 ${stats.curStreak} · nba.xpy.me`
+    : `NBA Quiz — ${score.right}/${total} (${accuracy.toFixed(0)}%) · streak ${stats.curStreak} · nba.xpy.me`;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -446,6 +452,10 @@ export default function QuizPage() {
               </>
             )}
           </p>
+          {/* Share the score — text built client-side from this session + streak. */}
+          <div className="ml-auto shrink-0">
+            <ShareButton text={shareText} />
+          </div>
         </div>
       )}
 
