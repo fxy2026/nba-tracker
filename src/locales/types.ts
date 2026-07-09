@@ -465,14 +465,8 @@ export interface Translations {
     detailedUnavailable: string;
     viewOnNba: string;
     basketballRef: string;
-    recentGames: string;
     date: string;
-    matchup: string;
     wl: string;
-    scoringTrend: string;
-    avgLabel: string;
-    highLabel: string;
-    lowLabel: string;
     seasonBySeasonStats: string;
     bestSeason: string;
     vsCareerAvg: string;
