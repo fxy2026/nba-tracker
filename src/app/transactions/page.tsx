@@ -215,7 +215,11 @@ export default function TransactionsPage() {
                 <div className="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-accent border-2 border-bg-primary z-10" />
 
                 <h2 className="text-sm font-semibold text-text-secondary mb-2">
-                  {dateKey}
+                  {(() => {
+                    const d = new Date(dateKey);
+                    if (isNaN(d.getTime())) return dateKey;
+                    return d.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "long", day: "numeric", year: "numeric" });
+                  })()}
                   {(() => {
                     const d = new Date(dateKey);
                     if (isNaN(d.getTime())) return null;
@@ -223,9 +227,9 @@ export default function TransactionsPage() {
                     const diffMs = now.getTime() - d.getTime();
                     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                     let relative = "";
-                    if (diffDays === 0) relative = "today";
-                    else if (diffDays === 1) relative = "yesterday";
-                    else if (diffDays > 1 && diffDays < 365) relative = `${diffDays} days ago`;
+                    if (diffDays === 0) relative = isZh ? "今天" : "today";
+                    else if (diffDays === 1) relative = isZh ? "昨天" : "yesterday";
+                    else if (diffDays > 1 && diffDays < 365) relative = isZh ? `${diffDays} 天前` : `${diffDays} days ago`;
                     if (!relative) return null;
                     return <span className="text-xs text-text-secondary/70 font-normal ml-2">({relative})</span>;
                   })()}
