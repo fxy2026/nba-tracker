@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/LocaleProvider";
 
 // ET (NBA schedule timezone) "today" — keeps date input aligned with the schedule
 // API regardless of where the user is (China, Europe, West Coast, etc.).
@@ -15,9 +16,11 @@ function etTodayStr(): string {
 
 export default function DateJumper() {
   const router = useRouter();
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   return (
     <div className="mb-5 flex items-center gap-3">
-      <label htmlFor="date-jump" className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Jump to date</label>
+      <label htmlFor="date-jump" className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">{isZh ? "跳转到日期" : "Jump to date"}</label>
       <input
         type="date"
         id="date-jump"

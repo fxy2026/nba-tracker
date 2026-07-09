@@ -77,7 +77,7 @@ export default async function GameLeaders({
               )}
             </span>
             <span className="text-[10px] text-text-secondary">{p.teamTricode}</span>
-            <span className="text-[10px] text-text-secondary font-mono tabular-nums" title="Game Score">
+            <span className="text-[10px] text-text-secondary font-mono tabular-nums" title={isZh ? "霍林格 Game Score" : "Game Score"}>
               GmSc {p.gameScore}
             </span>
             <span className={`text-sm font-bold font-mono tabular-nums px-1.5 py-0.5 rounded ${gradeColorClass(p.grade)}`}>

@@ -25,17 +25,17 @@ function TabSkeleton() {
   );
 }
 
-const TABS = [
-  { key: "players" as Tab, label: "Player Leaders", icon: Users },
-  { key: "teams" as Tab, label: "Team Standings", icon: BarChart3 },
-  { key: "awards" as Tab, label: "Awards", icon: Trophy },
-  { key: "mvp" as Tab, label: "MVP Ladder", icon: Medal },
-] as const;
-
 export default function StatsPage() {
   const [tab, setTab] = useState<Tab>("players");
   const { locale } = useLocale();
   const isZh = locale === "zh";
+
+  const tabs = [
+    { key: "players" as Tab, label: isZh ? "球员榜" : "Player Leaders", icon: Users },
+    { key: "teams" as Tab, label: isZh ? "球队排名" : "Team Standings", icon: BarChart3 },
+    { key: "awards" as Tab, label: isZh ? "奖项" : "Awards", icon: Trophy },
+    { key: "mvp" as Tab, label: isZh ? "MVP 榜" : "MVP Ladder", icon: Medal },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -46,13 +46,13 @@ export default function StatsPage() {
         ]}
       />
       <PageHeader
-        eyebrow="League"
+        eyebrow={isZh ? "联盟" : "League"}
         icon={Crown}
-        title="Stats & Rankings"
-        action={<span className="chip font-mono">{CURRENT_SEASON} Season</span>}
+        title={isZh ? "数据与排行" : "Stats & Rankings"}
+        action={<span className="chip font-mono">{CURRENT_SEASON} {isZh ? "赛季" : "Season"}</span>}
       />
       <div className="flex gap-1 mb-6 glass-tile p-1 w-fit">
-        {TABS.map(({ key, label, icon: Icon }) => (
+        {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}

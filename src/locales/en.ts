@@ -496,6 +496,7 @@ const en: Translations = {
     restrictedArea: "Restricted Area",
     paintNonRa: "Paint (non-RA)",
     midRange: "Mid-Range",
+    threePtZone: "3-Point",
   },
 
   playerShotChart: {
@@ -626,6 +627,8 @@ const en: Translations = {
     playInLine: "Play-In line",
     mvpRankingNote: "Custom MVP ranking based on PTS, REB, AST, STL, BLK, EFF, and games played.",
     minGpRequired: "Min 40 GP required.",
+    noMvpTitle: "No MVP candidates yet",
+    noMvpDesc: "The MVP ladder needs players with at least 40 games played. Check back later in the season.",
   },
 
   teamPage: {

@@ -496,6 +496,7 @@ const zh: Translations = {
     restrictedArea: "禁区",
     paintNonRa: "油漆区（非禁区）",
     midRange: "中距离",
+    threePtZone: "三分",
   },
 
   playerShotChart: {
@@ -626,6 +627,8 @@ const zh: Translations = {
     playInLine: "附加赛分界线",
     mvpRankingNote: "自定义 MVP 排名，基于 PTS、REB、AST、STL、BLK、EFF 和出场次数。",
     minGpRequired: "最少 40 场出场。",
+    noMvpTitle: "暂无 MVP 候选人",
+    noMvpDesc: "MVP 榜需要至少出场 40 场的球员。请在赛季稍晚时再来查看。",
   },
 
   teamPage: {

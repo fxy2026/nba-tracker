@@ -138,8 +138,8 @@ export default async function MilestonesPage() {
         <PageHeader eyebrow="Players" icon={Trophy} title={isZh ? "生涯轨迹追踪" : "Career Pace Tracker"} />
         <EmptyState
           icon={Trophy}
-          title="No player data"
-          description="Could not load player index. Try again later."
+          title={isZh ? "暂无球员数据" : "No player data"}
+          description={isZh ? "无法加载球员索引，请稍后再试。" : "Could not load player index. Try again later."}
         />
       </div>
     );

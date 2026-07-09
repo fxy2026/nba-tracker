@@ -524,6 +524,7 @@ export interface Translations {
     restrictedArea: string;
     paintNonRa: string;
     midRange: string;
+    threePtZone: string;
   };
 
   // ---- Player Shot Chart ----
@@ -672,6 +673,8 @@ export interface Translations {
     playInLine: string;
     mvpRankingNote: string;
     minGpRequired: string;
+    noMvpTitle: string;
+    noMvpDesc: string;
   };
 
   // ---- Team Page ----

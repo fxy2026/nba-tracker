@@ -125,7 +125,7 @@ export default async function StatsTable({
       <table className="w-full text-sm box-score-table">
         <thead>
           <tr className="border-b border-border text-text-secondary text-xs">
-            <th className="text-left py-3 px-2 font-medium sticky left-0 bg-bg-card z-10 min-w-[160px]">Player</th>
+            <th className="text-left py-3 px-2 font-medium sticky left-0 bg-bg-card z-10 min-w-[160px]">{isZh ? "球员" : "Player"}</th>
             <th className="text-center py-3 px-1 font-medium w-14">MIN</th>
             <th className="text-center py-3 px-1 font-medium w-12">PTS</th>
             <th className="text-center py-3 px-1 font-medium w-12">REB</th>

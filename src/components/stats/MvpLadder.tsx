@@ -88,8 +88,8 @@ export default function MvpLadder() {
   if (ranked.length === 0) return (
     <EmptyState
       icon={Trophy}
-      title="No MVP candidates yet"
-      description="The MVP ladder needs players with at least 40 games played. Check back later in the season."
+      title={t.statsPage.noMvpTitle}
+      description={t.statsPage.noMvpDesc}
     />
   );
 

@@ -251,7 +251,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
           { name: t.shotChartComp.restrictedArea, made: 0, total: 0 },
           { name: t.shotChartComp.paintNonRa, made: 0, total: 0 },
           { name: t.shotChartComp.midRange, made: 0, total: 0 },
-          { name: "3-Point", made: 0, total: 0 },
+          { name: t.shotChartComp.threePtZone, made: 0, total: 0 },
         ];
         for (const s of filtered) {
           const is3 = s.shotDistance > 22 || !!s.subType?.toLowerCase().includes("3pt");
