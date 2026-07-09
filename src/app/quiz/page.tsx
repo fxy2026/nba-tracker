@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { readQuizStats, recordAnswer, EMPTY_QUIZ_STATS, type QuizStats } from "@/lib/quizStats";
 
 interface Player {
   personId: number;
@@ -93,6 +94,22 @@ export default function QuizPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [seed, setSeed] = useState(0);
 
+  // Post-hydration gate: lifetime stats live in localStorage, unknowable during
+  // SSR. Mirrors the FollowStrip / DateNav idiom — flip a flag after mount, then
+  // read storage in an effect keyed off it, never in a useState initializer
+  // (which would break SSR and trip the React purity rule).
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag; persisted stats are localStorage-only
+  useEffect(() => setMounted(true), []);
+
+  const [stats, setStats] = useState<QuizStats>(EMPTY_QUIZ_STATS);
+
+  useEffect(() => {
+    if (!mounted) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- post-mount localStorage read, intentionally deferred from first paint
+    setStats(readQuizStats());
+  }, [mounted]);
+
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
@@ -122,6 +139,8 @@ export default function QuizPage() {
       ? val === q?.answer.teamAbbr
       : val === q?.answer.personId;
     setScore((s) => correct ? { ...s, right: s.right + 1 } : { ...s, wrong: s.wrong + 1 });
+    // Persist lifetime totals + streak (survives reloads / mode switches).
+    setStats(recordAnswer(correct));
   };
 
   const next = () => {
@@ -166,7 +185,7 @@ export default function QuizPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-2">
         <div className="glass-tile p-3 text-center">
           <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "答对" : "Right"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-success">{score.right}</p>
@@ -178,6 +197,23 @@ export default function QuizPage() {
         <div className="glass-tile p-3 text-center">
           <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "正确率" : "Accuracy"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{accuracy.toFixed(0)}%</p>
+        </div>
+      </div>
+
+      {/* Lifetime stats — persisted across reloads/mode switches. The "本场" row
+          above is this session; this row is your all-time record + hot streak. */}
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        <div className="glass-tile p-3 text-center">
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "生涯答对" : "Lifetime"}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{stats.totalRight}</p>
+        </div>
+        <div className="glass-tile p-3 text-center">
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "当前连胜" : "Streak"}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent">{stats.curStreak}</p>
+        </div>
+        <div className="glass-tile p-3 text-center">
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary/60">{isZh ? "最佳连胜" : "Best"}</p>
+          <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{stats.bestStreak}</p>
         </div>
       </div>
 

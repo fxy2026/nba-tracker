@@ -32,8 +32,10 @@ const TEAM_NAME_ZH: Record<string, string> = {
 
 // ---- deterministic variant picking ------------------------------------------
 
-// FNV-1a — small, stable, good enough spread for picking template variants
-function hashString(s: string): number {
+// FNV-1a — small, stable, good enough spread for picking template variants.
+// Exported so other deterministic-from-a-string surfaces (e.g. the quiz's
+// date-seeded daily challenge) can share the exact same hash.
+export function hashString(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
