@@ -118,7 +118,7 @@ function ConfidenceBar({ pct, color }: { pct: number; color: string }) {
   );
 }
 
-function GameRow({ p }: { p: PredictedGame }) {
+function GameRow({ p, isZh }: { p: PredictedGame; isZh: boolean }) {
   const homePicked = p.predictedWinner === "home";
   const winnerForm = homePicked ? p.homeForm : p.awayForm;
   const loserForm = homePicked ? p.awayForm : p.homeForm;
@@ -136,7 +136,7 @@ function GameRow({ p }: { p: PredictedGame }) {
           className="text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
           style={{ background: `${confColor}22`, color: confColor }}
         >
-          {Math.round(p.confidence * 100)}% confident
+          {Math.round(p.confidence * 100)}{isZh ? "% 信心" : "% confident"}
         </span>
       </div>
 
@@ -152,7 +152,7 @@ function GameRow({ p }: { p: PredictedGame }) {
             className="shrink-0"
           />
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-accent-amber">★ Pick</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-accent-amber">{isZh ? "★ 首选" : "★ Pick"}</p>
             <p className="text-lg font-bold text-text-primary group-hover:text-accent-amber transition-colors">{winnerTri}</p>
             <p className="text-[10px] font-mono tabular-nums text-text-secondary">
               {winnerForm.wins}-{winnerForm.losses} · L10 {Math.round(winnerForm.last10Pct * 100)}%
@@ -162,17 +162,17 @@ function GameRow({ p }: { p: PredictedGame }) {
 
         {/* Spread */}
         <div className="flex flex-col items-center px-2 sm:px-4 shrink-0">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">Spread</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{isZh ? "让分" : "Spread"}</p>
           <p className="text-2xl font-light font-mono tabular-nums text-accent-amber leading-none mt-0.5">
             -{Math.abs(p.spread).toFixed(1)}
           </p>
-          <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-0.5">vs {loserTri}</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-0.5">{isZh ? `对阵 ${loserTri}` : `vs ${loserTri}`}</p>
         </div>
 
         {/* Loser side */}
         <div className="flex-1 flex items-center gap-3 min-w-0 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">Underdog</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{isZh ? "劣势方" : "Underdog"}</p>
             <p className="text-lg font-bold text-text-secondary">{loserTri}</p>
             <p className="text-[10px] font-mono tabular-nums text-text-secondary/70">
               {loserForm.wins}-{loserForm.losses} · L10 {Math.round(loserForm.last10Pct * 100)}%
@@ -191,7 +191,7 @@ function GameRow({ p }: { p: PredictedGame }) {
 
       {/* Confidence bar at bottom */}
       <div className="mt-3 pt-3 border-t border-border flex items-center gap-3">
-        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">Edge</span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "优势" : "Edge"}</span>
         <ConfidenceBar pct={p.confidence} color={confColor} />
         <ArrowRight size={12} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
       </div>
@@ -207,12 +207,12 @@ export default async function GamePredictorPage() {
   if (predictions.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <PageHeader eyebrow="Tool" icon={Sparkles} title="Game Predictor" />
+        <PageHeader eyebrow={isZh ? "工具" : "Tool"} icon={Sparkles} title={isZh ? "比赛预测" : "Game Predictor"} />
         <EmptyState
           icon={Sparkles}
-          title="No upcoming games to predict"
-          description="No games scheduled in the next 7 days, or schedule data isn't loaded yet."
-          action={{ label: "View today", href: "/" }}
+          title={isZh ? "暂无待预测的比赛" : "No upcoming games to predict"}
+          description={isZh ? "未来 7 天没有排定的比赛,或赛程数据尚未加载。" : "No games scheduled in the next 7 days, or schedule data isn't loaded yet."}
+          action={{ label: isZh ? "查看今日" : "View today", href: "/" }}
         />
       </div>
     );
@@ -223,10 +223,10 @@ export default async function GamePredictorPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <PageHeader
-        eyebrow="Tool"
+        eyebrow={isZh ? "工具" : "Tool"}
         icon={Sparkles}
-        title="Game Predictor"
-        subtitle="Next 7 days of games · winner picks + confidence based on team form"
+        title={isZh ? "比赛预测" : "Game Predictor"}
+        subtitle={isZh ? "未来 7 天赛程 · 基于球队状态的胜负预测与信心指数" : "Next 7 days of games · winner picks + confidence based on team form"}
         updatedAt={getScheduleAge()}
       />
 
@@ -236,9 +236,9 @@ export default async function GamePredictorPage() {
             <Sparkles size={16} className="text-accent-amber" />
           </div>
           <div>
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Predicting</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "预测中" : "Predicting"}</p>
             <p className="text-xl font-light font-mono tabular-nums text-accent-amber leading-none">{predictions.length}</p>
-            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">games</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "场比赛" : "games"}</p>
           </div>
         </div>
         <div className="glass-tile p-3 flex items-center gap-3">
@@ -246,9 +246,9 @@ export default async function GamePredictorPage() {
             <TrendingUp size={16} className="text-success" />
           </div>
           <div>
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">High confidence</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "高信心" : "High confidence"}</p>
             <p className="text-xl font-light font-mono tabular-nums text-success leading-none">{highConfidence}</p>
-            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">≥ 75% locks</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "≥ 75% 稳胆" : "≥ 75% locks"}</p>
           </div>
         </div>
         <div className="glass-tile p-3 flex items-center gap-3 col-span-2 sm:col-span-1">
@@ -256,23 +256,23 @@ export default async function GamePredictorPage() {
             <ArrowRight size={16} className="text-accent" />
           </div>
           <div>
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Window</p>
-            <p className="text-sm font-bold text-text-primary">Next 7 days</p>
-            <p className="text-[10px] font-mono text-text-secondary">Auto-refresh hourly</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "窗口" : "Window"}</p>
+            <p className="text-sm font-bold text-text-primary">{isZh ? "未来 7 天" : "Next 7 days"}</p>
+            <p className="text-[10px] font-mono text-text-secondary">{isZh ? "每小时自动刷新" : "Auto-refresh hourly"}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-3">
-        {predictions.map((p) => <GameRow key={p.game.gameId} p={p} />)}
+        {predictions.map((p) => <GameRow key={p.game.gameId} p={p} isZh={isZh} />)}
       </div>
 
       <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ Method</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">{isZh ? "/ 方法" : "/ Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Predictions use a power score (overall win % + L10 form + point differential) with a home-court bump
-          of +5%. Confidence scales with the power gap between teams. Spread is rounded to 0.5. These are
-          computed projections, not betting advice — sports are wonderfully unpredictable.
+          {isZh
+            ? "预测基于综合实力评分(总胜率 + 近 10 场状态 + 净胜分),主场额外加成 5%。信心指数随双方实力差距变化,让分取整到 0.5。这些只是计算得出的预测,并非投注建议——体育的魅力就在于难以预料。"
+            : "Predictions use a power score (overall win % + L10 form + point differential) with a home-court bump of +5%. Confidence scales with the power gap between teams. Spread is rounded to 0.5. These are computed projections, not betting advice — sports are wonderfully unpredictable."}
         </p>
       </div>
 
