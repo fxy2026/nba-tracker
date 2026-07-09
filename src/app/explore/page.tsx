@@ -93,6 +93,8 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
         { href: "/this-day", label: isZh ? "历史上的今天" : "On This Day", description: isZh ? "今天日期上的历史比赛" : "Historical games on today's date", icon: CalendarDays },
         { href: "/history", label: isZh ? "总冠军" : "Champions", description: isZh ? "历届 NBA 总冠军与总决赛" : "Past NBA champions and Finals", icon: History },
         { href: "/season/2025-26", label: isZh ? "赛季回顾" : "Season Recap", description: isZh ? "2025-26 冠军、总决赛与赛季之最" : "2025-26 champion, Finals, and season superlatives", icon: Crown },
+        { href: "/iconic-seasons", label: isZh ? "经典赛季全景" : "Iconic NBA Seasons", description: isZh ? "手挑的巅峰赛季 · 含中英叙事，点击卡片进入对比" : "Hand-curated peak campaigns — click any card to compare", icon: Crown },
+        { href: "/iconic-games", label: isZh ? "经典之夜" : "Iconic NBA Games", description: isZh ? "改变生涯的单场之夜 · 完整数据线与故事" : "Single-night performances that defined careers", icon: Flame },
         { href: "/h2h", label: isZh ? "历史交锋" : "Head to Head", description: isZh ? "任意两队的对战历史" : "Series history between any two teams", icon: Swords },
       ],
     },
