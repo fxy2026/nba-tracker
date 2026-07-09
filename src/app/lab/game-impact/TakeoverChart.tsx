@@ -65,6 +65,16 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
 
   const hoverX = hover != null ? toX(hover) : 0;
 
+  // Map a pointer x onto the nearest x-step. Shared by move + down so a tap
+  // (touch) reads the same as a hover (mouse) — pointer events cover both.
+  const handlePointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * W;
+    const ratio = (px - PAD.left) / PLOT_W;
+    const i = Math.round(ratio * maxX);
+    setHover(Math.max(0, Math.min(maxX, i)));
+  };
+
   return (
     <div className="glass-tile p-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
@@ -103,20 +113,15 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
 
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="w-full select-none"
+        className="w-full select-none touch-none"
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={
           isZh ? "球员累计得分接管曲线" : "Player cumulative-points takeover curves"
         }
-        onMouseLeave={() => setHover(null)}
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const px = ((e.clientX - rect.left) / rect.width) * W;
-          const ratio = (px - PAD.left) / PLOT_W;
-          const i = Math.round(ratio * maxX);
-          setHover(Math.max(0, Math.min(maxX, i)));
-        }}
+        onPointerLeave={() => setHover(null)}
+        onPointerMove={handlePointer}
+        onPointerDown={handlePointer}
       >
         {/* Y-axis grid + labels */}
         {yTicks.map((v) => {
@@ -194,8 +199,8 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
 
       <p className="mt-2 text-[10px] text-text-secondary text-center">
         {isZh
-          ? "横轴为每次得分事件的时间顺序 · 鼠标悬停查看当时各球员得分 · 最粗线为本场得分王"
-          : "X-axis = chronological scoring events · hover to read each player's points at that moment · thickest line is the game's top scorer"}
+          ? "横轴为每次得分事件的时间顺序 · 悬停或点按查看当时各球员得分 · 最粗线为本场得分王"
+          : "X-axis = chronological scoring events · hover or tap to read each player's points at that moment · thickest line is the game's top scorer"}
       </p>
     </div>
   );

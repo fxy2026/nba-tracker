@@ -380,7 +380,7 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
           <div className="relative">
             <svg
               viewBox={`0 0 ${W} ${H}`}
-              className="w-full"
+              className="w-full touch-none"
               style={{ maxHeight: 480 }}
               role="img"
               aria-label={locale === "zh"
@@ -398,7 +398,7 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
                   <path key={zone} d={ZONE_PATHS[zone]} fill={color} fillOpacity={opacity}
                     stroke={isHover ? "#fff" : "none"} strokeWidth={isHover ? 2 : 0}
                     className="cursor-pointer transition-opacity"
-                    onMouseEnter={() => setHoveredZone(zone)} onMouseLeave={() => setHoveredZone(null)} />
+                    onPointerEnter={() => setHoveredZone(zone)} onPointerLeave={() => setHoveredZone(null)} />
                 );
               })}
 

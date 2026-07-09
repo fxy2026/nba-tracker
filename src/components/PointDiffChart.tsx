@@ -84,6 +84,16 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
   const avgTopPct = (valueToY(avg) / innerH) * 100;
   void avgPct;
 
+  // Nearest bar slot by x. Drives the hover preview from a single capture layer
+  // so touch taps/drags read a bar without the <Link> having to fire — pointer
+  // events bubble up from the Links, and cover mouse + touch alike.
+  const handlePointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const frac = (e.clientX - rect.left) / rect.width;
+    const i = Math.floor(frac * last.length);
+    setHovered(Math.max(0, Math.min(last.length - 1, i)));
+  };
+
   return (
     <div className="glass-tile p-5 mt-6 relative overflow-hidden">
       {/* Subtle team-color halo */}
@@ -262,15 +272,20 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
             </div>
           )}
 
-          {/* Hover overlay — captures pointer for each bar slot */}
-          <div className="absolute inset-0 flex">
+          {/* Hover overlay — one pointer-capture layer drives the preview
+              (mouse move + touch tap/drag); the Links inside stay clickable for
+              navigation. touch-none so a drag reads bars instead of scrolling. */}
+          <div
+            className="absolute inset-0 flex touch-none"
+            onPointerMove={handlePointer}
+            onPointerDown={handlePointer}
+            onPointerLeave={() => setHovered(null)}
+          >
             {last.map((g, i) => (
               <Link
                 key={i}
                 href={`/game/${g.gameId}`}
-                onMouseEnter={() => setHovered(i)}
-                onMouseLeave={() => setHovered(null)}
-                className="flex-1 cursor-pointer"
+                className="flex-1 cursor-pointer touch-none"
                 aria-label={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent} ${g.score}`}
               />
             ))}

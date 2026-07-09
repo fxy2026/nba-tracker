@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
-import type { TeamTrajectory } from "@/lib/team-trajectory";
+import type { TeamTrajectory, TrajectoryPoint } from "@/lib/team-trajectory";
 
 type MetricKey = "winPct" | "pointDiff";
 type ConfFilter = "all" | "East" | "West";
@@ -156,6 +156,49 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
     );
   }
 
+  // Tiny per-point targets can't be tapped, so hover is driven from the parent
+  // <svg>: map the pointer into viewBox space and snap to the spotlighted team's
+  // nearest point. Covers mouse + touch (pointer events fire for both).
+  const handlePointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (effectiveSelected === null) return;
+    const team = visible.find((t) => t.tricode === effectiveSelected);
+    if (!team || team.points.length === 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * w;
+    const py = ((e.clientY - rect.top) / rect.height) * h;
+    let best: TrajectoryPoint | null = null;
+    let bestCx = 0;
+    let bestCy = 0;
+    let bestD = Infinity;
+    for (const p of team.points) {
+      const cx = toX(p.game);
+      const cy = toY(metricValue(p, metric));
+      const dx = cx - px;
+      const dy = cy - py;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) {
+        bestD = d;
+        best = p;
+        bestCx = cx;
+        bestCy = cy;
+      }
+    }
+    // ~40px capture radius in viewBox units keeps taps off the line quiet.
+    if (best && bestD <= 40 * 40) {
+      setHover({
+        tri: effectiveSelected,
+        cx: bestCx,
+        cy: bestCy,
+        game: best.game,
+        wins: best.wins,
+        losses: best.losses,
+        metricLabel: fmtMetric(metricValue(best, metric)),
+      });
+    } else {
+      setHover(null);
+    }
+  };
+
   return (
     <div className="glass-tile p-4 sm:p-5">
       {/* Controls */}
@@ -214,7 +257,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
       <div className="relative">
         <svg
           viewBox={`0 0 ${w} ${h}`}
-          className="w-full"
+          className="w-full touch-none"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={
@@ -222,6 +265,9 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
               ? `球队赛季轨迹图 — ${visible.length} 支球队的逐场${m.zh}`
               : `Team season trajectory chart — per-game ${m.en} for ${visible.length} teams`
           }
+          onPointerMove={handlePointer}
+          onPointerDown={handlePointer}
+          onPointerLeave={() => setHover(null)}
         >
           {/* Y-axis gridlines + labels */}
           {yTicks.map((v, i) => {
@@ -313,40 +359,6 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
               />
             );
           })}
-
-          {/* Hover hit-points for the highlighted team only (keeps the DOM
-              light — thousands of dots across 30 lines would be costly). */}
-          {effectiveSelected !== null &&
-            lines
-              .filter((l) => l.tri === effectiveSelected)
-              .flatMap(({ tri, team }) =>
-                team.points.map((p) => {
-                  const cx = toX(p.game);
-                  const cy = toY(metricValue(p, metric));
-                  return (
-                    <circle
-                      key={`${tri}-${p.game}`}
-                      cx={cx}
-                      cy={cy}
-                      r={5}
-                      fill="transparent"
-                      onMouseEnter={() =>
-                        setHover({
-                          tri,
-                          cx,
-                          cy,
-                          game: p.game,
-                          wins: p.wins,
-                          losses: p.losses,
-                          metricLabel: fmtMetric(metricValue(p, metric)),
-                        })
-                      }
-                      onMouseLeave={() => setHover(null)}
-                      style={{ cursor: "pointer" }}
-                    />
-                  );
-                })
-              )}
 
           {/* Hover marker + value dot */}
           {hover && (
