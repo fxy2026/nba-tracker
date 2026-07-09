@@ -306,11 +306,12 @@ export default function PointDiffChart({ games, title, teamColor = "#3B82F6", co
 
       {/* W/L strip — thin pill row */}
       <div className="relative mt-4" style={{ paddingLeft: yAxisWidth }}>
-        <div className="flex gap-px">
+        {/* Wins ride the top rail, losses the bottom — a non-color cue for colorblind readers. */}
+        <div className="flex items-start gap-px h-3">
           {last.map((g, i) => (
             <div
               key={i}
-              className={`flex-1 h-1.5 ${g.won ? "bg-success/80" : "bg-danger/80"} ${i === 0 ? "rounded-l-full" : ""} ${i === last.length - 1 ? "rounded-r-full" : ""} transition-opacity ${hovered === i ? "opacity-100" : "opacity-70"}`}
+              className={`flex-1 h-1.5 ${g.won ? "bg-success/80 self-start" : "bg-danger/80 self-end"} ${i === 0 ? "rounded-l-full" : ""} ${i === last.length - 1 ? "rounded-r-full" : ""} transition-opacity ${hovered === i ? "opacity-100" : "opacity-70"}`}
               title={`${g.won ? "W" : "L"} ${g.home ? "vs" : "@"} ${g.opponent}`}
             />
           ))}

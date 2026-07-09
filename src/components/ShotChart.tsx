@@ -207,13 +207,16 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             return (
               <g key={`${shot.personId}-${shot.period}-${i}`}>
                 {isMade ? (
-                  <circle
-                    cx={svgX}
-                    cy={svgY}
-                    r={is3pt ? 5 : 4}
-                    fill={is3pt ? "#928CEE" : "#22c55e"}
-                    fillOpacity={0.8}
-                  />
+                  is3pt ? (
+                    // Diamond distinguishes 3PT from 2PT circles without relying on color.
+                    <path
+                      d={`M ${svgX} ${svgY - 5} L ${svgX + 5} ${svgY} L ${svgX} ${svgY + 5} L ${svgX - 5} ${svgY} Z`}
+                      fill="#928CEE"
+                      fillOpacity={0.8}
+                    />
+                  ) : (
+                    <circle cx={svgX} cy={svgY} r={4} fill="#22c55e" fillOpacity={0.8} />
+                  )
                 ) : (
                   <g transform={`translate(${svgX}, ${svgY})`}>
                     <line x1="-3" y1="-3" x2="3" y2="3" stroke="#ef4444" strokeWidth="1.5" strokeOpacity={0.6} />
@@ -232,7 +235,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
             {t.shotChartComp.twoPtMade}
           </span>
           <span className="flex items-center gap-1 text-xs text-text-secondary">
-            <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#928CEE" /></svg>
+            <svg width="10" height="10"><path d="M 5 0.5 L 9.5 5 L 5 9.5 L 0.5 5 Z" fill="#928CEE" /></svg>
             {t.shotChartComp.threePtMade}
           </span>
           <span className="flex items-center gap-1 text-xs text-text-secondary">
@@ -269,15 +272,25 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
         if (zoneStats.length === 0) return null;
         return (
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {zoneStats.map((z) => (
-              <div key={z.name} className="bg-bg-secondary rounded-lg p-2 text-center">
-                <p className="text-[10px] text-text-secondary uppercase">{z.name}</p>
-                <p className="text-sm font-bold mt-0.5">
-                  <span className={z.pct >= 50 ? "text-success" : z.pct >= 35 ? "text-accent" : "text-danger"}>{z.pct.toFixed(1)}%</span>
-                </p>
-                <p className="text-[10px] text-text-secondary">{z.made}/{z.total}</p>
-              </div>
-            ))}
+            {zoneStats.map((z) => {
+              // Glyph mirrors the color tier so efficiency reads without color.
+              const tier = z.pct >= 50
+                ? { cls: "text-success", mark: "▲" }
+                : z.pct >= 35
+                ? { cls: "text-accent", mark: "▪" }
+                : { cls: "text-danger", mark: "▼" };
+              return (
+                <div key={z.name} className="bg-bg-secondary rounded-lg p-2 text-center">
+                  <p className="text-[10px] text-text-secondary uppercase">{z.name}</p>
+                  <p className="text-sm font-bold mt-0.5">
+                    <span className={tier.cls}>
+                      <span aria-hidden className="mr-0.5 text-[10px]">{tier.mark}</span>{z.pct.toFixed(1)}%
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-text-secondary">{z.made}/{z.total}</p>
+                </div>
+              );
+            })}
           </div>
         );
       })()}
