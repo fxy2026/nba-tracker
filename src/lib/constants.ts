@@ -12,3 +12,8 @@ export const CURRENT_SEASON = currentSeason();
 export const SEASON_START = "2025-10-21";
 export const SEASON_END = "2026-04-12";
 export const PLAYOFFS_END = "2026-06-21";
+// Estimated 2026-27 tip-off — the CDN has not published the 2026-27 schedule
+// yet. Drives the offseason home-hero countdown and doubles as its upper
+// guard bound (the hero auto-hides once now passes this date). Update to the
+// real opening date once the schedule publishes; UI labels it "预计/est." until then.
+export const NEXT_SEASON_START_ESTIMATE = "2026-10-20";
