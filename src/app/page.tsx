@@ -4,6 +4,7 @@ import { formatDate, getTodayScoreboard, type ScheduleGame } from "@/lib/api";
 import HomeClient from "@/components/HomeClient";
 import DailyIconicPick from "@/components/DailyIconicPick";
 import BestOfNightCard from "@/components/BestOfNightCard";
+import OffseasonHero from "@/components/OffseasonHero";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
@@ -91,6 +92,12 @@ export default async function HomePage({ searchParams }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <h1 className="sr-only">{t.meta.siteTitle}</h1>
+      {/* Offseason-only hero. Self-guards to null in-season BEFORE any await, so
+          the in-season home layout is byte-identical to before. Streams in above
+          the scoreboard so its ESPN transaction/news fetches never block TTFB. */}
+      <Suspense fallback={null}>
+        <OffseasonHero />
+      </Suspense>
       <HomeClient initialDate={initialDate} initialGames={initialGames} initialIsToday={initialDate === today} />
       {/* Daily-changing "best of last night" precedes the evergreen iconic pick
           so the top of the page stays fresh content a returner checks daily.
