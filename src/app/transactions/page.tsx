@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award, Newspaper } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -16,36 +16,95 @@ interface Transaction {
   player: string;
   type: string;
   description: string;
+  players: string[];
+  kind: string;
+  teamLogo: string;
+}
+
+interface PlayerIndexEntry {
+  personId: number;
+  firstName: string;
+  lastName: string;
+}
+
+function getKindColor(kind: string) {
+  switch (kind) {
+    case "traded": return "bg-accent/15 text-accent";
+    case "signed": return "bg-success/15 text-success";
+    case "waived": return "bg-danger/15 text-danger";
+    case "claimed": return "bg-warning/15 text-warning";
+    default: return "bg-bg-hover text-text-secondary";
+  }
+}
+
+function kindLabel(kind: string, isZh: boolean) {
+  const map: Record<string, [string, string]> = {
+    signed: ["签约", "Signed"],
+    traded: ["交易", "Traded"],
+    waived: ["裁掉", "Waived"],
+    claimed: ["认领", "Claimed"],
+    other: ["动态", "Move"],
+  };
+  const pair = map[kind] ?? map.other;
+  return isZh ? pair[0] : pair[1];
 }
 
 export default function TransactionsPage() {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [playerIndex, setPlayerIndex] = useState<PlayerIndexEntry[]>([]);
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/transactions", { signal: controller.signal })
-      .then((r) => r.json())
-      .then((data) => {
-        setTransactions(data.transactions || []);
+    Promise.all([
+      fetch("/api/transactions?limit=150", { signal: controller.signal })
+        .then((r) => r.json())
+        .catch(() => ({ transactions: [] })),
+      fetch("/api/player-index", { signal: controller.signal })
+        .then((r) => r.json())
+        .catch(() => ({ data: [] })),
+    ])
+      .then(([txData, piData]) => {
+        const list: Transaction[] = (txData.transactions || []).map((t: Transaction) => ({
+          ...t,
+          players: t.players ?? [],
+          kind: t.kind ?? "other",
+          teamLogo: t.teamLogo ?? "",
+        }));
+        setTransactions(list);
+        setPlayerIndex(piData.data || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
 
-  // Group by date
+  const nameToId = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of playerIndex) m.set(`${p.firstName} ${p.lastName}`.toLowerCase().trim(), p.personId);
+    return m;
+  }, [playerIndex]);
+  const resolvePlayerId = (name: string) => nameToId.get(name.toLowerCase().trim()) ?? null;
+
+  const teamAbbrs = useMemo(
+    () => [...new Set(transactions.map((t) => t.teamAbbr).filter(Boolean))].sort(),
+    [transactions]
+  );
+
+  const visible = teamFilter ? transactions.filter((t) => t.teamAbbr === teamFilter) : transactions;
+
+  // Group the (filtered) set by date
   const grouped = new Map<string, Transaction[]>();
-  for (const t of transactions) {
+  for (const t of visible) {
     const dateKey = t.date ? new Date(t.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Unknown Date";
     const arr = grouped.get(dateKey) || [];
     arr.push(t);
     grouped.set(dateKey, arr);
   }
 
-  // Sort dates descending
   const sortedDates = [...grouped.keys()].sort((a, b) => {
     const da = new Date(a).getTime();
     const db = new Date(b).getTime();
@@ -53,13 +112,10 @@ export default function TransactionsPage() {
     return db - da;
   });
 
-  function getTypeColor(type: string) {
-    const lower = type.toLowerCase();
-    if (lower.includes("trade")) return "bg-accent/15 text-accent";
-    if (lower.includes("sign")) return "bg-success/15 text-success";
-    if (lower.includes("waiv")) return "bg-danger/15 text-danger";
-    return "bg-bg-hover text-text-secondary";
-  }
+  const chipCls = (active: boolean) =>
+    `text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
+      active ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"
+    }`;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -95,31 +151,45 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* Feature 12: Transaction category counts */}
-      {!loading && transactions.length > 0 && (() => {
-        let trades = 0, signings = 0, waivers = 0, others = 0;
-        for (const t of transactions) {
-          const lower = t.type.toLowerCase();
-          if (lower.includes("trade")) trades++;
-          else if (lower.includes("sign")) signings++;
-          else if (lower.includes("waiv")) waivers++;
-          else others++;
-        }
+      {/* Team filter — derived from unique teamAbbr present in the feed */}
+      {!loading && teamAbbrs.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+          <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mr-1">
+            {isZh ? "球队" : "Teams"}
+          </span>
+          <button onClick={() => setTeamFilter(null)} className={chipCls(!teamFilter)}>
+            {isZh ? "全部" : "All"}
+          </button>
+          {teamAbbrs.map((abbr) => (
+            <button
+              key={abbr}
+              onClick={() => setTeamFilter(teamFilter === abbr ? null : abbr)}
+              className={`${chipCls(teamFilter === abbr)} font-mono`}
+            >
+              {abbr}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Category counts — driven by parsed `kind` over the filtered set */}
+      {!loading && visible.length > 0 && (() => {
+        const counts: Record<string, number> = { traded: 0, signed: 0, waived: 0, claimed: 0, other: 0 };
+        for (const t of visible) counts[t.kind] = (counts[t.kind] ?? 0) + 1;
+        const chips: { key: string; label: string; cls: string }[] = [
+          { key: "traded", label: isZh ? "交易" : "trades", cls: "bg-accent/15 text-accent" },
+          { key: "signed", label: isZh ? "签约" : "signings", cls: "bg-success/15 text-success" },
+          { key: "waived", label: isZh ? "裁掉" : "waivers", cls: "bg-danger/15 text-danger" },
+          { key: "claimed", label: isZh ? "认领" : "claims", cls: "bg-warning/15 text-warning" },
+        ];
         return (
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            {trades > 0 && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent font-medium">{trades} trade{trades !== 1 ? "s" : ""}</span>
-            )}
-            {signings > 0 && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-success/15 text-success font-medium">{signings} signing{signings !== 1 ? "s" : ""}</span>
-            )}
-            {waivers > 0 && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-danger/15 text-danger font-medium">{waivers} waiver{waivers !== 1 ? "s" : ""}</span>
-            )}
-            {others > 0 && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-bg-hover text-text-secondary font-medium">{others} other{others !== 1 ? "s" : ""}</span>
-            )}
-            <span className="text-[10px] text-text-secondary ml-1">{transactions.length} total</span>
+            {chips.filter((c) => counts[c.key] > 0).map((c) => (
+              <span key={c.key} className={`text-xs px-2.5 py-1 rounded-full font-medium ${c.cls}`}>
+                <span className="tabular-nums">{counts[c.key]}</span> {c.label}
+              </span>
+            ))}
+            <span className="text-[10px] text-text-secondary ml-1">{visible.length} {isZh ? "条" : "total"}</span>
           </div>
         );
       })()}
@@ -162,13 +232,16 @@ export default function TransactionsPage() {
                 </h2>
                 <div className="space-y-2">
                   {grouped.get(dateKey)!.map((t, idx) => (
-                    <div
-                      key={`${dateKey}-${idx}`}
-                      className="glass-tile p-3"
-                    >
+                    <div key={`${dateKey}-${idx}`} className="glass-tile p-3">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getTypeColor(t.type)}`}>
-                          {t.type}
+                        {t.teamLogo ? (
+                          <span className="shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element -- ESPN CDN not in next/image remotePatterns; same precedent as PlayerNews */}
+                            <img src={t.teamLogo} alt="" width={20} height={20} loading="lazy" className="w-5 h-5 object-contain" />
+                          </span>
+                        ) : null}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getKindColor(t.kind)}`}>
+                          {kindLabel(t.kind, isZh)}
                         </span>
                         {t.teamAbbr ? (
                           <Link href={`/team/${t.teamAbbr}`} className="text-sm font-medium text-text-primary hover:text-accent transition-colors">{t.team}</Link>
@@ -179,9 +252,20 @@ export default function TransactionsPage() {
                           <Link href={`/team/${t.teamAbbr}`} className="text-xs text-text-secondary hover:text-accent transition-colors">({t.teamAbbr})</Link>
                         )}
                       </div>
-                      {t.player && (
+                      {t.players.length > 0 ? (
+                        <p className="text-sm text-accent font-medium flex flex-wrap gap-x-1.5 gap-y-0.5">
+                          {t.players.map((name, i) => {
+                            const pid = resolvePlayerId(name);
+                            return pid ? (
+                              <Link key={`${name}-${i}`} href={`/player/${pid}`} className="hover:underline">{name}</Link>
+                            ) : (
+                              <span key={`${name}-${i}`}>{name}</span>
+                            );
+                          })}
+                        </p>
+                      ) : t.player ? (
                         <p className="text-sm text-accent font-medium">{t.player}</p>
-                      )}
+                      ) : null}
                       {t.description && (
                         <p className="text-xs text-text-secondary mt-1">{t.description}</p>
                       )}
