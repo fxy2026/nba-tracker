@@ -191,11 +191,11 @@ export default async function DraftPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-secondary text-xs">
-                    <th className="text-center py-3 px-3 w-14">#</th>
-                    <th className="text-left py-3 px-3">{isZh ? "球员" : "Player"}</th>
-                    <th className="text-center py-3 px-2">{isZh ? "位置" : "Pos"}</th>
-                    <th className="text-left py-3 px-3">{isZh ? "大学 / 来源" : "College / From"}</th>
-                    <th className="text-center py-3 px-3">{isZh ? "球队" : "Team"}</th>
+                    <th scope="col" className="text-center py-3 px-3 w-14">#</th>
+                    <th scope="col" className="text-left py-3 px-3">{isZh ? "球员" : "Player"}</th>
+                    <th scope="col" className="text-center py-3 px-2">{isZh ? "位置" : "Pos"}</th>
+                    <th scope="col" className="text-left py-3 px-3">{isZh ? "大学 / 来源" : "College / From"}</th>
+                    <th scope="col" className="text-center py-3 px-3">{isZh ? "球队" : "Team"}</th>
                   </tr>
                 </thead>
                 <tbody>

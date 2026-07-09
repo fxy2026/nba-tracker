@@ -76,7 +76,7 @@ export default function TeamHero({
           </p>
           <h1 className="leading-[0.9] tracking-[-0.03em] mt-1.5">
             <span className="block text-sm sm:text-base font-extralight text-text-secondary">{team.city}</span>
-            <span className="block text-3xl sm:text-5xl font-black text-text-primary">{team.name}</span>
+            <span className="block text-3xl sm:text-5xl font-bold text-text-primary">{team.name}</span>
           </h1>
           <div className="flex items-center gap-3 mt-3 flex-wrap">
             {confRank > 0 && (

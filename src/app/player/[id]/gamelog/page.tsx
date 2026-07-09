@@ -80,7 +80,7 @@ export default async function PlayerGameLogPage({ params }: PageProps) {
           <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-accent-amber">
             {isZh ? "比赛日志" : "Game log"} · {CURRENT_SEASON}
           </p>
-          <h1 className="text-xl sm:text-2xl font-black text-text-primary tracking-tight truncate">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight truncate">
             {fullName}
           </h1>
           {player.teamAbbr && (

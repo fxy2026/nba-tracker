@@ -244,7 +244,7 @@ export default async function PlayerPage({ params }: PageProps) {
             </p>
             <h1 className="leading-[0.9] tracking-[-0.03em]">
               <span className="block text-base font-extralight text-text-secondary">{player.firstName}</span>
-              <span className="block text-2xl font-black text-text-primary">{player.lastName}</span>
+              <span className="block text-2xl font-bold text-text-primary">{player.lastName}</span>
             </h1>
             <Link
               href={`/team/${player.teamAbbr}`}
