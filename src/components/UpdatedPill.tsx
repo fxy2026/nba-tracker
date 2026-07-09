@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { formatRelative } from "@/lib/dates";
 
 interface UpdatedPillProps {
   ageMs: number | null;
@@ -23,18 +24,7 @@ export default function UpdatedPill({ ageMs }: UpdatedPillProps) {
   // ageMs grows with wall clock; add elapsed since mount via `tick`.
   const total = ageMs + tick * 30_000;
   const isZh = locale === "zh";
-
-  let label: string;
-  if (total < 60_000) label = isZh ? "刚刚更新" : "Just now";
-  else if (total < 60 * 60_000) {
-    const m = Math.floor(total / 60_000);
-    label = isZh ? `${m} 分钟前` : `${m}m ago`;
-  } else if (total < 24 * 60 * 60_000) {
-    const h = Math.floor(total / (60 * 60_000));
-    label = isZh ? `${h} 小时前` : `${h}h ago`;
-  } else {
-    label = isZh ? "数据较旧" : "Stale";
-  }
+  const label = formatRelative(total, locale, "freshness");
 
   return (
     <span

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Newspaper } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { formatGameDate, formatRelative } from "@/lib/dates";
 
 export interface NewsArticle {
   id: string;
@@ -38,13 +39,10 @@ const TYPE_ORDER = ["HeadlineNews", "Story", "Recap", "Preview", "Media"];
 function formatPublished(iso: string, now: number, isZh: boolean): string {
   const ts = Date.parse(iso);
   if (Number.isNaN(ts)) return "";
-  const mins = Math.max(1, Math.round((now - ts) / 60000));
-  if (mins < 60) return isZh ? `${mins} 分钟前` : `${mins}m ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return isZh ? `${hours} 小时前` : `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return isZh ? `${days} 天前` : `${days}d ago`;
-  return new Date(ts).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+  const locale = isZh ? "zh" : "en";
+  const rel = formatRelative(now - ts, locale, "ago");
+  // Empty past a week — degrade to an absolute date (Beijing time).
+  return rel || formatGameDate(new Date(ts), locale, {
     month: "short",
     day: "numeric",
     timeZone: "Asia/Shanghai",

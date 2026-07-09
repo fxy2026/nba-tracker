@@ -9,6 +9,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { espnAbbrToTricode } from "@/lib/draft";
+import { formatGameDate } from "@/lib/dates";
 
 interface Transaction {
   date: string;
@@ -219,7 +220,7 @@ export default function TransactionsPage() {
                   {(() => {
                     const d = new Date(dateKey);
                     if (isNaN(d.getTime())) return dateKey;
-                    return d.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "long", day: "numeric", year: "numeric" });
+                    return formatGameDate(d, isZh ? "zh" : "en", { month: "long", day: "numeric", year: "numeric" });
                   })()}
                   {(() => {
                     const d = new Date(dateKey);

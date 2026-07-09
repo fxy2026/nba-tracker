@@ -9,6 +9,7 @@ import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import PageHeader from "@/components/PageHeader";
 import RelatedPages from "@/components/RelatedPages";
@@ -290,7 +291,7 @@ export default async function LegendPage({ params }: PageProps) {
           <div className="flex flex-col gap-2">
             {playerIconicGames.map((g) => {
               const dt = new Date(g.date + "T12:00:00");
-              const dateLabel = dt.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+              const dateLabel = formatGameDate(dt, isZh ? "zh" : "en", {
                 year: "numeric", month: "short", day: "numeric",
               });
               const title = isZh && g.titleZh ? g.titleZh : g.title;

@@ -8,6 +8,7 @@ import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
+import { formatGameDate } from "@/lib/dates";
 import EmptyState from "@/components/EmptyState";
 
 interface LogRow {
@@ -357,7 +358,7 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
                           </Link>
                         </td>
                         <td className="py-2 px-3 text-text-secondary whitespace-nowrap font-mono tabular-nums">
-                          {g.date.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "short", day: "numeric" })}
+                          {formatGameDate(g.date, isZh ? "zh" : "en", { month: "short", day: "numeric" })}
                         </td>
                         <td className={`text-center py-2 px-2 font-bold ${g.wl === "W" ? "text-success" : g.wl === "L" ? "text-danger" : "text-text-secondary"}`}>
                           {g.wl || "-"}

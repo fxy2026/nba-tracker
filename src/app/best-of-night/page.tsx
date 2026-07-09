@@ -8,6 +8,7 @@ import { gradeColorClass } from "@/lib/game-stats";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import EmptyState from "@/components/EmptyState";
@@ -35,7 +36,7 @@ function statLine(p: NightPerformer): string {
 // ISO date is a calendar day (ET) — format in UTC so it can't roll over.
 function nightLabel(iso: string, isZh: boolean): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+  return formatGameDate(new Date(Date.UTC(y, m - 1, d)), isZh ? "zh" : "en", {
     timeZone: "UTC",
     year: "numeric",
     month: "long",

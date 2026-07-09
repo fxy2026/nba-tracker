@@ -5,6 +5,7 @@ import { GAME_TAG_LABEL, type IconicGame } from "@/lib/iconicGames";
 import { decadeOfYear } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl, teamLogoUrl } from "@/lib/teamUrls";
+import { formatGameDate } from "@/lib/dates";
 
 export default function GameCard({ game, isZh }: { game: IconicGame; isZh: boolean }) {
   const team = TEAM_META[game.team];
@@ -15,7 +16,7 @@ export default function GameCard({ game, isZh }: { game: IconicGame; isZh: boole
   const isWin = game.result === "W";
 
   const dt = new Date(game.date + "T12:00:00");
-  const dateLabel = dt.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+  const dateLabel = formatGameDate(dt, isZh ? "zh" : "en", {
     year: "numeric", month: "short", day: "numeric",
   });
 

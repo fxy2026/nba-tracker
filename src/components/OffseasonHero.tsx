@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Trophy, CalendarClock, ArrowLeftRight, Newspaper, ArrowRight, Sparkles } from "lucide-react";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { SEASON_SNAPSHOT, type SnapshotTeam } from "@/lib/season-snapshot";
 import { CURRENT_SEASON, PLAYOFFS_END, NEXT_SEASON_START_ESTIMATE } from "@/lib/constants";
@@ -116,12 +117,8 @@ export default async function OffseasonHero() {
   const finals = deriveChampion();
   const daysUntil = Math.max(0, Math.ceil((nextStart - now) / 86_400_000));
 
-  const fmtDate = (iso: string) => {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "short", day: "numeric" });
-  };
+  const fmtDate = (iso: string) =>
+    formatGameDate(iso, isZh ? "zh" : "en", { month: "short", day: "numeric" });
 
   return (
     <section className="mt-4 mb-2">

@@ -10,6 +10,7 @@ import EmptyState from "@/components/EmptyState";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 import { getTranslations } from "@/locales";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,7 +58,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
       if (filteredGames.length > 0) {
         recentDates.push({
           dateStr: `${year}-${month}-${day}`,
-          displayDate: dateObj.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+          displayDate: formatGameDate(dateObj, locale, {
             year: "numeric",
             month: "long",
             day: "numeric",

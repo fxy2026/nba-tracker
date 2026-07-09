@@ -14,6 +14,7 @@ import { isPlayoff, isPlayIn } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { useLocale } from "@/components/LocaleProvider";
+import { formatGameDate } from "@/lib/dates";
 import type {
   FollowDigest, TeamDigest, PlayerDigest, DigestGame,
 } from "@/lib/follow-digest-types";
@@ -43,9 +44,7 @@ function injurySeverity(status: string | undefined): "out" | "soft" | "other" {
 
 // "YYYY..." UTC string → localized "Mon D" + weekday, in the user's locale.
 function fmtGameDate(iso: string, isZh: boolean): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+  return formatGameDate(iso, isZh ? "zh" : "en", {
     month: "short", day: "numeric", weekday: "short",
   });
 }

@@ -7,6 +7,7 @@ import RelatedPages from "@/components/RelatedPages";
 import { findTeamByDisplayName } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 import { getTranslations } from "@/locales";
 
 interface Athlete {
@@ -257,7 +258,7 @@ export default async function InjuriesPage({ searchParams }: { searchParams: Pro
                         const daysAgo = Math.floor((Date.now() - injDate.getTime()) / (1000 * 60 * 60 * 24));
                         return (
                           <span className="text-[10px] text-text-secondary shrink-0 flex items-center gap-1">
-                            {injDate.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", { month: "short", day: "numeric" })}
+                            {formatGameDate(injDate, locale, { month: "short", day: "numeric" })}
                             {daysAgo <= 2 && <span className="px-1 py-0.5 rounded bg-danger/15 text-danger font-medium">NEW</span>}
                             {daysAgo > 2 && daysAgo <= 7 && <span className="text-text-secondary/60">({daysAgo}d)</span>}
                           </span>

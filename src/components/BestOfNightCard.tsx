@@ -6,6 +6,7 @@ import { gradeColorClass } from "@/lib/game-stats";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
+import { formatGameDate } from "@/lib/dates";
 
 // Home page tile: the algorithmic Player of the Night, linking to the full
 // top-10 at /best-of-night. Resilient by design — any fetch failure (cold
@@ -25,7 +26,7 @@ export default async function BestOfNightCard() {
   const p = potn.performer;
   const teamColor = TEAM_META[p.teamTricode]?.primaryColor || "#3B82F6";
   const [y, m, d] = potn.date.split("-").map(Number);
-  const dateLabel = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+  const dateLabel = formatGameDate(new Date(Date.UTC(y, m - 1, d)), isZh ? "zh" : "en", {
     timeZone: "UTC",
     month: "short",
     day: "numeric",

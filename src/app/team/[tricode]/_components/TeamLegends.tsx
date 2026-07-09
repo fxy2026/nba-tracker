@@ -6,6 +6,7 @@ import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { getFranchiseFive } from "@/lib/franchiseAllTimeFive";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import { formatGameDate } from "@/lib/dates";
 
 interface Props {
   tricode: string;
@@ -168,7 +169,7 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
           <div className="flex flex-col gap-2">
             {games.map((g) => {
               const dt = new Date(g.date + "T12:00:00");
-              const dateLabel = dt.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+              const dateLabel = formatGameDate(dt, isZh ? "zh" : "en", {
                 year: "numeric", month: "short", day: "numeric",
               });
               const title = isZh && g.titleZh ? g.titleZh : g.title;
