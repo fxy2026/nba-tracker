@@ -23,6 +23,7 @@ function offsetDate(base: string, offset: number): string {
 
 export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   const { t, locale } = useLocale();
+  const isZh = locale === "zh";
   const router = useRouter();
 
   // Timezone caption: localTz() reads Intl at runtime, so it can differ between
@@ -125,12 +126,12 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
     <div
       className="sticky top-[calc(env(safe-area-inset-top)+3rem)] sm:top-[calc(env(safe-area-inset-top)+4rem)] z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
       role="navigation"
-      aria-label="Date navigation"
+      aria-label={isZh ? "日期导航" : "Date navigation"}
     >
       <button
         onClick={() => navigate(prevDate)}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-        aria-label="Previous day"
+        aria-label={isZh ? "前一天" : "Previous day"}
       >
         <ChevronLeft size={20} />
       </button>
@@ -165,7 +166,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
       <button
         onClick={() => navigate(nextDate)}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-        aria-label="Next day"
+        aria-label={isZh ? "后一天" : "Next day"}
       >
         <ChevronRight size={20} />
       </button>

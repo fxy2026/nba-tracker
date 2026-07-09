@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Check, AlertTriangle, Info, X } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 type ToastTone = "success" | "info" | "warning";
 
@@ -73,6 +74,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const Icon =
     toast.tone === "success" ? Check
     : toast.tone === "warning" ? AlertTriangle
@@ -91,7 +94,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       <button
         onClick={onDismiss}
         className="text-text-secondary/60 hover:text-text-primary transition-colors shrink-0 -mr-1"
-        aria-label="Dismiss"
+        aria-label={isZh ? "关闭" : "Dismiss"}
       >
         <X size={14} aria-hidden="true" />
       </button>

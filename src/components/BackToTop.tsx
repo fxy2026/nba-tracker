@@ -2,8 +2,11 @@
 
 import { useEffect, useState, memo } from "react";
 import { ChevronUp } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default memo(function BackToTop() {
+  const { locale } = useLocale();
+  const isZh = locale === "zh";
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,10 +49,10 @@ export default memo(function BackToTop() {
       className={`fixed bottom-20 sm:bottom-8 right-4 z-40 w-11 h-11 rounded-full bg-accent-gradient text-white shadow-xl shadow-accent/30 ring-1 ring-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none translate-y-2"
       }`}
-      aria-label="Back to top"
+      aria-label={isZh ? "回到顶部" : "Back to top"}
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
-      title="Back to top (press T)"
+      title={isZh ? "回到顶部（按 T）" : "Back to top (press T)"}
     >
       <ChevronUp size={20} strokeWidth={2.5} />
     </button>
