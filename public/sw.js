@@ -59,6 +59,22 @@ function bucket(url) {
   return null;
 }
 
+// Put a response into a named cache, then FIFO-trim the bucket to `max`
+// entries. Cache.keys() is insertion-ordered, so deleting the oldest beyond
+// `max` is an adequate FIFO. Best-effort: swallows QuotaExceeded etc.
+async function putAndTrim(cacheName, req, res, max) {
+  try {
+    const cache = await caches.open(cacheName);
+    await cache.put(req, res);
+    const keys = await cache.keys();
+    if (keys.length > max) {
+      for (const k of keys.slice(0, keys.length - max)) {
+        await cache.delete(k);
+      }
+    }
+  } catch { /* QuotaExceeded etc. — caching is best-effort */ }
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   // Only handle GET; POSTs etc. go straight to network.
@@ -76,20 +92,13 @@ self.addEventListener("fetch", (event) => {
         .then((res) => {
           // Cache successful HTML in pages bucket for offline fallback, with a
           // bounded FIFO trim so the per-page navigation cache can't grow
-          // unbounded between deploys. Cache.keys() is insertion-ordered, so
-          // deleting the oldest beyond MAX_PAGES is an adequate FIFO.
+          // unbounded between deploys. waitUntil keeps the SW alive until the
+          // put/trim completes — without it the worker can be killed mid-write.
+          // Returning `res` is unaffected: waitUntil extends lifetime, it does
+          // not block the response.
           if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_PAGES).then(async (cache) => {
-              await cache.put(req, copy);
-              const keys = await cache.keys();
-              const MAX_PAGES = 30;
-              if (keys.length > MAX_PAGES) {
-                for (const k of keys.slice(0, keys.length - MAX_PAGES)) {
-                  await cache.delete(k);
-                }
-              }
-            }).catch(() => { /* QuotaExceeded etc. — caching is best-effort */ });
+            const MAX_PAGES = 30;
+            event.waitUntil(putAndTrim(CACHE_PAGES, req, res.clone(), MAX_PAGES));
           }
           return res;
         })
@@ -132,17 +141,13 @@ self.addEventListener("fetch", (event) => {
       caches.match(req).then((cached) => {
         const fetchPromise = fetch(req).then((res) => {
           if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_IMAGES).then(async (cache) => {
-              await cache.put(req, copy);
-              const keys = await cache.keys();
-              const MAX_IMAGES = 300;
-              if (keys.length > MAX_IMAGES) {
-                for (const k of keys.slice(0, keys.length - MAX_IMAGES)) {
-                  await cache.delete(k);
-                }
-              }
-            }).catch(() => { /* QuotaExceeded etc. — caching is best-effort */ });
+            // waitUntil keeps the SW alive so the put/trim finishes even after
+            // the response is returned. On the warm SWR path (cached served
+            // immediately) the event may already be settled; putAndTrim was
+            // invoked first so its cache work still runs, and any waitUntil
+            // rejection is absorbed by the trailing .catch below.
+            const MAX_IMAGES = 300;
+            event.waitUntil(putAndTrim(CACHE_IMAGES, req, res.clone(), MAX_IMAGES));
           }
           return res;
         }).catch(() => cached); // if network fails, fall back to cache

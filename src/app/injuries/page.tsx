@@ -33,19 +33,39 @@ interface TeamInjury {
   injuries?: InjuryItem[];
 }
 
+// Consumers key off team displayName + the injuries array; an unexpected ESPN
+// body would otherwise render as a (cached) "no injuries" state.
+function isValidInjuryFeed(json: unknown): json is { injuries: TeamInjury[] } {
+  if (typeof json !== "object" || json === null) return false;
+  const teams = (json as { injuries?: unknown }).injuries;
+  if (!Array.isArray(teams)) return false;
+  return teams.every((team) => {
+    if (typeof team !== "object" || team === null) return false;
+    const t = team as { displayName?: unknown; injuries?: unknown };
+    return typeof t.displayName === "string"
+      && Array.isArray(t.injuries)
+      && t.injuries.every((i) => typeof i === "object" && i !== null);
+  });
+}
+
 async function getInjuries(): Promise<TeamInjury[]> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(
       "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries",
       {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
         next: { revalidate: 1800 },
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
     if (!res.ok) return [];
     const json = await res.json();
     // ESPN returns { injuries: [...teams] } — each team has { displayName, injuries: [...] }
-    return json.injuries || [];
+    if (!isValidInjuryFeed(json)) return [];
+    return json.injuries;
   } catch {
     return [];
   }
