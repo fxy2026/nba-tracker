@@ -8,6 +8,7 @@ import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
+import { espnAbbrToTricode } from "@/lib/draft";
 
 interface Transaction {
   date: string;
@@ -248,12 +249,12 @@ export default function TransactionsPage() {
                           {kindLabel(t.kind, isZh)}
                         </span>
                         {t.teamAbbr ? (
-                          <Link href={`/team/${t.teamAbbr}`} className="text-sm font-medium text-text-primary hover:text-accent transition-colors">{t.team}</Link>
+                          <Link href={`/team/${espnAbbrToTricode(t.teamAbbr)}`} className="text-sm font-medium text-text-primary hover:text-accent transition-colors">{t.team}</Link>
                         ) : (
                           <span className="text-sm font-medium text-text-primary">{t.team}</span>
                         )}
                         {t.teamAbbr && (
-                          <Link href={`/team/${t.teamAbbr}`} className="text-xs text-text-secondary hover:text-accent transition-colors">({t.teamAbbr})</Link>
+                          <Link href={`/team/${espnAbbrToTricode(t.teamAbbr)}`} className="text-xs text-text-secondary hover:text-accent transition-colors">({t.teamAbbr})</Link>
                         )}
                       </div>
                       {t.players.length > 0 ? (
