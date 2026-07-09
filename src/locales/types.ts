@@ -446,6 +446,18 @@ export interface Translations {
     advancedData: string;
     teammates: string;
     similarPlayers: string;
+    profileTitle: string;
+    statsDeepDiveTitle: string;
+    connectionsTitle: string;
+    noScoringData: string;
+    statusLabel: string;
+    activeValue: string;
+    estimatedTotal: string;
+    ppgGpSeasons: (ppg: number, gp: number, seasons: number) => string;
+    careerPointsEst: (points: number) => string;
+    milestoneDecadeScorer: string;
+    milestoneEliteScorer: string;
+    milestoneVeteran: string;
   };
 
   // ---- Player Stats Bundle ----

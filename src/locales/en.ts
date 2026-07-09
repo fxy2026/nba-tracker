@@ -425,6 +425,18 @@ const en: Translations = {
     advancedData: "Advanced data on Basketball Reference",
     teammates: "Teammates",
     similarPlayers: "Similar Players (same position)",
+    profileTitle: "Profile",
+    statsDeepDiveTitle: "Stats Deep Dive",
+    connectionsTitle: "Connections",
+    noScoringData: "No scoring data available",
+    statusLabel: "Status",
+    activeValue: "Active",
+    estimatedTotal: "Estimated Total",
+    ppgGpSeasons: (ppg, gp, seasons) => `${ppg} ppg × ~${gp} gp × ${seasons} seasons`,
+    careerPointsEst: (points) => `${points.toLocaleString("en-US")}+ career points (est.)`,
+    milestoneDecadeScorer: "Decade-long 20+ PPG scorer",
+    milestoneEliteScorer: "Elite scorer (25+ PPG)",
+    milestoneVeteran: "15+ year veteran",
   },
 
   playerStats: {

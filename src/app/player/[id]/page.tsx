@@ -393,7 +393,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
         return (
           <section className="mt-8 sm:mt-10">
-            <SectionHeader icon={Award} title="Profile" eyebrow="01" />
+            <SectionHeader icon={Award} title={t.playerDetail.profileTitle} eyebrow="01" />
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
                 {tags.map((tag) => (
@@ -416,7 +416,7 @@ export default async function PlayerPage({ params }: PageProps) {
                 <ScoringDnaTile ppg={ppg} fg2Pct={fg2Pct} fg3Pct={fg3Pct} ftPct={ftPct} t={t} />
               ) : (
                 <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
-                  No scoring data available
+                  {t.playerDetail.noScoringData}
                 </div>
               )}
               {/* Body metrics — 3 small (height + weight + country) on top, college (3-col) below */}
@@ -424,7 +424,7 @@ export default async function PlayerPage({ params }: PageProps) {
               <GlassFact icon={Weight} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "—"} />
               <GlassFact icon={MapPin} label={t.playerDetail.country} value={player.country || "—"} />
               <GlassFact icon={GraduationCap} label={t.playerDetail.college} value={player.college || "—"} />
-              <GlassFact icon={Award} label="Status" value={seasons > 0 && player.toYear && parseInt(player.toYear) >= new Date().getFullYear() ? "Active" : "—"} />
+              <GlassFact icon={Award} label={t.playerDetail.statusLabel} value={seasons > 0 && player.toYear && parseInt(player.toYear) >= new Date().getFullYear() ? t.playerDetail.activeValue : "—"} />
             </div>
           </section>
         );
@@ -435,14 +435,14 @@ export default async function PlayerPage({ params }: PageProps) {
         const gpEstimate = 70;
         const estTotalPts = Math.round(ppg * gpEstimate * seasons);
         const milestones: string[] = [];
-        if (estTotalPts >= 25000) milestones.push("25,000+ career points (est.)");
-        else if (estTotalPts >= 20000) milestones.push("20,000+ career points (est.)");
-        else if (estTotalPts >= 15000) milestones.push("15,000+ career points (est.)");
-        else if (estTotalPts >= 10000) milestones.push("10,000+ career points (est.)");
-        else if (estTotalPts >= 5000) milestones.push("5,000+ career points (est.)");
-        if (ppg >= 20 && seasons >= 10) milestones.push("Decade-long 20+ PPG scorer");
-        if (ppg >= 25) milestones.push("Elite scorer (25+ PPG)");
-        if (seasons >= 15) milestones.push("15+ year veteran");
+        if (estTotalPts >= 25000) milestones.push(t.playerDetail.careerPointsEst(25000));
+        else if (estTotalPts >= 20000) milestones.push(t.playerDetail.careerPointsEst(20000));
+        else if (estTotalPts >= 15000) milestones.push(t.playerDetail.careerPointsEst(15000));
+        else if (estTotalPts >= 10000) milestones.push(t.playerDetail.careerPointsEst(10000));
+        else if (estTotalPts >= 5000) milestones.push(t.playerDetail.careerPointsEst(5000));
+        if (ppg >= 20 && seasons >= 10) milestones.push(t.playerDetail.milestoneDecadeScorer);
+        if (ppg >= 25) milestones.push(t.playerDetail.milestoneEliteScorer);
+        if (seasons >= 15) milestones.push(t.playerDetail.milestoneVeteran);
         if (milestones.length === 0) return null;
         return (
           <section className="mt-8 sm:mt-10">
@@ -450,13 +450,13 @@ export default async function PlayerPage({ params }: PageProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {/* Total points hero tile */}
               <div className="glass-tile glass-tile-featured sm:col-span-1 row-span-1 p-5 flex flex-col justify-between min-h-[150px]">
-                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Estimated Total</p>
+                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.playerDetail.estimatedTotal}</p>
                 <div>
                   <p className="text-3xl sm:text-4xl font-light font-mono tabular-nums text-accent-amber leading-none">
                     {estTotalPts.toLocaleString()}
                   </p>
                   <p className="text-[10px] text-text-secondary mt-2 font-mono tabular-nums">
-                    {ppg} ppg × ~{gpEstimate} gp × {seasons} seasons
+                    {t.playerDetail.ppgGpSeasons(ppg, gpEstimate, seasons)}
                   </p>
                 </div>
               </div>
@@ -476,7 +476,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
       {/* ─── Stats Deep Dive (dynamic client sections — own styling) ─ */}
       <section className="mt-8 sm:mt-10 space-y-4">
-        <SectionHeader icon={TrendingUp} title="Stats Deep Dive" eyebrow="03" />
+        <SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" />
         <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         <ShotHeatmap playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
@@ -511,7 +511,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
         return (
           <section className="mt-8 sm:mt-10">
-            <SectionHeader icon={Users} title="Connections" eyebrow="04" />
+            <SectionHeader icon={Users} title={t.playerDetail.connectionsTitle} eyebrow="04" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
               {/* Teammates tile */}
               {teammates.length > 0 && (

@@ -425,6 +425,18 @@ const zh: Translations = {
     advancedData: "Basketball Reference 高阶数据",
     teammates: "队友",
     similarPlayers: "同位置相似球员",
+    profileTitle: "球员档案",
+    statsDeepDiveTitle: "数据深挖",
+    connectionsTitle: "关联球员",
+    noScoringData: "暂无得分数据",
+    statusLabel: "状态",
+    activeValue: "现役",
+    estimatedTotal: "估算总得分",
+    ppgGpSeasons: (ppg, gp, seasons) => `场均 ${ppg} 分 × 约 ${gp} 场/季 × ${seasons} 个赛季`,
+    careerPointsEst: (points) => `生涯得分约 ${points.toLocaleString("en-US")}+ 分`,
+    milestoneDecadeScorer: "十年以上场均 20+ 得分手",
+    milestoneEliteScorer: "精英得分手（场均 25+）",
+    milestoneVeteran: "15 年以上老将",
   },
 
   playerStats: {
