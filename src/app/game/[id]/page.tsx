@@ -6,6 +6,7 @@ import type { PlayAction } from "@/components/PlayByPlay";
 import { isPlayoff, findScheduleGame } from "@/lib/games";
 import { buildRecap } from "@/lib/recap";
 import QuarterBars from "@/components/QuarterBars";
+import TeamLogo from "@/components/TeamLogo";
 import TeamCompare from "@/components/TeamCompare";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -195,6 +196,62 @@ export default async function GamePage({ params }: PageProps) {
               { href: `/team/${sg.awayTeam.teamTricode}`, label: `${sg.awayTeam.teamTricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
               { href: `/h2h?t1=${sg.homeTeam.teamTricode}&t2=${sg.awayTeam.teamTricode}`, label: isZh ? "历史交锋" : "Head-to-head", icon: GitCompareArrows },
               { href: "/schedule", label: isZh ? "完整赛程" : "Full schedule", icon: Calendar },
+            ]}
+          />
+        </div>
+      );
+    }
+    if (sg && sg.gameStatus === 3) {
+      // Finished game known to the (archived) schedule but whose box score is
+      // unreachable since the 2026-07 cdn.nba.com block — show the final from
+      // schedule data instead of a misleading "hasn't tipped off" state.
+      const sgPlayoffs = isPlayoff(sg.gameId);
+      const dateCode = sg.gameCode.split("/")[0];
+      const sgDate = `${dateCode.slice(0, 4)}-${dateCode.slice(4, 6)}-${dateCode.slice(6, 8)}`;
+      const teams = [sg.awayTeam, sg.homeTeam];
+      const maxScore = Math.max(sg.awayTeam.score, sg.homeTeam.score);
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <Breadcrumbs
+            items={[
+              { label: isZh ? "比赛" : "Games", href: "/" },
+              { label: `${sg.awayTeam.teamTricode} @ ${sg.homeTeam.teamTricode} · ${sgDate}` },
+            ]}
+          />
+          <div className="glass-tile p-6 sm:p-10 mt-4">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary text-center">
+              {isZh ? "终场" : "Final"} · {sgDate}
+            </p>
+            <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-4 max-w-2xl mx-auto">
+              {teams.map((team, i) => (
+                <div key={team.teamTricode} className={`flex flex-col items-center gap-2 ${i === 0 ? "" : "order-3"}`}>
+                  <TeamLogo teamId={team.teamId} tricode={team.teamTricode} size={64} />
+                  <Link href={`/team/${team.teamTricode}`} className="text-sm font-semibold text-text-primary hover:text-accent transition-colors">
+                    {team.teamCity} {team.teamName}
+                  </Link>
+                  <span
+                    className={`text-4xl sm:text-5xl font-light font-mono tabular-nums ${team.score === maxScore ? "text-text-primary" : "text-text-secondary/60"}`}
+                  >
+                    {team.score}
+                  </span>
+                </div>
+              ))}
+              <span className="order-2 text-text-secondary/50 text-sm font-mono">@</span>
+            </div>
+            <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
+              {isZh
+                ? "本场比赛的详细数据（Box Score、投篮图、回放）暂不可用。"
+                : "Detailed stats for this game (box score, shot chart, play-by-play) are currently unavailable."}
+            </p>
+          </div>
+          <RelatedPages
+            eyebrow={isZh ? "继续探索" : "Keep exploring"}
+            pages={[
+              { href: `/team/${sg.homeTeam.teamTricode}`, label: `${sg.homeTeam.teamTricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+              { href: `/team/${sg.awayTeam.teamTricode}`, label: `${sg.awayTeam.teamTricode} ${isZh ? "球队主页" : "team page"}`, icon: Users },
+              ...(sgPlayoffs ? [{ href: `/series/${sg.gameId.slice(0, 9)}`, label: isZh ? "整个系列赛" : "Full series", icon: Trophy }] : []),
+              { href: `/h2h?t1=${sg.homeTeam.teamTricode}&t2=${sg.awayTeam.teamTricode}`, label: isZh ? "历史交锋" : "Head-to-head", icon: GitCompareArrows },
+              { href: `/?date=${sgDate}`, label: isZh ? "当天其他比赛" : "Other games that day", icon: Calendar },
             ]}
           />
         </div>
