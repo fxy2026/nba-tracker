@@ -69,6 +69,46 @@ const PROBES: { name: string; url: string; headers: HeadersInit }[] = [
     url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20260619",
     headers: {},
   },
+  {
+    name: "stats-leaguegamelog",
+    url: `${STATS_BASE}/leaguegamelog?Counter=1000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=T&Season=2025-26&SeasonType=Regular%20Season&Sorter=DATE`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-pbpv2",
+    url: `${STATS_BASE}/playbyplayv2?GameID=0042500401&StartPeriod=1&EndPeriod=10`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-boxscorev2",
+    url: `${STATS_BASE}/boxscoretraditionalv2?GameID=0042500401&StartPeriod=1&EndPeriod=10&StartRange=0&EndRange=28800&RangeType=0`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-boxsummaryv2",
+    url: `${STATS_BASE}/boxscoresummaryv2?GameID=0042500401`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-teamgamelogs",
+    url: `${STATS_BASE}/teamgamelogs?LeagueID=00&Season=2025-26&SeasonType=Regular%20Season`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-commonteamroster",
+    url: `${STATS_BASE}/commonteamroster?LeagueID=00&Season=2025-26&TeamID=1610612747`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-shotchartdetail",
+    url: `${STATS_BASE}/shotchartdetail?PlayerID=0&TeamID=0&GameID=0042500404&ContextMeasure=FGA&Season=2025-26&SeasonType=Playoffs&LeagueID=00&LastNGames=0&Month=0&OpponentTeamID=0&Period=0&VsDivision=&VsConference=&SeasonSegment=&RookieYear=&Position=&PlayerPosition=&Outcome=&Location=&GameSegment=&DateFrom=&DateTo=&ClutchTime=&AheadBehind=&PointDiff=&RangeType=0&StartPeriod=1&EndPeriod=10&StartRange=0&EndRange=28800`,
+    headers: STATS_HEADERS,
+  },
+  {
+    name: "stats-leagueleaders-ctl",
+    url: `${STATS_BASE}/leagueleaders?LeagueID=00&PerMode=PerGame&Scope=S&Season=2025-26&SeasonType=Regular%20Season&StatCategory=REB&ActiveFlag=`,
+    headers: STATS_HEADERS,
+  },
 ];
 
 async function probe(p: { name: string; url: string; headers: HeadersInit }) {
