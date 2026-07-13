@@ -12,6 +12,8 @@ const TARGETS: Record<string, (id: string) => string | null> = {
   schedule: () => "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json",
   playerindex: () => "https://cdn.nba.com/static/json/staticData/playerIndex.json",
   scoreboard: () => "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json",
+  nbagames: () => "https://www.nba.com/games",
+  nbaschedule: () => "https://www.nba.com/schedule",
   boxscore: (id) => (/^\d{10}$/.test(id) ? `https://cdn.nba.com/static/json/liveData/boxscore/boxscore_${id}.json` : null),
   pbp: (id) => (/^\d{10}$/.test(id) ? `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json` : null),
 };
@@ -45,6 +47,17 @@ export async function GET(request: NextRequest) {
   const snapUrl = `https://web.archive.org/web/${ts}id_/${target}`;
   const res = await fetch(snapUrl, { cache: "no-store", signal: AbortSignal.timeout(50000) });
   if (!res.ok) return NextResponse.json({ error: `wayback ${res.status}` }, { status: 502 });
+
+  if (file === "nbagames" || file === "nbaschedule") {
+    // HTML page — return only the embedded __NEXT_DATA__ payload.
+    const html = await res.text();
+    const m = html.match(/<script id="__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) return NextResponse.json({ error: "no __NEXT_DATA__" }, { status: 502 });
+    return new NextResponse(m[1], {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   const data = await res.json();
 
   if (file === "schedule") {
