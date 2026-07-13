@@ -1,11 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// Since the 2026-07 cdn.nba.com block, the schedule/player-index pipelines
+// degrade to the baked 2025-26 archive instead of to empty — these tests pin
+// both the merge behavior (live wins, archive fills) and the never-empty floor.
+
 const goodSchedule = {
   leagueSchedule: {
     seasonYear: "2025-26",
     gameDates: [{ gameDate: "10/21/2025 00:00:00", games: [] }],
   },
 };
+const LIVE_DATE = "10/21/2025 00:00:00";
 
 const goodPlayerRow: (string | number | null)[] = [
   1629029, "Doncic", "Luka", "luka-doncic", 1610612747, null, null,
@@ -35,6 +40,12 @@ async function loadApi() {
   return import("./api");
 }
 
+// The live fixture date also exists in the archive — the merged result must
+// carry the live version (zero games) for it, proving live wins on conflict.
+function liveWins(dates: { gameDate: string; games: unknown[] }[]) {
+  return dates.some((d) => d.gameDate === LIVE_DATE && d.games.length === 0);
+}
+
 beforeEach(() => {
   vi.resetModules();
 });
@@ -44,36 +55,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("schedule cache poisoning guards", () => {
-  it("does not commit the schedule cache when gameDates is empty", async () => {
-    const cdn = vi.fn()
-      .mockResolvedValueOnce(jsonResponse({}))
-      .mockResolvedValueOnce(jsonResponse(goodSchedule));
+describe("schedule cache degradation guards", () => {
+  it("degrades an empty live feed to the baked archive and caches it", async () => {
+    const cdn = vi.fn().mockResolvedValue(jsonResponse({}));
     vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
     const first = await api.getFullSchedule();
-    expect(first).toEqual([]);
-    expect(api.getScheduleAge()).toBeNull();
+    expect(first.length).toBeGreaterThan(200);
+    expect(api.getScheduleAge()).not.toBeNull();
 
-    const second = await api.getFullSchedule();
-    expect(second).toHaveLength(1);
-    expect(cdn).toHaveBeenCalledTimes(2);
+    await api.getFullSchedule();
+    expect(cdn).toHaveBeenCalledTimes(1);
   });
 
-  it("caches a non-empty schedule and serves it without refetching", async () => {
+  it("merges a non-empty schedule over the archive and serves it without refetching", async () => {
     const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
     vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
     await api.getFullSchedule();
     const again = await api.getFullSchedule();
-    expect(again).toHaveLength(1);
+    expect(again.length).toBeGreaterThan(200);
+    expect(liveWins(again)).toBe(true);
     expect(api.getScheduleAge()).not.toBeNull();
     expect(cdn).toHaveBeenCalledTimes(1);
   });
 
-  it("background refresh keeps stale data when the new payload is empty", async () => {
+  it("background refresh keeps merged data when the new payload is empty", async () => {
     const cdn = vi.fn()
       .mockResolvedValueOnce(jsonResponse(goodSchedule))
       .mockResolvedValueOnce(jsonResponse({ leagueSchedule: { gameDates: [] } }));
@@ -85,14 +94,14 @@ describe("schedule cache poisoning guards", () => {
     const realNow = Date.now();
     const nowSpy = vi.spyOn(Date, "now").mockReturnValue(realNow + 3 * 60 * 60 * 1000);
     const stale = await api.getFullSchedule();
-    expect(stale).toHaveLength(1);
+    expect(liveWins(stale)).toBe(true);
 
     await vi.waitFor(() => expect(cdn).toHaveBeenCalledTimes(2));
     await new Promise((r) => setTimeout(r, 0));
     nowSpy.mockRestore();
 
     const after = await api.getFullSchedule();
-    expect(after).toHaveLength(1);
+    expect(liveWins(after)).toBe(true);
   });
 });
 
@@ -121,7 +130,8 @@ describe("schedule slim-route consumer path", () => {
     ));
     const api = await loadApi();
 
-    expect(await api.getFullSchedule()).toHaveLength(1);
+    const dates = await api.getFullSchedule();
+    expect(liveWins(dates)).toBe(true);
     expect(cdn).toHaveBeenCalledTimes(1);
   });
 
@@ -130,7 +140,8 @@ describe("schedule slim-route consumer path", () => {
     vi.stubGlobal("fetch", scheduleFetch(cdn));
     const api = await loadApi();
 
-    expect(await api.getFullSchedule()).toHaveLength(1);
+    const dates = await api.getFullSchedule();
+    expect(liveWins(dates)).toBe(true);
     expect(cdn).toHaveBeenCalledTimes(1);
   });
 
@@ -141,7 +152,8 @@ describe("schedule slim-route consumer path", () => {
     ));
     const api = await loadApi();
 
-    expect(await api.getFullSchedule()).toHaveLength(1);
+    const dates = await api.getFullSchedule();
+    expect(liveWins(dates)).toBe(true);
     expect(cdn).toHaveBeenCalledTimes(1);
   });
 
@@ -150,7 +162,8 @@ describe("schedule slim-route consumer path", () => {
     vi.stubGlobal("fetch", scheduleFetch(cdn, () => jsonResponse({ seasonYear: "2025", dates: [] })));
     const api = await loadApi();
 
-    expect(await api.getFullSchedule()).toHaveLength(1);
+    const dates = await api.getFullSchedule();
+    expect(liveWins(dates)).toBe(true);
     expect(api.getScheduleAge()).not.toBeNull();
     expect(cdn).toHaveBeenCalledTimes(1);
   });
@@ -165,57 +178,49 @@ describe("schedule slim-route consumer path", () => {
 
     const feed = await api.getCachedScheduleFeed();
     expect(feed.seasonYear).toBe("2025");
-    expect(feed.dates).toHaveLength(1);
+    expect(liveWins(feed.dates)).toBe(true);
     expect(urls.some((u) => u.includes("/api/schedule-slim"))).toBe(false);
     expect(urls.some((u) => u.includes("scheduleLeagueV2"))).toBe(true);
   });
 });
 
-describe("player index cache poisoning guards", () => {
-  it("does not cache an empty player index", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(jsonResponse({ resultSets: [{ rowSet: [] }] }))
-      .mockResolvedValueOnce(jsonResponse({ resultSets: [{ rowSet: [goodPlayerRow] }] }));
+describe("player index degradation guards", () => {
+  it("serves the baked snapshot when the live index is empty, then caches it", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ resultSets: [{ rowSet: [] }] }));
     vi.stubGlobal("fetch", fetchMock);
     const api = await loadApi();
 
-    expect(await api.getPlayerIndex()).toEqual([]);
-    const second = await api.getPlayerIndex();
-    expect(second).toHaveLength(1);
-    expect(second[0].personId).toBe(1629029);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const first = await api.getPlayerIndex();
+    expect(first.length).toBeGreaterThan(500);
+    await api.getPlayerIndex();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("returns [] when rowSet is missing instead of throwing", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(jsonResponse({ resultSets: [{ headers: ["PERSON_ID"] }] }))
-      .mockResolvedValueOnce(jsonResponse({ resultSets: [{ rowSet: [goodPlayerRow] }] }));
+  it("serves the baked snapshot when rowSet is missing instead of throwing", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ resultSets: [{ headers: ["PERSON_ID"] }] }));
     vi.stubGlobal("fetch", fetchMock);
     const api = await loadApi();
 
-    await expect(api.getPlayerIndex()).resolves.toEqual([]);
-    const second = await api.getPlayerIndex();
-    expect(second).toHaveLength(1);
+    const players = await api.getPlayerIndex();
+    expect(players.length).toBeGreaterThan(500);
   });
 
-  it("returns [] on a 200 empty body and refetches next call", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(jsonResponse({}))
-      .mockResolvedValueOnce(jsonResponse({ resultSets: [{ rowSet: [goodPlayerRow] }] }));
+  it("serves the baked snapshot on a 200 empty body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}));
     vi.stubGlobal("fetch", fetchMock);
     const api = await loadApi();
 
-    expect(await api.getPlayerIndex()).toEqual([]);
-    expect(await api.getPlayerIndex()).toHaveLength(1);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const players = await api.getPlayerIndex();
+    expect(players.length).toBeGreaterThan(500);
   });
 
-  it("caches a normal player index payload", async () => {
+  it("prefers a normal live payload over the snapshot and caches it", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ resultSets: [{ rowSet: [goodPlayerRow] }] }));
     vi.stubGlobal("fetch", fetchMock);
     const api = await loadApi();
 
     const first = await api.getPlayerIndex();
+    expect(first).toHaveLength(1);
     expect(first[0]).toMatchObject({ personId: 1629029, firstName: "Luka", lastName: "Doncic", teamAbbr: "LAL" });
     await api.getPlayerIndex();
     expect(fetchMock).toHaveBeenCalledTimes(1);

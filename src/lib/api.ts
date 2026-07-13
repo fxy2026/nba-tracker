@@ -2,6 +2,8 @@
 // Data source: cdn.nba.com
 
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import archiveSchedule from "@/data/schedule-2025-26.json";
+import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
 const HEADERS: HeadersInit = {
@@ -270,6 +272,31 @@ let scheduleInflight: Promise<ScheduleDate[]> | null = null;
 let scheduleRevalidating = false;
 let scheduleSeasonYear: string | null = null;
 
+// 2026-07: NBA/Akamai cut non-browser clients off from cdn.nba.com's JSON
+// endpoints and blackholed the stats.nba.com schedule endpoints for
+// datacenter IPs, so the live pipeline can come back empty from every server
+// we deploy on. The finished 2025-26 season was rebuilt from Wayback Machine
+// scoreboard captures + ESPN finals (scripts/build-archive-schedule.py) and
+// baked in below. Live data always wins — the archive only contributes dates
+// the live feed doesn't cover, so an unblock or the 2026-27 feed heals
+// seamlessly without dropping last season's history.
+const ARCHIVE_FEED = archiveSchedule as unknown as { seasonYear: string; dates: ScheduleDate[] };
+
+function mergeWithArchive(live: ScheduleDate[]): ScheduleDate[] {
+  const seen = new Set(live.map((d) => d.gameDate.slice(0, 10)));
+  const merged = [...live, ...ARCHIVE_FEED.dates.filter((d) => !seen.has(d.gameDate.slice(0, 10)))];
+  return merged.sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate));
+}
+
+function archiveFallbackFeed(): { seasonYear: string; dates: ScheduleDate[] } {
+  if (!scheduleCache) {
+    console.error("schedule: live sources unavailable — serving baked 2025-26 archive");
+    scheduleCache = { data: ARCHIVE_FEED.dates, ts: Date.now() };
+    scheduleSeasonYear = ARCHIVE_FEED.seasonYear;
+  }
+  return { seasonYear: scheduleSeasonYear ?? ARCHIVE_FEED.seasonYear, dates: scheduleCache.data };
+}
+
 // Start year of the season the cached feed covers, e.g. "2025". The feed
 // reports "2025-26"; normalized to the 4-digit start year so rollover
 // checks are simple string compares.
@@ -311,7 +338,7 @@ export async function getCachedScheduleFeed(): Promise<{ seasonYear: string; dat
         return await getRawScheduleDates();
       } catch (err) {
         console.error("schedule fetch error:", err);
-        return { seasonYear: scheduleSeasonYear ?? "", dates: scheduleCache?.data ?? [] };
+        return archiveFallbackFeed();
       } finally {
         rawFeedInflight = null;
       }
@@ -364,12 +391,16 @@ export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates
   if (!res.ok) throw new Error(`schedule fetch failed: HTTP ${res.status}`);
   const data = await res.json();
   const rawDates: RawScheduleDate[] = data.leagueSchedule?.gameDates || [];
-  const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4);
-  const dates = projectScheduleDates(rawDates);
-  if (dates.length > 0) {
-    scheduleCache = { data: dates, ts: Date.now() };
-    scheduleSeasonYear = seasonYear;
+  const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4) || ARCHIVE_FEED.seasonYear;
+  const live = projectScheduleDates(rawDates);
+  if (live.length === 0) {
+    // Empty live feed: never clobber an existing cache with it — cold
+    // instances degrade to the baked archive instead of an empty site.
+    return { seasonYear, dates: scheduleCache?.data ?? archiveFallbackFeed().dates };
   }
+  const dates = mergeWithArchive(live);
+  scheduleCache = { data: dates, ts: Date.now() };
+  scheduleSeasonYear = seasonYear;
   return { seasonYear, dates };
 }
 
@@ -412,10 +443,10 @@ async function fetchScheduleBlocking(): Promise<ScheduleDate[]> {
     const { dates } = await getRawScheduleDates();
     if (dates.length > 0) return dates;
     console.error("schedule fetch returned no gameDates — keeping previous cache");
-    return scheduleCache?.data || [];
+    return archiveFallbackFeed().dates;
   } catch (err) {
     console.error("schedule fetch error:", err);
-    return scheduleCache?.data || [];
+    return archiveFallbackFeed().dates;
   } finally {
     scheduleInflight = null;
   }
@@ -600,40 +631,52 @@ export async function getPlayerIndex(): Promise<PlayerInfo[]> {
   return playerIndexInflight;
 }
 
+function mapPlayerIndexRows(data: { resultSets?: { rowSet?: (string | number | null)[][] }[] }): PlayerInfo[] {
+  const rs = data.resultSets?.[0];
+  if (!rs?.rowSet) return [];
+  return rs.rowSet.map((r) => ({
+    personId: r[0] as number,
+    lastName: r[1] as string,
+    firstName: r[2] as string,
+    slug: r[3] as string,
+    teamId: r[4] as number,
+    teamAbbr: r[9] as string,
+    teamCity: r[7] as string,
+    teamName: r[8] as string,
+    jersey: r[10] as string,
+    position: r[11] as string,
+    height: r[12] as string,
+    weight: r[13] as string,
+    college: r[14] as string,
+    country: r[15] as string,
+    draftYear: r[16] as number | null,
+    draftRound: r[17] as number | null,
+    draftNumber: r[18] as number | null,
+    fromYear: r[20] as string,
+    toYear: r[21] as string,
+    pts: r[22] as number,
+    reb: r[23] as number,
+    ast: r[24] as number,
+  }));
+}
+
 async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
   try {
-    const res = await fetch(
-      `${CDN_BASE}/staticData/playerIndex.json`,
-      { headers: HEADERS, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    const rs = data.resultSets?.[0];
-    if (!rs?.rowSet) return [];
-    const players = rs.rowSet.map((r: (string | number | null)[]) => ({
-      personId: r[0] as number,
-      lastName: r[1] as string,
-      firstName: r[2] as string,
-      slug: r[3] as string,
-      teamId: r[4] as number,
-      teamAbbr: r[9] as string,
-      teamCity: r[7] as string,
-      teamName: r[8] as string,
-      jersey: r[10] as string,
-      position: r[11] as string,
-      height: r[12] as string,
-      weight: r[13] as string,
-      college: r[14] as string,
-      country: r[15] as string,
-      draftYear: r[16] as number | null,
-      draftRound: r[17] as number | null,
-      draftNumber: r[18] as number | null,
-      fromYear: r[20] as string,
-      toYear: r[21] as string,
-      pts: r[22] as number,
-      reb: r[23] as number,
-      ast: r[24] as number,
-    }));
+    let players: PlayerInfo[] = [];
+    try {
+      const res = await fetch(
+        `${CDN_BASE}/staticData/playerIndex.json`,
+        { headers: HEADERS, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) }
+      );
+      if (res.ok) players = mapPlayerIndexRows(await res.json());
+    } catch {
+      // network/timeout — fall through to the baked snapshot
+    }
+    // 2026-07 cdn.nba.com block: serve the baked April-2026 snapshot when the
+    // live index is unreachable (see ARCHIVE_FEED note above).
+    if (players.length === 0) {
+      players = mapPlayerIndexRows(archivePlayerIndex as unknown as Parameters<typeof mapPlayerIndexRows>[0]);
+    }
     if (players.length > 0) playerIndexCache = players;
     return players;
   } finally {
