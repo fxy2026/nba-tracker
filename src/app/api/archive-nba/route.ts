@@ -26,6 +26,22 @@ export async function GET(request: NextRequest) {
   const target = TARGETS[file]?.(id);
   if (!target) return NextResponse.json({ error: "bad file/id" }, { status: 400 });
 
+  if (mode === "cdxprefix") {
+    // List every distinct archived www.nba.com/game/* URL in a window — the
+    // URL slug alone carries away/home tricodes + the NBA gameId.
+    const from = q.get("from") || "";
+    const to = q.get("to") || "";
+    let cdxUrl =
+      "https://web.archive.org/cdx/search/cdx?url=www.nba.com/game/&matchType=prefix&output=text&fl=original&collapse=urlkey&filter=statuscode:200";
+    if (/^\d{4,14}$/.test(from)) cdxUrl += `&from=${from}`;
+    if (/^\d{4,14}$/.test(to)) cdxUrl += `&to=${to}`;
+    const res = await fetch(cdxUrl, { cache: "no-store", signal: AbortSignal.timeout(45000) });
+    return new NextResponse(await res.text(), {
+      status: res.status,
+      headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" },
+    });
+  }
+
   if (mode === "cdx") {
     const from = q.get("from") || "";
     const to = q.get("to") || "";
