@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const from = q.get("from") || "";
     const to = q.get("to") || "";
     let cdxUrl =
-      "https://web.archive.org/cdx/search/cdx?url=www.nba.com/game/&matchType=prefix&output=text&fl=original&collapse=urlkey&filter=statuscode:200";
+      "https://web.archive.org/cdx/search/cdx?url=www.nba.com/game/&matchType=prefix&output=text&fl=timestamp,original&collapse=urlkey&filter=statuscode:200";
     if (/^\d{4,14}$/.test(from)) cdxUrl += `&from=${from}`;
     if (/^\d{4,14}$/.test(to)) cdxUrl += `&to=${to}`;
     const res = await fetch(cdxUrl, { cache: "no-store", signal: AbortSignal.timeout(45000) });
