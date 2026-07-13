@@ -11,6 +11,7 @@ export const maxDuration = 60;
 const TARGETS: Record<string, (id: string) => string | null> = {
   schedule: () => "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json",
   playerindex: () => "https://cdn.nba.com/static/json/staticData/playerIndex.json",
+  scoreboard: () => "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json",
   boxscore: (id) => (/^\d{10}$/.test(id) ? `https://cdn.nba.com/static/json/liveData/boxscore/boxscore_${id}.json` : null),
   pbp: (id) => (/^\d{10}$/.test(id) ? `https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json` : null),
 };
@@ -24,7 +25,14 @@ export async function GET(request: NextRequest) {
   if (!target) return NextResponse.json({ error: "bad file/id" }, { status: 400 });
 
   if (mode === "cdx") {
-    const cdxUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(target)}&output=text&fl=timestamp,statuscode,length&limit=-25`;
+    const from = q.get("from") || "";
+    const to = q.get("to") || "";
+    const collapse = q.get("collapse") || "";
+    let cdxUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(target)}&output=text&fl=timestamp,statuscode,length`;
+    if (/^\d{4,14}$/.test(from)) cdxUrl += `&from=${from}`;
+    if (/^\d{4,14}$/.test(to)) cdxUrl += `&to=${to}`;
+    if (/^timestamp:\d{1,2}$/.test(collapse)) cdxUrl += `&collapse=${collapse}`;
+    else cdxUrl += "&limit=-25";
     const res = await fetch(cdxUrl, { cache: "no-store", signal: AbortSignal.timeout(30000) });
     return new NextResponse(await res.text(), {
       status: res.status,
