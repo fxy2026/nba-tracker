@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import { searchResultHref } from "@/lib/search-result-navigation";
 
 import { playerIndexLabel, playerIndexStat, type PlayerIndexProvenance } from "@/lib/player-index-provenance";
 
@@ -25,6 +26,7 @@ interface SearchResult {
   indexProvenance?: PlayerIndexProvenance;
   isLegend?: boolean;
   isIconicSeason?: boolean;
+  iconicId?: string;
   season?: string;
 }
 
@@ -92,7 +94,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       e.preventDefault();
       const selected = results[selectedIndex];
       setShowDropdown(false);
-      window.location.href = `/player/${selected.personId}`;
+      window.location.href = searchResultHref(selected);
     }
   };
 
@@ -188,8 +190,8 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           </div>
           {results.map((p, idx) => (
             <Link
-              key={p.personId}
-              href={`/player/${p.personId}`}
+              key={searchResultHref(p)}
+              href={searchResultHref(p)}
               onClick={() => setShowDropdown(false)}
               className={`flex items-center gap-3 px-4 py-3 transition-colors border-b border-border/50 last:border-0 ${idx === selectedIndex ? "bg-accent/10" : "hover:bg-bg-hover"}`}
             >

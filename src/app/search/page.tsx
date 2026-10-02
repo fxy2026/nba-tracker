@@ -19,14 +19,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const POPULAR_PLAYERS = [
-  { id: 2544, name: "LeBron James", team: "LAL" },
-  { id: 201142, name: "Kevin Durant", team: "PHX" },
-  { id: 201939, name: "Stephen Curry", team: "GSW" },
-  { id: 203507, name: "Giannis Antetokounmpo", team: "MIL" },
-  { id: 203954, name: "Joel Embiid", team: "PHI" },
-  { id: 1629029, name: "Luka Doncic", team: "DAL" },
-  { id: 1628983, name: "Shai Gilgeous-Alexander", team: "OKC" },
-  { id: 203999, name: "Nikola Jokic", team: "DEN" },
+  { id: 2544, name: "LeBron James" },
+  { id: 201142, name: "Kevin Durant" },
+  { id: 201939, name: "Stephen Curry" },
+  { id: 203507, name: "Giannis Antetokounmpo" },
+  { id: 203954, name: "Joel Embiid" },
+  { id: 1629029, name: "Luka Doncic" },
+  { id: 1628983, name: "Shai Gilgeous-Alexander" },
+  { id: 203999, name: "Nikola Jokic" },
 ];
 
 interface PageProps {
@@ -47,8 +47,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
       {/* Quick filters — chips */}
       <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-        {([["Guard", t.searchPage.guard], ["Forward", t.searchPage.forward], ["Center", t.searchPage.center]] as const).map(([pos, label]) => (
-          <a key={pos} href={`/search?q=${pos}`} className="chip">
+        {([["G", t.searchPage.guard], ["F", t.searchPage.forward], ["C", t.searchPage.center]] as const).map(([pos, label]) => (
+          <a key={pos} href={`/by-position?pos=${pos}`} className="chip">
             {label}
           </a>
         ))}
@@ -81,7 +81,6 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <PlayerHeadshot personId={p.id} name={p.name} size={32} />
                 <div className="min-w-0">
                   <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors truncate block">{p.name}</span>
-                  <span className="text-[10px] text-text-secondary font-mono uppercase tracking-[0.15em]">{p.team}</span>
                 </div>
               </Link>
             ))}

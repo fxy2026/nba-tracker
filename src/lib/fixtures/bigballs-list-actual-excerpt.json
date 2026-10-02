@@ -1,0 +1,61 @@
+{
+  "captureNote": "Unchanged one-match excerpt from an actual authenticated stored-matches list response; original list had 30 entries. Metadata and pagination are unchanged. This truncated excerpt is for schema inspection, not completeness/unique-candidate proof. Presentation-only logo fields omitted.",
+  "request": "GET /v1/stored/matches?sport=basketball&date=2025-12-05&limit=100",
+  "response": {
+    "data": [
+      {
+        "id": "a8da9b0f-573e-4b78-9cf4-7f2838449969",
+        "sport": "basketball",
+        "league": "NBA",
+        "home": {
+          "id": "0fb66fa0-d473-4c16-acb9-e19915640d7c",
+          "name": "Atlanta Hawks",
+          "short_name": "ATL"
+        },
+        "away": {
+          "id": "bf31614a-a23a-40ad-a7cc-760cea3a5443",
+          "name": "Denver Nuggets",
+          "short_name": "DEN"
+        },
+        "kickoff_utc": "2025-12-05T19:30:00.000Z",
+        "status": "finished",
+        "score": {
+          "home": 133,
+          "away": 134
+        },
+        "linescore": {
+          "away": [
+            23,
+            31,
+            40,
+            40
+          ],
+          "home": [
+            41,
+            32,
+            30,
+            30
+          ]
+        },
+        "attendance": 16149,
+        "broadcast": null,
+        "round": null,
+        "has_odds": true
+      }
+    ],
+    "meta": {
+      "date_window": {
+        "date": "2025-12-05",
+        "timezone": "UTC",
+        "start_utc": "2025-12-05T00:00:00.000Z",
+        "end_utc": "2025-12-06T00:00:00.000Z",
+        "note": "?date= selects a UTC calendar day: kickoffs at or after start_utc and before end_utc. An evening game in the Americas often kicks off after 00:00 UTC, so it is listed under the next date."
+      }
+    },
+    "pagination": {
+      "total": 30,
+      "limit": 100,
+      "offset": 0
+    }
+  }
+}

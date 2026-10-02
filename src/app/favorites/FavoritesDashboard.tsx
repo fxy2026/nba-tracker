@@ -62,6 +62,7 @@ export default function FavoritesDashboard() {
   const [digest, setDigest] = useState<FollowDigest | null>(null);
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   // tricode → injuries[], tricode → latest 1-2 headlines
   const [injuriesByTeam, setInjuriesByTeam] = useState<Record<string, InjuryItem[]>>({});
   const [newsByTeam, setNewsByTeam] = useState<Record<string, NewsItem[]>>({});
@@ -104,7 +105,7 @@ export default function FavoritesDashboard() {
         setDigest({ teams: data.teams ?? [], players: data.players ?? [] });
       })
       .catch((e) => {
-        if (e?.name === "AbortError") return;
+        if (controller.signal.aborted || e?.name === "AbortError") return;
         setErrored(true);
       })
       .finally(() => {
@@ -112,7 +113,7 @@ export default function FavoritesDashboard() {
       });
 
     return () => controller.abort();
-  }, [mounted, favTeams, favPlayers]);
+  }, [mounted, favTeams, favPlayers, retryKey]);
 
   // ── Side fetch: injuries + news, keyed to followed teams. Tasteful extras,
   //    so failures stay silent and never block the core digest render. ───────
@@ -207,7 +208,7 @@ export default function FavoritesDashboard() {
     <div>
       {/* Toolbar: counts + export. Gated on the RESOLVED digest (not localStorage)
           so a stale/unknown tricode can't show "1 team" above the empty state. */}
-      {!loading && !errored && digest && (digest.teams.length > 0 || digest.players.length > 0) && (
+      {!loading && digest && (digest.teams.length > 0 || digest.players.length > 0) && (
         <div className="flex items-center gap-2.5 mb-6 flex-wrap">
           {digest.teams.length > 0 && (
             <span className="text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-full bg-accent/15 text-accent font-semibold tabular-nums">
@@ -242,10 +243,22 @@ export default function FavoritesDashboard() {
           <p className="text-xs text-text-secondary mt-1.5">
             {isZh ? "请稍后再试,你的关注仍然安全保存。" : "Please try again — your follows are still saved."}
           </p>
+          <button onClick={() => setRetryKey((key) => key + 1)} disabled={loading} className="mt-3 chip cursor-pointer disabled:opacity-50">
+            {isZh ? "重试" : "Retry"}
+          </button>
         </div>
       )}
 
-      {!errored && digest && (
+      {errored && digest && (
+        <div role="status" className="glass-tile p-4 mb-5 flex items-center justify-between gap-3 text-sm">
+          <p className="text-text-secondary">{isZh ? "刷新失败，仍显示上次加载的动态。" : "Couldn't refresh. Showing the last loaded feed."}</p>
+          <button onClick={() => setRetryKey((key) => key + 1)} disabled={loading} className="chip cursor-pointer shrink-0 disabled:opacity-50">
+            {isZh ? "重试" : "Retry"}
+          </button>
+        </div>
+      )}
+
+      {digest && (
         <div className="space-y-10">
           {/* TEAMS */}
           {digest.teams.length > 0 && (

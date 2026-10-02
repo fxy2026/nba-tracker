@@ -1,0 +1,99 @@
+{
+  "captureNote": "Actual authenticated response excerpt, not a complete game: preserves the original nested field structure and one unchanged player/one team-stat row; arrays intentionally shortened for transfer. Do not use to assert full-game completeness. Presentation-only logo/headshot/upsell fields omitted; stat values unchanged.",
+  "endpoint": "https://api.bigballsdata.com/v1/stored/matches/5ce3b301-7023-433a-b8d1-ce8ee1b306be/stats",
+  "response": {
+    "data": {
+      "team_stats": [
+        {
+          "team_id": "3991fe85-a920-4145-93f9-6702ef79a317",
+          "team_name": "Memphis Grizzlies",
+          "field": "assists",
+          "label": "Assists",
+          "display_value": "20",
+          "fetched_at": "2026-06-19T00:03:19.190Z"
+        }
+      ],
+      "players": [
+        {
+          "id": "43ce53a8-18cc-47fa-9017-cff7b0681830",
+          "name": "Jalen Duren",
+          "position": "C",
+          "jersey_number": "0",
+          "team_id": "81de02ee-c755-4b8a-b7cd-7eb0599ada4d",
+          "team_name": "Detroit Pistons",
+          "stats": {
+            "assists": {
+              "value": "0",
+              "label": "AST"
+            },
+            "blocks": {
+              "value": "2",
+              "label": "BLK"
+            },
+            "defensiveRebounds": {
+              "value": "6",
+              "label": "DREB"
+            },
+            "fieldGoalsMade-fieldGoalsAttempted": {
+              "value": "12-15",
+              "label": "FG"
+            },
+            "fouls": {
+              "value": "2",
+              "label": "PF"
+            },
+            "freeThrowsMade-freeThrowsAttempted": {
+              "value": "6-10",
+              "label": "FT"
+            },
+            "minutes": {
+              "value": "28",
+              "label": "MIN"
+            },
+            "offensiveRebounds": {
+              "value": "7",
+              "label": "OREB"
+            },
+            "plusMinus": {
+              "value": "+20",
+              "label": "+/-"
+            },
+            "points": {
+              "value": "30",
+              "label": "PTS"
+            },
+            "rebounds": {
+              "value": "13",
+              "label": "REB"
+            },
+            "starter": {
+              "value": "true",
+              "label": "Starter"
+            },
+            "steals": {
+              "value": "1",
+              "label": "STL"
+            },
+            "threePointFieldGoalsMade-threePointFieldGoalsAttem": {
+              "value": "0-0",
+              "label": "3PT"
+            },
+            "turnovers": {
+              "value": "3",
+              "label": "TO"
+            }
+          }
+        }
+      ]
+    },
+    "meta": {
+      "available": true,
+      "team_stats_available": true,
+      "players_available": true,
+      "withheld": {
+        "team_stats": 0,
+        "players": 0
+      }
+    }
+  }
+}

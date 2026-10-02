@@ -1,0 +1,114 @@
+name: Recover NBA player data
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Verify known samples without writes, or run bounded backfill'
+        required: true
+        type: choice
+        default: 'verify'
+        options: ['verify', 'backfill']
+      max_requests:
+        description: 'Maximum provider requests for this operator run (first verification:3)'
+        required: true
+        type: choice
+        default: '3'
+        options: ['3', '25', '100']
+
+# All cron/operator attempts share admission and provider-call serialization.
+concurrency:
+  group: nba-provider-first-connectivity
+  cancel-in-progress: false
+permissions: {}
+
+jobs:
+  quota:
+    name: Check UTC-day quota
+    if: github.repository == 'fxy2026/nba-tracker' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      allowed: ${{ steps.quota.outputs.allowed }}
+      max_requests: ${{ steps.quota.outputs.max_requests }}
+      expires_at: ${{ steps.quota.outputs.expires_at }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - name: Compile read-only quota gate
+        run: npx tsc scripts/recovery/gate.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
+      - name: Verify complete durable run ledger
+        id: quota
+        run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/gate.js"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RECOVERY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'backfill' }}
+
+  ingest:
+    # This exact name is used by the all-attempt skipped-job proof.
+    name: Ingest player data
+    needs: quota
+    if: needs.quota.outputs.allowed == 'true' && github.repository == 'fxy2026/nba-tracker' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - name: Verify ingestion code before credential access
+        run: npm test && npx tsc --noEmit
+      - name: Compile bounded ingestor
+        run: npx tsc scripts/recovery/ingest.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
+      - name: Verify known provider snapshots
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'verify'
+        run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
+        env:
+          BIGBALLSDATA_API_KEY: ${{ secrets.BIGBALLSDATA_API_KEY }}
+          RECOVERY_MODE: verify
+          RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
+          RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
+          RECOVERY_REQUEST_LIMIT: '3'
+      - name: Fetch and normalize provider data
+        if: github.event_name != 'workflow_dispatch' || inputs.mode == 'backfill'
+        run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
+        env:
+          BIGBALLSDATA_API_KEY: ${{ secrets.BIGBALLSDATA_API_KEY }}
+          RECOVERY_MODE: backfill
+          RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
+          RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
+          RECOVERY_REQUEST_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.max_requests || '100' }}
+      - name: Verify normalized snapshot changes
+        run: npm test && npx tsc --noEmit
+      - name: Publish one data-only commit without force
+        run: |
+          if git diff --quiet -- src/data/provider-player-boxes.json src/data/provider-recovery-state.json; then
+            echo 'No data changes to publish.'
+            exit 0
+          fi
+          git fetch origin master
+          if [ "$(git rev-parse origin/master)" != "$GITHUB_SHA" ]; then
+            echo 'Master advanced; keeping concurrent changes untouched and withholding this batch.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- src/data/provider-player-boxes.json src/data/provider-recovery-state.json
+          git commit -m 'Update provider player-stat snapshots'
+          git push origin HEAD:master
