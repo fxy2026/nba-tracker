@@ -116,8 +116,9 @@ function canonicalHash(value:unknown):string {
 /** Resolved originals remain immutable evidence; they are never rendered or
  * added as a second active owner of the same game/provider match. */
 export function assertResolvedHistory(root:string,verified:Record<string,RecoveredPlayerBox>){
+ const supplemented=assertSupplementedHistory(root,verified);
  const path=join(root,'resolved-player-box-quarantine.json');
- const mixed=Object.values(verified).filter(box=>box.provider==='BigBallsData + NBA official final report');
+ const mixed=Object.values(verified).filter(box=>box.provider==='BigBallsData + NBA official final report'&&!supplemented.has(box.gameId));
  if(!existsSync(path)){if(mixed.length)throw new Error('Mixed-source recovery needs resolution history');return;}
  const registry:unknown=JSON.parse(readFileSync(path,'utf8'));
  if(!record(registry))throw new Error('Invalid resolution registry');
@@ -156,4 +157,40 @@ export function assertResolvedHistory(root:string,verified:Record<string,Recover
   if(official.length!==1||official.length!==resolution.officialRowsAdded||box.players.length!==original.players.length||box.players.length-official.length!==resolution.providerRowsPreserved||
     official.some(player=>player.providerPlayerId!==null||player.officialSource?.reportSha256!==resolution.officialReportSha256))throw new Error('Resolved source attribution mismatch');
  }
+}
+
+/** Missing provider rows are additions, not identity replacements. Preserve the
+ * previously verified partial box byte-for-byte outside the active store. */
+export function assertSupplementedHistory(root:string,verified:Record<string,RecoveredPlayerBox>):Set<string>{
+ const path=join(root,'supplemented-player-box-history.json');
+ const active=Object.values(verified).filter(box=>box.sourceSupplement);
+ if(!existsSync(path)){if(active.length)throw new Error('Supplement history missing');return new Set();}
+ const registry:unknown=JSON.parse(readFileSync(path,'utf8'));
+ if(!record(registry)||Object.keys(registry).length!==active.length)throw new Error('Supplement history coverage mismatch');
+ const directory=join(root,'supplemented-player-box-originals');
+ const files=readdirSync(directory).sort();
+ if(files.length!==active.length)throw new Error('Supplement original count mismatch');
+ const ids=new Set<string>();
+ for(const file of files){
+  if(!/^\d{10}\.json$/.test(file)||!lstatSync(join(directory,file)).isFile())throw new Error('Invalid supplement original filename');
+  const id=file.slice(0,-5),entry=registry[id],box=verified[id];
+  if(!record(entry)||!box?.sourceSupplement||entry.status!=='completed-with-independent-official-supplement')throw new Error('Unbound supplement original');
+  const bytes=readFileSync(join(directory,file)),original:unknown=JSON.parse(bytes.toString());
+  if(!record(original)||original.gameId!==id||original.provider!=='BigBallsData'||original.sourceSupplement!==undefined||!record(original.playedCoverage)||!Array.isArray(original.players)
+   ||entry.originalFileSha256!==createHash('sha256').update(bytes).digest('hex')||entry.originalSnapshotSha256!==canonicalHash(original)
+   ||entry.supplementedSnapshotSha256!==canonicalHash(box)||canonicalHash(entry.sourceSupplement)!==canonicalHash(box.sourceSupplement))throw new Error('Supplement original or binding changed');
+  const supplement=box.sourceSupplement,coverage=original.playedCoverage;
+  if(coverage.officialPlayedPlayerCount!==supplement.officialPlayedPlayerCount||coverage.reportUrl!==supplement.reportUrl||coverage.reportSha256!==supplement.reportSha256
+   ||!Array.isArray(coverage.missingOfficialPlayedPlayers)||coverage.missingOfficialPlayedPlayers.length!==supplement.addedOfficialPlayerNames.length
+   ||original.players.length!==supplement.originalProviderPlayerCount)throw new Error('Supplement does not close original missing coverage');
+  for(let index=0;index<original.players.length;index++)if(canonicalHash(original.players[index])!==canonicalHash(box.players[index]))throw new Error('Previously verified player changed');
+  const added=box.players.slice(original.players.length);
+  if(added.length!==coverage.missingOfficialPlayedPlayers.length||added.some(player=>player.source!=='NBA official final report'||player.providerPlayerId!==null
+   ||!(coverage.missingOfficialPlayedPlayers as unknown[]).some((missing:unknown)=>record(missing)&&missing.officialName===player.name&&missing.team===player.team)))throw new Error('Supplemented identity not independently supported');
+  const expected={...original,provider:'BigBallsData + NBA official final report',players:[...original.players,...added],sourceSupplement:supplement};
+  Reflect.deleteProperty(expected,'playedCoverage');
+  if(canonicalHash(expected)!==canonicalHash(box))throw new Error('Original box metadata changed');
+  ids.add(id);
+ }
+ return ids;
 }

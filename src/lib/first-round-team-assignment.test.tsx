@@ -3,6 +3,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {createHash} from 'node:crypto';
 import {expect,it} from 'vitest';
 import archive from '../data/recovered-player-boxes.json';
+import originalPartial from '../data/supplemented-player-box-originals/0042500164.json';
 import generic from '../data/provider-player-boxes.json';
 import proof from '../data/recovered-player-box-provenance.json';
 import fixture from './fixtures/first-round-promotion-source-hashes.json';
@@ -11,7 +12,7 @@ import {validateRecoveredPlayerBox,type RecoveredPlayerBox as Box} from './recov
 import RecoveredPlayerBox from '../app/game/[id]/_components/RecoveredPlayerBox';
 const stable=(value:unknown):string=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 const hash=(value:unknown)=>createHash('sha256').update(stable(value)).digest('hex');
-const boxes=archive as Record<string,Box>;
+const boxes={...archive,'0042500164':originalPartial} as Record<string,Box>;
 const gameFor=(id:string)=>schedule.dates.flatMap(d=>d.games).find(g=>g.gameId===id)!;
 const ids=Object.keys(fixture.sources);
 it('preserves all35 previously verified snapshots exactly',()=>{for(const[id,sha]of Object.entries(fixture.oldVerified))expect(hash(boxes[id])).toBe(sha);});

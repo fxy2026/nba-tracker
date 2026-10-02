@@ -2,7 +2,7 @@
   "gameId": "0042500164",
   "gameDate": "2026-04-25",
   "season": "2025-26",
-  "provider": "BigBallsData + NBA official final report",
+  "provider": "BigBallsData",
   "providerMatchId": "a5fed3d7-54aa-4522-a8db-ed23c05314c6",
   "retrievedAt": "2026-10-02T14:12:03.258Z",
   "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
@@ -447,86 +447,26 @@
       "plusMinus": -7,
       "starter": true,
       "minutes": 23
-    },
-    {
-      "name": "DaRon Holmes II",
-      "team": "DEN",
-      "providerPlayerId": null,
-      "source": "NBA official final report",
-      "minutes": 0,
-      "starter": false,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "plusMinus": 0,
-      "officialSource": {
-        "kind": "independent-official-player-record",
-        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
-        "reportSha256": "419dd85d21a450f06b6b9c6201bd0b4a0fdb7cbd5c3c2e7236c3e41f9a404fb7",
-        "page": 1,
-        "verifiedOn": "2026-10-02",
-        "jerseyNumber": "14",
-        "position": null,
-        "officialDuration": "00:01"
-      }
-    },
-    {
-      "name": "Jalen Pickett",
-      "team": "DEN",
-      "providerPlayerId": null,
-      "source": "NBA official final report",
-      "minutes": 0,
-      "starter": false,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "plusMinus": 0,
-      "officialSource": {
-        "kind": "independent-official-player-record",
-        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
-        "reportSha256": "419dd85d21a450f06b6b9c6201bd0b4a0fdb7cbd5c3c2e7236c3e41f9a404fb7",
-        "page": 1,
-        "verifiedOn": "2026-10-02",
-        "jerseyNumber": "24",
-        "position": null,
-        "officialDuration": "00:01"
-      }
     }
   ],
-  "sourceSupplement": {
-    "reason": "absent-from-provider-snapshot",
-    "originalProviderPlayerCount": 19,
+  "playedCoverage": {
+    "status": "partial",
     "officialPlayedPlayerCount": 21,
-    "addedOfficialPlayerNames": [
-      "DaRon Holmes II",
-      "Jalen Pickett"
-    ],
+    "source": "NBA official final report",
     "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
     "reportSha256": "419dd85d21a450f06b6b9c6201bd0b4a0fdb7cbd5c3c2e7236c3e41f9a404fb7",
-    "verifiedOn": "2026-10-02"
+    "verifiedOn": "2026-10-02",
+    "missingOfficialPlayedPlayers": [
+      {
+        "officialName": "DaRon Holmes II",
+        "team": "DEN",
+        "reason": "absent-from-provider-snapshot"
+      },
+      {
+        "officialName": "Jalen Pickett",
+        "team": "DEN",
+        "reason": "absent-from-provider-snapshot"
+      }
+    ]
   }
 }

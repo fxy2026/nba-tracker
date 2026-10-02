@@ -19,7 +19,7 @@ export interface RecoveredPlayerLine {
     page: number;
     verifiedOn: string;
     jerseyNumber: string;
-    position: string;
+    position: string | null;
     officialDuration: string;
   };
   providerPlayerId?: string | null;
@@ -73,6 +73,15 @@ export interface RecoveredPlayerBox {
   awayScore: number;
   players: RecoveredPlayerLine[];
   excludedProviderRecords?: number;
+  sourceSupplement?: {
+    reason: "absent-from-provider-snapshot";
+    originalProviderPlayerCount: number;
+    officialPlayedPlayerCount: number;
+    addedOfficialPlayerNames: string[];
+    reportUrl: string;
+    reportSha256: string;
+    verifiedOn: string;
+  };
   playedCoverage?: {
     status: "partial";
     source: "NBA official final report";
@@ -117,7 +126,7 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
         !count(evidence.page) || evidence.page < 1 || typeof evidence.verifiedOn !== "string" ||
         !/^\d{4}-\d{2}-\d{2}$/.test(evidence.verifiedOn) || !Number.isFinite(Date.parse(evidence.verifiedOn)) ||
         typeof evidence.jerseyNumber !== "string" || !/^\d{1,2}$/.test(evidence.jerseyNumber) ||
-        typeof evidence.position !== "string" || !evidence.position.trim() ||
+        !((typeof evidence.position === "string" && evidence.position.trim()) || (evidence.position === null && p.starter === false)) ||
         typeof evidence.officialDuration !== "string" || !/^\d{2}:[0-5]\d$/.test(evidence.officialDuration)) return null;
       const [minutes, seconds] = evidence.officialDuration.split(":").map(Number);
       if (p.minutes !== Math.round(minutes + seconds / 60)) return null;
@@ -152,6 +161,20 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
     if (count(p.rebounds) && count(p.offensiveRebounds) && count(p.defensiveRebounds) && p.offensiveRebounds + p.defensiveRebounds !== p.rebounds) return null;
   }
   if (mixed && officialRows === 0) return null;
+  if (raw.sourceSupplement !== undefined) {
+    const supplement = raw.sourceSupplement;
+    const official = raw.players.filter(p => p.source === "NBA official final report");
+    if (!mixed || raw.playedCoverage !== undefined || !object(supplement) || supplement.reason !== "absent-from-provider-snapshot"
+      || !count(supplement.originalProviderPlayerCount) || supplement.originalProviderPlayerCount === 0
+      || supplement.officialPlayedPlayerCount !== raw.players.length || raw.players.length > 50
+      || supplement.originalProviderPlayerCount + officialRows !== raw.players.length
+      || supplement.reportUrl !== raw.reportUrl || typeof supplement.reportSha256 !== "string" || !/^[0-9a-f]{64}$/.test(supplement.reportSha256)
+      || typeof supplement.verifiedOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(supplement.verifiedOn) || !Number.isFinite(Date.parse(supplement.verifiedOn))
+      || !Array.isArray(supplement.addedOfficialPlayerNames) || supplement.addedOfficialPlayerNames.length !== officialRows
+      || new Set(supplement.addedOfficialPlayerNames).size !== officialRows
+      || official.some(p => !(supplement.addedOfficialPlayerNames as unknown[]).includes(p.name) || !object(p.officialSource)
+        || p.officialSource.reportSha256 !== supplement.reportSha256 || p.officialSource.verifiedOn !== supplement.verifiedOn)) return null;
+  }
   if (raw.playedCoverage !== undefined) {
     const coverage = raw.playedCoverage;
     if (!object(coverage) || coverage.status !== "partial" || coverage.source !== "NBA official final report" ||

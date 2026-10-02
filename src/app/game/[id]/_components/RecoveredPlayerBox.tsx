@@ -5,6 +5,7 @@ const split = (made: number | null, attempted: number | null) => `${value(made)}
 
 export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; isZh: boolean }) {
   const hasOfficialRows = box.players.some(player => player.source === "NBA official final report");
+  const supplementDurations = box.players.filter(player => player.source === "NBA official final report").map(player => `${player.name} ${player.officialSource?.officialDuration}`).join(", ");
   const hasBlockCorrections = box.players.some(player => player.blocksCorrection);
   const hasMinuteCorrections = box.players.some(player => player.minutesCorrection);
   const columns = ["MIN ≈", "PTS", "REB", "AST", "FG", "3PT", "FT", "OREB", "DREB", "STL", "BLK", "TO", "PF", "+/−"];
@@ -20,9 +21,12 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
       <p className="text-xs text-text-secondary">{isZh
         ? "本场历史球队归属与球员得分已对照 NBA 官方报告核验。分钟为取整值（标记 † 的校正见下方）；未列出未出场球员。"
         : "Historical team assignments and player points were checked against the NBA official report. Minutes are rounded (see any † corrections below); non-playing roster members are not listed."}</p>
-      {hasOfficialRows && <p className="text-sm text-text-secondary">{isZh
+      {hasOfficialRows && !box.sourceSupplement && <p className="text-sm text-text-secondary">{isZh
         ? "原数据源存在球员身份错误。标记 ‡ 的整条球员记录独立取自本场 NBA 官方报告，未沿用错误的数据源身份编号；其余数据源记录也已逐项核验。原始错误记录保留在公开历史证据中。"
         : "The original provider had a player identity error. Each ‡ player line is independently sourced from this game's NBA official report, without reusing the incorrect provider identity. Other provider rows were also checked field by field; the original records remain in the public audit history."}</p>}
+      {box.sourceSupplement && <p className="text-sm text-text-secondary">{isZh
+        ? `已按本场 NBA 官方报告独立补全 ${box.sourceSupplement.addedOfficialPlayerNames.join("、")} 的出场记录，现显示 ${box.players.length}/${box.sourceSupplement.officialPlayedPlayerCount} 人。标记 ‡ 的记录未使用数据源身份编号；原有 ${box.sourceSupplement.originalProviderPlayerCount} 条记录与此前缺项说明保留在历史存档。官方出场时间：${supplementDurations}；MIN 按最近分钟取整，0 不代表 DNP 或缺失值。`
+        : `Missing appearances for ${box.sourceSupplement.addedOfficialPlayerNames.join(", ")} were independently added from this game's NBA official report: ${box.players.length} of ${box.sourceSupplement.officialPlayedPlayerCount} played players are shown. Each ‡ row has no provider identity; the original ${box.sourceSupplement.originalProviderPlayerCount} rows and prior coverage note remain in history. Official durations: ${supplementDurations}. MIN is rounded to the nearest minute; 0 is not a DNP or missing value.`}</p>}
       {hasMinuteCorrections && <p className="text-xs text-text-secondary">{isZh
         ? "† 分钟已按本场 NBA 官方报告校正并四舍五入；原始数据源分钟保留在公开存档的校正记录中，其他统计未作推算。"
         : "† Minutes corrected from this game's NBA official report and rounded to the nearest minute. Original provider minutes are retained in the public archive correction record; no other stats were estimated."}</p>}

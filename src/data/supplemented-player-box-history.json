@@ -1,0 +1,20 @@
+{
+  "0042500164": {
+    "status": "completed-with-independent-official-supplement",
+    "originalFileSha256": "7a5bba1ef401a1a478d8917fd745e39bbb670c088f9c1a277806e3407aef5b16",
+    "originalSnapshotSha256": "072805b75462df41caeede968fb6c555a8ba0cb68ea2f6d7553e7ca7d3d32770",
+    "supplementedSnapshotSha256": "66a4d83de8b57f7a22a5ff65a05edfb4f63a4d21e07eef28e27662be38e248a2",
+    "sourceSupplement": {
+      "reason": "absent-from-provider-snapshot",
+      "originalProviderPlayerCount": 19,
+      "officialPlayedPlayerCount": 21,
+      "addedOfficialPlayerNames": [
+        "DaRon Holmes II",
+        "Jalen Pickett"
+      ],
+      "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
+      "reportSha256": "419dd85d21a450f06b6b9c6201bd0b4a0fdb7cbd5c3c2e7236c3e41f9a404fb7",
+      "verifiedOn": "2026-10-02"
+    }
+  }
+}
