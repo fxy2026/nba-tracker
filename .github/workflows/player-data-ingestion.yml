@@ -1,9 +1,6 @@
 name: Recover NBA player data
 run-name: ${{ github.event_name == 'push' && 'Diagnose NBA game membership' || github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
 on:
-  push:
-    branches: ['master']
-    paths: ['.github/recovery-kickoff/2026-10-02-membership-diagnostic-3.json']
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
@@ -78,7 +75,7 @@ jobs:
       - name: Verify ingestion code before credential access
         run: npm test && npx tsc --noEmit
       - name: Compile bounded ingestor
-        run: npx tsc scripts/recovery/ingest.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
+        run: npx tsc scripts/recovery/ingest.ts scripts/recovery/check-pending-batch.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
       - name: Verify known provider snapshots
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'verify'
         run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
@@ -125,9 +122,28 @@ jobs:
           RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
           RECOVERY_REQUEST_LIMIT: '3'
       - name: Verify normalized snapshot changes
+        id: verified_data
         run: npm test && npx tsc --noEmit
+      - name: Validate temporary recovery bundle without credentials
+        id: pending_bundle
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/check-pending-batch.js" ]; then
+            node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/check-pending-batch.js"
+          fi
+      - name: Retain validated data if publication is interrupted
+        if: always() && steps.pending_bundle.outputs.ready == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: nba-player-pending-${{ github.run_id }}
+          path: ${{ runner.temp }}/nba-player-pending-${{ github.run_id }}/*.json
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+          include-hidden-files: false
+          overwrite: false
       - name: Publish one data-only commit without force
-        if: github.event_name != 'push'
+        if: always() && !cancelled() && github.event_name != 'push' && steps.verified_data.outcome == 'success' && steps.pending_bundle.outcome == 'success'
         run: |
           git add -- src/data/provider-player-boxes/ src/data/provider-recovery-state.json
           if git diff --cached --quiet; then
@@ -136,8 +152,8 @@ jobs:
           fi
           git fetch origin master
           if [ "$(git rev-parse origin/master)" != "$GITHUB_SHA" ]; then
-            echo 'Master advanced; keeping concurrent changes untouched and withholding this batch.'
-            exit 0
+            echo 'Master advanced; data was not published. If the recovery bundle upload succeeded, it can be restored within 7 days.'
+            exit 1
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

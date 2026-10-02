@@ -12,7 +12,17 @@ import{createRecoveryProviderClient}from'./recovery-provider-client';
 
 const box=verified['0022500961'];
 function sample():ProviderBasicSnapshot{return{version:1,provider:'BigBallsData',coverage:'provider-basic-unassigned',game:{nbaGameId:box.gameId,providerMatchId:box.providerMatchId,season:box.season,gameDate:box.gameDate,home:{tricode:box.home,score:box.homeScore},away:{tricode:box.away,score:box.awayScore}},retrievedAt:box.retrievedAt,retrievedAtPrecision:'approximate-minute',players:box.players.map(p=>({...p,team:null,providerPlayerId:null,minutesRounded:p.minutes})),validation:{combinedPoints:236,historicalTeams:'unassigned',officialReportChecked:false}};}
-it('target generation is bounded, canonical and skips all stronger/cached rows',()=>{const targets=selectRecoveryTargets(schedule,new Set(Object.keys(verified)),null);expect(targets).toHaveLength(20);expect(targets.every(g=>g.season==='2025-26'&&g.lookupDates.includes(g.gameDate)&&g.lookupDates.length<=2&&/^00[1245]25/.test(g.nbaGameId))).toBe(true);expect(targets.some(g=>Object.hasOwn(verified,g.nbaGameId))).toBe(false);});
+it('target generation is bounded, canonical and skips all stronger/cached rows',()=>{const targets=selectRecoveryTargets(schedule,new Set(Object.keys(verified)),null);expect(targets.length).toBeLessThanOrEqual(20);expect(new Set(targets.map(g=>g.nbaGameId)).size).toBe(targets.length);expect(targets.every(g=>g.season==='2025-26'&&g.lookupDates.includes(g.gameDate)&&g.lookupDates.length<=2&&/^00[1245]25/.test(g.nbaGameId))).toBe(true);expect(targets.some(g=>Object.hasOwn(verified,g.nbaGameId))).toBe(false);});
+it('target generation remains valid as durable coverage reaches exhaustion',()=>{
+ const games=Array.from({length:23},(_,index)=>({gameId:`00225${String(index+1).padStart(5,'0')}`,gameStatus:3,gameCode:'20260313/MEMDET',gameDateTimeUTC:'2026-03-13T23:00:00Z',homeTeam:{teamTricode:'DET',score:100+index},awayTeam:{teamTricode:'MEM',score:90}}));
+ const source={dates:[{games}]};
+ for(const remaining of [23,20,19,1,0]){
+  const saved=new Set(games.slice(remaining).map(g=>g.gameId));
+  const targets=selectRecoveryTargets(source,saved,null);
+  expect(targets).toHaveLength(Math.min(remaining,20));
+  expect(targets.every(g=>!saved.has(g.nbaGameId))).toBe(true);
+ }
+});
 it('persisted cursor advances after unavailable candidates instead of retrying only newestgames',()=>{const first=selectRecoveryTargets(schedule,new Set(),null,2);const next=selectRecoveryTargets(schedule,new Set(),first[1].nbaGameId,2);expect(next[0].nbaGameId).not.toBe(first[0].nbaGameId);expect(next[0].nbaGameId).not.toBe(first[1].nbaGameId);});
 it('validates saved combined snapshot without adding team assignment',()=>{const result=validateProviderPlayerSnapshot(sample())!;expect(result.players).toHaveLength(22);expect(result.players.every(p=>p.team===null)).toBe(true);});
 it.each(['score','team','points','date','nan','official-claim'])('saved snapshot rejects%s corruption',kind=>{const raw=sample();if(kind==='score')raw.game.home.score++;if(kind==='team')Reflect.set(raw.players[0],'team','DET');if(kind==='points')raw.players[0].points++;if(kind==='date')raw.game.gameDate='2026-02-30';if(kind==='nan')raw.players[0].minutesRounded=NaN;if(kind==='official-claim')Reflect.set(raw.validation,'officialReportChecked',true);expect(validateProviderPlayerSnapshot(raw)).toBeNull();});

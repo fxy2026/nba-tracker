@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+import { writePendingBatch } from './pending-batch';
 import { readStoredArchives, buildStoredSnapshotIndex, writeNewSnapshots } from './snapshot-store';
 import { RECOVERY_DAILY_LIMIT } from "../../src/lib/recovery-run-budget";
 import { readFileSync,writeFileSync,renameSync,appendFileSync } from 'node:fs';
@@ -49,7 +51,12 @@ async function main(){
   const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
   const result=mode==='restore'?await recoverFinalsSample(read('src/data/schedule-2025-26.json'),client,existing,existingMatches):await runRecoveryChunks(read('src/data/schedule-2025-26.json'),existing,cursor,client,maxRequests,verifiedIds,existingMatches,process.env.GITHUB_EVENT_NAME==='push'?2:1);
   const write=(path:string,value:unknown)=>{const temp=`${path}.tmp`;writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});renameSync(temp,path);};
-  if(result.accepted.length)writeNewSnapshots('src/data/provider-player-boxes',result.accepted,verifiedIds);
+  if(result.accepted.length){
+    const root=process.env.RUNNER_TEMP,runId=Number(process.env.GITHUB_RUN_ID),baseSha=process.env.GITHUB_SHA??'';
+    if(!root)throw new Error('Missing temporary capture directory');
+    writePendingBatch(join(root,`nba-player-pending-${runId}`),result.accepted,{baseSha,runId},verifiedIds);
+    writeNewSnapshots('src/data/provider-player-boxes',result.accepted,verifiedIds);
+  }
   const diagnostics={requests:result.requests,accepted:result.accepted.length,withheld:result.rejected.slice(0,40)};
   if(result.requests>0)write('src/data/provider-recovery-state.json',{version:1,cursor:result.cursor??cursor,lastRunAt:new Date().toISOString(),lastBatch:diagnostics});
   const summary=`Provider recovery: ${result.requests} requests, ${result.accepted.length} accepted, ${result.rejected.length} withheld.\n`;
