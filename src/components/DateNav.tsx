@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { offsetCalendarDate, calendarDateLabels } from "@/lib/calendar-date";
-import { localToday, localTz } from "@/lib/timezone";
+import { homeDateUrl } from "@/lib/date-navigation";
+import { dateInTz, localTz } from "@/lib/timezone";
 
 interface DateNavProps {
   selectedDate: string;
+  timeZone?: string;
   onDateChange?: (date: string) => void;
 }
 
@@ -17,7 +19,7 @@ interface DateNavProps {
 const NO_TODAY = "";
 
 
-export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
+export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNavProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const router = useRouter();
@@ -29,7 +31,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag: localTz() is unknowable during SSR
   useEffect(() => setMounted(true), []);
   const tzLabel = useMemo(() => {
-    const tz = localTz();
+    const tz = timeZone ?? localTz();
     if (tz === "Asia/Shanghai" || tz === "Asia/Hong_Kong" || tz === "Asia/Macau") {
       return t.common.beijingTime;
     }
@@ -39,16 +41,16 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
     })
       .formatToParts(new Date())
       .find((p) => p.type === "timeZoneName")?.value;
-    return short ? `${t.dateNav.localTimeZone} ${short}` : t.dateNav.localTimeZone;
-  }, [locale, t]);
+    return timeZone ? `${isZh ? "日期时区" : "Date timezone"}: ${timeZone} (${short ?? timeZone})` : short ? `${t.dateNav.localTimeZone} ${short}` : t.dateNav.localTimeZone;
+  }, [locale, t, timeZone, isZh]);
 
   const navigate = useCallback((date: string) => {
     if (onDateChange) {
       onDateChange(date);
     }
     // Update URL without full page reload — shallow push
-    router.push(`/?date=${date}`, { scroll: false });
-  }, [onDateChange, router]);
+    router.push(homeDateUrl(date, timeZone), { scroll: false });
+  }, [onDateChange, router, timeZone]);
 
   // Keyboard navigation: left/right arrows
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   // client), so it's only safe to compare against post-mount; pre-mount we use a
   // sentinel that matches no date, keeping the chip highlight + reset chip absent
   // on first paint to match the server HTML.
-  const today = useMemo(() => (mounted ? localToday() : NO_TODAY), [mounted]);
+  const today = useMemo(() => (mounted ? dateInTz(new Date(), timeZone ?? localTz()) : NO_TODAY), [mounted, timeZone]);
 
   const prevDate = offsetCalendarDate(selectedDate, -1);
   const nextDate = offsetCalendarDate(selectedDate, 1);

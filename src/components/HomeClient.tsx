@@ -11,6 +11,8 @@ import StandingsMini from "./StandingsMini";
 import RecentlyViewed from "./RecentlyViewed";
 import { useLocale } from "@/components/LocaleProvider";
 import { localTz as getLocalTz, dateInTz } from "@/lib/timezone";
+import { offsetCalendarDate } from "@/lib/calendar-date";
+import { explicitTimeZone, homeDateUrl } from "@/lib/date-navigation";
 import { selectedDateFromUrl } from "@/lib/schedule-navigation";
 import type { ScheduleGame } from "@/lib/api";
 
@@ -28,6 +30,7 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday }
   const searchParams = useSearchParams();
   const router = useRouter();
   const explicitDate = searchParams.get("date");
+  const chosenTimeZone = explicitTimeZone(searchParams.get("tz"));
   const [selectedDate, setSelectedDate] = useState(initialDate);
   // localTz() reads Intl at runtime → unknowable during SSR (server resolves to
   // UTC, client to the browser tz). Gate every tz-dependent branch behind this
@@ -41,35 +44,33 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday }
   // Keep explicit date links and browser Back/Forward in sync. A bare Home URL
   // resolves to local today only after mount, preserving the SSR first paint.
   useEffect(() => {
-    const nextDate = selectedDateFromUrl(explicitDate, dateInTz(new Date(), getLocalTz()));
+    const nextDate = selectedDateFromUrl(explicitDate, dateInTz(new Date(), chosenTimeZone ?? getLocalTz()));
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync controlled date from navigation after hydration
     setSelectedDate(nextDate);
-  }, [explicitDate]);
+  }, [explicitDate, chosenTimeZone]);
 
   // Server-stable on first paint (uses the server's own isToday verdict), then
   // switch to the real local tz post-mount so the snap-to-local-today correction
   // and a tz-shifted user's true "today" are honored.
   const isToday = mounted
-    ? selectedDate === dateInTz(new Date(), getLocalTz())
+    ? selectedDate === dateInTz(new Date(), chosenTimeZone ?? getLocalTz())
     : initialIsToday;
 
   return (
     <>
-      <DateNav selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      <DateNav timeZone={chosenTimeZone} selectedDate={selectedDate} onDateChange={setSelectedDate} />
       {/* Personalized "Following" strip — renders nothing for users without
           followed teams, so the scoreboard stays at the top for everyone else. */}
       <FollowStrip />
       {mounted && isToday && (() => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = dateInTz(yesterday, getLocalTz());
+        const yStr = offsetCalendarDate(selectedDate,-1);
         return (
           <div className="mt-2 mb-1">
             {/* The single most common morning action for a tz-shifted audience —
                 "show me last night's finals" — promoted from a footnote link to a
                 prominent glass-tile pill matching the DateNav "Today" reset chip. */}
             <button
-              onClick={() => { setSelectedDate(yStr); router.push(`/?date=${yStr}`, { scroll: false }); }}
+              onClick={() => { setSelectedDate(yStr); router.push(homeDateUrl(yStr, chosenTimeZone), { scroll: false }); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 glass-tile text-xs font-medium text-text-primary hover:border-accent/50 hover:text-accent transition-colors cursor-pointer"
             >
               <ChevronLeft size={14} className="shrink-0" />
@@ -83,8 +84,10 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday }
           tz-correction snapped to a different local "today", GamesList falls
           back to its own fetch for the new date. */}
       <GamesList
+        key={chosenTimeZone ?? "local"}
+        timeZone={chosenTimeZone}
         selectedDate={selectedDate}
-        initialGames={selectedDate === initialDate ? initialGames : undefined}
+        initialGames={!chosenTimeZone && selectedDate === initialDate ? initialGames : undefined}
         isToday={isToday}
       />
 

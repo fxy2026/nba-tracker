@@ -1,32 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import { ChevronLeft, ChevronRight, CalendarDays, ListOrdered, Calendar, Repeat, Crown } from "lucide-react";
-import { CURRENT_SEASON } from "@/lib/constants";
+import { calendarSeason, homeDateUrl } from "@/lib/date-navigation";
+import { normalizeCalendarMonth, type CalendarDay } from "@/lib/calendar-month";
 import Image from "next/image";
 import { TEAM_META } from "@/lib/teams";
 import { useLocale } from "@/components/LocaleProvider";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { localTz } from "@/lib/timezone";
-
-interface CalendarGame {
-  gameId: string;
-  homeTricode: string;
-  awayTricode: string;
-  gameStatus: number;
-  homeScore: number;
-  awayScore: number;
-}
-
-interface CalendarDay {
-  date: string;
-  gameCount: number;
-  games: CalendarGame[];
-}
 
 function getMonthStr(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -55,15 +41,23 @@ function getLocalParts(tz: string): { year: number; month: number; day: number; 
 }
 
 export default function CalendarPage() {
-  const router = useRouter();
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const tz = localTz();
+  const [tz, setTz] = useState("UTC");
+  const [ready, setReady] = useState(false);
   const et = getLocalParts(tz);
   const [year, setYear] = useState(et.year);
   const [month, setMonth] = useState(et.month); // 0-indexed (local tz)
-  const [days, setDays] = useState<CalendarDay[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [response, setResponse] = useState<{key:string;days:CalendarDay[];loading:boolean;error:boolean}>({key:"",days:[],loading:true,error:false});
+  const [retry, setRetry] = useState(0);
+  const requestKey = `${getMonthStr(year,month)}:${tz}`;
+  const current = response.key === requestKey ? response : {days:[],loading:true,error:false};
+  const {days,loading,error} = current;
+  useEffect(() => {
+    const zone=localTz(), local=getLocalParts(zone);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate browser timezone without SSR mismatch
+    setTz(zone);setYear(local.year);setMonth(local.month);setReady(true);
+  }, []);
 
   const today = et.todayStr;
 
@@ -77,19 +71,21 @@ export default function CalendarPage() {
     t.calendarPage.sat,
   ];
 
-  // Data fetch with loading reset on dep change. Initial render already has loading=true,
-  // so the setLoading(true) only fires on subsequent month changes (intentional).
   useEffect(() => {
+    if(!ready)return;
     const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    fetch(`/api/calendar?month=${getMonthStr(year, month)}&tz=${encodeURIComponent(tz)}`, { signal: controller.signal })
-      .then((r) => r.ok ? r.json() : null)
-      .then((json) => { if (json && !controller.signal.aborted) setDays(json.data || []); })
-      .catch(() => {})
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
-  }, [year, month, tz]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keyed async request state
+    setResponse({key:requestKey,days:[],loading:true,error:false});
+    fetch(`/api/calendar?month=${getMonthStr(year,month)}&tz=${encodeURIComponent(tz)}`,{signal:controller.signal})
+      .then(async response => {
+        if(!response.ok)throw new Error("Calendar unavailable");
+        const data=normalizeCalendarMonth(await response.json(),getMonthStr(year,month));
+        if(!data)throw new Error("Invalid calendar response");
+        if(!controller.signal.aborted)setResponse({key:requestKey,days:data,loading:false,error:false});
+      })
+      .catch(()=>{if(!controller.signal.aborted)setResponse({key:requestKey,days:[],loading:false,error:true});});
+    return ()=>controller.abort();
+  },[year,month,tz,requestKey,retry,ready]);
 
   const goToPrevMonth = () => {
     if (month === 0) { setYear(year - 1); setMonth(11); }
@@ -102,8 +98,8 @@ export default function CalendarPage() {
   };
 
   // Build calendar grid
-  const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(Date.UTC(year, month, 1)).getUTCDay(); // 0=Sun
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
   const dayMap = new Map<string, CalendarDay>();
   for (const d of days) {
@@ -121,7 +117,8 @@ export default function CalendarPage() {
     cells.push({ day: d, date: dateStr, calDay: dayMap.get(dateStr) || null });
   }
 
-  const monthLabel = new Date(year, month, 1).toLocaleDateString("en-US", {
+  const monthLabel = new Date(Date.UTC(year, month, 1)).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+    timeZone: "UTC",
     year: "numeric",
     month: "long",
   });
@@ -136,16 +133,16 @@ export default function CalendarPage() {
       />
       {/* Header */}
       <PageHeader
-        eyebrow={`${CURRENT_SEASON} ${t.calendarPage.nbaSeason}`}
+        eyebrow={`${calendarSeason(year,month)} ${t.calendarPage.nbaSeason}`}
         icon={CalendarDays}
         title={t.calendarPage.seasonCalendar}
         action={
           <div className="flex items-center gap-2">
-            <button onClick={goToPrevMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
+            <button aria-label={isZh ? "上个月" : "Previous month"} onClick={goToPrevMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
               <ChevronLeft size={18} />
             </button>
             <span className="text-sm font-medium font-mono tabular-nums min-w-[140px] text-center">{monthLabel}</span>
-            <button onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
+            <button aria-label={isZh ? "下个月" : "Next month"} onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
               <ChevronRight size={18} />
             </button>
             {(year !== et.year || month !== et.month) && (
@@ -159,33 +156,14 @@ export default function CalendarPage() {
           </div>
         }
       />
-      {/* Season Phase Label */}
-      {(() => {
-        // Approximate NBA season phases based on month
-        const m = month; // 0-indexed
-        let phase = t.common.offseason;
-        if (m === 9) phase = t.common.preseason; // October
-        else if (m >= 10 || (m >= 0 && m <= 1)) phase = t.common.regularSeason; // Nov-Feb
-        else if (m === 2) phase = t.common.allStarBreak; // March
-        else if (m === 3) phase = t.common.regularSeason; // April (end of regular season)
-        else if (m === 4) phase = t.common.playoffs; // May
-        else if (m === 5) phase = t.common.nbaFinals; // June
-        else if (m >= 6 && m <= 8) phase = t.common.offseason; // Jul-Sep
-        const phaseColor = phase === t.common.playoffs || phase === t.common.nbaFinals ? "text-accent bg-accent/10" :
-          phase === t.common.regularSeason || phase === t.common.allStarBreak ? "text-success bg-success/10" :
-          phase === t.common.preseason ? "text-accent-amber bg-accent-amber/10" :
-          "text-text-secondary bg-bg-hover";
-        return (
-          <div className="mb-4">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${phaseColor}`}>
-              {phase}
-            </span>
-          </div>
-        );
-      })()}
+      {ready && <p className="mb-4 text-xs text-text-secondary">{isZh ? "日期时区" : "Date timezone"}: {tz}</p>}
+      {error && <div role="alert" className="glass-tile p-4 mb-4 text-sm">
+        <p>{isZh ? "本月赛程加载失败，请重试。" : "This month's schedule could not be loaded. Please retry."}</p>
+        <button className="mt-2 text-accent" onClick={()=>setRetry(value=>value+1)}>{isZh ? "重试" : "Retry"}</button>
+      </div>}
 
       {/* Month Summary */}
-      {!loading && days.length > 0 && (() => {
+      {!loading && !error && days.length > 0 && (() => {
         const totalGames = days.reduce((s, d) => s + d.gameCount, 0);
         const gameDays = days.filter((d) => d.gameCount > 0).length;
         const busiestDay = days.reduce((best, d) => d.gameCount > best.gameCount ? d : best, days[0]);
@@ -224,19 +202,21 @@ export default function CalendarPage() {
         ) : (
           <div className="grid grid-cols-7">
             {cells.map((cell, i) => {
+              if (!cell.date) return <div key={i} aria-hidden="true" className="border-b border-r border-border/50 min-h-[80px]" />;
               const isToday = cell.date === today;
               const hasGames = cell.calDay && cell.calDay.gameCount > 0;
               const dayOfWeek = i % 7;
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               return (
-                <div
+                <Link
+                  href={homeDateUrl(cell.date)}
+                  prefetch={false}
+                  aria-label={`${cell.date} · ${error ? (isZh ? "赛程数据不可用" : "Schedule unavailable") : `${cell.calDay?.gameCount ?? 0} ${isZh ? "场已列比赛" : "listed games"}`}`}
                   key={i}
                   className={`border-b border-r border-border/50 p-2 min-h-[80px] transition-colors ${
                     cell.day ? "cursor-pointer hover:bg-bg-hover" : ""
                   } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-success/15" : cell.calDay!.gameCount >= 4 ? "bg-success/10" : "bg-success/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
-                  onClick={() => {
-                    if (cell.date) router.push(`/?date=${cell.date}`);
-                  }}
+
                 >
                   {cell.day && (
                     <>
@@ -291,7 +271,7 @@ export default function CalendarPage() {
                       )}
                     </>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>

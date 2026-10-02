@@ -7,6 +7,8 @@ import type { ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
 import { createLatestRequestGate } from "@/lib/latest-request";
+import { offsetCalendarDate } from "@/lib/calendar-date";
+import { homeDateUrl } from "@/lib/date-navigation";
 import { localTz } from "@/lib/timezone";
 import type { ScheduleNavigation } from "@/lib/schedule-navigation";
 import ScheduleEmptyNavigation from "./ScheduleEmptyNavigation";
@@ -21,6 +23,7 @@ import { useLocale } from "@/components/LocaleProvider";
 
 interface GamesListProps {
   selectedDate: string;
+  timeZone?: string;
   initialGames?: ScheduleGame[];
   initialReplayIds?: string[];
   // Computed in HomeClient behind a post-mount flag (false until hydration) so
@@ -29,7 +32,7 @@ interface GamesListProps {
   isToday: boolean;
 }
 
-export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday }: GamesListProps) {
+export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday, timeZone }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [{ games, navigation, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; date: string }>({ games: initialGames || [], navigation: null, date: selectedDate });
@@ -46,7 +49,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     setResults((previous) => ({ ...previous, navigation: null }));
     try {
       const [gamesRes, replayRes] = await Promise.all([
-        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(localTz())}&navigation=1`, { signal }),
+        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(timeZone ?? localTz())}&navigation=1`, { signal }),
         fetch("/api/replay?action=ids", { signal }).catch(() => null),
       ]);
       if (!gamesRes.ok) throw new Error("Failed to fetch games");
@@ -68,7 +71,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     } finally {
       if (request.isCurrent()) setLoading(false);
     }
-  }, [requests]);
+  }, [requests, timeZone]);
 
   useEffect(() => {
     if (initialFetchDone.current) {
@@ -363,7 +366,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <path d="M10,40 Q40,15 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="M10,40 Q40,65 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <ScheduleEmptyNavigation date={selectedDate} navigation={responseDate === selectedDate ? navigation : null} isZh={isZh} />
+          <ScheduleEmptyNavigation timeZone={timeZone} date={selectedDate} navigation={responseDate === selectedDate ? navigation : null} isZh={isZh} />
           {(() => {
             const facts = [
               "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",
@@ -392,15 +395,9 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <div className="mt-6 w-full max-w-lg">
               <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{isZh ? "更多浏览方式" : "More ways to explore"}</p>
               <div className="grid grid-cols-2 gap-3">
-                <Link href={`/?date=${(() => {
-                  const d = new Date(); d.setDate(d.getDate() - 1);
-                  return new Intl.DateTimeFormat("en-CA", {
-                    timeZone: localTz(),
-                    year: "numeric", month: "2-digit", day: "2-digit",
-                  }).format(d);
-                })()}`} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
+                <Link href={homeDateUrl(offsetCalendarDate(selectedDate,-1), timeZone)} className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.browseRecent}</span>
-                  <span className="text-[10px] text-text-secondary">{t.home.yesterdayResults}</span>
+                  <span className="text-[10px] text-text-secondary">{isZh ? "前一天的比赛" : "Previous day’s games"}</span>
                 </Link>
                 <Link href="/standings" className="flex flex-col items-center gap-1.5 p-4 glass-tile hover:border-accent/50 transition-colors">
                   <span className="text-sm font-medium text-text-primary">{t.home.checkStandings}</span>

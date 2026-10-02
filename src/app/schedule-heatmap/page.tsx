@@ -1,3 +1,5 @@
+import { buildScheduleHeatmap } from "@/lib/schedule-heatmap";
+import { homeDateUrl } from "@/lib/date-navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, Calendar, ListOrdered, Repeat } from "lucide-react";
@@ -12,66 +14,8 @@ export const metadata: Metadata = {
   description: "Game density across the season — see which nights are stacked and which are empty.",
 };
 
-interface DayCell {
-  date: string;     // YYYY-MM-DD
-  display: string;  // MM/DD
-  weekday: number;  // 0-6 (Sun-Sat)
-  games: number;
-  finished: number;
-  isFuture: boolean;
-}
-
-function parseUSDate(s: string): { y: number; m: number; d: number } | null {
-  const date = s.split(" ")[0];
-  const parts = date.split("/");
-  if (parts.length !== 3) return null;
-  const m = parseInt(parts[0]);
-  const d = parseInt(parts[1]);
-  const y = parseInt(parts[2]);
-  if (isNaN(m) || isNaN(d) || isNaN(y)) return null;
-  return { y, m, d };
-}
-
 async function build() {
-  const schedule = await getCurrentSeasonSchedule().catch(() => []);
-  const map = new Map<string, DayCell>();
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-  for (const gd of schedule) {
-    const parsed = parseUSDate(gd.gameDate);
-    if (!parsed) continue;
-    if (gd.games.length === 0) continue;
-    const iso = `${parsed.y}-${String(parsed.m).padStart(2, "0")}-${String(parsed.d).padStart(2, "0")}`;
-    const dateObj = new Date(parsed.y, parsed.m - 1, parsed.d);
-    const cell: DayCell = map.get(iso) || {
-      date: iso,
-      display: `${parsed.m}/${parsed.d}`,
-      weekday: dateObj.getDay(),
-      games: 0,
-      finished: 0,
-      isFuture: iso > todayStr,
-    };
-    cell.games += gd.games.length;
-    cell.finished += gd.games.filter((g) => g.gameStatus === 3).length;
-    map.set(iso, cell);
-  }
-
-  const allDays = [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
-  const totalGames = allDays.reduce((s, d) => s + d.games, 0);
-  const finishedGames = allDays.reduce((s, d) => s + d.finished, 0);
-  const maxGames = allDays.reduce((m, d) => d.games > m ? d.games : m, 0);
-
-  // Group by month
-  const byMonth = new Map<string, DayCell[]>();
-  for (const d of allDays) {
-    const ym = d.date.slice(0, 7);
-    const arr = byMonth.get(ym) || [];
-    arr.push(d);
-    byMonth.set(ym, arr);
-  }
-
-  return { byMonth, totalGames, finishedGames, maxGames, totalDays: allDays.length, todayStr };
+  return buildScheduleHeatmap(await getCurrentSeasonSchedule().catch(() => []));
 }
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -121,6 +65,7 @@ export default async function ScheduleHeatmapPage() {
         updatedAt={getScheduleAge()}
       />
 
+      <p className="text-xs text-text-secondary mb-4">{isZh ? "日期按美国东部时间（America/New_York）；数量为现有赛程中已列出的比赛。" : "Dates use America/New_York (Eastern Time); counts reflect games listed in the available schedule."}</p>
       <div className="space-y-6">
         {months.map((ym) => {
           const days = byMonth.get(ym)!;
@@ -135,7 +80,7 @@ export default async function ScheduleHeatmapPage() {
               <div className="flex items-end justify-between mb-3 flex-wrap gap-2">
                 <h2 className="text-lg font-semibold tracking-tight text-text-primary">{monthLabel}</h2>
                 <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary tabular-nums">
-                  {isZh ? `${monthGames} 场比赛 · ${days.length} 个日期` : `${monthGames} games · ${days.length} dates`}
+                  {isZh ? `${monthGames} 场比赛 · ${days.filter(day=>day.games>0).length} 个比赛日` : `${monthGames} games · ${days.filter(day=>day.games>0).length} game dates`}
                 </span>
               </div>
               <div className="grid grid-cols-7 gap-1.5">
@@ -150,9 +95,11 @@ export default async function ScheduleHeatmapPage() {
                   return (
                     <Link
                       key={d.date}
-                      href={`/calendar?date=${d.date}`}
+                      href={homeDateUrl(d.date,"America/New_York")}
+                      prefetch={false}
                       className={`relative aspect-square rounded-lg flex flex-col items-center justify-center group cursor-pointer transition-all hover:scale-110 ${intensity(d.games, maxGames)} ${isToday ? "ring-2 ring-accent" : ""}`}
-                      title={`${d.display} · ${d.games} game${d.games === 1 ? "" : "s"} · ${d.finished} finished`}
+                      title={`${d.date} · ${d.games} ${isZh ? "场已列比赛" : "listed games"} · America/New_York`}
+                      aria-label={`${d.date} · ${d.games} ${isZh ? "场已列比赛" : "listed games"} · America/New_York`}
                     >
                       <span className="text-[10px] font-mono tabular-nums leading-none text-text-primary group-hover:text-text-primary">
                         {d.display.split("/")[1]}
