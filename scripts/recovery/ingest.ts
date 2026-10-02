@@ -4,18 +4,19 @@ import { createRecoveryProviderClient } from '../../src/lib/recovery-provider-cl
 import { validateProviderPlayerSnapshot } from '../../src/lib/provider-player-snapshot';
 import { verifyKnownProviderSnapshots } from '../../src/lib/recovery-verification';
 import { runPlayoffMetadataDiagnostic } from '../../src/lib/recovery-diagnostic-run';
+import { recoverFinalsSample } from '../../src/lib/recovery-finals-sample';
 import { runRecoveryBatch } from '../../src/lib/recovery-batch';
 
 async function main(){
   const mode=process.env.RECOVERY_MODE;
-  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose')throw new Error('Invalid recovery mode');
+  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose'&&mode!=='restore')throw new Error('Invalid recovery mode');
   const key=process.env.BIGBALLSDATA_API_KEY;
   if(!key){console.log('Provider secret is not configured; no requests made.');if(mode!=='backfill')throw new Error('Verification requires configured secret');return;}
   if(process.env.GITHUB_REPOSITORY!=='fxy2026/nba-tracker'||process.env.GITHUB_REF!=='refs/heads/master'||process.env.GITHUB_RUN_ATTEMPT!=='1')throw new Error('Invalid ingestion context');
   const allowance=Number(process.env.RECOVERY_MAX_REQUESTS),requested=Number(process.env.RECOVERY_REQUEST_LIMIT),expiresAt=process.env.RECOVERY_EXPIRES_AT??'';
   if(!Number.isSafeInteger(allowance)||allowance<1||allowance>100||!Number.isSafeInteger(requested)||requested<1||requested>100)throw new Error('Invalid request bound');
-  if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='diagnose'||requested!==3))throw new Error('Invalid kickoff bounds');
-  const maxRequests=Math.min(allowance,requested,mode==='backfill'?100:3);
+  if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='restore'||requested!==1))throw new Error('Invalid kickoff bounds');
+  const maxRequests=Math.min(allowance,requested,mode==='backfill'?100:mode==='restore'?1:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
   const verified=read('src/data/recovered-player-boxes.json');
   if(mode==='verify'){
@@ -44,9 +45,9 @@ async function main(){
   const existing=new Set([...Object.keys(prior),...verifiedIds]);
   const cursor='cursor'in state&&typeof state.cursor==='string'?state.cursor:null;
   const targets=selectRecoveryTargets(read('src/data/schedule-2025-26.json'),existing,cursor,20);
-  if(!targets.length){console.log('No eligible unarchived games in the controlled target source.');return;}
+  if(mode!=='restore'&&!targets.length){console.log('No eligible unarchived games in the controlled target source.');return;}
   const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
-  const result=await runRecoveryBatch(targets,client,maxRequests,verifiedIds,existingMatches);
+  const result=mode==='restore'?await recoverFinalsSample(read('src/data/schedule-2025-26.json'),client,existing,existingMatches):await runRecoveryBatch(targets,client,maxRequests,verifiedIds,existingMatches);
   const next:Record<string,unknown>={...prior};
   for(const snapshot of result.accepted){if(verifiedIds.has(snapshot.game.nbaGameId))throw new Error('Verified snapshot overwrite refused');next[snapshot.game.nbaGameId]=snapshot;}
   const write=(path:string,value:unknown)=>{const temp=`${path}.tmp`;writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});renameSync(temp,path);};

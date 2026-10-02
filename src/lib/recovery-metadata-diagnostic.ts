@@ -9,7 +9,7 @@ type FlagName = "available" | "players_available" | "team_stats_available";
 type CountName = "players" | "team_stats";
 export type MetadataGateFailure = "malformed-envelope" | "malformed-data" | "malformed-meta"
   | `flag-${FlagName}-false` | `flag-${FlagName}-missing-or-invalid`
-  | "withheld-missing-or-malformed" | `withheld-${CountName}-missing-or-invalid` | `withheld-${CountName}-positive`;
+  | "withheld-missing-or-malformed" | `withheld-${CountName}-missing-or-invalid` | "withheld-players-positive";
 export interface RecoveryMetadataDiagnostic {
   version: 1;
   envelope: DiagnosticKind;
@@ -83,7 +83,9 @@ export function diagnoseRecoveryMetadata(raw: unknown): RecoveryMetadataDiagnost
       else for (const name of ["players", "team_stats"] as const) {
         const value = own(withheld, name);
         if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) metadataGateFailures.push(`withheld-${name}-missing-or-invalid`);
-        else if (value > 0) metadataGateFailures.push(`withheld-${name}-positive`);
+        // A positive team-stat count remains informational: this recovery
+        // publishes player values only, with a separate team-identity check.
+        else if (name === "players" && value > 0) metadataGateFailures.push("withheld-players-positive");
       }
     }
   }

@@ -1,4 +1,4 @@
-import { RECOVERY_FIRST_PILOT, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
+import { RECOVERY_FIRST_PILOT, RECOVERY_REVIEWED_RUNS, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
 
 export const RECOVERY_REPOSITORY = "fxy2026/nba-tracker";
 type JsonReader = (path: string) => Promise<unknown>;
@@ -35,7 +35,8 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
       const run:RecoveryRunRecord={id:raw.id as number,runAttempt:raw.run_attempt,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,status:raw.status,conclusion:raw.conclusion,createdAt:raw.created_at,startedAt:raw.run_started_at,updatedAt:raw.updated_at};
       const relevant = [run.createdAt,run.startedAt,run.updatedAt].some(t=>t!==null&&t.slice(0,10)===now.slice(0,10));
       const mayVerify=raw.display_title==='Verify NBA provider'&&raw.head_branch==='master'&&raw.event==='workflow_dispatch'&&run.runAttempt===1&&run.conclusion==='success';
-      const mayPilot=run.id===RECOVERY_FIRST_PILOT.runId&&raw.head_sha===RECOVERY_FIRST_PILOT.sha&&raw.head_branch==='master'&&raw.event==='push'&&run.runAttempt===1&&run.conclusion==='success';
+      const reviewed=RECOVERY_REVIEWED_RUNS.find(item=>item.runId===run.id);
+      const mayPilot=!!reviewed&&raw.head_sha===reviewed.sha&&raw.head_branch==='master'&&raw.event==='push'&&run.runAttempt===1&&run.conclusion==='success';
       if(run.id!==currentRun.id&&run.status==='completed'&&(relevant||mayVerify||mayPilot)&&run.runAttempt<=10){
         const attempts:RecoveryIngestionSkipProof['attempts']=[];
         for(let attempt=1;attempt<=run.runAttempt;attempt++){
@@ -44,7 +45,7 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
           const ingestion=jobs.rows.filter(j=>j.name===RECOVERY_INGESTION_JOB_NAME);
           if(ingestion.length!==1)break;
           const job=ingestion[0];
-          if(mayPilot&&job.id===RECOVERY_FIRST_PILOT.jobId&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name==='Fetch and normalize provider data'&&step.status==='completed'&&step.conclusion==='success'))run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:RECOVERY_FIRST_PILOT.jobId,headSha:RECOVERY_FIRST_PILOT.sha,headBranch:'master',event:'push',maxRequests:25,allJobsFetched:true};
+          if(mayPilot&&reviewed&&job.id===reviewed.jobId&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name===(reviewed.runId===RECOVERY_FIRST_PILOT.runId?'Fetch and normalize provider data':'Diagnose one playoff metadata response')&&step.status==='completed'&&step.conclusion==='success'))run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:reviewed.jobId,headSha:reviewed.sha,headBranch:'master',event:'push',maxRequests:reviewed.maxRequests,allJobsFetched:true};
           if(mayVerify&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name==='Verify known provider snapshots'&&step.status==='completed'&&step.conclusion==='success'))providerVerified=true;
           if(job.status!=='completed'||job.conclusion!=='skipped'||!Array.isArray(job.steps)||job.steps.length!==0)break;
           attempts.push({runAttempt:attempt,allJobsFetched:true,jobId:job.id as number,jobName:RECOVERY_INGESTION_JOB_NAME,steps:[],status:'completed',conclusion:'skipped'});

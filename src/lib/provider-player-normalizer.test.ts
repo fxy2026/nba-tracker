@@ -25,5 +25,43 @@ it('dry run accepts consistent captured data with no requests',()=>{const out=dr
 it('missing, failed or duplicate captures cannot silently become data',()=>{const base={nbaGameId:game.nbaGameId,requestedMatchId:game.providerMatchId,retrievedAt:box.retrievedAt,httpStatus:503,body:null};for(const captures of[[],[base],[base,base]]){const out=dryRunRecovery({version:1,games:[game]},captures,new Set());expect(out.accepted).toHaveLength(0);expect(out.rejected).toHaveLength(1);}});
 
 it.each(['available','players_available','team_stats_available'] as const)('distinguishes false and malformed %s without accepting either',flag=>{const raw=simulatedEnvelope();Reflect.set(raw.meta,flag,false);expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`flag-${flag}-false`});Reflect.set(raw.meta,flag,'true');expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`flag-${flag}-missing-or-invalid`});Reflect.deleteProperty(raw.meta,flag);expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`flag-${flag}-missing-or-invalid`});});
-it.each(['players','team_stats'] as const)('distinguishes positive and invalid withheld %s without zero coercion',field=>{const raw=simulatedEnvelope();raw.meta.withheld[field]=1;expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`withheld-${field}-positive`});Reflect.set(raw.meta.withheld,field,'0');expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`withheld-${field}-missing-or-invalid`});});
+it.each(['players','team_stats'] as const)('rejects invalid withheld %s without zero coercion',field=>{const raw=simulatedEnvelope();Reflect.set(raw.meta.withheld,field,'0');expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:`withheld-${field}-missing-or-invalid`});});
 it.each([[null,'malformed-envelope'],[{data:null},'malformed-data'],[{data:{}},'malformed-meta'],[{data:{},meta:{available:true,players_available:true,team_stats_available:true}},'withheld-missing-or-malformed']])('distinguishes structural metadata failure safely', (raw,reason)=>expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason}));
+
+it('accepts complete synthetic player data with three withheld team values without publishing team aggregates',()=>{
+  const baseline=normalizeProviderPlayerStats(simulatedEnvelope(),game,context);
+  expect(baseline.ok).toBe(true);
+  const raw=simulatedEnvelope();
+  raw.meta.withheld.team_stats=3;
+  Reflect.set(raw.data.team_stats[0],'display_value','UNPUBLISHED_TEAM_AGGREGATE');
+  const result=normalizeProviderPlayerStats(raw,game,context);
+  expect(result).toEqual(baseline);
+  expect(JSON.stringify(result)).not.toContain('UNPUBLISHED_TEAM_AGGREGATE');
+});
+it('still rejects positive player withholding with three withheld team values',()=>{
+  const raw=simulatedEnvelope();raw.meta.withheld.team_stats=3;raw.meta.withheld.players=1;
+  expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:'withheld-players-positive'});
+});
+it.each([undefined,null,'3',-1,0.5,NaN,Infinity,Number.MAX_SAFE_INTEGER+1])('rejects malformed withheld team count %s',value=>{
+  const raw=simulatedEnvelope();Reflect.set(raw.meta.withheld,'team_stats',value);
+  expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:'withheld-team_stats-missing-or-invalid'});
+});
+it('rejects a missing withheld team count',()=>{
+  const raw=simulatedEnvelope();Reflect.deleteProperty(raw.meta.withheld,'team_stats');
+  expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:'withheld-team_stats-missing-or-invalid'});
+});
+it.each(['missing','one-side','contradictory','unknown'] as const)('does not relax %s team identity when team values are withheld',kind=>{
+  const raw=simulatedEnvelope();raw.meta.withheld.team_stats=3;
+  if(kind==='missing')raw.data.team_stats=[];
+  if(kind==='one-side')raw.data.team_stats.pop();
+  if(kind==='contradictory')raw.data.team_stats[0].team_name='Boston Celtics';
+  if(kind==='unknown')raw.data.team_stats[0].team_name='Unknown';
+  expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:kind==='missing'||kind==='one-side'?'incomplete-team-identity':'team-identity-mismatch'});
+});
+it.each(['flag','player-math','total'] as const)('keeps the %s validation with positive team withholding',kind=>{
+  const raw=simulatedEnvelope();raw.meta.withheld.team_stats=3;
+  if(kind==='flag')raw.meta.team_stats_available=false;
+  if(kind==='player-math')raw.data.players[0].stats.points.value='999';
+  if(kind==='total')raw.data.players.pop();
+  expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:kind==='flag'?'flag-team_stats_available-false':kind==='player-math'?'inconsistent-player-points':'incomplete-or-mismatched-points-total'});
+});

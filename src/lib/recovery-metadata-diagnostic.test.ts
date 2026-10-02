@@ -72,7 +72,7 @@ describe("content-free recovery metadata diagnostics", () => {
       Reflect.set(raw.meta.withheld, field, value);
       const result = diagnoseRecoveryMetadata(raw);
       expect(result.withheld[field]).toEqual({ kind: "number", count: value });
-      if (value === 0) expect(result.metadataGateFailures).toEqual([]);
+      if (value === 0 || (field === "team_stats" && Number.isSafeInteger(value))) expect(result.metadataGateFailures).toEqual([]);
       else expect(result.metadataGateFailures).toContain(`withheld-${field}-${Number.isSafeInteger(value) ? "positive" : "missing-or-invalid"}`);
     }
     for (const value of [-1, NaN, Infinity, -Infinity, "0", null, undefined, {}, []]) {
@@ -83,6 +83,15 @@ describe("content-free recovery metadata diagnostics", () => {
     }
     Reflect.deleteProperty(raw.meta.withheld, field);
     expect(diagnoseRecoveryMetadata(raw).withheld[field]).toEqual({ kind: "missing", count: null });
+  });
+
+  it("keeps a synthetic withheld team count of three informational while player withholding fails", () => {
+    const raw = syntheticEnvelope();
+    raw.meta.withheld.team_stats = 3;
+    expect(diagnoseRecoveryMetadata(raw).withheld.team_stats).toEqual({ kind: "number", count: 3 });
+    expect(diagnoseRecoveryMetadata(raw).metadataGateFailures).toEqual([]);
+    raw.meta.withheld.players = 1;
+    expect(diagnoseRecoveryMetadata(raw).metadataGateFailures).toEqual(["withheld-players-positive"]);
   });
 
   it.each([null, [], "private text", undefined])("withheld malformed container remains content-free (%s)", value => {

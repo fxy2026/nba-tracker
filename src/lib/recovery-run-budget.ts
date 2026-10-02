@@ -9,6 +9,8 @@ export const RECOVERY_MANUAL_RESERVATION = { requests: 7, reservedAt: "2026-10-0
 export const RECOVERY_WORKFLOW_PATH = ".github/workflows/player-data-ingestion.yml";
 export const RECOVERY_INGESTION_JOB_NAME = "Ingest player data";
 export const RECOVERY_FIRST_PILOT = { runId: 37006667059, jobId: 110836575247, sha: "60e9585a4f44ffb182db89fc39c381212c3944df", maxRequests: 25 } as const;
+export const RECOVERY_METADATA_DIAGNOSTIC = {runId:37011342891,jobId:110851731014,sha:"52fea0688b9629a16a74cf42789a9d4af5f9c2c5",maxRequests:3} as const;
+export const RECOVERY_REVIEWED_RUNS = [RECOVERY_FIRST_PILOT,RECOVERY_METADATA_DIAGNOSTIC] as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface RecoveryIngestionSkipProof {
@@ -38,7 +40,7 @@ export interface RecoveryRunRecord {
   createdAt: string;
   startedAt: string | null;
   updatedAt: string;
-  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25; allJobsFetched: true };
+  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3; allJobsFetched: true };
   ingestionSkippedProof?: RecoveryIngestionSkipProof | null;
 }
 
@@ -141,8 +143,9 @@ export function calculateRecoveryRunBudget(input: unknown): RecoveryRunBudgetRes
       let reservation = RECOVERY_DAILY_LIMIT;
       if (value.reviewedPilotProof !== undefined) {
         const bounded=value.reviewedPilotProof;
-        if(!isRecord(bounded)||bounded.source!=="complete-github-job-metadata"||repository!=="fxy2026/nba-tracker"||value.id!==RECOVERY_FIRST_PILOT.runId||value.runAttempt!==1||value.status!=="completed"||value.conclusion!=="success"||bounded.runId!==value.id||bounded.jobId!==RECOVERY_FIRST_PILOT.jobId||bounded.headSha!==RECOVERY_FIRST_PILOT.sha||bounded.headBranch!=="master"||bounded.event!=="push"||bounded.maxRequests!==25||bounded.allJobsFetched!==true)return deny("Invalid immutable pilot bound proof");
-        reservation=RECOVERY_FIRST_PILOT.maxRequests;
+        const reviewed=RECOVERY_REVIEWED_RUNS.find(item=>item.runId===value.id);
+        if(!isRecord(bounded)||bounded.source!=="complete-github-job-metadata"||repository!=="fxy2026/nba-tracker"||!reviewed||value.runAttempt!==1||value.status!=="completed"||value.conclusion!=="success"||bounded.runId!==value.id||bounded.jobId!==reviewed.jobId||bounded.headSha!==reviewed.sha||bounded.headBranch!=="master"||bounded.event!=="push"||bounded.maxRequests!==reviewed.maxRequests||bounded.allJobsFetched!==true)return deny("Invalid immutable pilot bound proof");
+        reservation=reviewed.maxRequests;
       }
       if (value.id === currentRun.id) {
         currentCount++;

@@ -77,7 +77,9 @@ export function normalizeProviderPlayerStats(raw: unknown, game: RecoveryManifes
   for (const field of ["players", "team_stats"] as const) {
     const count = raw.meta.withheld[field];
     if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) return reject(`withheld-${field}-missing-or-invalid`);
-    if (count > 0) return reject(`withheld-${field}-positive`);
+    // Player and team-stat modules have independent withholding. Only player
+    // values are published here; returned team rows establish identity below.
+    if (field === "players" && count > 0) return reject("withheld-players-positive");
   }
   if (!Array.isArray(raw.data.players) || !raw.data.players.length || !Array.isArray(raw.data.team_stats)) return reject("missing-player-or-team-data");
   const teams = new Set<string>();
