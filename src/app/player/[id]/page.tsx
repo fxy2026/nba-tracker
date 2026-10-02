@@ -368,7 +368,7 @@ export default async function PlayerPage({ params }: PageProps) {
       {/* ─── Honor wall (real awards via stats proxy — hides itself on failure) ─ */}
       <PlayerHonors playerId={personId} accolades={accolades} />
 
-      {/* ─── Profile (archetype + scoring DNA + body metrics) ─── */}
+      {/* ─── Profile (snapshot tags + body metrics) ─── */}
       {(() => {
         const tags: { label: string; tone: "amber" | "blue" | "green" }[] = [];
         if (ppg !== null && ppg > 0) {
@@ -382,11 +382,6 @@ export default async function PlayerPage({ params }: PageProps) {
           if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, tone: "amber" });
           if (seasons <= 2 && ppg >= 10) tags.push({ label: t.playerDetail.risingStar, tone: "amber" });
         }
-
-        const pos = (player.position || "").toUpperCase();
-        let fg2Pct = 0.5, fg3Pct = 0.25, ftPct = 0.25;
-        if (pos.includes("C")) { fg2Pct = 0.65; fg3Pct = 0.10; ftPct = 0.25; }
-        else if (pos.includes("G")) { fg2Pct = 0.35; fg3Pct = 0.40; ftPct = 0.25; }
 
         return (
           <section className="mt-8 sm:mt-10">
@@ -408,64 +403,15 @@ export default async function PlayerPage({ params }: PageProps) {
               </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 auto-rows-[90px]">
-              {/* Scoring DNA (3-col wide) — only when scoring data exists */}
-              {ppg !== null && ppg > 0 ? (
-                <ScoringDnaTile ppg={ppg} fg2Pct={fg2Pct} fg3Pct={fg3Pct} ftPct={ftPct} t={t} />
-              ) : (
-                <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
-                  {t.playerDetail.noScoringData}
-                </div>
-              )}
+              <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
+                {isZh ? "此数据源未提供两分、三分和罚球得分构成。" : "This source does not provide a two-point, three-point or free-throw scoring breakdown."}
+              </div>
               {/* Body metrics — 3 small (height + weight + country) on top, college (3-col) below */}
               <GlassFact icon={Ruler} label={t.playerDetail.height} value={player.height || "—"} />
               <GlassFact icon={Weight} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "—"} />
               <GlassFact icon={MapPin} label={t.playerDetail.country} value={player.country || "—"} />
               <GlassFact icon={GraduationCap} label={t.playerDetail.college} value={player.college || "—"} />
               <GlassFact icon={Award} label={t.playerDetail.statusLabel} value={seasons > 0 && player.toYear && parseInt(player.toYear) >= new Date().getFullYear() ? t.playerDetail.activeValue : "—"} />
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* ─── Career Milestones ───────────────── */}
-      {ppg !== null && ppg > 0 && seasons > 0 && (() => {
-        const gpEstimate = 70;
-        const estTotalPts = Math.round(ppg * gpEstimate * seasons);
-        const milestones: string[] = [];
-        if (estTotalPts >= 25000) milestones.push(t.playerDetail.careerPointsEst(25000));
-        else if (estTotalPts >= 20000) milestones.push(t.playerDetail.careerPointsEst(20000));
-        else if (estTotalPts >= 15000) milestones.push(t.playerDetail.careerPointsEst(15000));
-        else if (estTotalPts >= 10000) milestones.push(t.playerDetail.careerPointsEst(10000));
-        else if (estTotalPts >= 5000) milestones.push(t.playerDetail.careerPointsEst(5000));
-        if (ppg >= 20 && seasons >= 10) milestones.push(t.playerDetail.milestoneDecadeScorer);
-        if (ppg >= 25) milestones.push(t.playerDetail.milestoneEliteScorer);
-        if (seasons >= 15) milestones.push(t.playerDetail.milestoneVeteran);
-        if (milestones.length === 0) return null;
-        return (
-          <section className="mt-8 sm:mt-10">
-            <SectionHeader icon={Trophy} title={t.playerDetail.careerMilestones} eyebrow="02" />
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              {/* Total points hero tile */}
-              <div className="glass-tile glass-tile-featured sm:col-span-1 row-span-1 p-5 flex flex-col justify-between min-h-[150px]">
-                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.playerDetail.estimatedTotal}</p>
-                <div>
-                  <p className="text-3xl sm:text-4xl font-light font-mono tabular-nums text-accent-amber leading-none">
-                    {estTotalPts.toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-text-secondary mt-2 font-mono tabular-nums">
-                    {t.playerDetail.ppgGpSeasons(ppg, gpEstimate, seasons)}
-                  </p>
-                </div>
-              </div>
-              {/* Milestone chips, distributed across remaining tiles */}
-              {milestones.slice(0, 4).map((m, i) => (
-                <div key={i} className="glass-tile p-4 flex items-center gap-3 min-h-[80px]">
-                  <div className="shrink-0 w-9 h-9 rounded-full bg-accent-amber/10 flex items-center justify-center">
-                    <Trophy size={14} className="text-accent-amber" />
-                  </div>
-                  <p className="text-sm text-text-primary font-medium leading-snug">{m}</p>
-                </div>
-              ))}
             </div>
           </section>
         );
@@ -886,35 +832,6 @@ function GlassFact({ icon: Icon, label, value, mono = false }: {
       <p className={`text-sm sm:text-base font-semibold text-text-primary truncate ${mono ? "font-mono tabular-nums" : ""}`}>
         {value}
       </p>
-    </div>
-  );
-}
-
-function ScoringDnaTile({ ppg, fg2Pct, fg3Pct, ftPct, t }: {
-  ppg: number;
-  fg2Pct: number;
-  fg3Pct: number;
-  ftPct: number;
-  t: { playerDetail: { scoringProfile: string } };
-}) {
-  const fg2 = (ppg * fg2Pct).toFixed(1);
-  const fg3 = (ppg * fg3Pct).toFixed(1);
-  const ft = (ppg * ftPct).toFixed(1);
-  return (
-    <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-4 flex flex-col justify-between">
-      <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.playerDetail.scoringProfile}</p>
-      <div>
-        <div className="flex h-2 rounded-full overflow-hidden bg-bg-hover">
-          <div className="bg-accent transition-all duration-500" style={{ width: `${fg2Pct * 100}%` }} title={`2PT: ~${fg2}`} />
-          <div className="bg-success transition-all duration-500" style={{ width: `${fg3Pct * 100}%` }} title={`3PT: ~${fg3}`} />
-          <div className="bg-accent-amber transition-all duration-500" style={{ width: `${ftPct * 100}%` }} title={`FT: ~${ft}`} />
-        </div>
-        <div className="flex justify-between mt-2 text-[10px] font-mono tabular-nums">
-          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent" /><span className="text-text-secondary">2PT</span><span className="text-text-primary">{fg2}</span></span>
-          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-success" /><span className="text-text-secondary">3PT</span><span className="text-text-primary">{fg3}</span></span>
-          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent-amber" /><span className="text-text-secondary">FT</span><span className="text-text-primary">{ft}</span></span>
-        </div>
-      </div>
     </div>
   );
 }
