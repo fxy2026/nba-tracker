@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { createLatestRequestGate } from "@/lib/latest-request";
-import { playerShotRequestUrl, normalizePlayerShotData, type PlayerShotData } from "@/lib/player-shot-request";
+import { playerShotRequestUrl, requestPlayerShotData, type PlayerShotData } from "@/lib/player-shot-request";
 import { useLocale } from "@/components/LocaleProvider";
 import { aggregateZoneStats, getZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
 
@@ -293,12 +293,8 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
     setError("");
     setResult(null);
     try {
-      const res = await fetch(playerShotRequestUrl(playerId, teamTricode, s, st), { signal: request.signal });
+      const data = await requestPlayerShotData(playerShotRequestUrl(playerId, teamTricode, s, st), request.signal);
       if (!request.isCurrent()) return;
-      if (!res.ok) throw new Error("API error");
-      const data = normalizePlayerShotData(await res.json());
-      if (!request.isCurrent()) return;
-      if (!data) throw new Error("Malformed shot response");
       setResult({ ...data, key: `${playerId}|${teamTricode}|${s}|${st}` });
     } catch {
       if (request.isCurrent()) setError(locale === "zh" ? "投篮数据源暂不可用，请重试" : "Shot data is temporarily unavailable. Please retry.");
