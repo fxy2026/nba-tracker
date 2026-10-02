@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Crown, Trophy, TrendingUp, Activity, Calendar, type LucideIcon } from "lucide-react";
-import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isCountedSeason } from "@/lib/games";
 import PageHeader from "@/components/PageHeader";
@@ -33,7 +33,7 @@ async function compute(): Promise<{
   byCategory: Record<string, Played[]>;
   totalGames: number;
 }> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const played: Played[] = [];
   for (const gd of schedule) {
     for (const g of gd.games) {

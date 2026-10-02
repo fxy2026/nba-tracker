@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Target, Activity, TrendingUp, ListOrdered } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -29,7 +29,7 @@ interface ClutchRec {
 }
 
 async function compute(): Promise<ClutchRec[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const map = new Map<string, { tricode: string; teamId: number; closeW: number; closeL: number; otW: number; otL: number }>();
   for (const gd of schedule) {
     for (const g of gd.games) {
@@ -98,7 +98,7 @@ export default async function ClutchTeamsPage() {
         <PageHeader eyebrow={isZh ? "球队" : "Teams"} icon={Target} title={isZh ? "关键时刻" : "Clutch Teams"} />
         <EmptyState
           icon={Target}
-          title={isZh ? "暂无焦点战" : "No close games yet"}
+          title={isZh ? "暂无焦点战数据" : "No close-game data yet"}
           description={isZh ? "胜负差 5 分以内的比赛出现后，关键时刻战绩会显示。" : "Clutch records will populate once games decided by 5 or fewer points exist."}
         />
       </div>

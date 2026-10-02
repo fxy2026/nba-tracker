@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Flame, Zap, Target, Clock, BookOpen, CalendarDays, Crown, type LucideIcon } from "lucide-react";
-import { getFullSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge, type ScheduleGame } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
@@ -25,7 +25,7 @@ interface GameWithMeta {
 }
 
 async function fetchAndCategorize() {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const allFinished: GameWithMeta[] = [];
 
   for (const gd of schedule) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Home, Plane, ListOrdered, Users, Activity, Repeat, TrendingUp } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -28,7 +28,7 @@ interface TeamSplit {
 }
 
 async function compute(): Promise<TeamSplit[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const map = new Map<string, { tricode: string; teamId: number; homeW: number; homeL: number; roadW: number; roadL: number }>();
   for (const gd of schedule) {
     for (const g of gd.games) {
