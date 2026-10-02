@@ -141,6 +141,9 @@ export interface ShotAction {
   description: string;
 }
 
+// Scoring events can be valid even when spatial tracking is unavailable.
+export type ScoringShot = Omit<ShotAction, "x" | "y" | "shotDistance"> & { shotDistance?: number; x?: number; y?: number };
+
 export interface ScheduleGame {
   gameId: string;
   gameStatus: number;

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { getPlayerHeadshotUrl, type ShotAction, type PlayerInfo } from "@/lib/api";
+import { getPlayerHeadshotUrl, type ScoringShot, type PlayerInfo } from "@/lib/api";
 import {
   BASKET_PCT_X,
   FT_LINE_PCT_X,
@@ -21,7 +21,7 @@ import { useLocale } from "@/components/LocaleProvider";
 interface Props {
   playerName: string;
   playerId: number;
-  shots: ShotAction[];
+  shots: ScoringShot[];
   playerInfo?: PlayerInfo | null;
 }
 
@@ -346,6 +346,9 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
 
             {/* Court */}
             <div className="px-5 pb-3">
+              {data.fieldGoalShots.some((s) => s.x === undefined || s.y === undefined) && (
+                <p className="text-xs text-text-secondary mb-2">{isZh ? "部分投篮位置暂不可用；得分统计保留" : "Some shot locations are unavailable; scoring totals are retained"}</p>
+              )}
               <svg
                 viewBox={`0 0 ${CW_TOTAL} ${CH_TOTAL}`}
                 className="w-full"
@@ -354,6 +357,7 @@ export default function PlayerShotChart({ playerName, playerId, shots, playerInf
               >
                 <CourtLines />
                 {data.fieldGoalShots.map((shot, i) => {
+                  if (shot.x === undefined || shot.y === undefined) return null;
                   const sx = toSvgX(shot.y), sy = toSvgY(shot.x);
                   const isMade = shot.shotResult === "Made";
                   const is3 = shot.actionType === "3pt";

@@ -176,25 +176,25 @@ describe("getBiggestRun", () => {
       shot({ teamTricode: "LAL", clock: "PT11M22.00S", shotDistance: 5 }),
       shot({ teamTricode: "BOS", clock: "PT09M45.00S", shotDistance: 5 }),
       shot({ teamTricode: "LAL", clock: "PT09M00.00S", shotResult: "Missed", shotDistance: 5 }),
-      shot({ teamTricode: "BOS", clock: "PT08M30.00S", subType: "3PT", shotDistance: 22 }),
+      shot({ teamTricode: "BOS", clock: "PT08M30.00S", actionType: "3pt", subType: "3PT", shotDistance: 22 }),
       shot({ teamTricode: "BOS", clock: "PT07M10.00S", shotDistance: 15 }),
       shot({ teamTricode: "LAL", clock: "PT05M00.00S", shotDistance: 8 }),
     ];
     expect(getBiggestRun(shots)).toEqual({ teamTricode: "BOS", points: 7, qLabel: "Q1" });
   });
 
-  it("infers 3-pointers from shotDistance > 22 even without a 3pt subType", () => {
+  it("uses the action type for 3-pointers rather than guessing from distance", () => {
     const shots = [
-      shot({ clock: "PT10M00.00S", shotDistance: 23 }),
-      shot({ clock: "PT09M00.00S", shotDistance: 23 }),
+      shot({ actionType: "3pt", clock: "PT10M00.00S", shotDistance: 23 }),
+      shot({ actionType: "3pt", clock: "PT09M00.00S", shotDistance: 23 }),
     ];
     expect(getBiggestRun(shots)?.points).toBe(6);
   });
 
   it("returns null when the best run is under 4 points", () => {
     const shots = [
-      shot({ teamTricode: "BOS", clock: "PT10M00.00S", subType: "3PT", shotDistance: 24 }),
-      shot({ teamTricode: "LAL", clock: "PT08M00.00S", subType: "3PT", shotDistance: 24 }),
+      shot({ teamTricode: "BOS", clock: "PT10M00.00S", actionType: "3pt", subType: "3PT", shotDistance: 24 }),
+      shot({ teamTricode: "LAL", clock: "PT08M00.00S", actionType: "3pt", subType: "3PT", shotDistance: 24 }),
     ];
     expect(getBiggestRun(shots)).toBeNull();
   });
@@ -210,8 +210,8 @@ describe("getBiggestRun", () => {
   it("sorts shots chronologically before detecting runs", () => {
     // input order would yield a fake LAL 6-0 run; chronological order is LAL, BOS x3, LAL
     const shots = [
-      shot({ teamTricode: "LAL", clock: "PT11M00.00S", subType: "3PT", shotDistance: 25 }),
-      shot({ teamTricode: "LAL", clock: "PT05M00.00S", subType: "3PT", shotDistance: 25 }),
+      shot({ teamTricode: "LAL", clock: "PT11M00.00S", actionType: "3pt", subType: "3PT", shotDistance: 25 }),
+      shot({ teamTricode: "LAL", clock: "PT05M00.00S", actionType: "3pt", subType: "3PT", shotDistance: 25 }),
       shot({ teamTricode: "BOS", clock: "PT10M00.00S", shotDistance: 5 }),
       shot({ teamTricode: "BOS", clock: "PT09M00.00S", shotDistance: 5 }),
       shot({ teamTricode: "BOS", clock: "PT08M00.00S", shotDistance: 5 }),

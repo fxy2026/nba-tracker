@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { BoxScoreTeam, ShotAction } from "@/lib/api";
+import type { BoxScoreTeam, ScoringShot } from "@/lib/api";
 import {
   getTopScorer,
   getTopAssist,
@@ -22,7 +22,7 @@ export default function GameHeadlines({
 }: {
   homeTeam: BoxScoreTeam;
   awayTeam: BoxScoreTeam;
-  shots: ShotAction[];
+  shots: ScoringShot[];
   seasonRankBadges?: ReactNode;
   t: Translations;
 }) {

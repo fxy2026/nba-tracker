@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { parseMinutes, type PlayerStats, type ShotAction, type PlayerInfo } from "@/lib/api";
+import { parseMinutes, type PlayerStats, type ScoringShot, type PlayerInfo } from "@/lib/api";
 import { gameScore, scoreToGrade, gradeColorClass, minutesFromIso } from "@/lib/game-stats";
 import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
@@ -14,7 +14,7 @@ export default async function StatsTable({
   t,
 }: {
   players: PlayerStats[];
-  shots: ShotAction[];
+  shots: ScoringShot[];
   playerInfoMap: Map<number, PlayerInfo>;
   t: Translations;
 }) {

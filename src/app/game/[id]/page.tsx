@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getBoxScore, getPlayerIndex, getFullSchedule, extractShots, toBeijingTime, type PlayerInfo } from "@/lib/api";
-import type { PlayAction } from "@/components/PlayByPlay";
+import { getBoxScore, getPlayerIndex, getFullSchedule, toBeijingTime, type PlayerInfo, type ScoringShot } from "@/lib/api";
+import { getGamePlayByPlay } from "@/lib/game-play-by-play";
+import WithPlayByPlay from "./_components/WithPlayByPlay";
 import { isPlayoff, findScheduleGame } from "@/lib/games";
 import { buildRecap } from "@/lib/recap";
 import QuarterBars from "@/components/QuarterBars";
@@ -97,59 +98,12 @@ export default async function GamePage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  // Box score + player index + raw PBP in parallel.
-  // PBP comes straight from cdn.nba.com (the only place exposing score events
-  // with clocks); shots are derived from the same payload — one download, not
-  // two. Season rank streams later via <SeasonRankBadge> — it walks the full
-  // schedule and must not block first byte.
-  const [boxScore, playerIndex, pbpActions] = await Promise.all([
+  const [boxScore, playerIndex] = await Promise.all([
     getBoxScore(id),
     getPlayerIndex().catch(() => []),
-    fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${id}.json`, {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(8000),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.game?.actions || [])
-      .catch(() => []),
   ]);
-
-  const shots = extractShots(pbpActions);
-
-  const scoreEvents = (pbpActions as { period: number; clock: string; scoreHome: string; scoreAway: string }[])
-    .filter((a) => a.scoreHome != null && a.scoreAway != null)
-    .map((a) => ({
-      period: a.period,
-      clock: a.clock,
-      scoreHome: parseInt(a.scoreHome) || 0,
-      scoreAway: parseInt(a.scoreAway) || 0,
-    }));
-
-  // Trim raw CDN actions to the fields the client components actually read —
-  // the full objects (~2x larger) would otherwise be serialized into the page payload.
-  const slimActions: PlayAction[] = pbpActions.map((a: PlayAction) => ({
-    actionNumber: a.actionNumber,
-    clock: a.clock,
-    period: a.period,
-    teamTricode: a.teamTricode,
-    actionType: a.actionType,
-    subType: a.subType,
-    description: a.description,
-    personId: a.personId,
-    playerNameI: a.playerNameI,
-    shotResult: a.shotResult,
-    scoreHome: a.scoreHome,
-    scoreAway: a.scoreAway,
-    isFieldGoal: a.isFieldGoal,
-    // zh text-feed templating inputs (see describeAction in PlayByPlay.tsx).
-    // Qualifiers are trimmed to the two the templates read — the raw array
-    // carries noise like "pointsinthepaint" on most shots.
-    descriptor: a.descriptor || undefined,
-    qualifiers: a.qualifiers?.filter((q) => q === "fastbreak" || q === "2ndchance"),
-    assistPlayerNameInitial: a.assistPlayerNameInitial || undefined,
-    shotDistance: a.shotDistance || undefined,
-  }));
+  // Start one optional request without awaiting it on the basic data path.
+  const pbp = boxScore && boxScore.gameStatus >= 2 ? getGamePlayByPlay(id) : null;
 
   const playerInfoMap = new Map<number, PlayerInfo>();
   for (const pi of playerIndex) playerInfoMap.set(pi.personId, pi);
@@ -374,6 +328,18 @@ export default async function GamePage({ params }: PageProps) {
     organizer: { "@type": "SportsOrganization", name: "NBA", url: "https://www.nba.com" },
   };
 
+  const renderHeadlines = (shots: ScoringShot[]) => (
+    <GameHeadlines
+      homeTeam={boxScore.homeTeam}
+      awayTeam={boxScore.awayTeam}
+      shots={shots}
+      seasonRankBadges={isFinal ? (
+        <Suspense fallback={null}><SeasonRankBadge gameId={id} t={t} /></Suspense>
+      ) : null}
+      t={t}
+    />
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
@@ -394,7 +360,9 @@ export default async function GamePage({ params }: PageProps) {
           isZh={isZh}
         />
       ) : (
-        <GameHero boxScore={boxScore} shots={shots} isPlayoffs={isPlayoffs} t={t} />
+        <Suspense fallback={<GameHero boxScore={boxScore} shots={[]} isPlayoffs={isPlayoffs} t={t} />}>
+          <WithPlayByPlay data={pbp!}>{({ scoringShots }) => <GameHero boxScore={boxScore} shots={scoringShots} isPlayoffs={isPlayoffs} t={t} />}</WithPlayByPlay>
+        </Suspense>
       )}
       <div id="game-hero-sentinel" />
       <GameStickyScore
@@ -417,24 +385,16 @@ export default async function GamePage({ params }: PageProps) {
         />
       )}
 
-      {isFinal && <GameRecap boxScore={boxScore} actions={slimActions} isPlayoffs={isPlayoffs} isZh={isZh} />}
+      {isFinal && <Suspense fallback={<GameRecap boxScore={boxScore} actions={[]} isPlayoffs={isPlayoffs} isZh={isZh} />}>
+        <WithPlayByPlay data={pbp!}>{({ actions }) => <GameRecap boxScore={boxScore} actions={actions} isPlayoffs={isPlayoffs} isZh={isZh} />}</WithPlayByPlay>
+      </Suspense>}
 
       {/* Leaders/headlines render for live games too — season rank is final-only
           (mid-game season ranks would mislead), so suppress it when not final. */}
       {isLiveOrFinal && (
-        <GameHeadlines
-          homeTeam={boxScore.homeTeam}
-          awayTeam={boxScore.awayTeam}
-          shots={shots}
-          seasonRankBadges={
-            isFinal ? (
-              <Suspense fallback={null}>
-                <SeasonRankBadge gameId={id} t={t} />
-              </Suspense>
-            ) : null
-          }
-          t={t}
-        />
+        <Suspense fallback={renderHeadlines([])}>
+          <WithPlayByPlay data={pbp!}>{({ scoringShots }) => renderHeadlines(scoringShots)}</WithPlayByPlay>
+        </Suspense>
       )}
 
       {isLiveOrFinal && (
@@ -473,21 +433,24 @@ export default async function GamePage({ params }: PageProps) {
               a fan wants. Deeper analytics charts follow below it. */}
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
-              <ShotChartSection
+              <Suspense fallback={null}>
+                <WithPlayByPlay data={pbp!}>{({ shots }) => (
+                  <ShotChartSection
                 shots={shots}
                 homeTricode={boxScore.homeTeam.teamTricode}
                 awayTricode={boxScore.awayTeam.teamTricode}
                 allPlayers={allPlayers}
                 t={t}
-              />
+              />)}</WithPlayByPlay>
+              </Suspense>
             </div>
             <div className="lg:col-span-2 space-y-6">
-              <BoxScoreSection team={boxScore.awayTeam} shots={shots} playerInfoMap={playerInfoMap} t={t} />
-              <BoxScoreSection team={boxScore.homeTeam} shots={shots} playerInfoMap={playerInfoMap} t={t} />
+              <Suspense fallback={<BoxScoreSection team={boxScore.awayTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.awayTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>
+              <Suspense fallback={<BoxScoreSection team={boxScore.homeTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.homeTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>
             </div>
           </div>
 
-          {isFinal && <ScoringFlowSection homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} scoreEvents={scoreEvents} />}
+          {isFinal && <Suspense fallback={<ScoringFlowSection homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} scoreEvents={[]} />}><WithPlayByPlay data={pbp!}>{({ scoreEvents }) => <ScoringFlowSection homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} scoreEvents={scoreEvents} />}</WithPlayByPlay></Suspense>}
 
           {isFinal && <GameMeta homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
@@ -495,7 +458,7 @@ export default async function GamePage({ params }: PageProps) {
 
           {isLiveOrFinal && <ShootingEfficiency homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
-          {isFinal && <KeyMomentsSection actions={slimActions} />}
+          {isFinal && <Suspense fallback={null}><WithPlayByPlay data={pbp!}>{({ actions }) => <KeyMomentsSection actions={actions.filter((a) => a.scoreHome !== "" && a.scoreAway !== "")} />}</WithPlayByPlay></Suspense>}
 
           {isFinal && topScorers.length > 0 && (
             <div className="mt-6">
@@ -504,7 +467,7 @@ export default async function GamePage({ params }: PageProps) {
           )}
 
           <div className="mt-6">
-            <PlayByPlaySection actions={slimActions} isLive={isLive} />
+            <Suspense fallback={null}><WithPlayByPlay data={pbp!}>{({ actions }) => <PlayByPlaySection actions={actions} isLive={isLive} />}</WithPlayByPlay></Suspense>
           </div>
         </>
       )}

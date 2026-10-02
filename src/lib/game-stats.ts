@@ -1,4 +1,4 @@
-import type { BoxScoreTeam, PlayerStats, ShotAction } from "@/lib/api";
+import type { BoxScoreTeam, PlayerStats, ScoringShot } from "@/lib/api";
 
 // Numeric minutes from the CDN's ISO-8601 duration ("PT34M12.00S" -> 34.2)
 export function minutesFromIso(minutes: string): number {
@@ -105,7 +105,7 @@ export function getLargestLead(team: BoxScoreTeam, opponent: BoxScoreTeam) {
 }
 
 // Longest unanswered scoring run (in points) inferred from made-shot order
-export function getBiggestRun(shots: ShotAction[]) {
+export function getBiggestRun(shots: ScoringShot[]) {
   if (shots.length === 0) return null;
   const madeShots = shots
     .filter((s) => s.shotResult === "Made")
@@ -120,8 +120,7 @@ export function getBiggestRun(shots: ShotAction[]) {
   let currentPeriod = 0;
   for (const shot of madeShots) {
     const teamKey = shot.teamTricode;
-    const is3 = shot.subType?.toLowerCase().includes("3pt") || shot.shotDistance > 22;
-    const pts = is3 ? 3 : 2;
+    const pts = shot.actionType === "freethrow" ? 1 : shot.actionType === "3pt" ? 3 : 2;
     if (teamKey === currentTeam) {
       currentPoints += pts;
     } else {
@@ -191,17 +190,17 @@ export function getLeadChanges(homeTeam: BoxScoreTeam, awayTeam: BoxScoreTeam) {
 }
 
 // Best player in the highest-scoring quarter (FG points only — FTs not in shot data)
-export function getQuarterMvp(shots: ShotAction[]) {
+export function getQuarterMvp(shots: ScoringShot[]) {
   if (shots.length === 0) return null;
   const quarterScoring: Record<number, Record<string, { name: string; pts: number }>> = {};
   for (const shot of shots) {
-    if (shot.shotResult !== "Made") continue;
+    if (shot.shotResult !== "Made" || shot.actionType === "freethrow") continue;
     const period = shot.period;
     if (!quarterScoring[period]) quarterScoring[period] = {};
     if (!quarterScoring[period][shot.personId]) {
       quarterScoring[period][shot.personId] = { name: shot.playerNameI, pts: 0 };
     }
-    const is3 = shot.subType?.toLowerCase().includes("3pt") || shot.shotDistance > 22;
+    const is3 = shot.actionType === "3pt";
     quarterScoring[period][shot.personId].pts += is3 ? 3 : 2;
   }
   let bestQuarter = 0;

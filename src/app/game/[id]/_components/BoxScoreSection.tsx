@@ -1,6 +1,6 @@
 import TeamLogo from "@/components/TeamLogo";
 import StatsTable from "./StatsTable";
-import type { BoxScoreTeam, ShotAction, PlayerInfo } from "@/lib/api";
+import type { BoxScoreTeam, ScoringShot, PlayerInfo } from "@/lib/api";
 import type { Translations } from "@/locales";
 
 export default function BoxScoreSection({
@@ -10,7 +10,7 @@ export default function BoxScoreSection({
   t,
 }: {
   team: BoxScoreTeam;
-  shots: ShotAction[];
+  shots: ScoringShot[];
   playerInfoMap: Map<number, PlayerInfo>;
   t: Translations;
 }) {

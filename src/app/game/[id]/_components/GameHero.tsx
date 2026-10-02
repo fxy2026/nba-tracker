@@ -5,7 +5,7 @@ import TeamLogo from "@/components/TeamLogo";
 import QuarterScores from "@/components/QuarterScores";
 import ShareButton from "@/components/ShareButton";
 import { TEAM_META } from "@/lib/teams";
-import { toBeijingTime, type BoxScore, type ShotAction } from "@/lib/api";
+import { toBeijingTime, type BoxScore, type ScoringShot } from "@/lib/api";
 import { getLeadChanges, getQuarterMvp } from "@/lib/game-stats";
 import { getLocale } from "@/lib/locale";
 import type { Translations } from "@/locales";
@@ -20,7 +20,7 @@ export default async function GameHero({
   t,
 }: {
   boxScore: BoxScore;
-  shots: ShotAction[];
+  shots: ScoringShot[];
   isPlayoffs: boolean;
   t: Translations;
 }) {
