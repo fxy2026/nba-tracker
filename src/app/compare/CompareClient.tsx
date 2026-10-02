@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { GitCompareArrows, ArrowLeftRight, Users, Award, TrendingUp, Crown, Activity, Share2, ThumbsUp } from "lucide-react";
@@ -65,6 +65,20 @@ export interface PlayerData {
   accolades?: Partial<PlayerAccolades> | null;
   indexProvenance?: PlayerIndexProvenance;
 }
+
+type PlayerSlots = [PlayerData | null, PlayerData | null, PlayerData | null];
+type PlayerIds = [string | null, string | null, string | null];
+type PlayerLookup = { controller: AbortController; promise: Promise<PlayerData | null> };
+const comparisonPlayerId = (player: PlayerData) => player.iconicId ?? String(player.personId);
+const comparisonIds = (query: string): PlayerIds => {
+  const params = new URLSearchParams(query);
+  return [params.get("p1"), params.get("p2"), params.get("p3")];
+};
+const comparisonQuery = (ids: PlayerIds) => {
+  const params = new URLSearchParams();
+  ids.forEach((id, index) => { if (id) params.set(`p${index + 1}`, id); });
+  return params.toString();
+};
 
 const COMPARE_STATS = [
   { key: "pts", label: "PPG", color: "text-accent", barColor: "var(--accent)" },
@@ -417,21 +431,22 @@ function TrophyRow({ p }: { p: PlayerData }) {
   );
 }
 
-const search = async (q: string, setter: (r: PlayerData[]) => void) => {
+const search = async (q: string, setter: (r: PlayerData[]) => void, signal: AbortSignal) => {
   if (q.length < 2) { setter([]); return; }
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&context=1`);
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&context=1`, { signal });
     if (res.ok) {
       const json = await res.json();
-      setter(json.data || []);
+      if (!signal.aborted) setter(json.data || []);
     }
   } catch { /* ignore */ }
 };
 
 function useDebouncedSearch(query: string, setResults: (r: PlayerData[]) => void) {
   useEffect(() => {
-    const t = setTimeout(() => search(query, setResults), 300);
-    return () => clearTimeout(t);
+    const controller = new AbortController();
+    const t = setTimeout(() => search(query, setResults, controller.signal), 300);
+    return () => { clearTimeout(t); controller.abort(); };
   }, [query, setResults]);
 }
 
@@ -513,56 +528,120 @@ export default function ComparePage() {
   const [radarMode, setRadarMode] = useState<"RS" | "PO">("RS");
 
   const searchParams = useSearchParams();
-  const hydratedRef = useRef(false);
-  // Gate URL reflection until the on-mount ?p1/p2/p3 resolves settle, so the
-  // reflection effect can't wipe the shared params before the slots fill.
-  // Starts true when there are no params to resolve (nothing to wait for).
-  const [urlSyncReady, setUrlSyncReady] = useState(() => !searchParams.toString());
+  const incomingQuery = searchParams.toString();
+  const selectedRef = useRef<PlayerSlots>([player1, player2, player3]);
+  const requestedIdsRef = useRef<PlayerIds>([null, null, null]);
+  const knownPlayersRef = useRef(new Map<string, PlayerData>());
+  const lookupsRef = useRef(new Map<string, PlayerLookup>());
+  const attemptedIdsRef = useRef(new Set<string>());
+  const generationRef = useRef(0);
+  const writtenQueryRef = useRef<string | null>(null);
   const { toast } = useToast();
   // Local "who would win" pick — keyed by the comparison pair so swapping
   // players resets the badge. localStorage only; no backend tally.
   const [pick, setPick] = useState<"p1" | "p2" | null>(null);
 
-  // One-time URL hydration on mount: ?p1=&p2= rehydrates the player slots
-  // from /api/search?id=. Lets users share/bookmark a comparison.
-  useEffect(() => {
-    if (hydratedRef.current) return;
-    hydratedRef.current = true;
-    const p1Id = searchParams.get("p1");
-    const p2Id = searchParams.get("p2");
-    const p3Id = searchParams.get("p3");
-    const resolve = async (id: string, setter: (p: PlayerData) => void) => {
-      try {
-        const res = await fetch(`/api/search?id=${encodeURIComponent(id)}&context=1`);
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.data) setter(json.data);
-      } catch { /* ignore */ }
-    };
-    const jobs: Promise<void>[] = [];
-    if (p1Id) jobs.push(resolve(p1Id, setPlayer1));
-    if (p2Id) jobs.push(resolve(p2Id, setPlayer2));
-    if (p3Id) jobs.push(resolve(p3Id, setPlayer3));
-    Promise.allSettled(jobs).then(() => setUrlSyncReady(true));
-  }, [searchParams]);
+  const applyPlayers = useCallback((players: PlayerSlots) => {
+    selectedRef.current = players;
+    setPlayer1(players[0]); setPlayer2(players[1]); setPlayer3(players[2]);
+  }, []);
 
-  // Reflect selection state into the URL with replaceState (no router push,
-  // no scroll reset). Uses iconicId for season snapshots, raw personId for
-  // active/legend entries.
-  useEffect(() => {
-    if (!urlSyncReady) return;
-    const params = new URLSearchParams();
-    const idFor = (p: PlayerData) => p.iconicId ?? String(p.personId);
-    if (player1) params.set("p1", idFor(player1));
-    if (player2) params.set("p2", idFor(player2));
-    if (player3) params.set("p3", idFor(player3));
-    const next = params.toString();
-    const current = searchParams.toString();
-    if (next !== current) {
-      const url = next ? `?${next}` : window.location.pathname;
-      window.history.replaceState(null, "", url);
+  // Keep unresolved IDs as well as displayed records. Editing one slot while
+  // another loads must not silently remove the other player from the URL.
+  const resolvePlayers = useCallback((ids: PlayerIds, available: PlayerSlots) => {
+    const generation = ++generationRef.current;
+    requestedIdsRef.current = ids;
+    applyPlayers(available);
+    for (const [id, lookup] of lookupsRef.current) {
+      if (!ids.includes(id)) {
+        lookup.controller.abort();
+        lookupsRef.current.delete(id);
+      }
     }
-  }, [player1, player2, player3, searchParams, urlSyncReady]);
+    const resolve = (id: string | null): Promise<PlayerData | null> => {
+      if (!id) return Promise.resolve(null);
+      const known = knownPlayersRef.current.get(id);
+      if (known) return Promise.resolve(known);
+      const pending = lookupsRef.current.get(id);
+      if (pending) {
+        attemptedIdsRef.current.add(id);
+        return pending.promise;
+      }
+      // A failed unchanged slot must not retry on each keystroke in another.
+      if (attemptedIdsRef.current.has(id)) return Promise.resolve(null);
+      attemptedIdsRef.current.add(id);
+      const controller = new AbortController();
+      const lookup: PlayerLookup = { controller, promise: Promise.resolve(null) };
+      lookup.promise = (async () => {
+        try {
+          const res = await fetch(`/api/search?id=${encodeURIComponent(id)}&context=1`, { signal: controller.signal });
+          if (!res.ok || controller.signal.aborted) return null;
+          const json = await res.json();
+          if (controller.signal.aborted || !json.data || comparisonPlayerId(json.data) !== id) return null;
+          knownPlayersRef.current.set(id, json.data);
+          return json.data as PlayerData;
+        } catch { return null; }
+        finally {
+          if (lookupsRef.current.get(id) === lookup) lookupsRef.current.delete(id);
+        }
+      })();
+      lookupsRef.current.set(id, lookup);
+      return lookup.promise;
+    };
+    void Promise.all([resolve(ids[0]), resolve(ids[1]), resolve(ids[2])]).then((players) => {
+      if (generation !== generationRef.current) return;
+      if (comparisonQuery(ids) !== comparisonQuery(comparisonIds(window.location.search))) return;
+      applyPlayers(players);
+    });
+  }, [applyPlayers]);
+
+  // Incoming navigation owns the slots. Only explicit edits write history;
+  // an old selection can never reflect over a Back/Forward destination.
+  useEffect(() => {
+    // Ignore an obsolete Next acknowledgement after rapid local replacements.
+    if (incomingQuery !== new URLSearchParams(window.location.search).toString()) return;
+    if (writtenQueryRef.current === incomingQuery) {
+      writtenQueryRef.current = null;
+      return;
+    }
+    writtenQueryRef.current = null;
+    attemptedIdsRef.current.clear();
+    const ids = comparisonIds(incomingQuery);
+    const available: PlayerSlots = ids.map(id => id ? knownPlayersRef.current.get(id) ?? null : null) as PlayerSlots;
+    // A new URL replaces the old comparison and its autocomplete drafts.
+    setQuery1(""); setQuery2(""); setQuery3("");
+    setResults1([]); setResults2([]); setResults3([]);
+    resolvePlayers(ids, available);
+  }, [incomingQuery, resolvePlayers]);
+
+  useEffect(() => () => {
+    ++generationRef.current;
+    for (const lookup of lookupsRef.current.values()) lookup.controller.abort();
+    lookupsRef.current.clear();
+  }, []);
+
+  const commitPlayers = (players: PlayerSlots, ids: PlayerIds) => {
+    players.forEach(player => {
+      if (player) knownPlayersRef.current.set(comparisonPlayerId(player), player);
+    });
+    const next = comparisonQuery(ids);
+    if (typeof window !== "undefined") {
+      if (next !== new URLSearchParams(window.location.search).toString()) {
+        writtenQueryRef.current = next;
+        window.history.replaceState(null, "", next ? `?${next}` : window.location.pathname);
+      }
+      resolvePlayers(ids, players);
+    } else {
+      applyPlayers(players);
+    }
+  };
+  const selectPlayer = (slot: 0 | 1 | 2, player: PlayerData | null) => {
+    const players: PlayerSlots = [...selectedRef.current];
+    const ids: PlayerIds = [...requestedIdsRef.current];
+    players[slot] = player;
+    ids[slot] = player ? comparisonPlayerId(player) : null;
+    commitPlayers(players, ids);
+  };
 
   // Restore the user's previous pick for this exact pair, if any. Setting
   // back to null is fine here — React 19's "setState in effect" rule is a
@@ -649,8 +728,8 @@ export default function ComparePage() {
             results={results1}
             placeholder={t.comparePage.searchPlayer1}
             isZh={isZh}
-            onQuery={(q) => { setQuery1(q); setPlayer1(null); }}
-            onPick={(p) => { setPlayer1(p); setResults1([]); setQuery1(""); }}
+            onQuery={(q) => { setQuery1(q); selectPlayer(0, null); }}
+            onPick={(p) => { selectPlayer(0, p); setResults1([]); setQuery1(""); }}
           />
         </div>
 
@@ -658,11 +737,11 @@ export default function ComparePage() {
         <div className="flex items-center justify-center md:pt-3">
           <button
             onClick={() => {
-              const tempP = player1;
               const tempQ = query1;
-              setPlayer1(player2);
+              const [first, second, third] = selectedRef.current;
+              const [firstId, secondId, thirdId] = requestedIdsRef.current;
+              commitPlayers([second, first, third], [secondId, firstId, thirdId]);
               setQuery1(query2);
-              setPlayer2(tempP);
               setQuery2(tempQ);
             }}
             className="p-2.5 rounded-xl glass-tile hover:border-accent/50 transition-colors text-text-secondary hover:text-accent cursor-pointer"
@@ -680,8 +759,8 @@ export default function ComparePage() {
             results={results2}
             placeholder={t.comparePage.searchPlayer2}
             isZh={isZh}
-            onQuery={(q) => { setQuery2(q); setPlayer2(null); }}
-            onPick={(p) => { setPlayer2(p); setResults2([]); setQuery2(""); }}
+            onQuery={(q) => { setQuery2(q); selectPlayer(1, null); }}
+            onPick={(p) => { selectPlayer(1, p); setResults2([]); setQuery2(""); }}
           />
         </div>
       </div>
@@ -699,9 +778,9 @@ export default function ComparePage() {
               placeholder={isZh ? "（可选）加入第 3 个球员对比" : "(optional) add a 3rd player"}
               isZh={isZh}
               compact
-              onQuery={(q) => { setQuery3(q); setPlayer3(null); }}
-              onPick={(p) => { setPlayer3(p); setResults3([]); setQuery3(""); }}
-              onClear={() => { setPlayer3(null); setQuery3(""); setResults3([]); }}
+              onQuery={(q) => { setQuery3(q); selectPlayer(2, null); }}
+              onPick={(p) => { selectPlayer(2, p); setResults3([]); setQuery3(""); }}
+              onClear={() => { selectPlayer(2, null); setQuery3(""); setResults3([]); }}
             />
           </div>
         </div>
@@ -724,7 +803,7 @@ export default function ComparePage() {
           ].map((preset) => (
             <button
               key={preset.label}
-              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); setPlayer1(null); setPlayer2(null); setPlayer3(null); setQuery3(""); setResults3([]); }}
+              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); commitPlayers([null, null, null], [null, null, null]); setQuery3(""); setResults3([]); }}
               className="px-3 py-1.5 glass-tile text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer"
             >
               {preset.label}

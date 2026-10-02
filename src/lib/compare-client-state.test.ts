@@ -4,7 +4,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import en from '@/locales/en';
 import zh from '@/locales/zh';
 const runtime=vi.hoisted(()=>({slots:[] as unknown[],cursor:0,locale:'en'}));
-vi.mock('react',async original=>({...await original<typeof import('react')>(),useState:(initial:unknown)=>{const i=runtime.cursor++;if(!(i in runtime.slots))runtime.slots[i]=typeof initial==='function'?initial():initial;return [runtime.slots[i],(value:unknown)=>{runtime.slots[i]=typeof value==='function'?value(runtime.slots[i]):value;}];},useEffect:()=>{},useRef:(value:unknown)=>({current:value})}));
+vi.mock('react',async original=>({...await original<typeof import('react')>(),useState:(initial:unknown)=>{const i=runtime.cursor++;if(!(i in runtime.slots))runtime.slots[i]=typeof initial==='function'?initial():initial;return [runtime.slots[i],(value:unknown)=>{runtime.slots[i]=typeof value==='function'?value(runtime.slots[i]):value;}];},useEffect:()=>{},useCallback:(fn:unknown)=>fn,useRef:(value:unknown)=>({current:value})}));
 vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams()}));
 vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:runtime.locale,t:runtime.locale==='zh'?zh:en})}));
 vi.mock('@/components/ToastProvider',()=>({useToast:()=>({toast:vi.fn()})}));
