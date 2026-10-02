@@ -66,5 +66,149 @@
       "Stephon Castle": "SAS",
       "Mitchell Robinson": "NYK"
     }
+  },
+  "0042500401": {
+    "verifiedOn": "2026-10-02",
+    "sourceSnapshotCommit": "2b940ea22e950396c5e5f0679b335a578c3f0e8f",
+    "sourceStoredSnapshotSha256": "7f981a3ade93f8b2a00c0b7ec9ca9e0ba64d1dbbc0fcd37dc64f1b15e1df5bc8",
+    "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260603/20260603_NYKSAS.pdf",
+    "officialReportSha256": "e7444a30715d765f9481dae2246321f41001819fa877384f893b2e95ca2be2db",
+    "officialReportPage": 1,
+    "playerRows": 20,
+    "allCountingShootingPlusMinusAndStarterFieldsMatch": true,
+    "allRoundedMinutesMatch": false,
+    "minuteCorrections": {
+      "Jalen Brunson": {
+        "stored": 36,
+        "officialExactMinutes": "37:03",
+        "officialNearestWholeMinute": 37
+      },
+      "Devin Vassell": {
+        "stored": 35,
+        "officialExactMinutes": "36:01",
+        "officialNearestWholeMinute": 36
+      },
+      "Victor Wembanyama": {
+        "stored": 37,
+        "officialExactMinutes": "37:48",
+        "officialNearestWholeMinute": 38
+      }
+    },
+    "nameToTeam": {
+      "Landry Shamet": "NYK",
+      "Harrison Barnes": "SAS",
+      "Jalen Brunson": "NYK",
+      "Mikal Bridges": "NYK",
+      "Carter Bryant": "SAS",
+      "Devin Vassell": "SAS",
+      "Jose Alvarado": "NYK",
+      "Dylan Harper": "SAS",
+      "Luke Kornet": "SAS",
+      "De'Aaron Fox": "SAS",
+      "Victor Wembanyama": "SAS",
+      "Karl-Anthony Towns": "NYK",
+      "Keldon Johnson": "SAS",
+      "Julian Champagnie": "SAS",
+      "OG Anunoby": "NYK",
+      "Josh Hart": "NYK",
+      "Miles McBride": "NYK",
+      "Jordan Clarkson": "NYK",
+      "Stephon Castle": "SAS",
+      "Mitchell Robinson": "NYK"
+    }
+  },
+  "0042500402": {
+    "verifiedOn": "2026-10-02",
+    "sourceSnapshotCommit": "2b940ea22e950396c5e5f0679b335a578c3f0e8f",
+    "sourceStoredSnapshotSha256": "c993cbfd16378e03c9ee5cf2df880a6d5ce15b7d76c332df13eea531e3f11eb8",
+    "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260605/20260605_NYKSAS.pdf",
+    "officialReportSha256": "fd3044b322edc0a558edf53ac0d041752ba81fbcc62f520f4488c0d983a754f1",
+    "officialReportPage": 1,
+    "playerRows": 19,
+    "allCountingShootingPlusMinusAndStarterFieldsMatch": true,
+    "allRoundedMinutesMatch": false,
+    "minuteCorrections": {
+      "Mikal Bridges": {
+        "stored": 40,
+        "officialExactMinutes": "40:53",
+        "officialNearestWholeMinute": 41
+      },
+      "Devin Vassell": {
+        "stored": 37,
+        "officialExactMinutes": "38:03",
+        "officialNearestWholeMinute": 38
+      },
+      "OG Anunoby": {
+        "stored": 36,
+        "officialExactMinutes": "36:48",
+        "officialNearestWholeMinute": 37
+      },
+      "Stephon Castle": {
+        "stored": 27,
+        "officialExactMinutes": "27:43",
+        "officialNearestWholeMinute": 28
+      }
+    },
+    "nameToTeam": {
+      "Landry Shamet": "NYK",
+      "Harrison Barnes": "SAS",
+      "Jalen Brunson": "NYK",
+      "Mikal Bridges": "NYK",
+      "Carter Bryant": "SAS",
+      "Devin Vassell": "SAS",
+      "Jose Alvarado": "NYK",
+      "Dylan Harper": "SAS",
+      "Luke Kornet": "SAS",
+      "De'Aaron Fox": "SAS",
+      "Victor Wembanyama": "SAS",
+      "Karl-Anthony Towns": "NYK",
+      "Keldon Johnson": "SAS",
+      "Julian Champagnie": "SAS",
+      "OG Anunoby": "NYK",
+      "Josh Hart": "NYK",
+      "Miles McBride": "NYK",
+      "Stephon Castle": "SAS",
+      "Mitchell Robinson": "NYK"
+    }
+  },
+  "0042500403": {
+    "verifiedOn": "2026-10-02",
+    "sourceSnapshotCommit": "2b940ea22e950396c5e5f0679b335a578c3f0e8f",
+    "sourceStoredSnapshotSha256": "af3cda38b4d0010e68208167e30d73b2fbcbb86b955a52e7bff6d1081463e87b",
+    "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260608/20260608_SASNYK.pdf",
+    "officialReportSha256": "0dbbf20f8ba3a87e1fdf6cedfa3126b8bae9ed5e4bb10e72cff25b39a7a7fa47",
+    "officialReportPage": 1,
+    "playerRows": 20,
+    "allCountingShootingPlusMinusAndStarterFieldsMatch": true,
+    "allRoundedMinutesMatch": false,
+    "minuteCorrections": {
+      "Jeremy Sochan": {
+        "stored": null,
+        "officialExactMinutes": "00:10",
+        "expectedRounded": 0
+      }
+    },
+    "nameToTeam": {
+      "Landry Shamet": "NYK",
+      "Jalen Brunson": "NYK",
+      "Mikal Bridges": "NYK",
+      "Carter Bryant": "SAS",
+      "Devin Vassell": "SAS",
+      "Jose Alvarado": "NYK",
+      "Dylan Harper": "SAS",
+      "Luke Kornet": "SAS",
+      "De'Aaron Fox": "SAS",
+      "Victor Wembanyama": "SAS",
+      "Karl-Anthony Towns": "NYK",
+      "Keldon Johnson": "SAS",
+      "Julian Champagnie": "SAS",
+      "OG Anunoby": "NYK",
+      "Jeremy Sochan": "NYK",
+      "Josh Hart": "NYK",
+      "Miles McBride": "NYK",
+      "Jordan Clarkson": "NYK",
+      "Stephon Castle": "SAS",
+      "Mitchell Robinson": "NYK"
+    }
   }
 }

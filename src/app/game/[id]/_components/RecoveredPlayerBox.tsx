@@ -4,8 +4,9 @@ const value = (v: number | null) => v === null ? "—" : String(v);
 const split = (made: number | null, attempted: number | null) => `${value(made)}–${value(attempted)}`;
 
 export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; isZh: boolean }) {
+  const hasMinuteCorrections = box.players.some(player => player.minutesCorrection);
   const columns = ["MIN ≈", "PTS", "REB", "AST", "FG", "3PT", "FT", "OREB", "DREB", "STL", "BLK", "TO", "PF", "+/−"];
-  const cells = (p: RecoveredPlayerLine) => [value(p.minutes), value(p.points), value(p.rebounds), value(p.assists), split(p.fieldGoalsMade, p.fieldGoalsAttempted), split(p.threePointersMade, p.threePointersAttempted), split(p.freeThrowsMade, p.freeThrowsAttempted), value(p.offensiveRebounds), value(p.defensiveRebounds), value(p.steals), value(p.blocks), value(p.turnovers), value(p.fouls), value(p.plusMinus)];
+  const cells = (p: RecoveredPlayerLine) => [`${value(p.minutes)}${p.minutesCorrection ? "†" : ""}`, value(p.points), value(p.rebounds), value(p.assists), split(p.fieldGoalsMade, p.fieldGoalsAttempted), split(p.threePointersMade, p.threePointersAttempted), split(p.freeThrowsMade, p.freeThrowsAttempted), value(p.offensiveRebounds), value(p.defensiveRebounds), value(p.steals), value(p.blocks), value(p.turnovers), value(p.fouls), value(p.plusMinus)];
   return <section className="mt-6 space-y-4" aria-label={isZh ? "补充球员技术统计" : "Recovered player box score"}>
     <div className="glass-tile p-4 space-y-2">
       <h2 className="text-lg font-semibold">{isZh ? "球员技术统计" : "Player box score"}</h2>
@@ -14,8 +15,11 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
         {` · ${box.season} · ${box.gameDate}`}
       </p>
       <p className="text-xs text-text-secondary">{isZh
-        ? "本场历史球队归属与球员得分已对照 NBA 官方报告核验。分钟为数据源提供的取整值；未列出未出场球员。"
-        : "Historical team assignments and player points were checked against the NBA official report. Minutes are rounded by the source; non-playing roster members are not listed."}</p>
+        ? "本场历史球队归属与球员得分已对照 NBA 官方报告核验。分钟为取整值（标记 † 的校正见下方）；未列出未出场球员。"
+        : "Historical team assignments and player points were checked against the NBA official report. Minutes are rounded (see any † corrections below); non-playing roster members are not listed."}</p>
+      {hasMinuteCorrections && <p className="text-xs text-text-secondary">{isZh
+        ? "† 分钟已按本场 NBA 官方报告校正并四舍五入；原始数据源分钟保留在公开存档的校正记录中，其他统计未作推算。"
+        : "† Minutes corrected from this game's NBA official report and rounded to the nearest minute. Original provider minutes are retained in the public archive correction record; no other stats were estimated."}</p>}
       <a href={box.reportUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">{isZh ? "核验依据：NBA 官方赛后报告（PDF）" : "Reference: NBA official final report (PDF)"}</a>
       <p className="text-xs text-text-secondary">{isZh ? "快照获取时间（约）" : "Snapshot retrieved (approximately)"}: {box.retrievedAt.replace("T", " ").replace(":00Z", " UTC")}</p>
     </div>

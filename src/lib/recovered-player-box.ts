@@ -5,6 +5,14 @@ export interface RecoveredPlayerLine {
   providerPlayerId?: string | null;
   team: string;
   minutes: number | null;
+  minutesCorrection?: {
+    source: "NBA official final report";
+    originalProviderMinutes: number | null;
+    officialDuration: string;
+    reportUrl: string;
+    verifiedOn: string;
+    rounding: "nearest-minute";
+  };
   points: number;
   rebounds: number | null;
   assists: number | null;
@@ -61,6 +69,16 @@ export function validateRecoveredPlayerBox(raw: unknown, game: ScheduleGame): Re
       !(p.starter === null || typeof p.starter === "boolean")) return null;
     if (!(p.providerPlayerId === undefined || p.providerPlayerId === null || (typeof p.providerPlayerId === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(p.providerPlayerId)))) return null;
     names.add(p.name);
+    if (p.minutesCorrection !== undefined) {
+      const correction = p.minutesCorrection;
+      if (!object(correction) || correction.source !== "NBA official final report" ||
+        !optionalCount(correction.originalProviderMinutes) || correction.reportUrl !== raw.reportUrl ||
+        correction.rounding !== "nearest-minute" || typeof correction.verifiedOn !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(correction.verifiedOn) || !Number.isFinite(Date.parse(correction.verifiedOn)) ||
+        typeof correction.officialDuration !== "string" || !/^\d{2}:[0-5]\d$/.test(correction.officialDuration)) return null;
+      const [minutes, seconds] = correction.officialDuration.split(":").map(Number);
+      if (p.minutes !== Math.round(minutes + seconds / 60)) return null;
+    }
     for (const [made, attempts] of [["fieldGoalsMade", "fieldGoalsAttempted"], ["threePointersMade", "threePointersAttempted"], ["freeThrowsMade", "freeThrowsAttempted"]]) {
       if (count(p[made]) && count(p[attempts]) && p[made] > p[attempts]) return null;
     }
