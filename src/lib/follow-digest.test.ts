@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildTeamDigests } from "./follow-digest";
 import type { ScheduleDate, ScheduleGame } from "./api";
 import type { SeasonSnapshot } from "./season-snapshot";
@@ -35,6 +35,9 @@ function game(o: {
   };
 }
 
+beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-22T12:00:00Z")); });
+afterEach(() => vi.useRealTimers());
+
 const SNAPSHOT: SeasonSnapshot = {
   season: "2025-26",
   generatedAt: "2026-07-01T00:00:00.000Z",
@@ -53,7 +56,7 @@ const flippedFeed: ScheduleDate[] = [
   {
     gameDate: "10/20/2026 00:00:00",
     games: [
-      game({ gameId: "0022600001", status: 1, utc: "2026-10-21T00:00:00Z", home: ["BOS", 1610612738, 0], away: ["NYK", 1610612752, 0] }),
+      game({ gameId: "0022600001", status: 1, utc: "2026-10-25T00:00:00Z", home: ["BOS", 1610612738, 0], away: ["NYK", 1610612752, 0] }),
     ],
   },
 ];
@@ -67,6 +70,8 @@ describe("buildTeamDigests snapshot fallback", () => {
     expect(bos.lastGame).toEqual({
       gameId: "0042500401",
       status: 3,
+      season: "2025-26",
+      calendarDate: "2026-06-10",
       dateUTC: "2026-06-10T12:00:00Z",
       home: false,
       opponentTricode: "LAL",
@@ -101,11 +106,45 @@ describe("buildTeamDigests snapshot fallback", () => {
     expect(bos.lastGame?.gameId).toBe("0022600001");
   });
 
-  it("degrades to 0-0 without archived when the team is missing from the snapshot", () => {
+  it("degrades to unavailable without archived when the team is missing from the snapshot", () => {
     const [orl] = buildTeamDigests([], ["ORL"], SNAPSHOT);
     expect(orl.archived).toBeUndefined();
-    expect(orl.wins).toBe(0);
-    expect(orl.losses).toBe(0);
+    expect(orl.wins).toBeNull();
+    expect(orl.losses).toBeNull();
     expect(orl.lastGame).toBeNull();
   });
+});
+
+const fixture = (id: string, home = "BOS", away = "NYK", status = 3, utc = "2026-10-21T00:00:00Z") => game({gameId:id,status,utc,home:[home,1610612738,110],away:[away,1610612752,100]});
+it("mixed history cannot inflate current record, rank or streak", () => {
+  const current = fixture("0022600001");
+  const [team] = buildTeamDigests([{gameDate:"",games:[fixture("0022500001"),current,current]}],["BOS"],SNAPSHOT);
+  expect(team).toMatchObject({wins:1,losses:0,recordSeason:"2026-27",streak:"W1",conferenceRank:1});
+  expect(team.archived).toBeUndefined();
+});
+it("archive-only retains snapshot record and independent historical playoff result", () => {
+  const [team] = buildTeamDigests([{gameDate:"",games:[fixture("0022500001"),fixture("0042500401")]}],["BOS"],SNAPSHOT);
+  expect(team).toMatchObject({wins:61,losses:21,recordSeason:"2025-26",archived:true,conferenceRank:null,streak:""});
+  expect(team.lastGame?.season).toBe("2025-26");
+});
+it("an unplayed team has no fabricated rank while historical result stays accessible", () => {
+  const [team] = buildTeamDigests([{gameDate:"",games:[fixture("0022600001","LAL","NYK"),fixture("0042500401")]}],["BOS"],SNAPSHOT);
+  expect(team).toMatchObject({wins:0,losses:0,recordSeason:"2026-27",conferenceRank:null,streak:""});
+  expect(team.lastGame?.gameId).toBe("0042500401");
+});
+it("next game excludes past, invalid, tentative and TBD rows", () => {
+  const past = fixture("0022600001","BOS","NYK",1);
+  const tbd = {...fixture("0022600002","BOS","NYK",1,"2026-10-23T00:00:00Z"),gameStatusText:"TBD"};
+  const tentative = {...fixture("0042600101","BOS","NYK",1,"2026-10-23T00:00:00Z"),ifNecessary:true};
+  const next = fixture("0022600003","BOS","NYK",1,"2026-10-25T00:00:00Z");
+  const [team] = buildTeamDigests([{gameDate:"",games:[past,tbd,tentative,next]}],["BOS"],null);
+  expect(team.nextGame?.gameId).toBe(next.gameId);
+  expect(buildTeamDigests([{gameDate:"",games:[past,tbd,tentative]}],["BOS"],null)[0].nextGame).toBeNull();
+});
+
+it("newer invalid or tied finals cannot replace an older valid result", () => {
+  const valid = fixture("0022600001","BOS","NYK",3,"2026-10-20T00:00:00Z");
+  const invalid = fixture("0022600002"); invalid.homeTeam.score = NaN;
+  const tied = fixture("0022600003"); tied.homeTeam.score = tied.awayTeam.score;
+  expect(buildTeamDigests([{gameDate:"",games:[valid,invalid,tied]}],["BOS"],null)[0].lastGame?.gameId).toBe(valid.gameId);
 });

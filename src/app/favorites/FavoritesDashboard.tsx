@@ -14,6 +14,7 @@ import { isPlayoff, isPlayIn } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { useLocale } from "@/components/LocaleProvider";
+import { playerIndexLabel } from "@/lib/player-index-provenance";
 import { formatGameDate } from "@/lib/dates";
 import type {
   FollowDigest, TeamDigest, PlayerDigest, DigestGame,
@@ -92,7 +93,7 @@ export default function FavoritesDashboard() {
     setLoading(true);
     setErrored(false);
 
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ context: "2" });
     if (favTeams.length) params.set("teams", favTeams.join(","));
     if (favPlayers.length) params.set("players", favPlayers.join(","));
 
@@ -178,7 +179,7 @@ export default function FavoritesDashboard() {
     if (digest?.teams.length) {
       lines.push(isZh ? "球队:" : "Teams:");
       for (const team of digest.teams) {
-        lines.push(`  - ${team.city} ${team.name} (${team.wins}-${team.losses})`);
+        lines.push(`  - ${team.city} ${team.name} (${team.wins ?? "—"}-${team.losses ?? "—"}${team.recordSeason ? ` · ${team.recordSeason}${team.archived ? " archive" : ""}` : ""})`);
       }
       lines.push("");
     }
@@ -186,7 +187,7 @@ export default function FavoritesDashboard() {
       lines.push(isZh ? "球员:" : "Players:");
       for (const p of digest.players) {
         const pName = p.name || (isZh ? `球员 #${p.personId}` : `Player #${p.personId}`);
-        lines.push(p.teamTricode ? `  - ${pName} (${p.teamTricode})` : `  - ${pName}`);
+        lines.push(p.teamTricode ? `  - ${pName} (${p.teamTricode}${p.provenance ? ` · ${playerIndexLabel(p.provenance, isZh ? "zh" : "en")}` : ""})` : `  - ${pName}`);
       }
     }
     navigator.clipboard?.writeText(lines.join("\n")).then(() => {
@@ -329,7 +330,7 @@ function SectionHeader({ index, icon: Icon, title, count }: {
 // ─────────────────────────────────────────────────────────────────────────────
 // TEAM CARD — logo + city/name anchor, record + conf rank + streak pill,
 // Last / Next sub-rows, plus a compact injuries + news footer.
-function TeamCard({ team, injuries, news, isZh, onRemove, delay }: {
+export function TeamCard({ team, injuries, news, isZh, onRemove, delay }: {
   team: TeamDigest;
   injuries: InjuryItem[] | undefined;
   news: NewsItem[] | undefined;
@@ -370,13 +371,13 @@ function TeamCard({ team, injuries, news, isZh, onRemove, delay }: {
           </Link>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className="font-mono tabular-nums text-sm">
-              <span className="text-success font-semibold">{team.wins}</span>
+              <span className="text-success font-semibold">{team.wins ?? "—"}</span>
               <span className="text-text-secondary/40 mx-0.5">–</span>
-              <span className="text-danger font-semibold">{team.losses}</span>
+              <span className="text-danger font-semibold">{team.losses ?? "—"}</span>
             </span>
-            {team.archived && (
+            {team.recordSeason && (
               <span className="text-[10px] font-mono uppercase tracking-[0.1em] px-1.5 py-0.5 rounded bg-accent-amber/15 text-accent-amber">
-                {isZh ? "上赛季" : "Last season"}
+                {team.recordSeason}{team.archived ? (isZh ? " 存档" : " archive") : ""}
               </span>
             )}
             {team.conferenceRank != null && (
@@ -398,7 +399,7 @@ function TeamCard({ team, injuries, news, isZh, onRemove, delay }: {
 
       {/* Last / Next rows */}
       <div className="relative mt-4 space-y-1.5">
-        <GameRow label={isZh ? "上一战" : "Last"} game={team.lastGame} isZh={isZh} kind="last" />
+        <GameRow label={isZh ? "可用赛果" : "Latest available"} game={team.lastGame} isZh={isZh} kind="last" />
         <GameRow label={isZh ? "下一场" : "Next"} game={team.nextGame} isZh={isZh} kind="next" />
       </div>
 
@@ -466,14 +467,14 @@ function GameRow({ label, game, isZh, kind }: {
       <div className="flex items-center gap-2 text-[11px]">
         <span className="font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0">{label}</span>
         <span className="text-text-secondary/70 italic">
-          {kind === "next" ? (isZh ? "休赛期" : "Offseason") : (isZh ? "暂无比赛" : "No game yet")}
+          {kind === "next" ? (isZh ? "暂无已知赛程" : "No scheduled game available") : (isZh ? "暂无比赛" : "No game yet")}
         </span>
       </div>
     );
   }
 
   const oppPrefix = game.home ? (isZh ? "对阵 " : "vs ") : "@ ";
-  const date = fmtGameDate(game.dateUTC, isZh);
+  const date = `${game.season ? `${game.season} · ` : ""}${game.calendarDate || fmtGameDate(game.dateUTC, isZh)}`;
   // A live game can be the "last" game — don't label its in-progress score W/L.
   const live = kind === "last" && game.status === 2;
   // Postseason results: tag the row so a reg.-season streak shown beside a
@@ -534,7 +535,7 @@ function GameRow({ label, game, isZh, kind }: {
 // ─────────────────────────────────────────────────────────────────────────────
 // PLAYER CARD — headshot + name/team anchor, last-game stat line,
 // season averages, their team's next game.
-function PlayerCard({ player, isZh, onRemove, delay }: {
+export function PlayerCard({ player, isZh, onRemove, delay }: {
   player: PlayerDigest; isZh: boolean; onRemove: () => void; delay: number;
 }) {
   const meta = TEAM_META[player.teamTricode];
@@ -585,10 +586,14 @@ function PlayerCard({ player, isZh, onRemove, delay }: {
         <RemoveButton onRemove={onRemove} label={isZh ? "取消关注" : "Unfollow"} />
       </div>
 
+      <p className="relative mt-2 text-[10px] text-text-secondary">
+        {player.provenance ? playerIndexLabel(player.provenance, isZh ? "zh" : "en") : (isZh ? "球员来源暂不可用" : "Player source unavailable")}
+      </p>
+
       {/* Last-game stat line */}
       <div className="relative mt-4">
         <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mb-1.5">
-          {isZh ? "最近一战" : "Last game"}
+          {isZh ? "最近可用出场" : "Latest available appearance"}
         </p>
         {line ? (
           <Link
@@ -603,7 +608,7 @@ function PlayerCard({ player, isZh, onRemove, delay }: {
                 {line.home ? (isZh ? "对阵 " : "vs ") : "@ "}{line.opponentTricode}
               </span>
               <span className="text-text-secondary/60 font-mono">· {line.min}{isZh ? "分钟" : " MIN"}</span>
-              <span className="ml-auto text-text-secondary/60 font-mono">{fmtGameDate(line.dateUTC, isZh)}</span>
+              <span className="ml-auto text-text-secondary/60 font-mono">{line.season ? `${line.season} · ` : `${line.dateUTC.slice(0, 4)} · `}{fmtGameDate(line.dateUTC, isZh)}</span>
               <ArrowUpRight size={12} className="text-text-secondary/50 group-hover:text-accent transition-colors" />
             </div>
             <div className="flex items-baseline gap-3 font-mono tabular-nums">
@@ -644,7 +649,7 @@ function PlayerCard({ player, isZh, onRemove, delay }: {
             <span className="text-text-secondary/60">{fmtGameDate(player.nextGame.dateUTC, isZh)}</span>
           </span>
         ) : (
-          <span className="text-text-secondary/60 font-mono">{isZh ? "休赛期" : "Offseason"}</span>
+          <span className="text-text-secondary/60 font-mono">{!player.currentTeamKnown ? (isZh ? "当前球队待确认" : "Current team unconfirmed") : (isZh ? "暂无已知赛程" : "No scheduled game available")}</span>
         )}
       </div>
     </div>

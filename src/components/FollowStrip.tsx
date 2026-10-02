@@ -39,7 +39,7 @@ export default function FollowStrip() {
     const controller = new AbortController();
     setLoading(true);
     setError(false);
-    fetch(`/api/follow-digest?teams=${encodeURIComponent(teams.join(","))}`, {
+    fetch(`/api/follow-digest?context=2&teams=${encodeURIComponent(teams.join(","))}`, {
       signal: controller.signal,
     })
       .then((res) => {
@@ -117,8 +117,8 @@ function TeamCardSkeleton() {
   );
 }
 
-function TeamCard({ team, isZh }: { team: TeamDigest; isZh: boolean }) {
-  const record = `${team.wins}-${team.losses}`;
+export function TeamCard({ team, isZh }: { team: TeamDigest; isZh: boolean }) {
+  const record = team.wins === null || team.losses === null ? "—" : `${team.wins}-${team.losses}`;
   // streak is "W3" / "L2" / "" — tint it by direction for at-a-glance read.
   const streakWin = team.streak.startsWith("W");
   const streakLoss = team.streak.startsWith("L");
@@ -153,10 +153,10 @@ function TeamCard({ team, isZh }: { team: TeamDigest; isZh: boolean }) {
           </div>
           <div className="flex items-center gap-1.5 text-[10px] font-mono tabular-nums text-text-secondary/80">
             <span>{record}</span>
-            {team.archived && (
+            {team.recordSeason && (
               <>
                 <span className="text-text-secondary/40">·</span>
-                <span className="text-accent-amber uppercase">{isZh ? "上赛季" : "last season"}</span>
+                <span className="text-accent-amber uppercase">{team.recordSeason}{team.archived ? (isZh ? " 存档" : " archive") : ""}</span>
               </>
             )}
             {team.conferenceRank !== null && (
@@ -198,7 +198,7 @@ function TeamCard({ team, isZh }: { team: TeamDigest; isZh: boolean }) {
 }
 
 function LastRow({ game, isZh }: { game: DigestGame | null; isZh: boolean }) {
-  const label = isZh ? "上场" : "Last";
+  const label = isZh ? "赛果" : "Result";
   if (!game || game.teamScore === undefined || game.oppScore === undefined) {
     return (
       <div className="flex items-center gap-2 text-[11px]">
@@ -247,7 +247,7 @@ function LastRow({ game, isZh }: { game: DigestGame | null; isZh: boolean }) {
         {game.teamScore}-{game.oppScore}
       </span>
       <span className="text-text-secondary truncate">
-        {game.home ? (isZh ? "对" : "vs") : "@"} {game.opponentTricode}
+        {game.season ? `${game.season} · ` : ""}{game.calendarDate || game.dateUTC.slice(0, 10)} · {game.home ? (isZh ? "对" : "vs") : "@"} {game.opponentTricode}
       </span>
     </div>
   );
@@ -259,7 +259,7 @@ function NextRow({ game, isZh }: { game: DigestGame | null; isZh: boolean }) {
     return (
       <div className="flex items-center gap-2 text-[11px]">
         <RowLabel>{label}</RowLabel>
-        <span className="text-text-secondary/60">{isZh ? "赛季结束" : "Offseason"}</span>
+        <span className="text-text-secondary/60">{isZh ? "暂无已知赛程" : "No scheduled game available"}</span>
       </div>
     );
   }

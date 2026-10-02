@@ -1,6 +1,7 @@
+import type { PlayerIndexProvenance } from "./player-index-provenance";
 // Shared contract for the personalized "follow" digest, consumed by the home
 // FollowStrip and the /favorites dashboard. The /api/follow-digest route
-// produces it from the schedule cache + playergamelog + player index.
+// produces it from the schedule cache + box scores + player index.
 
 /** One game in a team's digest — finished (scores present) or upcoming. */
 export interface DigestGame {
@@ -8,6 +9,9 @@ export interface DigestGame {
   /** 1 = scheduled, 2 = live, 3 = final */
   status: 1 | 2 | 3;
   dateUTC: string;
+  season?: string | null;
+  /** Snapshot date only; no tip-off time is known. */
+  calendarDate?: string;
   /** true when the followed team plays at home */
   home: boolean;
   opponentTricode: string;
@@ -28,22 +32,23 @@ export interface TeamDigest {
   /** TEAM_META.primaryColor — for the accent wash */
   primaryColor: string;
   conference: "East" | "West";
-  wins: number;
-  losses: number;
+  wins: number | null;
+  losses: number | null;
+  recordSeason: string | null;
   /** 1-based conference rank, when computable */
   conferenceRank: number | null;
   /** e.g. "W3" / "L2" / "" */
   streak: string;
   lastGame: DigestGame | null;
   nextGame: DigestGame | null;
-  /** record/lastGame come from the archived season-final snapshot (the feed
-   *  rolled to a new season with zero finished games) — UI labels these
-   *  "上赛季 / last season" so they aren't read as current-season data */
+  /** Record comes from the archived snapshot identified by recordSeason.
+   * Latest available match context is independent and may be from another season. */
   archived?: boolean;
 }
 
 export interface PlayerLine {
   gameId: string;
+  season: string | null;
   dateUTC: string;
   opponentTricode: string;
   home: boolean;
@@ -65,12 +70,15 @@ export interface PlayerDigest {
   name: string;
   teamTricode: string;
   teamId: number;
-  /** most recent game's box line (playergamelog), null if unavailable */
+  /** latest available verified box appearance, null if unavailable */
   lastLine: PlayerLine | null;
   /** the player's team's next scheduled game, null in offseason */
   nextGame: DigestGame | null;
   /** season per-game averages from the player index, when available */
   seasonAvg: { pts: number; reb: number; ast: number } | null;
+  provenance: PlayerIndexProvenance | null;
+  /** Only a current, non-stale upstream index can support the next-team link. */
+  currentTeamKnown: boolean;
 }
 
 export interface FollowDigest {

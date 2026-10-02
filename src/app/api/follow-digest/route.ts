@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFullSchedule, getPlayerInfo, getBoxScore } from "@/lib/api";
+import { getFullSchedule, getPlayerIndexSnapshot, getBoxScore, type PlayerIndexSnapshot } from "@/lib/api";
+import { currentSeason } from "@/lib/constants";
+import { hasCompleteAverages } from "@/lib/player-profile-stats";
 import { TEAM_META } from "@/lib/teams";
 import {
   buildTeamDigests,
@@ -9,7 +11,7 @@ import {
 } from "@/lib/follow-digest";
 import type { FollowDigest, PlayerDigest, PlayerLine } from "@/lib/follow-digest-types";
 
-// getBoxScore hits cdn.nba.com (reachable from Vercel); give headroom anyway.
+// Keep the existing request budget; box-score availability varies upstream.
 export const maxDuration = 30;
 
 // Bound cost: cap how many entries we'll process per request.
@@ -35,15 +37,18 @@ function parseIdList(raw: string | null, max: number): string[] {
 async function buildPlayerDigest(
   schedule: Awaited<ReturnType<typeof getFullSchedule>>,
   personId: number,
+  snapshot: PlayerIndexSnapshot | null,
 ): Promise<PlayerDigest> {
   // Name/team/season-avg come from the in-app player index.
-  const info = await getPlayerInfo(personId).catch(() => null);
+  const info = snapshot?.players.find((player) => player.personId === personId) ?? null;
+  const provenance = snapshot?.provenance ?? null;
 
   const tricode = info?.teamAbbr?.toUpperCase() ?? "";
   const meta = TEAM_META[tricode];
+  const currentTeamKnown = !!meta && provenance?.source === "nba-cdn" && !provenance.stale && provenance.season === currentSeason();
 
-  // Last line: stats.nba.com playergamelog is blackholed from Vercel, so derive
-  // it from the CDN box score (reachable). The literal last team game may be one
+  // Search the existing limited box-score window for a verified appearance.
+  // Availability varies upstream. The literal last team game may be one
   // the player rested/DNP'd, so walk back the last few finished games until the
   // player actually appears. null = team unknown / no appearance found.
   let lastLine: PlayerLine | null = null;
@@ -62,10 +67,9 @@ async function buildPlayerDigest(
   // Empty name = unresolved player (not in the active CDN index — retired /
   // two-way). The client localizes this to "Player #id" rather than a bare id.
   const name = info ? `${info.firstName} ${info.lastName}`.trim() : "";
-  // Player index pts/reb/ast are season per-game averages — surface only when
-  // the player actually has a season (any non-zero), else null.
+  // Preserve genuine zero averages; missing values cannot become numeric stats.
   const seasonAvg =
-    info && (info.pts || info.reb || info.ast)
+    info && hasCompleteAverages(info)
       ? { pts: info.pts, reb: info.reb, ast: info.ast }
       : null;
 
@@ -75,7 +79,9 @@ async function buildPlayerDigest(
     teamTricode: meta?.tricode ?? tricode,
     teamId: meta?.teamId ?? info?.teamId ?? 0,
     lastLine,
-    nextGame: meta ? teamNextGame(schedule, meta.tricode) : null,
+    nextGame: meta && currentTeamKnown ? teamNextGame(schedule, meta.tricode) : null,
+    provenance,
+    currentTeamKnown,
     seasonAvg,
   };
 }
@@ -98,8 +104,9 @@ export async function GET(request: NextRequest) {
 
   // Players run concurrently; each settles independently so one hang/timeout
   // can't drop the others (allSettled never rejects).
+  const snapshot = playerIds.length ? await getPlayerIndexSnapshot().catch(() => null) : null;
   const settled = await Promise.allSettled(
-    playerIds.map((id) => buildPlayerDigest(schedule, id)),
+    playerIds.map((id) => buildPlayerDigest(schedule, id, snapshot)),
   );
   const players: PlayerDigest[] = [];
   for (let i = 0; i < settled.length; i++) {
@@ -117,6 +124,8 @@ export async function GET(request: NextRequest) {
         lastLine: null,
         nextGame: null,
         seasonAvg: null,
+        provenance: snapshot?.provenance ?? null,
+        currentTeamKnown: false,
       });
     }
   }
