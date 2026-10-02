@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
-import { isPlayoff } from "@/lib/games";
+import { selectPlayoffSeason } from "@/lib/playoff-season";
 
 export async function GET() {
   let schedule;
@@ -10,7 +10,7 @@ export async function GET() {
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
     ]);
   } catch {
-    return NextResponse.json({ recent: [], playoffs: [] }, {
+    return NextResponse.json({ recent: [], playoffs: [], playoffSeason: null }, {
       headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" },
     });
   }
@@ -39,10 +39,8 @@ export async function GET() {
   }
 
   // Playoff games
-  const playoffGames = schedule
-    .flatMap((gd) => gd.games)
-    .filter((g) => isPlayoff(g.gameId) && g.gameStatus === 3)
-    .map((g) => ({
+  const selected = selectPlayoffSeason(schedule.flatMap((gd) => gd.games));
+  const playoffGames = selected.games.map((g) => ({
       gameId: g.gameId,
       gameStatus: g.gameStatus,
       homeTeam: {
@@ -66,6 +64,7 @@ export async function GET() {
   return NextResponse.json({
     recent: recentFinished.slice(0, 6),
     playoffs: playoffGames,
+    playoffSeason: selected.season,
   }, {
     headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" },
   });

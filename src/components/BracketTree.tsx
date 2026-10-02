@@ -1,6 +1,8 @@
 "use client";
 
 import { memo } from "react";
+import { selectPlayoffSeason } from "@/lib/playoff-season";
+import { currentSeason } from "@/lib/constants";
 import { Trophy, Crown } from "lucide-react";
 import type { ScheduleGame } from "@/lib/api";
 import {
@@ -20,9 +22,11 @@ interface Props {
 }
 
 export default memo(function BracketTree({ games }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  // Derive from actual IDs even if a cached API response has stale metadata.
+  const selected = selectPlayoffSeason(games);
 
-  const sortedGames = [...games].sort((a, b) =>
+  const sortedGames = [...selected.games].sort((a, b) =>
     (a.gameCode || a.gameId).localeCompare(b.gameCode || b.gameId)
   );
 
@@ -33,7 +37,7 @@ export default memo(function BracketTree({ games }: Props) {
     // Include round in the key so same teams meeting in different rounds (rare edge
     // case) don't get merged. In practice playoff teams can only meet once but
     // the test data sometimes has duplicates from re-runs of season simulation.
-    const key = `R${parsed.round}-${codes.join("-")}`;
+    const key = `${selected.season}-R${parsed.round}-${codes.join("-")}`;
     if (!seriesMap.has(key)) {
       seriesMap.set(key, {
         id: key,
@@ -117,6 +121,9 @@ export default memo(function BracketTree({ games }: Props) {
         <h2 className="text-lg font-bold flex items-center gap-2.5">
           <Trophy size={18} className="text-accent-amber" />
           {t.playoffBracket.title}
+          <span className="text-xs font-mono text-text-secondary">
+            {selected.season}{selected.season !== currentSeason() ? (locale === "zh" ? " · 历史赛果" : " · Archived results") : ""}
+          </span>
           {championTeam && (
             <span className="ml-2 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-[#FFD700]/15 text-[#FFD700] border border-[#FFD700]/30 animate-fade-in">
               <Crown size={11} />

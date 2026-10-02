@@ -20,7 +20,7 @@ const BracketTree = dynamic(() => import("./BracketTree"), { loading: BracketPla
  */
 export default function HomeExtra() {
   const [visible, setVisible] = useState(false);
-  const [data, setData] = useState<{ playoffs: ScheduleGame[]; recent: ScheduleGame[] } | null>(null);
+  const [data, setData] = useState<{ playoffs: ScheduleGame[]; recent: ScheduleGame[]; playoffSeason?: string | null } | null>(null);
   const [error, setError] = useState(false);
   const placeholderRef = useRef<HTMLDivElement>(null);
 
