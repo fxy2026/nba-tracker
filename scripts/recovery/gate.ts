@@ -1,6 +1,7 @@
-import { appendFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { readRecoveryRunLedger, RECOVERY_REPOSITORY } from "../../src/lib/recovery-github-ledger";
 import { readConnectionLedger } from "../../src/lib/recovery-connection-ledger";
+import { validRecoveryKickoff, RECOVERY_KICKOFF_PATH } from "../../src/lib/recovery-kickoff";
 import { calculateRecoveryRunBudget } from "../../src/lib/recovery-run-budget";
 
 async function main() {
@@ -19,6 +20,10 @@ async function main() {
   };
   const evidence=await readRecoveryRunLedger(get,{id,runAttempt},new Date().toISOString());
   if(!evidence.ok){skip();return;}
+  if(process.env.GITHUB_EVENT_NAME==='push'){
+    const eventPath=process.env.GITHUB_EVENT_PATH;
+    if(!eventPath||!validRecoveryKickoff(JSON.parse(readFileSync(eventPath,'utf8')),JSON.parse(readFileSync(RECOVERY_KICKOFF_PATH,'utf8')),{repository,ref:process.env.GITHUB_REF??'',sha:process.env.GITHUB_SHA??'',attempt:runAttempt,now:new Date().toISOString(),priorPushRun:evidence.priorPushRun})){skip();return;}
+  }else if(!['schedule','workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME??'')){skip();return;}
   const mode=process.env.RECOVERY_MODE;
   if(!['verify','backfill'].includes(mode??'')){skip();return;}
   const connection=await readConnectionLedger(get,new Date().toISOString());
@@ -30,7 +35,7 @@ async function main() {
   // the completed read, without allowing a UTC-day rollover mid-admission.
   const allowance=calculateRecoveryRunBudget({...evidence.input,now:finishedAt});
   if(!allowance.allowed){skip();return;}
-  const maxRequests=allowance.maxRequests-connection.reservedRequests;
+  const maxRequests=Math.min(allowance.maxRequests-connection.reservedRequests,process.env.GITHUB_EVENT_NAME==='push'?25:100);
   if(maxRequests<1){skip();return;}
   // This file contains only public bounds, never tokens or provider responses.
   appendFileSync(output,`allowed=true\nmax_requests=${maxRequests}\nexpires_at=${allowance.expiresAt}\n`);

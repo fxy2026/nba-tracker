@@ -1,6 +1,9 @@
 name: Recover NBA player data
 run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
 on:
+  push:
+    branches: ['master']
+    paths: ['.github/recovery-kickoff/2026-10-02-first-playoff-pilot.json']
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
@@ -93,7 +96,7 @@ jobs:
           RECOVERY_MODE: backfill
           RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
           RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
-          RECOVERY_REQUEST_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.max_requests || '100' }}
+          RECOVERY_REQUEST_LIMIT: ${{ github.event_name == 'push' && '25' || github.event_name == 'workflow_dispatch' && inputs.max_requests || '100' }}
       - name: Verify normalized snapshot changes
         run: npm test && npx tsc --noEmit
       - name: Publish one data-only commit without force

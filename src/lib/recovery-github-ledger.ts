@@ -20,7 +20,7 @@ export async function collectRecoveryLedgerRows(get:JsonReader,path:string,key:'
 
 // Read-only adapter. The supplied reader is restricted to the GitHub API by
 // its eventual transport; no log/body content is used to prove a skipped job.
-export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number;runAttempt:number},now:string):Promise<{ok:true;input:RecoveryRunBudgetInput;providerVerified:boolean}|{ok:false;reason:string}> {
+export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number;runAttempt:number},now:string):Promise<{ok:true;input:RecoveryRunBudgetInput;providerVerified:boolean;priorPushRun:boolean}|{ok:false;reason:string}> {
   try {
     if(!positive(currentRun.id)||!positive(currentRun.runAttempt)||!Number.isFinite(Date.parse(now)))throw new Error('invalid-current-run');
     const base=`/repos/${RECOVERY_REPOSITORY}`;
@@ -29,8 +29,9 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
     // No created/status filters: these can hide reruns of old records or cap
     // searches at1000. Fetch every page, reject changes/incompleteness.
     const list=await collectRecoveryLedgerRows(get,`${base}/actions/workflows/${workflow.id}/runs`,'workflow_runs');
-    const runs:RecoveryRunRecord[]=[];let providerVerified=false;
+    const runs:RecoveryRunRecord[]=[];let providerVerified=false;let priorPushRun=false;
     for(const raw of list.rows){
+      if(raw.id!==currentRun.id&&raw.event==='push')priorPushRun=true;
       if(raw.workflow_id!==workflow.id||!object(raw.repository)||typeof raw.repository.full_name!=='string'||raw.repository.full_name.toLowerCase()!==RECOVERY_REPOSITORY||!positive(raw.run_attempt)||typeof raw.status!=='string'||!(raw.conclusion===null||typeof raw.conclusion==='string')||typeof raw.created_at!=='string'||!(raw.run_started_at===null||typeof raw.run_started_at==='string')||typeof raw.updated_at!=='string')throw new Error('invalid-run-metadata');
       const run:RecoveryRunRecord={id:raw.id as number,runAttempt:raw.run_attempt,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,status:raw.status,conclusion:raw.conclusion,createdAt:raw.created_at,startedAt:raw.run_started_at,updatedAt:raw.updated_at};
       const relevant = [run.createdAt,run.startedAt,run.updatedAt].some(t=>t!==null&&t.slice(0,10)===now.slice(0,10));
@@ -51,6 +52,6 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
       }
       runs.push(run);
     }
-    return {ok:true,providerVerified,input:{now,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,currentRun,ledger:{repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,complete:true,allPagesFetched:true,totalCount:list.total,fetchedPages:list.pages,runs}}};
+    return {ok:true,providerVerified,priorPushRun,input:{now,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,currentRun,ledger:{repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,complete:true,allPagesFetched:true,totalCount:list.total,fetchedPages:list.pages,runs}}};
   }catch{return {ok:false,reason:'unavailable-or-unverifiable-github-ledger'};}
 }
