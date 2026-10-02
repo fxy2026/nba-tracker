@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateRecoveryRunBudget, RECOVERY_WORKFLOW_PATH, RECOVERY_INGESTION_JOB_NAME,
+  calculateRecoveryRunBudget, RECOVERY_DAILY_LIMIT, RECOVERY_WORKFLOW_PATH, RECOVERY_INGESTION_JOB_NAME,
   type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof,
 } from "./recovery-run-budget";
 
@@ -27,14 +27,15 @@ function denied(value: unknown, reason?: string) {
 }
 
 describe("pure conservative recovery workflow run budget", () => {
-  it("reserves the known manual seven and gives the only current run93", () => {
-    expect(calculateRecoveryRunBudget(input())).toMatchObject({ allowed: true, maxRequests: 93, remaining: 93, knownManualRequests: 7, priorReservedRequests: 0 });
+  it("reserves the known manual seven and gives the only current run 223", () => {
+    expect(RECOVERY_DAILY_LIMIT).toBe(230);
+    expect(calculateRecoveryRunBudget(input())).toMatchObject({ allowed: true, maxRequests: 223, remaining: 223, knownManualRequests: 7, priorReservedRequests: 0 });
   });
-  it("excludes the current run exactly once instead of charging it another100", () => {
+  it("excludes the current run exactly once instead of charging it another full allowance", () => {
     const result = calculateRecoveryRunBudget(input());
-    expect(result.allowed).toBe(true); if (result.allowed) expect(result.maxRequests).toBeLessThanOrEqual(100);
+    expect(result.allowed).toBe(true); if (result.allowed) expect(result.maxRequests).toBeLessThanOrEqual(RECOVERY_DAILY_LIMIT);
   });
-  it.each(["success", "failure", "cancelled", "skipped", "timed_out", "neutral", "action_required"])("a prior %s run reserves100 without a refund", conclusion => denied(input([record(), prior({ conclusion })]), "fully reserved"));
+  it.each(["success", "failure", "cancelled", "skipped", "timed_out", "neutral", "action_required"])("a prior %s run reserves the full 230 without a refund", conclusion => denied(input([record(), prior({ conclusion })]), "fully reserved"));
   it.each(["queued", "waiting", "pending", "requested", "in_progress"])("counts a concurrent prior %s run conservatively", status => denied(input([record(), prior({ status, conclusion: null, startedAt: status === "in_progress" ? "2026-10-02T10:00:10Z" : null })]), "fully reserved"));
   it("counts a crashed/in-progress prior run even without any success", () => denied(input([record(), prior({ status: "in_progress", conclusion: null })]), "fully reserved"));
   it("denies reruns in either current input or ledger", () => {
@@ -46,7 +47,7 @@ describe("pure conservative recovery workflow run budget", () => {
   });
   it("does not extend first-attempt reservations because completion updated later", () => {
     const old = prior({ createdAt: "2026-09-25T10:00:00Z", startedAt: "2026-09-25T10:00:10Z", updatedAt: "2026-10-02T10:05:00Z" });
-    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: 93 });
+    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT - 7 });
   });
   it("denies an old uncompleted run whose outstanding usage is uncertain", () => {
     const old = prior({ status: "queued", conclusion: null, createdAt: "2026-09-25T10:00:00Z", startedAt: null, updatedAt: "2026-09-25T10:00:00Z" });
@@ -56,13 +57,13 @@ describe("pure conservative recovery workflow run budget", () => {
     const today = prior({ createdAt: "2026-10-02T00:00:00Z", startedAt: "2026-10-02T00:00:00Z", updatedAt: "2026-10-02T00:00:01Z" });
     denied(input([record(), today]), "fully reserved");
     const yesterday = prior({ createdAt: "2026-10-01T23:58:00Z", startedAt: "2026-10-01T23:59:59.999Z", updatedAt: "2026-10-01T23:59:59.999Z" });
-    expect(calculateRecoveryRunBudget(input([record(), yesterday]))).toMatchObject({ allowed: true, maxRequests: 93 });
+    expect(calculateRecoveryRunBudget(input([record(), yesterday]))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT - 7 });
   });
   it("returns an exact midnight expiry and tracks manual seven only on its UTC day", () => {
     const lastMinute = record({ createdAt: "2026-10-02T23:58:00Z", startedAt: "2026-10-02T23:58:10Z", updatedAt: "2026-10-02T23:58:20Z" });
-    expect(calculateRecoveryRunBudget(input([lastMinute], "2026-10-02T23:59:59.999Z"))).toMatchObject({ allowed: true, maxRequests: 93, knownManualRequests: 7, dayStart: "2026-10-02T00:00:00.000Z", expiresAt: "2026-10-03T00:00:00.000Z" });
+    expect(calculateRecoveryRunBudget(input([lastMinute], "2026-10-02T23:59:59.999Z"))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT - 7, knownManualRequests: 7, dayStart: "2026-10-02T00:00:00.000Z", expiresAt: "2026-10-03T00:00:00.000Z" });
     const nextDay = record({ createdAt: "2026-10-02T23:59:59Z", startedAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z" });
-    expect(calculateRecoveryRunBudget(input([nextDay], "2026-10-03T00:00:00Z"))).toMatchObject({ allowed: true, maxRequests: 100, knownManualRequests: 0, expiresAt: "2026-10-04T00:00:00.000Z" });
+    expect(calculateRecoveryRunBudget(input([nextDay], "2026-10-03T00:00:00Z"))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT, knownManualRequests: 0, expiresAt: "2026-10-04T00:00:00.000Z" });
   });
   it("does not refill an in-flight batch at midnight or allow a current run without a start", () => {
     const crossing = record({ createdAt: "2026-10-02T23:59:00Z", startedAt: "2026-10-02T23:59:30Z", updatedAt: "2026-10-03T00:00:00Z" });
@@ -106,11 +107,11 @@ describe("pure conservative recovery workflow run budget", () => {
 
   it("excludes a completed skipped ingestion job only with complete all-attempt proof", () => {
     const old = prior({ conclusion: "skipped" }); old.ingestionSkippedProof = skippedProof(old);
-    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: 93 });
+    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT - 7 });
   });
   it("can exclude a prior rerun only when every unique attempt has a skipped empty ingestion job", () => {
     const old = prior({ runAttempt: 2, conclusion: "failure" }); old.ingestionSkippedProof = skippedProof(old);
-    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: 93 });
+    expect(calculateRecoveryRunBudget(input([record(), old]))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT - 7 });
     old.ingestionSkippedProof.attempts.pop(); denied(input([record(), old]), "exclusion proof");
   });
   it.each([
@@ -133,12 +134,12 @@ describe("pure conservative recovery workflow run budget", () => {
     const running = prior({ status: "in_progress", conclusion: null }); running.ingestionSkippedProof = skippedProof(running);
     denied(input([record(), running]), "exclusion proof");
   });
-  it("a proven skipped earlier batch does not block a same-day retry; no proof still consumes100", () => {
+  it("a proven skipped earlier batch does not block a same-day retry; no proof still consumes the full 230", () => {
     const day1 = prior({ createdAt: "2026-10-02T10:13:00Z", startedAt: "2026-10-02T10:13:30Z", updatedAt: "2026-10-02T10:20:00Z" });
     const day2 = prior({ id: 3, conclusion: "skipped", createdAt: "2026-10-04T10:00:00Z", startedAt: "2026-10-04T10:00:00Z", updatedAt: "2026-10-04T10:00:10Z" });
     const day3 = record({ createdAt: "2026-10-04T10:14:00Z", startedAt: "2026-10-04T10:14:00Z", updatedAt: "2026-10-04T10:14:00Z" });
     denied(input([day1, day2, day3], "2026-10-04T10:14:00Z"), "fully reserved");
     day2.ingestionSkippedProof = skippedProof(day2);
-    expect(calculateRecoveryRunBudget(input([day1, day2, day3], "2026-10-04T10:14:00Z"))).toMatchObject({ allowed: true, maxRequests: 100 });
+    expect(calculateRecoveryRunBudget(input([day1, day2, day3], "2026-10-04T10:14:00Z"))).toMatchObject({ allowed: true, maxRequests: RECOVERY_DAILY_LIMIT });
   });
 });

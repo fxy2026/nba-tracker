@@ -1,3 +1,4 @@
+import { RECOVERY_DAILY_LIMIT } from "../../src/lib/recovery-run-budget";
 import { readFileSync,writeFileSync,renameSync,appendFileSync } from 'node:fs';
 import { selectRecoveryTargets } from '../../src/lib/recovery-target-selection';
 import { createRecoveryProviderClient } from '../../src/lib/recovery-provider-client';
@@ -14,9 +15,9 @@ async function main(){
   if(!key){console.log('Provider secret is not configured; no requests made.');if(mode!=='backfill')throw new Error('Verification requires configured secret');return;}
   if(process.env.GITHUB_REPOSITORY!=='fxy2026/nba-tracker'||process.env.GITHUB_REF!=='refs/heads/master'||process.env.GITHUB_RUN_ATTEMPT!=='1')throw new Error('Invalid ingestion context');
   const allowance=Number(process.env.RECOVERY_MAX_REQUESTS),requested=Number(process.env.RECOVERY_REQUEST_LIMIT),expiresAt=process.env.RECOVERY_EXPIRES_AT??'';
-  if(!Number.isSafeInteger(allowance)||allowance<1||allowance>100||!Number.isSafeInteger(requested)||requested<1||requested>100)throw new Error('Invalid request bound');
-  if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='restore'||requested!==1))throw new Error('Invalid kickoff bounds');
-  const maxRequests=Math.min(allowance,requested,mode==='backfill'?100:mode==='restore'?1:3);
+  if(!Number.isSafeInteger(allowance)||allowance<1||allowance>RECOVERY_DAILY_LIMIT||!Number.isSafeInteger(requested)||requested<1||requested>RECOVERY_DAILY_LIMIT)throw new Error('Invalid request bound');
+  if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='backfill'||requested!==60))throw new Error('Invalid kickoff bounds');
+  const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
   const verified=read('src/data/recovered-player-boxes.json');
   if(mode==='verify'){

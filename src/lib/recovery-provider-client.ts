@@ -1,3 +1,4 @@
+import { RECOVERY_DAILY_LIMIT } from "./recovery-run-budget";
 /** Bounded single-job transport. Global admission belongs to the verified run
  * ledger; this counter alone is NOT a cross-instance/provider-account quota. */
 export interface ProviderFetchResult {
@@ -20,7 +21,7 @@ export function createRecoveryProviderClient(options: {
   const max = options.maxRequests;
   let requests = 0, stopped = false;
   const enabled = !!options.apiKey.trim();
-  if (!Number.isSafeInteger(max) || max < 0 || max > 100 || !Number.isFinite(dayEnd) || dayEnd <= started || dayEnd > Date.UTC(new Date(started).getUTCFullYear(),new Date(started).getUTCMonth(),new Date(started).getUTCDate()+1)) throw new Error("Invalid bounded provider allowance");
+  if (!Number.isSafeInteger(max) || max < 0 || max > RECOVERY_DAILY_LIMIT || !Number.isFinite(dayEnd) || dayEnd <= started || dayEnd > Date.UTC(new Date(started).getUTCFullYear(),new Date(started).getUTCMonth(),new Date(started).getUTCDate()+1)) throw new Error("Invalid bounded provider allowance");
   const deadline = Math.min(dayEnd,started+120_000);
   return {
     get requestsMade() {return requests;},

@@ -32,3 +32,5 @@ it('actual archive first batch contains twenty valid playoff games and preserves
  expect(games.some(g=>g.nbaGameId==='0042500401')).toBe(false);
  expect(games[0].nbaGameId[7]).toBe('4');
 });
+
+it('retrying earlier metadata failures skips the newly restored Finals table',()=>{const targets=selectRecoveryTargets(archive,new Set(['0042500405','0022500340','0022500961']),null,20);expect(targets).toHaveLength(20);expect(targets[0].nbaGameId).toBe('0042500404');expect(targets.some(game=>game.nbaGameId==='0042500405')).toBe(false);});

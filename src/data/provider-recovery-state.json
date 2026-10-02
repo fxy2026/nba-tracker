@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "cursor": "0042500314",
+  "cursor": null,
   "lastRunAt": "2026-10-02T13:27:09.236Z",
   "lastBatch": {
     "requests": 1,
     "accepted": 1,
     "withheld": []
-  }
+  },
+  "retryCursorReason": "retry-metadata-blocked-playoffs-after-player-module-fix"
 }

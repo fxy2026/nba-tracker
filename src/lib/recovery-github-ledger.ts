@@ -1,4 +1,4 @@
-import { RECOVERY_FIRST_PILOT, RECOVERY_REVIEWED_RUNS, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
+import { RECOVERY_REVIEWED_RUNS, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
 
 export const RECOVERY_REPOSITORY = "fxy2026/nba-tracker";
 type JsonReader = (path: string) => Promise<unknown>;
@@ -45,7 +45,7 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
           const ingestion=jobs.rows.filter(j=>j.name===RECOVERY_INGESTION_JOB_NAME);
           if(ingestion.length!==1)break;
           const job=ingestion[0];
-          if(mayPilot&&reviewed&&job.id===reviewed.jobId&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name===(reviewed.runId===RECOVERY_FIRST_PILOT.runId?'Fetch and normalize provider data':'Diagnose one playoff metadata response')&&step.status==='completed'&&step.conclusion==='success'))run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:reviewed.jobId,headSha:reviewed.sha,headBranch:'master',event:'push',maxRequests:reviewed.maxRequests,allJobsFetched:true};
+          if(mayPilot&&reviewed&&job.id===reviewed.jobId&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name===reviewed.stepName&&step.status==='completed'&&step.conclusion==='success'))run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:reviewed.jobId,headSha:reviewed.sha,headBranch:'master',event:'push',maxRequests:reviewed.maxRequests,allJobsFetched:true};
           if(mayVerify&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name==='Verify known provider snapshots'&&step.status==='completed'&&step.conclusion==='success'))providerVerified=true;
           if(job.status!=='completed'||job.conclusion!=='skipped'||!Array.isArray(job.steps)||job.steps.length!==0)break;
           attempts.push({runAttempt:attempt,allJobsFetched:true,jobId:job.id as number,jobName:RECOVERY_INGESTION_JOB_NAME,steps:[],status:'completed',conclusion:'skipped'});

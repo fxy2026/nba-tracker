@@ -4,13 +4,18 @@
  * calls durably. A serialized job must enforce its returned per-run allowance
  * and stop before expiresAt. No provider-wide or external-manual-usage guarantee.
  */
-export const RECOVERY_DAILY_LIMIT = 100;
+export const RECOVERY_DAILY_LIMIT = 230;
 export const RECOVERY_MANUAL_RESERVATION = { requests: 7, reservedAt: "2026-10-02T10:13:00Z" } as const;
 export const RECOVERY_WORKFLOW_PATH = ".github/workflows/player-data-ingestion.yml";
 export const RECOVERY_INGESTION_JOB_NAME = "Ingest player data";
 export const RECOVERY_FIRST_PILOT = { runId: 37006667059, jobId: 110836575247, sha: "60e9585a4f44ffb182db89fc39c381212c3944df", maxRequests: 25 } as const;
 export const RECOVERY_METADATA_DIAGNOSTIC = {runId:37011342891,jobId:110851731014,sha:"52fea0688b9629a16a74cf42789a9d4af5f9c2c5",maxRequests:3} as const;
-export const RECOVERY_REVIEWED_RUNS = [RECOVERY_FIRST_PILOT,RECOVERY_METADATA_DIAGNOSTIC] as const;
+export const RECOVERY_FINALS_RESTORE = {runId:37012916918,jobId:110856904401,sha:"8ede07e180a38cb665a701f37b430a4fc4f5af6c",maxRequests:1} as const;
+export const RECOVERY_REVIEWED_RUNS = [
+ {...RECOVERY_FIRST_PILOT,stepName:"Fetch and normalize provider data"},
+ {...RECOVERY_METADATA_DIAGNOSTIC,stepName:"Diagnose one playoff metadata response"},
+ {...RECOVERY_FINALS_RESTORE,stepName:"Restore one validated Finals player table"},
+] as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface RecoveryIngestionSkipProof {
@@ -40,7 +45,7 @@ export interface RecoveryRunRecord {
   createdAt: string;
   startedAt: string | null;
   updatedAt: string;
-  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3; allJobsFetched: true };
+  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3 | 1; allJobsFetched: true };
   ingestionSkippedProof?: RecoveryIngestionSkipProof | null;
 }
 
@@ -97,7 +102,7 @@ function proofStatus(proof: unknown, run: RecoveryRunRecord, repository: string,
 }
 
 /** Fail closed on incomplete, ambiguous, malformed, or exhausted evidence.
- * A skipped/failed/cancelled run still reserves 100 unless complete trusted job
+ * A skipped/failed/cancelled run still reserves 230 unless complete trusted job
  * metadata proves the ingestion job was skipped without steps in every attempt.
  * First attempts reserve from startedAt (createdAt while queued), not completion
  * time. UTC midnight resets admission for new runs, never an ongoing batch.
@@ -152,7 +157,7 @@ export function calculateRecoveryRunBudget(input: unknown): RecoveryRunBudgetRes
         if (value.runAttempt !== 1) return deny("The current run is a rerun");
         if (value.status === "completed") return deny("The current run is already completed");
         if (started === null || started < dayStart) return deny("The current run must start in the current UTC day; no mid-run quota reset");
-        continue; // This run receives the resulting allowance, not another 100.
+        continue; // This run receives the resulting allowance, not another 230.
       }
       if (proof === "valid") continue;
       if (started === null && (value.status === "completed" || value.status === "in_progress")) return deny("A potentially executed run has no start timestamp");
