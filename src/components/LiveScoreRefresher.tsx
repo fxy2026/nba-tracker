@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Radio } from "lucide-react";
+import { startLiveRefresh } from "@/lib/live-refresh";
 import { useLocale } from "@/components/LocaleProvider";
 
 const REFRESH_INTERVAL = 30;
@@ -19,19 +20,12 @@ export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiv
     // Add ±3s jitter to avoid thundering herd
     const jitter = Math.floor(Math.random() * 6) - 3;
     const interval = REFRESH_INTERVAL + jitter;
-    remainingRef.current = interval;
-
-    const tick = setInterval(() => {
-      remainingRef.current--;
-      setCountdown(remainingRef.current);
-      if (remainingRef.current <= 0) {
-        onRefresh();
-        remainingRef.current = interval;
-        setCountdown(interval);
-      }
-    }, 1000);
-
-    return () => clearInterval(tick);
+    return startLiveRefresh({
+      interval,
+      remaining: remainingRef,
+      onCountdown: setCountdown,
+      onRefresh: onRefresh,
+    });
   }, [hasLiveGames, onRefresh]);
 
   if (!hasLiveGames) return null;
@@ -42,7 +36,7 @@ export default function LiveScoreRefresher({ hasLiveGames, onRefresh }: { hasLiv
       <span>{t.liveScore.autoRefreshing}</span>
       <button
         onClick={() => {
-          onRefresh();
+          if (navigator.onLine !== false) onRefresh();
           remainingRef.current = REFRESH_INTERVAL;
           setCountdown(REFRESH_INTERVAL);
         }}

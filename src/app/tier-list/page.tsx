@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Layers, TrendingUp, ListOrdered, Activity, Users } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -27,7 +27,7 @@ interface TeamScore {
 }
 
 async function rankTeams(): Promise<TeamScore[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
 
   type Outcome = { date: string; won: boolean; pf: number; pa: number; teamId: number };
   const teamGames = new Map<string, Outcome[]>();

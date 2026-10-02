@@ -1,5 +1,21 @@
 import type { ScheduleDate, ScheduleGame } from "@/lib/api";
 
+/** A merged schedule includes archived years. Scope season analytics by the
+ * NBA game ID's start-year digits, not the calendar year (Jan-June belong to
+ * the preceding start year). Keep the original archive untouched. */
+export function scheduleForSeason(schedule: ScheduleDate[], season: string): ScheduleDate[] {
+  if (!/^\d{4}-\d{2}$/.test(season)) return [];
+  const year = season.slice(2, 4);
+  return schedule
+    .map((date) => ({
+      ...date,
+      games: date.games.filter((game) =>
+        /^00[1-6]\d{7}$/.test(game.gameId) && game.gameId.slice(3, 5) === year
+      ),
+    }))
+    .filter((date) => date.games.length > 0);
+}
+
 // gameId prefix predicates — the NBA encodes game type in the leading digits.
 // 001 = preseason, 002 = regular season, 003 = all-star, 004 = playoffs,
 // 005 = play-in, 006 = NBA Cup final; 13/14/15/16 = Summer League slates.

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ListOrdered } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { computeStandingsRows, gamesBehind, type StandingsRow } from "@/lib/standings-splits";
 import ExportStandings from "@/components/ExportStandings";
@@ -224,7 +224,7 @@ function ConferenceTable({ title, teams, t, isZh }: { title: string; teams: Stan
 
 export default async function StandingsPage() {
   const [schedule, locale] = await Promise.all([
-    getFullSchedule().catch(() => []),
+    getCurrentSeasonSchedule().catch(() => []),
     getLocale(),
   ]);
   const standings = computeStandingsRows(schedule);

@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { ScheduleGame } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
+import { createLatestRequestGate } from "@/lib/latest-request";
 import { localTz } from "@/lib/timezone";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
@@ -34,16 +35,23 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
   const [loading, setLoading] = useState(!initialGames);
   const [error, setError] = useState(false);
   const initialFetchDone = useRef(!!initialGames);
+  const [requests] = useState(createLatestRequestGate);
 
-  const fetchGames = useCallback(async (date: string, signal?: AbortSignal) => {
+  const fetchGames = useCallback(async (date: string) => {
+    const request = requests.begin();
+    const { signal } = request;
     setError(false);
     try {
       const [gamesRes, replayRes] = await Promise.all([
         fetch(`/api/games?date=${date}&tz=${encodeURIComponent(localTz())}`, { signal }),
         fetch("/api/replay?action=ids", { signal }).catch(() => null),
       ]);
-      if (signal?.aborted) return;
-      const gamesJson = await gamesRes.json();
+      if (!gamesRes.ok) throw new Error("Failed to fetch games");
+      const [gamesJson, replayJson] = await Promise.all([
+        gamesRes.json(),
+        replayRes?.ok ? replayRes.json().catch(() => null) : null,
+      ]);
+      if (!request.isCurrent()) return;
       const rawGames: ScheduleGame[] = gamesJson.data || [];
       rawGames.sort((a, b) => {
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
@@ -51,26 +59,23 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
       });
       setGames(rawGames);
 
-      if (replayRes?.ok) {
-        const rJson = await replayRes.json();
-        setReplayIds(rJson.ids || []);
-      }
+      if (replayJson) setReplayIds(replayJson.ids || []);
     } catch {
-      if (!signal?.aborted) setError(true);
+      if (request.isCurrent()) setError(true);
+    } finally {
+      if (request.isCurrent()) setLoading(false);
     }
-    setLoading(false);
-  }, []);
+  }, [requests]);
 
   useEffect(() => {
     if (initialFetchDone.current) {
       initialFetchDone.current = false;
-      return;
+      return () => requests.cancel();
     }
     setLoading(true);
-    const controller = new AbortController();
-    fetchGames(selectedDate, controller.signal);
-    return () => controller.abort();
-  }, [selectedDate, fetchGames]);
+    fetchGames(selectedDate);
+    return () => requests.cancel();
+  }, [selectedDate, fetchGames, requests]);
 
   const refreshGames = useCallback(() => {
     fetchGames(selectedDate);

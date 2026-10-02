@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getFullSchedule, getPlayerIndex, formatDate, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getPlayerIndex, formatDate, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
@@ -53,7 +53,7 @@ export default async function TeamPage({ params }: PageProps) {
   const isZh = locale === "zh";
 
   const [schedule, playerIndex] = await Promise.all([
-    getFullSchedule().catch(() => []),
+    getCurrentSeasonSchedule().catch(() => []),
     getPlayerIndex().catch(() => []),
   ]);
 

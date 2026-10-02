@@ -4,6 +4,8 @@
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import archiveSchedule from "@/data/schedule-2025-26.json";
 import archivePlayerIndex from "@/data/playerindex-2025-26.json";
+import { currentSeason } from "@/lib/constants";
+import { scheduleForSeason } from "@/lib/games";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
 const HEADERS: HeadersInit = {
@@ -356,6 +358,25 @@ export function getScheduleAge(): number | null {
 // fetch wrapper with N retries and exponential backoff. Cold-start failures
 // against cdn.nba.com used to silently leave callers with `[]`; this gives
 // transient 5xx / DNS errors a real chance to succeed.
+function retryDelay(ms: number, signal?: AbortSignal | null): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+    const abort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+      reject(signal?.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", abort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", abort, { once: true });
+  });
+}
+
 async function fetchWithRetry(
   url: string,
   init: RequestInit & { next?: { revalidate?: number } } = {},
@@ -364,16 +385,22 @@ async function fetchWithRetry(
 ): Promise<Response> {
   let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
+    init.signal?.throwIfAborted();
     try {
       const res = await fetch(url, init);
       // Retry on 5xx only — 4xx is a programmer error, don't hammer the API.
       if (res.ok || res.status < 500 || attempt === retries) return res;
+      // Release the failed response before retrying rather than leave its
+      // body downloading while the next request begins.
+      void res.body?.cancel().catch(() => {});
       lastErr = new Error(`HTTP ${res.status}`);
     } catch (err) {
       lastErr = err;
+      if (init.signal?.aborted || (err instanceof Error &&
+        (err.name === "AbortError" || err.name === "TimeoutError"))) throw err;
       if (attempt === retries) throw err;
     }
-    await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+    await retryDelay(baseDelay * Math.pow(2, attempt), init.signal);
   }
   throw lastErr;
 }
@@ -384,24 +411,38 @@ async function fetchWithRetry(
 // revalidate hint never cached anything and only misled readers. Used ONLY
 // by /api/schedule-slim and as the fallback when that route fails.
 export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates: ScheduleDate[] }> {
-  const res = await fetchWithRetry(
-    `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
-    { headers: HEADERS, cache: "no-store" }
-  );
-  if (!res.ok) throw new Error(`schedule fetch failed: HTTP ${res.status}`);
-  const data = await res.json();
-  const rawDates: RawScheduleDate[] = data.leagueSchedule?.gameDates || [];
-  const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4) || ARCHIVE_FEED.seasonYear;
-  const live = projectScheduleDates(rawDates);
-  if (live.length === 0) {
-    // Empty live feed: never clobber an existing cache with it — cold
-    // instances degrade to the baked archive instead of an empty site.
-    return { seasonYear, dates: scheduleCache?.data ?? archiveFallbackFeed().dates };
+  // One budget for connection, retries, backoff AND body download. This
+  // matches the slim-route/scoreboard callers' existing 8s timeout. A caller's
+  // Promise.race alone does not cancel the network request underneath it.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(
+    new DOMException("Schedule download exceeded 8000ms", "TimeoutError")
+  ), 8000);
+  try {
+    const res = await fetchWithRetry(
+      `${CDN_BASE}/staticData/scheduleLeagueV2.json`,
+      { headers: HEADERS, cache: "no-store", signal: controller.signal }
+    );
+    if (!res.ok) {
+      void res.body?.cancel().catch(() => {});
+      throw new Error(`schedule fetch failed: HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const rawDates: RawScheduleDate[] = data.leagueSchedule?.gameDates || [];
+    const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4) || ARCHIVE_FEED.seasonYear;
+    const live = projectScheduleDates(rawDates);
+    if (live.length === 0) {
+      // Empty live feed: never clobber an existing cache with it — cold
+      // instances degrade to the baked archive instead of an empty site.
+      return { seasonYear, dates: scheduleCache?.data ?? archiveFallbackFeed().dates };
+    }
+    const dates = mergeWithArchive(live);
+    scheduleCache = { data: dates, ts: Date.now() };
+    scheduleSeasonYear = seasonYear;
+    return { seasonYear, dates };
+  } finally {
+    clearTimeout(timeout);
   }
-  const dates = mergeWithArchive(live);
-  scheduleCache = { data: dates, ts: Date.now() };
-  scheduleSeasonYear = seasonYear;
-  return { seasonYear, dates };
 }
 
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
@@ -416,6 +457,12 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
   // Cold start: dedup concurrent callers behind a single fetch promise.
   if (!scheduleInflight) scheduleInflight = fetchScheduleBlocking();
   return scheduleInflight;
+}
+
+// Current-season views must not aggregate the archive merged above. Evaluate
+// the season per call so a warm server also handles the October rollover.
+export async function getCurrentSeasonSchedule(season = currentSeason()): Promise<ScheduleDate[]> {
+  return scheduleForSeason(await getFullSchedule(), season);
 }
 
 // Consumer path: prefer the slim route — its <2MB response is eligible for

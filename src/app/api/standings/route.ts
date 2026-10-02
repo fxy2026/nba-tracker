@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getFullSchedule } from "@/lib/api";
+import { getCurrentSeasonSchedule } from "@/lib/api";
 import { isRegular } from "@/lib/games";
+import { currentSeason } from "@/lib/constants";
 import { standingsPayload } from "@/lib/season-snapshot";
 
 interface TeamRecord {
@@ -13,12 +14,12 @@ interface TeamRecord {
 }
 
 // In-memory standings cache — avoids re-parsing 11MB schedule on every request
-let standingsCache: { data: TeamRecord[]; ts: number } | null = null;
-let fetchingPromise: Promise<TeamRecord[]> | null = null;
+let standingsCache: { data: TeamRecord[]; ts: number; season: string } | null = null;
+const fetchingPromises = new Map<string, Promise<TeamRecord[]>>();
 const STANDINGS_TTL = 5 * 60 * 1000; // 5 minutes
 
-async function computeStandings(): Promise<TeamRecord[]> {
-  const dates = await getFullSchedule();
+async function computeStandings(season: string): Promise<TeamRecord[]> {
+  const dates = await getCurrentSeasonSchedule(season);
   const teamMap: Record<string, TeamRecord> = {};
 
   for (const gd of dates) {
@@ -51,20 +52,23 @@ async function computeStandings(): Promise<TeamRecord[]> {
 
 export async function GET() {
   try {
+    const season = currentSeason();
     // Return cached data if fresh
-    if (standingsCache && Date.now() - standingsCache.ts < STANDINGS_TTL) {
+    if (standingsCache && standingsCache.season === season && Date.now() - standingsCache.ts < STANDINGS_TTL) {
       return NextResponse.json(standingsPayload(standingsCache.data), {
         headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
       });
     }
 
     // Deduplicate concurrent requests — only one parse runs at a time
+    let fetchingPromise = fetchingPromises.get(season);
     if (!fetchingPromise) {
-      fetchingPromise = computeStandings().finally(() => { fetchingPromise = null; });
+      fetchingPromise = computeStandings(season).finally(() => { fetchingPromises.delete(season); });
+      fetchingPromises.set(season, fetchingPromise);
     }
     const teams = await fetchingPromise;
 
-    if (teams.length > 0) standingsCache = { data: teams, ts: Date.now() };
+    if (teams.length > 0) standingsCache = { data: teams, ts: Date.now(), season };
     return NextResponse.json(standingsPayload(teams), {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });

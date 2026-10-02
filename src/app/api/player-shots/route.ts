@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFullSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
+import { getCurrentSeasonSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
 import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 import { CURRENT_SEASON } from "@/lib/constants";
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
 // Get game IDs from current season schedule (CDN)
 async function getGameIdsFromSchedule(teamTricode: string, seasonType: string): Promise<string[]> {
-  const schedule = await getFullSchedule();
+  const schedule = await getCurrentSeasonSchedule();
   const gameIds: string[] = [];
   for (const gd of schedule) {
     for (const g of gd.games) {

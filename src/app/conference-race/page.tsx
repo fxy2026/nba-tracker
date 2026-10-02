@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy, ListOrdered, Users, TrendingUp, Activity, MapPin } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct } from "@/lib/games";
@@ -26,7 +26,7 @@ interface TeamRec {
 }
 
 async function computeStandings(): Promise<TeamRec[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const records = new Map<string, { tricode: string; teamId: number; wins: number; losses: number }>();
   for (const gd of schedule) {
     for (const g of gd.games) {

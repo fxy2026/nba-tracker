@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Radio } from "lucide-react";
+import { startLiveRefresh } from "@/lib/live-refresh";
 import { useLocale } from "@/components/LocaleProvider";
 
 const INTERVAL = 30;
@@ -21,21 +22,12 @@ export default function GameAutoRefresh({ isLive }: { isLive: boolean }) {
     // Add ±3s jitter to avoid thundering herd
     const jitter = Math.floor(Math.random() * 6) - 3;
     const interval = INTERVAL + jitter;
-    remainingRef.current = interval;
-
-    const tick = setInterval(() => {
-      remainingRef.current--;
-      setCountdown(remainingRef.current);
-      if (remainingRef.current <= 0) {
-        if (typeof navigator === "undefined" || navigator.onLine !== false) {
-          router.refresh();
-        }
-        remainingRef.current = interval;
-        setCountdown(interval);
-      }
-    }, 1000);
-
-    return () => clearInterval(tick);
+    return startLiveRefresh({
+      interval,
+      remaining: remainingRef,
+      onCountdown: setCountdown,
+      onRefresh: () => router.refresh(),
+    });
   }, [isLive, router]);
 
   if (!isLive) return null;

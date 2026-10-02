@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- ImageResponse template requires raw <img> */
 import { ImageResponse } from "next/og";
 import { TEAM_META } from "@/lib/teams";
-import { getFullSchedule } from "@/lib/api";
+import { getCurrentSeasonSchedule } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, winPct } from "@/lib/games";
 
@@ -40,7 +40,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
   }
 
   // Compute regular-season record from schedule
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   let wins = 0, losses = 0;
   for (const gd of schedule) {
     for (const g of gd.games) {

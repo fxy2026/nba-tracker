@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Crown, TrendingUp, TrendingDown, Minus, Flame, Layers, Target, Trophy, BarChart3 } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -32,7 +32,7 @@ interface TeamMetrics {
 }
 
 async function computeMetrics(): Promise<TeamMetrics[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
 
   type GameOutcome = { date: string; won: boolean; pf: number; pa: number; teamId: number };
   const teamGames = new Map<string, GameOutcome[]>();

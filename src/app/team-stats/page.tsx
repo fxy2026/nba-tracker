@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BarChart3, TrendingUp, Crown, ListOrdered, MapPin, Activity, Users } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { computeStandingsRows } from "@/lib/standings-splits";
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TeamStatsPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const scheduleBoards = buildScheduleBoards(computeStandingsRows(schedule));
 
   const breadcrumbs = (
