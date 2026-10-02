@@ -1,3 +1,4 @@
+import { isQuarantinedProviderIdentity } from "./provider-identity-quarantine";
 // Minimal structural identity keeps this validator usable by offline build
 // tooling without importing API code or either generated archive.
 export interface RecoveredScheduleIdentity {
@@ -10,6 +11,17 @@ export interface RecoveredScheduleIdentity {
 
 export interface RecoveredPlayerLine {
   name: string;
+  source?: "NBA official final report";
+  officialSource?: {
+    kind: "independent-official-player-record";
+    reportUrl: string;
+    reportSha256: string;
+    page: number;
+    verifiedOn: string;
+    jerseyNumber: string;
+    position: string;
+    officialDuration: string;
+  };
   providerPlayerId?: string | null;
   team: string;
   minutes: number | null;
@@ -51,7 +63,7 @@ export interface RecoveredPlayerBox {
   gameId: string;
   gameDate: string;
   season: string;
-  provider: "BigBallsData";
+  provider: "BigBallsData" | "BigBallsData + NBA official final report";
   providerMatchId: string;
   retrievedAt: string;
   reportUrl: string;
@@ -79,7 +91,7 @@ const countFields = ["minutes", "rebounds", "assists", "fieldGoalsMade", "fieldG
 // This is a deliberately separate basic-stat contract, never a synthetic NBA
 // BoxScore. It cannot unlock play-by-play, shot coordinates or derived widgets.
 export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredScheduleIdentity): RecoveredPlayerBox | null {
-  if (!object(raw) || game.gameStatus !== 3 || raw.gameId !== game.gameId || raw.provider !== "BigBallsData" ||
+  if (!object(raw) || game.gameStatus !== 3 || raw.gameId !== game.gameId || !["BigBallsData", "BigBallsData + NBA official final report"].includes(raw.provider as string) ||
     raw.season !== "2025-26" || typeof raw.providerMatchId !== "string" || !/^[0-9a-f-]{36}$/.test(raw.providerMatchId) ||
     typeof raw.retrievedAt !== "string" || !Number.isFinite(Date.parse(raw.retrievedAt)) ||
     typeof raw.reportUrl !== "string" || !/^https:\/\/statsdmz\.nba\.com\/pdfs\/\d{8}\/\d{8}_[A-Z]{6}(?:_book)?\.pdf$/.test(raw.reportUrl) ||
@@ -88,6 +100,8 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
     !count(raw.homeScore) || !count(raw.awayScore) || raw.homeScore !== game.homeTeam.score || raw.awayScore !== game.awayTeam.score ||
     !Array.isArray(raw.players) || raw.players.length === 0) return null;
   if (raw.excludedProviderRecords !== undefined && !count(raw.excludedProviderRecords)) return null;
+  const mixed = raw.provider === "BigBallsData + NBA official final report";
+  let officialRows = 0;
   const names = new Set<string>();
   for (const p of raw.players) {
     if (!object(p) || typeof p.name !== "string" || !p.name.trim() || names.has(p.name) ||
@@ -95,6 +109,20 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
       !(p.plusMinus === null || (typeof p.plusMinus === "number" && Number.isSafeInteger(p.plusMinus))) ||
       !(p.starter === null || typeof p.starter === "boolean")) return null;
     if (!(p.providerPlayerId === undefined || p.providerPlayerId === null || (typeof p.providerPlayerId === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(p.providerPlayerId)))) return null;
+    if (p.source !== undefined || p.officialSource !== undefined) {
+      const evidence = p.officialSource;
+      if (!mixed || p.source !== "NBA official final report" || p.providerPlayerId !== null ||
+        !object(evidence) || evidence.kind !== "independent-official-player-record" || evidence.reportUrl !== raw.reportUrl ||
+        typeof evidence.reportSha256 !== "string" || !/^[0-9a-f]{64}$/.test(evidence.reportSha256) ||
+        !count(evidence.page) || evidence.page < 1 || typeof evidence.verifiedOn !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(evidence.verifiedOn) || !Number.isFinite(Date.parse(evidence.verifiedOn)) ||
+        typeof evidence.jerseyNumber !== "string" || !/^\d{1,2}$/.test(evidence.jerseyNumber) ||
+        typeof evidence.position !== "string" || !evidence.position.trim() ||
+        typeof evidence.officialDuration !== "string" || !/^\d{2}:[0-5]\d$/.test(evidence.officialDuration)) return null;
+      const [minutes, seconds] = evidence.officialDuration.split(":").map(Number);
+      if (p.minutes !== Math.round(minutes + seconds / 60)) return null;
+      officialRows++;
+    } else if ((mixed && typeof p.providerPlayerId !== "string") || isQuarantinedProviderIdentity(p.providerPlayerId, p.name)) return null;
     names.add(p.name);
     if (p.blocksCorrection !== undefined) {
       const correction = p.blocksCorrection;
@@ -123,6 +151,7 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
       2 * p.fieldGoalsMade + p.threePointersMade + p.freeThrowsMade !== p.points) return null;
     if (count(p.rebounds) && count(p.offensiveRebounds) && count(p.defensiveRebounds) && p.offensiveRebounds + p.defensiveRebounds !== p.rebounds) return null;
   }
+  if (mixed && officialRows === 0) return null;
   if (raw.playedCoverage !== undefined) {
     const coverage = raw.playedCoverage;
     if (!object(coverage) || coverage.status !== "partial" || coverage.source !== "NBA official final report" ||

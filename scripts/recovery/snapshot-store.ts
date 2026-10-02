@@ -67,6 +67,7 @@ export function readStoredArchives(root='src/data'){
   const generic=readSnapshotDirectory(join(root,'provider-player-boxes'));
   const verified=readVerifiedSnapshotDirectory(join(root,'recovered-player-boxes'),JSON.parse(readFileSync(join(root,'schedule-2025-26.json'),'utf8')));
   const quarantined=readQuarantinedSnapshots(join(root,'quarantined-player-boxes'),join(root,'player-box-quarantine.json'));
+  assertResolvedHistory(root, verified);
   buildStoredSnapshotIndex(generic,verified,quarantined);
   return{generic,verified,quarantined};
 }
@@ -105,4 +106,54 @@ export function buildStoredSnapshotIndex(prior:Record<string,unknown>,verified:R
     }
   }
   return {existing,protectedIds,existingMatches};
+}
+
+
+function canonicalHash(value:unknown):string {
+ const text=JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.keys(item).sort().map(key=>[key,item[key]])):item);
+ return createHash('sha256').update(text).digest('hex');
+}
+/** Resolved originals remain immutable evidence; they are never rendered or
+ * added as a second active owner of the same game/provider match. */
+export function assertResolvedHistory(root:string,verified:Record<string,RecoveredPlayerBox>){
+ const path=join(root,'resolved-player-box-quarantine.json');
+ const mixed=Object.values(verified).filter(box=>box.provider==='BigBallsData + NBA official final report');
+ if(!existsSync(path)){if(mixed.length)throw new Error('Mixed-source recovery needs resolution history');return;}
+ const registry:unknown=JSON.parse(readFileSync(path,'utf8'));
+ if(!record(registry))throw new Error('Invalid resolution registry');
+ const originals=readSnapshotDirectory(join(root,'resolved-player-box-originals'));
+ if(Object.keys(registry).length!==Object.keys(originals).length||mixed.length!==Object.keys(registry).length)throw new Error('Resolution history coverage mismatch');
+ for(const[id,original]of Object.entries(originals)){
+  const entry=registry[id];const box=verified[id];
+  if(!record(entry)||!record(entry.originalQuarantineMetadata)||!record(entry.resolution)||!box||box.provider!=='BigBallsData + NBA official final report')throw new Error('Unbound resolved original');
+  const prior=entry.originalQuarantineMetadata,resolution=entry.resolution;
+  if(prior.status!=='unresolved'||prior.identityCorrectionApplied!==false||
+   prior.sourceFileSha256!==createHash('sha256').update(readFileSync(join(root,'resolved-player-box-originals',`${id}.json`))).digest('hex')||
+   prior.sourceStoredSnapshotSha256!==canonicalHash(original)||JSON.stringify(prior.game)!==JSON.stringify(original.game)||
+   resolution.status!=='resolved-with-independent-official-record'||resolution.identityAliasEstablished!==false||
+   resolution.recoveredSnapshotSha256!==canonicalHash(box)||resolution.originalRecordCount!==original.players.length||
+   box.providerMatchId!==original.game.providerMatchId||box.reportUrl!==resolution.officialReportUrl||
+   resolution.officialReportSha256!==prior.officialReportSha256||resolution.officialReportUrl!==prior.officialReportUrl||
+   resolution.providerPlayerIdForOfficialRow!==null)throw new Error('Resolved evidence changed or misbound');
+  if(typeof resolution.resolvedOn!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(resolution.resolvedOn)||!Number.isFinite(Date.parse(resolution.resolvedOn))||
+   !Array.isArray(entry.preservedRows)||entry.preservedRows.length!==resolution.providerRowsPreserved||!record(resolution.replacement))throw new Error('Invalid resolved provenance');
+  const indices=new Set<number>();
+  for(const mapping of entry.preservedRows){
+   if(!record(mapping)||typeof mapping.sourceIndex!=='number'||!Number.isSafeInteger(mapping.sourceIndex)||mapping.sourceIndex<0||indices.has(mapping.sourceIndex))throw new Error('Invalid preserved row index');
+   const source=original.players[mapping.sourceIndex],target=box.players[mapping.sourceIndex];
+   if(!source||!target||target.source||mapping.name!==source.name||mapping.providerPlayerId!==source.providerPlayerId||mapping.team!==target.team||mapping.all16StatsStarterMinutesVerified!==true||mapping.originalRowSha256!==canonicalHash(source))throw new Error('Preserved player binding mismatch');
+   const {team,minutes,...fields}=target;
+   if(team!==mapping.team||canonicalHash({...fields,team:null,minutesRounded:minutes})!==canonicalHash(source))throw new Error('Original provider values changed');
+   indices.add(mapping.sourceIndex);
+  }
+  const replacement=resolution.replacement;
+  if(typeof replacement.sourceIndex!=='number'||!Number.isSafeInteger(replacement.sourceIndex)||replacement.sourceIndex<0||indices.has(replacement.sourceIndex))throw new Error('Invalid replacement index');
+  const rejected=original.players[replacement.sourceIndex],independent=box.players[replacement.sourceIndex];
+  if(!rejected||!independent||replacement.originalProviderRecordSha256!==canonicalHash(rejected)||replacement.identityAliasEstablished!==false||
+    replacement.independentOfficialName!==independent.name||independent.source!=='NBA official final report'||
+    !Array.isArray(prior.missingOfficialPlayedNames)||!prior.missingOfficialPlayedNames.includes(independent.name))throw new Error('Independent official replacement mismatch');
+  const official=box.players.filter(player=>player.source==='NBA official final report');
+  if(official.length!==1||official.length!==resolution.officialRowsAdded||box.players.length!==original.players.length||box.players.length-official.length!==resolution.providerRowsPreserved||
+    official.some(player=>player.providerPlayerId!==null||player.officialSource?.reportSha256!==resolution.officialReportSha256))throw new Error('Resolved source attribution mismatch');
+ }
 }

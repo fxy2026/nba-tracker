@@ -4,7 +4,8 @@ import{join}from'node:path';
 import{tmpdir}from'node:os';
 import{isValidElement,type ReactNode}from'react';
 import{beforeEach,expect,it,vi}from'vitest';
-import metadata from'../data/player-box-quarantine.json';
+import resolvedHistory from'../data/resolved-player-box-quarantine.json';
+const metadata=Object.fromEntries(Object.entries(resolvedHistory).map(([id,entry])=>[id,entry.originalQuarantineMetadata]));
 import active from'../data/provider-player-boxes.json';
 import storageSample from './fixtures/provider-snapshot-storage-sample.json';
 import verified from'../data/recovered-player-boxes.json';
@@ -18,22 +19,23 @@ vi.mock('@/lib/api',async original=>({...await original<typeof import('./api')>(
 vi.mock('@/lib/locale',()=>({getLocale:async()=>mock.locale}));
 import Page from'@/app/game/[id]/page';
 import ProviderPlayerBox from'@/app/game/[id]/_components/ProviderPlayerBox';
+import RecoveredPlayerBox from'@/app/game/[id]/_components/RecoveredPlayerBox';
 function text(node:ReactNode):string{if(Array.isArray(node))return node.map(text).join('');if(typeof node==='string'||typeof node==='number')return String(node);return isValidElement<{children?:ReactNode}>(node)?text(node.props.children):'';}
 function contains(node:ReactNode,type:unknown):boolean{if(Array.isArray(node))return node.some(child=>contains(child,type));return isValidElement<{children?:ReactNode}>(node)&&(node.type===type||contains(node.props.children,type));}
 beforeEach(()=>mock.locale='en');
 it.each(['0042500154','0042500155'] as const)('quarantined original %s stays byte-identical and out of rendering',id=>{
- const source=readFileSync(`src/data/quarantined-player-boxes/${id}.json`);expect(createHash('sha256').update(source).digest('hex')).toBe(metadata[id].sourceFileSha256);const box=JSON.parse(source.toString());expect(box.players.some((p:{name:string})=>p.name==='Drew Doughty')).toBe(true);expect(box.players.some((p:{name:string})=>p.name==='Jrue Holiday')).toBe(false);expect(Object.hasOwn(active,id)).toBe(false);expect(isPlayerBoxQuarantined(id)).toBe(true);const game=schedule.dates.flatMap(d=>d.games).find(g=>g.gameId===id)! as ScheduleGame;expect(getProviderPlayerBox(game)).toBeNull();
+ const source=readFileSync(`src/data/resolved-player-box-originals/${id}.json`);expect(createHash('sha256').update(source).digest('hex')).toBe(metadata[id].sourceFileSha256);const box=JSON.parse(source.toString());expect(box.players.some((p:{name:string})=>p.name==='Drew Doughty')).toBe(true);expect(box.players.some((p:{name:string})=>p.name==='Jrue Holiday')).toBe(false);expect(Object.hasOwn(active,id)).toBe(false);expect(isPlayerBoxQuarantined(id)).toBe(false);const game=schedule.dates.flatMap(d=>d.games).find(g=>g.gameId===id)! as ScheduleGame;expect(getProviderPlayerBox(game)).toBeNull();
 });
-it.each(['en','zh'])('actual game fallback says identity review, with no wrong player table %s',async locale=>{
- mock.locale=locale;const page=await Page({params:Promise.resolve({id:'0042500155'})});expect(contains(page,ProviderPlayerBox)).toBe(false);expect(text(page)).toContain(locale==='zh'?'身份核验问题':'player identity issue');expect(text(page)).not.toContain('Drew Doughty');
+it.each(['en','zh'])('resolved game uses independent recovery, never the rejected provider table %s',async locale=>{
+ mock.locale=locale;const page=await Page({params:Promise.resolve({id:'0042500155'})});expect(contains(page,ProviderPlayerBox)).toBe(false);expect(contains(page,RecoveredPlayerBox)).toBe(true);expect(text(page)).not.toContain('Drew Doughty');
 });
 it('automatic recovery protects quarantined game IDs and UUIDs',()=>{
- const blocked=readQuarantinedSnapshots('src/data/quarantined-player-boxes','src/data/player-box-quarantine.json');const index=buildStoredSnapshotIndex(active,verified,blocked);for(const[id,box]of Object.entries(blocked)){expect(index.existing.has(id)).toBe(true);expect(index.protectedIds.has(id)).toBe(true);expect(index.existingMatches.get(box.game.providerMatchId)).toBe(id);}
- expect(()=>buildStoredSnapshotIndex({...active,...blocked},verified,blocked)).toThrow();
- const sample=structuredClone(storageSample);sample.game.nbaGameId='0042500991';sample.game.providerMatchId=Object.values(blocked)[0].game.providerMatchId;expect(()=>buildStoredSnapshotIndex({[sample.game.nbaGameId]:sample},verified,blocked)).toThrow();
+ const blocked=readQuarantinedSnapshots('src/data/quarantined-player-boxes','src/data/player-box-quarantine.json');expect(blocked).toEqual({});const originals=Object.fromEntries(Object.keys(metadata).map(id=>[id,JSON.parse(readFileSync(`src/data/resolved-player-box-originals/${id}.json`,'utf8'))]));const index=buildStoredSnapshotIndex(active,verified,blocked);for(const[id,box]of Object.entries(originals)){expect(index.existing.has(id)).toBe(true);expect(index.protectedIds.has(id)).toBe(true);expect(index.existingMatches.get(box.game.providerMatchId)).toBe(id);}
+ expect(()=>buildStoredSnapshotIndex({...active,...originals},verified,blocked)).toThrow();
+ const sample=structuredClone(storageSample);sample.game.nbaGameId='0042500991';sample.game.providerMatchId=Object.values(originals)[0].game.providerMatchId;expect(()=>buildStoredSnapshotIndex({[sample.game.nbaGameId]:sample},verified,blocked)).toThrow();
 });
 it('tampered quarantine bytes fail validation instead of silently releasing them',()=>{
- const root=mkdtempSync(join(tmpdir(),'nba-quarantine-test-'));try{const dir=join(root,'boxes');mkdirSync(dir);const id='0042500155';const box=JSON.parse(readFileSync(`src/data/quarantined-player-boxes/${id}.json`,'utf8'));box.players.find((p:{name:string})=>p.name==='Drew Doughty').name='Jrue Holiday';writeFileSync(join(dir,`${id}.json`),JSON.stringify(box));const meta=join(root,'meta.json');writeFileSync(meta,JSON.stringify({[id]:metadata[id]}));expect(()=>readQuarantinedSnapshots(dir,meta)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}
+ const root=mkdtempSync(join(tmpdir(),'nba-quarantine-test-'));try{const dir=join(root,'boxes');mkdirSync(dir);const id='0042500155';const box=JSON.parse(readFileSync(`src/data/resolved-player-box-originals/${id}.json`,'utf8'));box.players.find((p:{name:string})=>p.name==='Drew Doughty').name='Jrue Holiday';writeFileSync(join(dir,`${id}.json`),JSON.stringify(box));const meta=join(root,'meta.json');writeFileSync(meta,JSON.stringify({[id]:metadata[id]}));expect(()=>readQuarantinedSnapshots(dir,meta)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}
 });
 it('unknown and prototype IDs cannot accidentally match quarantine',()=>{expect(isPlayerBoxQuarantined('0022500340')).toBe(false);expect(isPlayerBoxQuarantined('__proto__')).toBe(false);});
 it('small incoming identity registry exactly matches reviewed original evidence',async()=>{

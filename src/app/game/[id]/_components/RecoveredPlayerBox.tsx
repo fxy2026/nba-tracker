@@ -4,6 +4,7 @@ const value = (v: number | null) => v === null ? "—" : String(v);
 const split = (made: number | null, attempted: number | null) => `${value(made)}–${value(attempted)}`;
 
 export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; isZh: boolean }) {
+  const hasOfficialRows = box.players.some(player => player.source === "NBA official final report");
   const hasBlockCorrections = box.players.some(player => player.blocksCorrection);
   const hasMinuteCorrections = box.players.some(player => player.minutesCorrection);
   const columns = ["MIN ≈", "PTS", "REB", "AST", "FG", "3PT", "FT", "OREB", "DREB", "STL", "BLK", "TO", "PF", "+/−"];
@@ -13,11 +14,15 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
       <h2 className="text-lg font-semibold">{isZh ? "球员技术统计" : "Player box score"}</h2>
       <p className="text-xs text-text-secondary">
         {isZh ? "来源：" : "Source: "}<a href="https://bigballsdata.com" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">BigBallsData</a>
+        {hasOfficialRows && <> + <a href={box.reportUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{isZh ? "NBA 官方赛后报告" : "NBA official final report"}</a></>}
         {` · ${box.season} · ${box.gameDate}`}
       </p>
       <p className="text-xs text-text-secondary">{isZh
         ? "本场历史球队归属与球员得分已对照 NBA 官方报告核验。分钟为取整值（标记 † 的校正见下方）；未列出未出场球员。"
         : "Historical team assignments and player points were checked against the NBA official report. Minutes are rounded (see any † corrections below); non-playing roster members are not listed."}</p>
+      {hasOfficialRows && <p className="text-sm text-text-secondary">{isZh
+        ? "原数据源存在球员身份错误。标记 ‡ 的整条球员记录独立取自本场 NBA 官方报告，未沿用错误的数据源身份编号；其余数据源记录也已逐项核验。原始错误记录保留在公开历史证据中。"
+        : "The original provider had a player identity error. Each ‡ player line is independently sourced from this game's NBA official report, without reusing the incorrect provider identity. Other provider rows were also checked field by field; the original records remain in the public audit history."}</p>}
       {hasMinuteCorrections && <p className="text-xs text-text-secondary">{isZh
         ? "† 分钟已按本场 NBA 官方报告校正并四舍五入；原始数据源分钟保留在公开存档的校正记录中，其他统计未作推算。"
         : "† Minutes corrected from this game's NBA official report and rounded to the nearest minute. Original provider minutes are retained in the public archive correction record; no other stats were estimated."}</p>}
@@ -31,7 +36,7 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
         ? `已排除 ${box.excludedProviderRecords} 条未获官方报告支持的数据源记录；原始记录单独保留，不将其认定为出场或 DNP。`
         : `${box.excludedProviderRecords} provider records unsupported by the official report were excluded and retained separately; no played or DNP status is inferred for them.`}</p>}
       <a href={box.reportUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">{isZh ? "核验依据：NBA 官方赛后报告（PDF）" : "Reference: NBA official final report (PDF)"}</a>
-      <p className="text-xs text-text-secondary">{isZh ? "快照获取时间（约）" : "Snapshot retrieved (approximately)"}: {box.retrievedAt.replace("T", " ").replace(":00Z", " UTC")}</p>
+      <p className="text-xs text-text-secondary">{isZh ? "数据源快照获取时间（约）" : "Provider snapshot retrieved (approximately)"}: {box.retrievedAt.replace("T", " ").replace(":00Z", " UTC")}</p>
     </div>
     {[box.away, box.home].map(team => <div key={team} className="glass-tile overflow-hidden">
       <h3 className="p-4 font-semibold border-b border-border">{team} · {team === box.home ? box.homeScore : box.awayScore}</h3>
@@ -40,7 +45,7 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
           <caption className="sr-only">{team} {isZh ? "本场球员技术统计" : "game player box score"}</caption>
           <thead><tr className="border-b border-border text-text-secondary"><th scope="col" className="text-left p-3 sticky left-0 bg-bg-card">{isZh ? "球员" : "Player"}</th>{columns.map(c => <th key={c} scope="col" className="p-3 text-right">{c}</th>)}</tr></thead>
           <tbody>{box.players.filter(p => p.team === team).map(p => <tr key={p.name} className="border-b border-border/50">
-            <th scope="row" className="p-3 text-left font-medium sticky left-0 bg-bg-card">{p.name}{p.starter === true && <span className="ml-1 text-text-secondary" title={isZh ? "首发" : "Starter"}>*</span>}</th>
+            <th scope="row" className="p-3 text-left font-medium sticky left-0 bg-bg-card">{p.name}{p.source === "NBA official final report" && <span title={isZh ? "独立官方报告记录" : "Independent official report record"}>‡</span>}{p.starter === true && <span className="ml-1 text-text-secondary" title={isZh ? "首发" : "Starter"}>*</span>}</th>
             {cells(p).map((cell, i) => <td key={columns[i]} className={`p-3 text-right ${i === 1 ? "font-bold" : "text-text-secondary"}`}>{cell}</td>)}
           </tr>)}</tbody>
         </table>

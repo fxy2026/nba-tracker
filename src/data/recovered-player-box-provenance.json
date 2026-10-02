@@ -2619,5 +2619,108 @@
         "reportPage": 1
       }
     ]
+  },
+  "0042500154": {
+    "verifiedOn": "2026-10-02",
+    "sourceSnapshotCommit": "cf0813b00b71153b87e4fb1360b1c2fc1baec4c4",
+    "sourceStoredFileSha256": "b89f319c87d6fe4d886fad40abb376717d4c4d0ee2871de0ea9d9ea631a62789",
+    "sourceStoredSnapshotSha256": "623a1b672d914dac0c5faa20d2010d525b65ea2eef592aa0d017ccd218454170",
+    "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_SASPOR.pdf",
+    "officialReportSha256": "1726d393c4aa462dfec5f7e680231b1200609d81e0109f1e76cccb72d84529aa",
+    "officialReportPage": 1,
+    "sourceProviders": [
+      "BigBallsData",
+      "NBA official final report"
+    ],
+    "playerRows": 27,
+    "allOfficialPlayedRowsPresent": true,
+    "allCountingShootingPlusMinusAndStarterFieldsMatch": true,
+    "allRoundedMinutesMatch": true,
+    "nameToTeam": {
+      "Jerami Grant": "POR",
+      "Harrison Barnes": "SAS",
+      "Yang Hansen": "POR",
+      "Carter Bryant": "SAS",
+      "Devin Vassell": "SAS",
+      "Deni Avdija": "POR",
+      "Vit Krejci": "POR",
+      "Mason Plumlee": "SAS",
+      "Jordan McLaughlin": "SAS",
+      "Dylan Harper": "SAS",
+      "Luke Kornet": "SAS",
+      "Sidy Cissoko": "POR",
+      "De'Aaron Fox": "SAS",
+      "Toumani Camara": "POR",
+      "Victor Wembanyama": "SAS",
+      "Kris Murray": "POR",
+      "Keldon Johnson": "SAS",
+      "Robert Williams III": "POR",
+      "Julian Champagnie": "SAS",
+      "Blake Wesley": "POR",
+      "Jrue Holiday": "POR",
+      "Donovan Clingan": "POR",
+      "Scoot Henderson": "POR",
+      "Lindy Waters III": "SAS",
+      "Stephon Castle": "SAS",
+      "Bismack Biyombo": "SAS",
+      "Shaedon Sharpe": "POR"
+    },
+    "independentOfficialRecords": [
+      "Jrue Holiday"
+    ],
+    "providerIdentityAliasEstablished": false,
+    "resolvedHistory": "resolved-player-box-quarantine.json"
+  },
+  "0042500155": {
+    "verifiedOn": "2026-10-02",
+    "sourceSnapshotCommit": "cf0813b00b71153b87e4fb1360b1c2fc1baec4c4",
+    "sourceStoredFileSha256": "bacc2ea47a1789c881b3ec2f2c51ecf925ed13a99ce40805f4bdef4da962c74e",
+    "sourceStoredSnapshotSha256": "f7a9ef2fce842e88cae16da635d6eaababab204c7733a6fa27c35f867a0a6799",
+    "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PORSAS.pdf",
+    "officialReportSha256": "00d3fb660ff38ccb2f6f019f787e1fbf41ef3e966600e735aeb6e7c278322a7b",
+    "officialReportPage": 1,
+    "sourceProviders": [
+      "BigBallsData",
+      "NBA official final report"
+    ],
+    "playerRows": 28,
+    "allOfficialPlayedRowsPresent": true,
+    "allCountingShootingPlusMinusAndStarterFieldsMatch": true,
+    "allRoundedMinutesMatch": true,
+    "nameToTeam": {
+      "Jerami Grant": "POR",
+      "Harrison Barnes": "SAS",
+      "Yang Hansen": "POR",
+      "Carter Bryant": "SAS",
+      "Devin Vassell": "SAS",
+      "Deni Avdija": "POR",
+      "Vit Krejci": "POR",
+      "Jordan McLaughlin": "SAS",
+      "Dylan Harper": "SAS",
+      "Luke Kornet": "SAS",
+      "Sidy Cissoko": "POR",
+      "De'Aaron Fox": "SAS",
+      "Toumani Camara": "POR",
+      "Victor Wembanyama": "SAS",
+      "Kris Murray": "POR",
+      "Keldon Johnson": "SAS",
+      "Robert Williams III": "POR",
+      "Julian Champagnie": "SAS",
+      "Blake Wesley": "POR",
+      "Jrue Holiday": "POR",
+      "Matisse Thybulle": "POR",
+      "Donovan Clingan": "POR",
+      "Kelly Olynyk": "SAS",
+      "Scoot Henderson": "POR",
+      "Lindy Waters III": "SAS",
+      "Stephon Castle": "SAS",
+      "Bismack Biyombo": "SAS",
+      "Shaedon Sharpe": "POR"
+    },
+    "independentOfficialRecords": [
+      "Jrue Holiday"
+    ],
+    "providerIdentityAliasEstablished": false,
+    "resolvedHistory": "resolved-player-box-quarantine.json"
   }
 }

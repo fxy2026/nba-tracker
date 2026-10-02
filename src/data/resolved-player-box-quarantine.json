@@ -1,0 +1,538 @@
+{
+  "0042500154": {
+    "originalQuarantineMetadata": {
+      "status": "unresolved",
+      "reason": "unresolved-player-identity",
+      "game": {
+        "nbaGameId": "0042500154",
+        "providerMatchId": "547e0e7d-dfe7-44a9-8384-d7189ff1c69f",
+        "season": "2025-26",
+        "gameDate": "2026-04-26",
+        "home": {
+          "tricode": "POR",
+          "score": 93
+        },
+        "away": {
+          "tricode": "SAS",
+          "score": 114
+        }
+      },
+      "reviewedOn": "2026-10-02",
+      "sourceSnapshotCommit": "cf0813b00b71153b87e4fb1360b1c2fc1baec4c4",
+      "sourceFileSha256": "b89f319c87d6fe4d886fad40abb376717d4c4d0ee2871de0ea9d9ea631a62789",
+      "sourceStoredSnapshotSha256": "623a1b672d914dac0c5faa20d2010d525b65ea2eef592aa0d017ccd218454170",
+      "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_SASPOR.pdf",
+      "officialReportSha256": "1726d393c4aa462dfec5f7e680231b1200609d81e0109f1e76cccb72d84529aa",
+      "unsupportedProviderNames": [
+        "Drew Doughty"
+      ],
+      "missingOfficialPlayedNames": [
+        "Jrue Holiday"
+      ],
+      "identityCorrectionApplied": false,
+      "unsupportedProviderPlayerIds": [
+        "bcc566fc-5452-4681-ab41-b042fae11e53"
+      ]
+    },
+    "resolution": {
+      "status": "resolved-with-independent-official-record",
+      "resolvedOn": "2026-10-02",
+      "identityAliasEstablished": false,
+      "originalRecordCount": 27,
+      "providerRowsPreserved": 26,
+      "officialRowsAdded": 1,
+      "providerPlayerIdForOfficialRow": null,
+      "recoveredSnapshotSha256": "48b293473d6a08c39f07259aa827b6aeefd452345b91860aaf552e3a4f48e57b",
+      "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_SASPOR.pdf",
+      "officialReportSha256": "1726d393c4aa462dfec5f7e680231b1200609d81e0109f1e76cccb72d84529aa",
+      "replacement": {
+        "sourceIndex": 20,
+        "originalProviderRecordSha256": "6b3b8af3192f2bbb4ae123fa7e5ba09bd3045c016523b081c44307ef578a03a3",
+        "independentOfficialName": "Jrue Holiday",
+        "identityAliasEstablished": false
+      }
+    },
+    "preservedRows": [
+      {
+        "sourceIndex": 0,
+        "name": "Jerami Grant",
+        "team": "POR",
+        "providerPlayerId": "02352be3-3822-4a41-a176-16b11ed57c68",
+        "originalRowSha256": "3c65a4d86f135aae6313fb1af63dcd2e551ae3756d1baee40d0ba49f78b8cbdd",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 1,
+        "name": "Harrison Barnes",
+        "team": "SAS",
+        "providerPlayerId": "12d2069c-4109-4241-a1bc-02bf2d0ecd95",
+        "originalRowSha256": "32af65207445c6d4d93653b0b2de4db8d9ddf85f12467089a32c560e77174856",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 2,
+        "name": "Yang Hansen",
+        "team": "POR",
+        "providerPlayerId": "219493c7-c24f-4d36-932a-1f1975190c0c",
+        "originalRowSha256": "b73fd09cb5741c07f4ae8ad2c315764e53794c4f45e95fb7eb275adcf25aa799",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 3,
+        "name": "Carter Bryant",
+        "team": "SAS",
+        "providerPlayerId": "36101013-4509-4d6d-b48b-1720c5e39645",
+        "originalRowSha256": "02b6de30069cfd4ed9d7c0f5a60152601ca8fc2505b9b4d8c2aed75c2b5986c9",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 4,
+        "name": "Devin Vassell",
+        "team": "SAS",
+        "providerPlayerId": "37693a15-fe12-4cfb-b16a-23c8a100a1f6",
+        "originalRowSha256": "b328a90e297ecfa875f524245354eedcc75a2ab5f5e6013a885a90590caa8f21",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 5,
+        "name": "Deni Avdija",
+        "team": "POR",
+        "providerPlayerId": "3cfcb0e0-b000-4e43-ba47-dca57cf65bf9",
+        "originalRowSha256": "e59411654c818ccc46a4b67f9e6f9f5acd259766cac095c53d32232c5b9bf171",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 6,
+        "name": "Vit Krejci",
+        "team": "POR",
+        "providerPlayerId": "41675012-b06e-4bb5-b481-28b8a892bf14",
+        "originalRowSha256": "245c04e31fd233777946c95769a560467e11ba891834946e96e502f430998113",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 7,
+        "name": "Mason Plumlee",
+        "team": "SAS",
+        "providerPlayerId": "4c1ceb2b-f3e5-42f3-a161-6fc905bddbb0",
+        "originalRowSha256": "5fe4beca3570404a64d10625d645ab5c04d2db28e2c34a662a5e3276417d4080",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 8,
+        "name": "Jordan McLaughlin",
+        "team": "SAS",
+        "providerPlayerId": "5c291b31-721b-4348-b376-f7f7f7ebdbcf",
+        "originalRowSha256": "d334105fa97a36764e47f5f2a0c949ff81f8cf345ead91b7978ef0a3912761a2",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 9,
+        "name": "Dylan Harper",
+        "team": "SAS",
+        "providerPlayerId": "64dc831e-a52d-4e00-b0c6-4721ed6cd03e",
+        "originalRowSha256": "fc0267f90e4d99abf6950795d08b7f274dc6ba77cbd7c783ec7aa948f7332fe3",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 10,
+        "name": "Luke Kornet",
+        "team": "SAS",
+        "providerPlayerId": "655b5094-006c-4764-9938-cfbfe6f72907",
+        "originalRowSha256": "2bdd6c765d9e37c487a9a024b1e55576c929e64637dfcb5305eeef1b0fcd51a8",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 11,
+        "name": "Sidy Cissoko",
+        "team": "POR",
+        "providerPlayerId": "6bd9c083-bf63-407a-8572-78c3b1fc6f67",
+        "originalRowSha256": "a9c09218d04ad693924d2b8f8c541a866175b50863ba372957c0eead6bd53fa3",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 12,
+        "name": "De'Aaron Fox",
+        "team": "SAS",
+        "providerPlayerId": "6fe5ddbf-6b83-4941-9845-19c185025cb6",
+        "originalRowSha256": "afd54b96909e7e1893480606be8b15f11b828f67feaf739622b3e523719db8ee",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 13,
+        "name": "Toumani Camara",
+        "team": "POR",
+        "providerPlayerId": "70ace970-71f9-4e69-bb2d-e8a6e1183080",
+        "originalRowSha256": "3379659e0063973ab53aee6e9314c100dee5fa7e864f8719d3a5da80b79aebf9",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 14,
+        "name": "Victor Wembanyama",
+        "team": "SAS",
+        "providerPlayerId": "8cd3eab4-66bc-491f-8885-82e3dc0db733",
+        "originalRowSha256": "d759a0637d86c6e64cbe04ccb48dc59c27dde90f40dda56c9b0917b1a21d84a2",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 15,
+        "name": "Kris Murray",
+        "team": "POR",
+        "providerPlayerId": "9cf70b79-5a7f-4c6b-a2a7-d98d69924ed9",
+        "originalRowSha256": "830f5a726093e003b6aae27eb59a36cea41d2130cb6d85b2f215f0bcfbb0746f",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 16,
+        "name": "Keldon Johnson",
+        "team": "SAS",
+        "providerPlayerId": "9fb2da0f-eca9-4655-9dbe-de119d03d56b",
+        "originalRowSha256": "6a5da7456914a5f0864112edc0bff9d8de9f3f01b45acacb60ac28f5e4ca5ed8",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 17,
+        "name": "Robert Williams III",
+        "team": "POR",
+        "providerPlayerId": "a5721932-b92e-4071-a682-90def6097817",
+        "originalRowSha256": "cae21076cecca3763bd68f882607fbbeceec1f51862af584b5b93472cc420862",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 18,
+        "name": "Julian Champagnie",
+        "team": "SAS",
+        "providerPlayerId": "a9c2d8ed-c85c-4eef-9ad4-b657b65a21a0",
+        "originalRowSha256": "7454c070e7554aded01649550f27550885514d006597532767078a053c13df4b",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 19,
+        "name": "Blake Wesley",
+        "team": "POR",
+        "providerPlayerId": "b1868d18-fef5-448d-aa11-b114c8baef75",
+        "originalRowSha256": "cb70e02a712d01b66064ca21b8376c9e43d86f96ee68ac2b4aa03b446ac9f9aa",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 21,
+        "name": "Donovan Clingan",
+        "team": "POR",
+        "providerPlayerId": "cb9fd52a-9f48-44c6-b119-95bde85b22a0",
+        "originalRowSha256": "a4753803674cf356a95df6bcf969aa1e8f0640be0adbe4170d3a8f583f75f968",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 22,
+        "name": "Scoot Henderson",
+        "team": "POR",
+        "providerPlayerId": "f14ebf5b-2ff0-4eb1-97d7-b647c1c2eea2",
+        "originalRowSha256": "1037bd575229c119e1df7ad82aeeb5c37132627c4cd81dbdab5471b362c3e949",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 23,
+        "name": "Lindy Waters III",
+        "team": "SAS",
+        "providerPlayerId": "f4938c15-1f6b-4d91-bdb6-d8b1d62f88c3",
+        "originalRowSha256": "b6db649ee288b43756cebc355096e316d1891e52c637d44d1960f2a6284223ac",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 24,
+        "name": "Stephon Castle",
+        "team": "SAS",
+        "providerPlayerId": "f50acc24-ca06-4858-88de-dc6240e9fd6e",
+        "originalRowSha256": "3af6d3d1390ac5bc9c8d789af6688ea7968f42368b782eb88e33ae738402ffea",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 25,
+        "name": "Bismack Biyombo",
+        "team": "SAS",
+        "providerPlayerId": "fac0bffe-dc1f-4089-8273-da1c332e81d2",
+        "originalRowSha256": "1dc0944559e4b62db9ba59a10ae65a918909749138938f61161cc4ced4d3de3e",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 26,
+        "name": "Shaedon Sharpe",
+        "team": "POR",
+        "providerPlayerId": "ffc39d07-763b-4bcd-9a0f-2d4fda83b302",
+        "originalRowSha256": "43cfc45d08c844127543b95127126440a97161decd0738156d8a50052b66f273",
+        "all16StatsStarterMinutesVerified": true
+      }
+    ]
+  },
+  "0042500155": {
+    "originalQuarantineMetadata": {
+      "status": "unresolved",
+      "reason": "unresolved-player-identity",
+      "game": {
+        "nbaGameId": "0042500155",
+        "providerMatchId": "2e7d2e6a-dfc0-44fa-8c55-ac3162aba730",
+        "season": "2025-26",
+        "gameDate": "2026-04-28",
+        "home": {
+          "tricode": "SAS",
+          "score": 114
+        },
+        "away": {
+          "tricode": "POR",
+          "score": 95
+        }
+      },
+      "reviewedOn": "2026-10-02",
+      "sourceSnapshotCommit": "cf0813b00b71153b87e4fb1360b1c2fc1baec4c4",
+      "sourceFileSha256": "bacc2ea47a1789c881b3ec2f2c51ecf925ed13a99ce40805f4bdef4da962c74e",
+      "sourceStoredSnapshotSha256": "f7a9ef2fce842e88cae16da635d6eaababab204c7733a6fa27c35f867a0a6799",
+      "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PORSAS.pdf",
+      "officialReportSha256": "00d3fb660ff38ccb2f6f019f787e1fbf41ef3e966600e735aeb6e7c278322a7b",
+      "unsupportedProviderNames": [
+        "Drew Doughty"
+      ],
+      "missingOfficialPlayedNames": [
+        "Jrue Holiday"
+      ],
+      "identityCorrectionApplied": false,
+      "unsupportedProviderPlayerIds": [
+        "bcc566fc-5452-4681-ab41-b042fae11e53"
+      ]
+    },
+    "resolution": {
+      "status": "resolved-with-independent-official-record",
+      "resolvedOn": "2026-10-02",
+      "identityAliasEstablished": false,
+      "originalRecordCount": 28,
+      "providerRowsPreserved": 27,
+      "officialRowsAdded": 1,
+      "providerPlayerIdForOfficialRow": null,
+      "recoveredSnapshotSha256": "9c4ec3fc62ec029747a5da231358967ae77d89b8828fce249658b26bd4798ecc",
+      "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PORSAS.pdf",
+      "officialReportSha256": "00d3fb660ff38ccb2f6f019f787e1fbf41ef3e966600e735aeb6e7c278322a7b",
+      "replacement": {
+        "sourceIndex": 19,
+        "originalProviderRecordSha256": "d627fbdac37edb544ca76d8ad5a2d7a4fe9abdd4553cf8fb6466fff989cb3a6d",
+        "independentOfficialName": "Jrue Holiday",
+        "identityAliasEstablished": false
+      }
+    },
+    "preservedRows": [
+      {
+        "sourceIndex": 0,
+        "name": "Jerami Grant",
+        "team": "POR",
+        "providerPlayerId": "02352be3-3822-4a41-a176-16b11ed57c68",
+        "originalRowSha256": "411d6747ee6920be944f062a4958d74354f1bffc36754484544e2d63f604a6d5",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 1,
+        "name": "Harrison Barnes",
+        "team": "SAS",
+        "providerPlayerId": "12d2069c-4109-4241-a1bc-02bf2d0ecd95",
+        "originalRowSha256": "906d3e09970e321d997f7c3eb8eecb4b8c1fe1ec319fa25c50803bc399949720",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 2,
+        "name": "Yang Hansen",
+        "team": "POR",
+        "providerPlayerId": "219493c7-c24f-4d36-932a-1f1975190c0c",
+        "originalRowSha256": "42ffc12e04f28bf37c40f11c8689252b035d92f93b6a25a8c65f32ab10ec2e2b",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 3,
+        "name": "Carter Bryant",
+        "team": "SAS",
+        "providerPlayerId": "36101013-4509-4d6d-b48b-1720c5e39645",
+        "originalRowSha256": "659a6bfe46b2f3c3cec747846d5af210429b665dbfc253beacf18355f2ade48c",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 4,
+        "name": "Devin Vassell",
+        "team": "SAS",
+        "providerPlayerId": "37693a15-fe12-4cfb-b16a-23c8a100a1f6",
+        "originalRowSha256": "001a296377a349a0624c09343e4071245715e2f0952d3ca721c6823e1a61c52c",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 5,
+        "name": "Deni Avdija",
+        "team": "POR",
+        "providerPlayerId": "3cfcb0e0-b000-4e43-ba47-dca57cf65bf9",
+        "originalRowSha256": "85b9c72e555aaf5042023adafa4c6cdbdde8ca9bf6d5c342e658ee949aca9809",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 6,
+        "name": "Vit Krejci",
+        "team": "POR",
+        "providerPlayerId": "41675012-b06e-4bb5-b481-28b8a892bf14",
+        "originalRowSha256": "7505aae9fc452d417693a84197c84f586747e629cfb5e0422f770bc44e05992e",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 7,
+        "name": "Jordan McLaughlin",
+        "team": "SAS",
+        "providerPlayerId": "5c291b31-721b-4348-b376-f7f7f7ebdbcf",
+        "originalRowSha256": "b66dc95be80e061e27bd49343784696cf8be5e71eccb8118ac21c970eb3107b1",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 8,
+        "name": "Dylan Harper",
+        "team": "SAS",
+        "providerPlayerId": "64dc831e-a52d-4e00-b0c6-4721ed6cd03e",
+        "originalRowSha256": "4b020cb7aea3a3324fc7f81169ab1c2fcc09b9ddba667d7a3dd926c2e87891fd",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 9,
+        "name": "Luke Kornet",
+        "team": "SAS",
+        "providerPlayerId": "655b5094-006c-4764-9938-cfbfe6f72907",
+        "originalRowSha256": "47c9d983fc1f84db02f440b3dcaa1bcf4ecdd2729ad5ffc6179880540880be61",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 10,
+        "name": "Sidy Cissoko",
+        "team": "POR",
+        "providerPlayerId": "6bd9c083-bf63-407a-8572-78c3b1fc6f67",
+        "originalRowSha256": "e7cab6f08acd8764b92bf8969e32ab2278ef22e5ab5c8ce5c231164cee70a42c",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 11,
+        "name": "De'Aaron Fox",
+        "team": "SAS",
+        "providerPlayerId": "6fe5ddbf-6b83-4941-9845-19c185025cb6",
+        "originalRowSha256": "6c6b6f9a5d75d3f34ab27a7dca1122e23083534d521adf738dcbefbd23f00684",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 12,
+        "name": "Toumani Camara",
+        "team": "POR",
+        "providerPlayerId": "70ace970-71f9-4e69-bb2d-e8a6e1183080",
+        "originalRowSha256": "9a6ee2867ab77545839ab66319a79777633c478a3a501a5d5e6706fc664ea144",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 13,
+        "name": "Victor Wembanyama",
+        "team": "SAS",
+        "providerPlayerId": "8cd3eab4-66bc-491f-8885-82e3dc0db733",
+        "originalRowSha256": "b126f1f6c102bb30494aa4bf73b5ac77d8462ee1ab45f12e3a2699ff2cb88648",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 14,
+        "name": "Kris Murray",
+        "team": "POR",
+        "providerPlayerId": "9cf70b79-5a7f-4c6b-a2a7-d98d69924ed9",
+        "originalRowSha256": "6091ffb9d3c989b0dfcbd2a3dfb58a94d78817fb7b38b5a6a9c7d97b61d81827",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 15,
+        "name": "Keldon Johnson",
+        "team": "SAS",
+        "providerPlayerId": "9fb2da0f-eca9-4655-9dbe-de119d03d56b",
+        "originalRowSha256": "c29bcbce03d1c9a82b6cd737cbcd184934b429394337dd1625fdd14fcba7f442",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 16,
+        "name": "Robert Williams III",
+        "team": "POR",
+        "providerPlayerId": "a5721932-b92e-4071-a682-90def6097817",
+        "originalRowSha256": "7cfd68bd988dc949ed3d22b269563479f94ed9f82203c96713656b5493c0992f",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 17,
+        "name": "Julian Champagnie",
+        "team": "SAS",
+        "providerPlayerId": "a9c2d8ed-c85c-4eef-9ad4-b657b65a21a0",
+        "originalRowSha256": "79a1dfa740baf4aba03444cac3d08651ba9fe74323c6bbcd5b2e9bc9f005d7f4",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 18,
+        "name": "Blake Wesley",
+        "team": "POR",
+        "providerPlayerId": "b1868d18-fef5-448d-aa11-b114c8baef75",
+        "originalRowSha256": "62725026526ca842022fbe52e746a4fbcdd3a8adec5e79cea66552eeeff6ec20",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 20,
+        "name": "Matisse Thybulle",
+        "team": "POR",
+        "providerPlayerId": "bdff09cc-51c8-4664-babc-b2bdf9fcb3a8",
+        "originalRowSha256": "59064f9fb52fa488d5897e0815053e0661888ffa4cd8b2c0a890ecea4f3ba553",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 21,
+        "name": "Donovan Clingan",
+        "team": "POR",
+        "providerPlayerId": "cb9fd52a-9f48-44c6-b119-95bde85b22a0",
+        "originalRowSha256": "fb42c80aac7679b9e1d2ab666dc7dd11cf9f1b4fb8e5d4e09c3afcbf19bf9125",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 22,
+        "name": "Kelly Olynyk",
+        "team": "SAS",
+        "providerPlayerId": "ce978810-067e-48fa-9ff7-97ea59e37afc",
+        "originalRowSha256": "f556305b308114c1da274c834a1390a494239418a5c01c5bd00dcf2704d095e4",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 23,
+        "name": "Scoot Henderson",
+        "team": "POR",
+        "providerPlayerId": "f14ebf5b-2ff0-4eb1-97d7-b647c1c2eea2",
+        "originalRowSha256": "df941ffc3961d0119e0580b8ea73058dd32475eae53b83c25ed6540552d7c9d2",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 24,
+        "name": "Lindy Waters III",
+        "team": "SAS",
+        "providerPlayerId": "f4938c15-1f6b-4d91-bdb6-d8b1d62f88c3",
+        "originalRowSha256": "f49a538f11964bd5680e9b975e62bb76af94edd46e8b482beb4c3e999a8763c8",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 25,
+        "name": "Stephon Castle",
+        "team": "SAS",
+        "providerPlayerId": "f50acc24-ca06-4858-88de-dc6240e9fd6e",
+        "originalRowSha256": "32a17134c34c375ec4b2e430517a1210237b3b70abd4d97e0c6ddca9e0ff69ae",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 26,
+        "name": "Bismack Biyombo",
+        "team": "SAS",
+        "providerPlayerId": "fac0bffe-dc1f-4089-8273-da1c332e81d2",
+        "originalRowSha256": "584b60571debaabeb0df9f5ebba4dd615fcabb7b8ac5e2bd5608484f733d2d39",
+        "all16StatsStarterMinutesVerified": true
+      },
+      {
+        "sourceIndex": 27,
+        "name": "Shaedon Sharpe",
+        "team": "POR",
+        "providerPlayerId": "ffc39d07-763b-4bcd-9a0f-2d4fda83b302",
+        "originalRowSha256": "0ecd91e936ad11183f4a7047b94b4851377b61a71ade9b3f6ce63d68285a2f2f",
+        "all16StatsStarterMinutesVerified": true
+      }
+    ]
+  }
+}
