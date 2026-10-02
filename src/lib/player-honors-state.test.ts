@@ -1,0 +1,18 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+const runtime=vi.hoisted(()=>({state:null as unknown,effect:null as null|(()=>void|(()=>void)),locale:"en"}));
+vi.mock("react",async original=>({...await original<typeof import("react")>(),useState:()=>[runtime.state,(value:unknown)=>{runtime.state=value;}],useEffect:(effect:()=>void|(()=>void))=>{runtime.effect=effect;}}));
+vi.mock("@/components/LocaleProvider",()=>({useLocale:()=>({locale:runtime.locale})}));
+import PlayerHonors from "@/components/player/PlayerHonors";
+const fallback={championships:4,mvps:2,finalsMvps:1,allStars:5,allNba:6};
+const data=(id=1)=>({resultSets:[{headers:["PERSON_ID","DESCRIPTION","SEASON"],rowSet:[[id,"NBA Champion","2025-26"]]}]});
+const render=(playerId=1,accolades:typeof fallback|null=fallback)=>renderToStaticMarkup(PlayerHonors({playerId,accolades}));
+const settle=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
+beforeEach(()=>{runtime.state=null;runtime.effect=null;runtime.locale="en";vi.stubGlobal("fetch",vi.fn());});
+afterEach(()=>vi.unstubAllGlobals());
+it.each(["en","zh"])("initial fallback labels exact historical boundary in %s",locale=>{runtime.locale=locale;expect(render()).toContain(locale==="zh"?"截至 2025-26 赛季开始":"as of the start of 2025-26");expect(render()).toContain("×4");});
+it("successful data replaces counts with an explicit retrieval/source label",async()=>{vi.mocked(fetch).mockResolvedValue({ok:true,json:async()=>data()} as Response);render();runtime.effect?.();await settle();expect(render()).toContain("NBA awards response");expect(render()).not.toContain("×4");expect(render()).toContain("source update time unspecified");});
+it.each(["http","json","shape"])("%s failure keeps curated counts and identifies unavailable source",async(kind)=>{vi.mocked(fetch).mockResolvedValue({ok:kind!=="http",json:async()=>{if(kind==="json")throw new Error("bad json");return {};}} as Response);render();runtime.effect?.();await settle();expect(render()).toContain("×4");expect(render()).toContain("Awards source unavailable");expect(render()).not.toContain("NBA awards response");});
+it("valid empty result preserves useful fallback and does not assert zero awards",async()=>{vi.mocked(fetch).mockResolvedValue({ok:true,json:async()=>({resultSets:[{headers:["DESCRIPTION","SEASON"],rowSet:[]}]})} as Response);render();runtime.effect?.();await settle();expect(render()).toContain("×4");expect(render()).toContain("does not establish zero honors");expect(render()).not.toContain("Awards source unavailable");});
+it("no fallback and failed source shows unavailable rather than zero awards",async()=>{vi.mocked(fetch).mockRejectedValue(new Error("offline"));expect(render(1,null)).toBe("");runtime.effect?.();await settle();expect(render(1,null)).toContain("Awards source unavailable");expect(render(1,null)).not.toContain("×0");});
+it("player navigation hides previous state immediately and abort blocks late requests",async()=>{let resolveFirst!:(value:Response)=>void;vi.mocked(fetch).mockImplementationOnce(()=>new Promise(resolve=>{resolveFirst=resolve;})).mockResolvedValueOnce({ok:true,json:async()=>data(2)} as Response);render(1);const cleanup=runtime.effect?.();expect(render(2,{...fallback,championships:1})).not.toContain("×4");if(typeof cleanup==="function")cleanup();runtime.effect?.();await settle();resolveFirst({ok:true,json:async()=>data(1)} as Response);await settle();expect(runtime.state).toMatchObject({playerId:2,status:"success"});expect(render(3,{...fallback,championships:3})).toContain("×3");expect(render(3)).not.toContain("NBA awards response");});

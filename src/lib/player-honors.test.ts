@@ -1,0 +1,12 @@
+import { expect, it } from "vitest";
+import { parseHonors, staticHonors, honorSourceLabel } from "./player-honors";
+const headers=["PERSON_ID","DESCRIPTION","ALL_NBA_TEAM_NUMBER","SEASON","WEEK"];
+const payload=(rows:unknown[][])=>({resultSets:[{headers,rowSet:rows}]});
+it("parses and groups validated reordered headers with correct player identity",()=>{const data={resultSet:{headers:["SEASON","DESCRIPTION","PERSON_ID","ALL_NBA_TEAM_NUMBER"],rowSet:[["2024-25","All-NBA Team",1,"1"],["2023-24","All-NBA Team",1,"1"]]}};expect(parseHonors(data,1)).toMatchObject([{key:"all-nba-1",count:2,seasons:["2023-24","2024-25"]}]);});
+it("empty valid responses differ from malformed payloads",()=>{expect(parseHonors(payload([]),1)).toEqual([]);expect(parseHonors({})).toBeNull();});
+it.each([[[2,"NBA Champion",null,"2024-25",null]],[[1,"",null,"2024-25",null]],[[1,"NBA Champion",null,2025,null]],[[1,"NBA Champion",null,"tomorrow",null]],[[1,"All-NBA Team","7","2024-25",null]],[[1,"NBA Champion"]]])("malformed/mismatched rows cannot partially replace curated counts: %j",row=>{expect(parseHonors(payload([row]),1)).toBeNull();});
+it("requires unambiguous expected headers",()=>{expect(parseHonors({resultSet:{headers:["DESCRIPTION"],rowSet:[["NBA Champion"]]}})).toBeNull();expect(parseHonors({resultSet:{headers:["DESCRIPTION","description","SEASON"],rowSet:[["A","B","2025"]]}})).toBeNull();});
+it("preserves upstream award occurrences without assuming a unique occurrence key",()=>{const first=[1,"NBA Player of the Week",null,"2025-26","1"];const second=[1,"NBA Player of the Week",null,"2025-26","2"];expect(parseHonors(payload([first,first,second]),1)?.[0].count).toBe(3);});
+it("does not fabricate seasons when the upstream season is null",()=>{expect(parseHonors(payload([[1,"Unknown Award",null,null,null]]),1)).toMatchObject([{en:"Unknown Award",count:1,seasons:[]}]);});
+it("curated missing/invalid counts do not create zero or negative honors",()=>{expect(staticHonors(null)).toBeNull();expect(staticHonors({championships:0,mvps:NaN,finalsMvps:-1,allStars:0,allNba:0})).toBeNull();});
+it.each(["en","zh"])("source labels distinguish dataset boundary from retrieval time in %s",locale=>{expect(honorSourceLabel(locale,null)).toContain("2025-26");const live=honorSourceLabel(locale,"2026-10-02T07:00:00.000Z");expect(live).toContain("2026-10-02 07:00 UTC");expect(live).toContain(locale==="zh"?"来源更新时间未注明":"source update time unspecified");});
