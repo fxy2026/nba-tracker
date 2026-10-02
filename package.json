@@ -8,7 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "data:generate": "node scripts/generate-provider-archive.mjs",
+    "predev": "npm run data:generate",
+    "prebuild": "npm run data:generate",
+    "pretest": "npm run data:generate",
+    "pretest:watch": "npm run data:generate",
+    "pretypecheck": "npm run data:generate",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",

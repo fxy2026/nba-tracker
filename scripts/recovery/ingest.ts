@@ -1,3 +1,4 @@
+import { readSnapshotDirectory, writeNewSnapshots } from './snapshot-store';
 import { RECOVERY_DAILY_LIMIT } from "../../src/lib/recovery-run-budget";
 import { readFileSync,writeFileSync,renameSync,appendFileSync } from 'node:fs';
 import { selectRecoveryTargets } from '../../src/lib/recovery-target-selection';
@@ -32,7 +33,7 @@ async function main(){
     const summary=JSON.stringify({type:'bounded-provider-metadata',...result});
     console.log(summary);if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');return;
   }
-  const prior=read('src/data/provider-player-boxes.json');const state=read('src/data/provider-recovery-state.json');
+  const prior=readSnapshotDirectory('src/data/provider-player-boxes');const state=read('src/data/provider-recovery-state.json');
   if(!prior||typeof prior!=='object'||Array.isArray(prior)||!verified||typeof verified!=='object'||Array.isArray(verified)||!state||typeof state!=='object'||Array.isArray(state))throw new Error('Invalid existing snapshots');
   const existingMatches=new Map<string,string>();
   for(const [gameId,raw] of Object.entries(prior)){
@@ -49,10 +50,8 @@ async function main(){
   if(mode!=='restore'&&!targets.length){console.log('No eligible unarchived games in the controlled target source.');return;}
   const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
   const result=mode==='restore'?await recoverFinalsSample(read('src/data/schedule-2025-26.json'),client,existing,existingMatches):await runRecoveryChunks(read('src/data/schedule-2025-26.json'),existing,cursor,client,maxRequests,verifiedIds,existingMatches,process.env.GITHUB_EVENT_NAME==='push'?2:1);
-  const next:Record<string,unknown>={...prior};
-  for(const snapshot of result.accepted){if(verifiedIds.has(snapshot.game.nbaGameId))throw new Error('Verified snapshot overwrite refused');next[snapshot.game.nbaGameId]=snapshot;}
   const write=(path:string,value:unknown)=>{const temp=`${path}.tmp`;writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});renameSync(temp,path);};
-  if(result.accepted.length)write('src/data/provider-player-boxes.json',next);
+  if(result.accepted.length)writeNewSnapshots('src/data/provider-player-boxes',result.accepted,verifiedIds);
   const diagnostics={requests:result.requests,accepted:result.accepted.length,withheld:result.rejected.slice(0,40)};
   if(result.requests>0)write('src/data/provider-recovery-state.json',{version:1,cursor:result.cursor??cursor,lastRunAt:new Date().toISOString(),lastBatch:diagnostics});
   const summary=`Provider recovery: ${result.requests} requests, ${result.accepted.length} accepted, ${result.rejected.length} withheld.\n`;

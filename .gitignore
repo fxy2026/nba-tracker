@@ -50,3 +50,6 @@ article-images/*.mmd
 article-images/frames/
 
 .vercel
+
+# Generated from authoritative per-game snapshots; never hand-edit.
+/src/data/provider-player-boxes.json
