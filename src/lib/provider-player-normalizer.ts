@@ -1,3 +1,4 @@
+import { isQuarantinedProviderIdentity } from "./provider-identity-quarantine";
 import type { RecoveryManifestGame } from "./recovery-manifest";
 import { TEAM_META } from "./teams";
 
@@ -93,6 +94,7 @@ export function normalizeProviderPlayerStats(raw: unknown, game: RecoveryManifes
   const players: ProviderPlayerLine[] = [], identities = new Set<string>(), names = new Set<string>();
   for (const row of raw.data.players) {
     if (!object(row) || typeof row.name !== "string" || !row.name.trim() || !object(row.stats)) return reject("malformed-player");
+    if (isQuarantinedProviderIdentity(row.id,row.name)) return reject("quarantined-player-identity");
     const normalized = normalizeName(row.name);
     if (names.has(normalized)) return reject("duplicate-player-name");
     names.add(normalized);

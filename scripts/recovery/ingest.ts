@@ -1,9 +1,8 @@
-import { readSnapshotDirectory, writeNewSnapshots } from './snapshot-store';
+import { readSnapshotDirectory, readQuarantinedSnapshots, buildStoredSnapshotIndex, writeNewSnapshots } from './snapshot-store';
 import { RECOVERY_DAILY_LIMIT } from "../../src/lib/recovery-run-budget";
 import { readFileSync,writeFileSync,renameSync,appendFileSync } from 'node:fs';
 import { selectRecoveryTargets } from '../../src/lib/recovery-target-selection';
 import { createRecoveryProviderClient } from '../../src/lib/recovery-provider-client';
-import { validateProviderPlayerSnapshot } from '../../src/lib/provider-player-snapshot';
 import { verifyKnownProviderSnapshots } from '../../src/lib/recovery-verification';
 import { runPlayoffMetadataDiagnostic } from '../../src/lib/recovery-diagnostic-run';
 import { recoverFinalsSample } from '../../src/lib/recovery-finals-sample';
@@ -33,18 +32,10 @@ async function main(){
     const summary=JSON.stringify({type:'bounded-provider-metadata',...result});
     console.log(summary);if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');return;
   }
+  const quarantined=readQuarantinedSnapshots('src/data/quarantined-player-boxes','src/data/player-box-quarantine.json');
   const prior=readSnapshotDirectory('src/data/provider-player-boxes');const state=read('src/data/provider-recovery-state.json');
   if(!prior||typeof prior!=='object'||Array.isArray(prior)||!verified||typeof verified!=='object'||Array.isArray(verified)||!state||typeof state!=='object'||Array.isArray(state))throw new Error('Invalid existing snapshots');
-  const existingMatches=new Map<string,string>();
-  for(const [gameId,raw] of Object.entries(prior)){
-    const validated=validateProviderPlayerSnapshot(raw);
-    if(!validated||validated.game.nbaGameId!==gameId)throw new Error('Invalid prior provider snapshot');
-    if(existingMatches.has(validated.game.providerMatchId))throw new Error('Duplicate prior provider identity');
-    existingMatches.set(validated.game.providerMatchId,gameId);
-  }
-  for(const [gameId,raw] of Object.entries(verified))if(raw&&typeof raw==='object'&&'providerMatchId'in raw&&typeof raw.providerMatchId==='string')existingMatches.set(raw.providerMatchId,gameId);
-  const verifiedIds=new Set(Object.keys(verified));
-  const existing=new Set([...Object.keys(prior),...verifiedIds]);
+  const {existing,protectedIds:verifiedIds,existingMatches}=buildStoredSnapshotIndex(prior,verified as Record<string,unknown>,quarantined);
   const cursor='cursor'in state&&typeof state.cursor==='string'?state.cursor:null;
   const targets=selectRecoveryTargets(read('src/data/schedule-2025-26.json'),existing,cursor,20);
   if(mode!=='restore'&&!targets.length){console.log('No eligible unarchived games in the controlled target source.');return;}

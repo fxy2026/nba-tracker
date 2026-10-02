@@ -65,3 +65,9 @@ it.each(['flag','player-math','total'] as const)('keeps the %s validation with p
   if(kind==='total')raw.data.players.pop();
   expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:kind==='flag'?'flag-team_stats_available-false':kind==='player-math'?'inconsistent-player-points':'incomplete-or-mismatched-points-total'});
 });
+it.each(['same-name','changed-name-same-uuid','case-normalized'])('incoming known quarantined identity is withheld: %s',kind=>{
+ const raw=simulatedEnvelope();Object.assign(raw.data.players[0],{name:kind==='same-name'?'Drew Doughty':kind==='case-normalized'?'  drew doughty  ':'Jrue Holiday',id:kind==='changed-name-same-uuid'?'BCC566FC-5452-4681-AB41-B042FAE11E53':undefined});expect(normalizeProviderPlayerStats(raw,game,context)).toEqual({ok:false,reason:'quarantined-player-identity'});
+});
+it('ordinary players and similar words are not mistaken for the quarantined identity',()=>{
+ const raw=simulatedEnvelope();raw.data.players[0].name='Jrue Holiday';expect(normalizeProviderPlayerStats(raw,game,context).ok).toBe(true);raw.data.players[0].name='Drew Eubanks';expect(normalizeProviderPlayerStats(raw,game,context).ok).toBe(true);
+});

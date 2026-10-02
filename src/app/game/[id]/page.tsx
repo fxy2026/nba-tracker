@@ -18,6 +18,7 @@ import { Users, GitCompareArrows, Trophy, Calendar, Crown, Clock } from "lucide-
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
+import { isPlayerBoxQuarantined } from "@/lib/player-box-quarantine";
 import { getProviderPlayerBox } from "@/lib/provider-player-archive";
 import ProviderPlayerBox from "./_components/ProviderPlayerBox";
 import { getRecoveredPlayerBox } from "@/lib/recovered-player-box-archive";
@@ -167,6 +168,7 @@ export default async function GamePage({ params }: PageProps) {
       // schedule data instead of a misleading "hasn't tipped off" state.
       const recoveredBox = getRecoveredPlayerBox(sg);
       const providerBox = recoveredBox ? null : getProviderPlayerBox(sg);
+      const quarantined = isPlayerBoxQuarantined(sg.gameId);
       const sgPlayoffs = isPlayoff(sg.gameId);
       const dateCode = sg.gameCode.split("/")[0];
       const sgDate = `${dateCode.slice(0, 4)}-${dateCode.slice(4, 6)}-${dateCode.slice(6, 8)}`;
@@ -201,7 +203,9 @@ export default async function GamePage({ params }: PageProps) {
               <span className="order-2 text-text-secondary/50 text-sm font-mono">@</span>
             </div>
             <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
-              {(recoveredBox || providerBox)
+              {quarantined && !recoveredBox && !providerBox
+                ? (isZh ? "本场补充球员数据存在身份核验问题，已暂停展示。可查看下方 NBA 官方赛后报告。" : "Supplemental player data is withheld while a player identity issue is reviewed. The NBA official final report is linked below.")
+                : (recoveredBox || providerBox)
                 ? (isZh ? "已恢复本场球员基础技术统计，见下表。投篮图与逐回合暂不可用。" : "Basic player stats have been recovered below. Shot charts and play-by-play remain unavailable.")
                 : (isZh ? "本场比赛的详细数据（Box Score、投篮图、逐回合）暂不可用。" : "Detailed stats for this game (box score, shot chart, play-by-play) are currently unavailable.")}
             </p>
