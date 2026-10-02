@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findESPNId, getESPNCareerStats } from "@/lib/espn";
 import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { parseCareerShootingTable } from "@/lib/career-shooting";
 import { normalizePlayerCareerData } from "@/lib/player-career-data";
 
 // Bound the entire serial chain, including response bodies, before the host or
@@ -25,7 +26,7 @@ function parseResultSet(rs: { headers?: unknown; rowSet?: unknown } | undefined)
   return normalizePlayerCareerData({ careerSeasons: rows })?.careerSeasons ?? null;
 }
 
-async function fetchCareerSeasons(playerId: string, signal: AbortSignal) {
+async function fetchCareerData(playerId: string, signal: AbortSignal) {
   const res = await fetchStats(
     `${STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`,
     { key: "playercareerstats", timeoutMs: 4000, revalidate: 3600, signal },
@@ -36,21 +37,25 @@ async function fetchCareerSeasons(playerId: string, signal: AbortSignal) {
     if (signal.aborted) return null;
     if (!Array.isArray(data?.resultSets)) return null;
     const rs = data.resultSets.find((r: { name?: string } | null) => r?.name === "SeasonTotalsRegularSeason");
-    return parseResultSet(rs);
+    const careerSeasons = parseResultSet(rs);
+    if (careerSeasons === null) return null;
+    const tables = data.resultSets.filter((row: {name?:string}|null) => row?.name === "CareerTotalsRegularSeason");
+    const careerShooting = tables.length === 1 ? parseCareerShootingTable(tables[0], Number(playerId)) : null;
+    return { careerSeasons, ...(careerShooting ? { careerShooting } : {}) };
   } catch {
     return null;
   }
 }
 
-async function resolveCareerSeasons(playerId: string, playerName: string | null, teamTricode: string | null, signal: AbortSignal) {
-  const careerSeasons = await fetchCareerSeasons(playerId, signal);
+async function resolveCareerData(playerId: string, playerName: string | null, teamTricode: string | null, signal: AbortSignal) {
+  const careerData = await fetchCareerData(playerId, signal);
   // A validated empty history is a successful answer, not a provider failure.
-  if (careerSeasons !== null || !playerName || !teamTricode || signal.aborted) return careerSeasons;
+  if (careerData !== null || !playerName || !teamTricode || signal.aborted) return careerData;
   try {
     const espnId = await findESPNId(playerName, teamTricode, signal);
     if (espnId && !signal.aborted) {
       const espnResult = await getESPNCareerStats(espnId, signal);
-      return normalizePlayerCareerData(espnResult)?.careerSeasons ?? null;
+      return normalizePlayerCareerData(espnResult);
     }
   } catch { /* ESPN also failed */ }
   return null;
@@ -79,18 +84,18 @@ export async function GET(request: NextRequest) {
   try {
     // Cancellation normally rejects fetch/body consumption. The race also
     // bounds a non-cooperative body and ignores any result arriving afterward.
-    const careerSeasons = await Promise.race([
-      resolveCareerSeasons(playerId, playerName, teamTricode, signal), aborted,
+    const careerData = await Promise.race([
+      resolveCareerData(playerId, playerName, teamTricode, signal), aborted,
     ]);
 
-    if (careerSeasons === null || signal.aborted) {
+    if (careerData === null || signal.aborted) {
       return NextResponse.json({ error: "Career data unavailable", careerSeasons: null, recentGames: null }, {
         status: 503,
         headers: { "Cache-Control": "no-store" },
       });
     }
     // Keep the successful response shape compatible with existing consumers.
-    return NextResponse.json({ careerSeasons, recentGames: null }, {
+    return NextResponse.json({ ...careerData, recentGames: null }, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   } finally {

@@ -1,3 +1,4 @@
+import { normalizeCareerShooting, type CareerShootingRates } from "./career-shooting";
 // Career row from /api/player's careerSeasons — the SeasonTotalsRegularSeason
 // result set, or the ESPN fallback (same field names). Shooting-volume
 // columns can be absent on very old seasons, so they stay optional.
@@ -21,6 +22,7 @@ export interface CareerSeasonRow {
 
 export interface PlayerCareerData {
   careerSeasons: CareerSeasonRow[];
+  careerShooting?: CareerShootingRates;
 }
 
 
@@ -38,5 +40,7 @@ export function normalizePlayerCareerData(raw: unknown): PlayerCareerData | null
     if (!["FG_PCT", "FG3_PCT", "FT_PCT"].every(k => r[k] === null || (nonnegative(r[k]) && (r[k] as number) <= 1))) return false;
     return ["FGA", "FG3A", "FTA"].every(k => r[k] == null || nonnegative(r[k]));
   });
-  return valid ? { careerSeasons: rows as CareerSeasonRow[] } : null;
+  if (!valid) return null;
+  const rates = "careerShooting" in raw ? normalizeCareerShooting(raw.careerShooting) : null;
+  return { careerSeasons: rows as CareerSeasonRow[], ...(rates ? { careerShooting: rates } : {}) };
 }

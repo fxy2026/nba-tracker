@@ -1,5 +1,6 @@
 "use client";
 
+import { careerAggregationRows, type CareerShootingRates } from "@/lib/career-shooting";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -68,13 +69,13 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
       <PlayerRankBadges playerId={playerId} />
 
       {/* Career Stats — table by default, with an opt-in chart view */}
-      <CareerSection seasons={seasons} t={t} isZh={locale === "zh"} />
+      <CareerSection careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
     </div>
   );
 }
 
 // Owns the 表格/图表 view state so the default table render stays untouched.
-function CareerSection({ seasons, t, isZh }: { seasons: CareerSeasonRow[]; t: Translations; isZh: boolean }) {
+function CareerSection({ seasons, t, isZh, careerShooting }: { seasons: CareerSeasonRow[]; t: Translations; isZh: boolean; careerShooting?: CareerShootingRates }) {
   const [view, setView] = useState<"table" | "chart">("table");
   const canChart = seasons.length >= 2;
 
@@ -98,7 +99,7 @@ function CareerSection({ seasons, t, isZh }: { seasons: CareerSeasonRow[]; t: Tr
   if (view === "chart" && canChart) {
     return <PlayerCareerChart seasons={seasons} headerExtra={toggle} />;
   }
-  return <CareerStatsTable seasons={seasons} t={t} headerExtra={toggle} />;
+  return <CareerStatsTable isZh={isZh} careerShooting={careerShooting} seasons={seasons} t={t} headerExtra={toggle} />;
 }
 
 // Compare current to career average
@@ -108,7 +109,7 @@ function CompareArrow({ current, career }: { current: number; career: number }) 
   return null;
 }
 
-function CareerStatsTable({ seasons, t, headerExtra }: { seasons: CareerSeasonRow[]; t: Translations; headerExtra?: ReactNode }) {
+function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh }: { seasons: CareerSeasonRow[]; t: Translations; headerExtra?: ReactNode; careerShooting?: CareerShootingRates; isZh: boolean }) {
   // Find best season by PPG
   let bestIdx = 0;
   let bestPts = 0;
@@ -122,9 +123,9 @@ function CareerStatsTable({ seasons, t, headerExtra }: { seasons: CareerSeasonRo
   // Compute career averages (weighted by GP)
   let totalGP = 0, totalMIN = 0, totalPTS = 0, totalREB = 0, totalAST = 0;
   let totalSTL = 0, totalBLK = 0;
-  let fgMadeTotal = 0, fgAttTotal = 0, fg3MadeTotal = 0, fg3AttTotal = 0, ftMadeTotal = 0, ftAttTotal = 0;
+  const aggregateRows = careerAggregationRows(seasons);
 
-  for (const s of seasons) {
+  for (const s of aggregateRows ?? []) {
     totalGP += s.GP;
     totalMIN += s.MIN * s.GP;
     totalPTS += s.PTS * s.GP;
@@ -132,19 +133,7 @@ function CareerStatsTable({ seasons, t, headerExtra }: { seasons: CareerSeasonRo
     totalAST += s.AST * s.GP;
     totalSTL += s.STL * s.GP;
     totalBLK += s.BLK * s.GP;
-    // Approximate FG/3P/FT attempts from percentages
-    if (s.FG_PCT != null) {
-      fgMadeTotal += s.FG_PCT * s.GP;
-      fgAttTotal += s.GP;
-    }
-    if (s.FG3_PCT != null) {
-      fg3MadeTotal += s.FG3_PCT * s.GP;
-      fg3AttTotal += s.GP;
-    }
-    if (s.FT_PCT != null) {
-      ftMadeTotal += s.FT_PCT * s.GP;
-      ftAttTotal += s.GP;
-    }
+
   }
 
   const careerAvg = totalGP > 0 ? {
@@ -155,13 +144,15 @@ function CareerStatsTable({ seasons, t, headerExtra }: { seasons: CareerSeasonRo
     AST: totalAST / totalGP,
     STL: totalSTL / totalGP,
     BLK: totalBLK / totalGP,
-    FG_PCT: fgAttTotal > 0 ? fgMadeTotal / fgAttTotal : null,
-    FG3_PCT: fg3AttTotal > 0 ? fg3MadeTotal / fg3AttTotal : null,
-    FT_PCT: ftAttTotal > 0 ? ftMadeTotal / ftAttTotal : null,
+    FG_PCT: careerShooting?.FG_PCT ?? null,
+    FG3_PCT: careerShooting?.FG3_PCT ?? null,
+    FT_PCT: careerShooting?.FT_PCT ?? null,
   } : null;
 
   // Current season = last one in the list
-  const currentSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
+  const latestYear = aggregateRows?.at(-1)?.SEASON_ID;
+  const latestRows = aggregateRows?.filter(row => row.SEASON_ID === latestYear) ?? [];
+  const currentSeason = latestRows.length === 1 ? latestRows[0] : null;
 
   return (
     <div className="glass-tile overflow-hidden">
@@ -169,6 +160,9 @@ function CareerStatsTable({ seasons, t, headerExtra }: { seasons: CareerSeasonRo
         <h3 className="text-sm font-semibold">{t.playerStats.seasonBySeasonStats}</h3>
         {headerExtra}
       </div>
+      <p className="px-4 py-2 text-xs text-text-secondary">{isZh
+        ? "生涯命中率仅采用数据源提供的常规赛生涯汇总；缺失时显示 —，不按比赛场数平均各季命中率。"
+        : "Career shooting rates use the source's regular-season career aggregate. Missing rates are unavailable, not game-weighted averages of season percentages."}</p>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>

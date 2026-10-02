@@ -143,3 +143,9 @@ describe("player career provider boundary", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 });
+it('returns career shooting rates from the same response without an extra request',async()=>{
+ const summary={PLAYER_ID:2544,GP:70,FG_PCT:.467,FG3_PCT:.35,FT_PCT:.8,FGA:18,FG3A:5,FTA:6};const body=nba();body.resultSets.push({name:'CareerTotalsRegularSeason',headers:Object.keys(summary),rowSet:[Object.values(summary)]});const fetcher=vi.fn().mockResolvedValue(ok(body));vi.stubGlobal('fetch',fetcher);const{GET}=await import('@/app/api/player/route');const response=await GET(request());expect(await response.json()).toMatchObject({careerSeasons:[row],careerShooting:{source:'nba-career-totals',FG_PCT:.467,FG3_PCT:.35,FT_PCT:.8}});expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it('wrong-player optional career summary leaves valid seasons but no guessed rate',async()=>{
+ const summary={PLAYER_ID:1,GP:70,FG_PCT:.467,FG3_PCT:.35,FT_PCT:.8,FGA:18,FG3A:5,FTA:6};const body=nba();body.resultSets.push({name:'CareerTotalsRegularSeason',headers:Object.keys(summary),rowSet:[Object.values(summary)]});vi.stubGlobal('fetch',vi.fn().mockResolvedValue(ok(body)));const{GET}=await import('@/app/api/player/route');const response=await GET(request());expect(await response.json()).toEqual({careerSeasons:[row],recentGames:null});
+});
