@@ -6,6 +6,7 @@ import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { currentSeason } from "@/lib/constants";
 import { scheduleForSeason } from "@/lib/games";
 import type { PlayerIndexProvenance } from "./player-index-provenance";
+import { normalizeGamePlayByPlay } from "./game-play-by-play";
 import { isValidBoxScore } from "./box-score-validation";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
@@ -622,7 +623,8 @@ export function extractShots(actions: Record<string, unknown>[]): ShotAction[] {
 
 // Collapse concurrent PBP fetches of the same gameId (player-shots fires
 // batches of 5 that can overlap across requests). Mirrors boxScoreInflight.
-const pbpInflight = new Map<string, Promise<ShotAction[]>>();
+export interface PlayByPlaySnapshot { shots: ShotAction[]; available: boolean; stale: boolean; }
+const pbpInflight = new Map<string, Promise<PlayByPlaySnapshot>>();
 
 // Get play-by-play (for shot chart).
 // The PBP payload carries no gameStatus (its game object is just
@@ -630,39 +632,48 @@ const pbpInflight = new Map<string, Promise<ShotAction[]>>();
 // /api/player-shots aggregates finished games only and passes final: true,
 // which pins the cache entry and stretches the fetch revalidate to 24h
 // (final PBP is immutable).
-export async function getPlayByPlay(
+export async function getPlayByPlaySnapshot(
   gameId: string,
   opts?: { final?: boolean }
-): Promise<ShotAction[]> {
+): Promise<PlayByPlaySnapshot> {
   const cached = pbpCache.get(gameId);
-  if (cached?.final) return cached.shots;
+  if (cached?.final) return { shots: cached.shots, available: true, stale: false };
   const existing = pbpInflight.get(gameId);
   if (existing) return existing;
   const final = opts?.final === true;
-  const p = (async (): Promise<ShotAction[]> => {
-    const res = await fetch(
-      `${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`,
-      {
-        headers: HEADERS,
-        next: { revalidate: final ? 86400 : 60 },
-        signal: AbortSignal.timeout(8000),
-      }
-    );
-    if (!res.ok) return cached?.shots ?? [];
-    const data = await res.json();
-    const shots = extractShots(data.game?.actions || []);
-    // Never pin an empty payload as final — a transient blank CDN response
-    // must not permanently mask a game's shots (same class as the box-score
-    // cache-poisoning guard).
-    lruSet(pbpCache, gameId, { shots, final: final && shots.length > 0 });
-    return shots;
+  const unavailable = (): PlayByPlaySnapshot => ({ shots: cached?.shots ?? [], available: false, stale: !!cached?.shots.length });
+  const p = (async (): Promise<PlayByPlaySnapshot> => {
+    try {
+      const signal = AbortSignal.timeout(8000);
+      const res = await fetch(`${CDN_BASE}/liveData/playbyplay/playbyplay_${gameId}.json`, {
+        headers: HEADERS, next: { revalidate: final ? 86400 : 60 }, signal,
+      });
+      if (!res.ok) return unavailable();
+      const data: unknown = await res.json();
+      if (signal.aborted) return unavailable();
+      const normalized = normalizeGamePlayByPlay(data, gameId);
+      // Blank/malformed/wrong-game feeds cannot establish successful loading.
+      // A valid non-shot event feed can legitimately yield zero field goals.
+      if (!normalized.actions.length ||
+        normalized.scoringShots.filter(shot => shot.actionType !== "freethrow").length !== normalized.shots.length ||
+        normalized.shots.some(shot => shot.shotDistance < 0 || !Number.isSafeInteger(shot.personId) || shot.personId <= 0)) return unavailable();
+      const shots = normalized.shots;
+      if (cached?.shots.length && !shots.length) return unavailable();
+      lruSet(pbpCache, gameId, { shots, final: final && shots.length > 0 });
+      return { shots, available: true, stale: false };
+    } catch {
+      return unavailable();
+    }
   })();
   pbpInflight.set(gameId, p);
-  try {
-    return await p;
-  } finally {
-    pbpInflight.delete(gameId);
-  }
+  try { return await p; }
+  finally { pbpInflight.delete(gameId); }
+}
+
+// Compatibility accessor retains last-good arrays; consumers presenting
+// completeness must use the availability-bearing accessor above.
+export async function getPlayByPlay(gameId: string, opts?: { final?: boolean }): Promise<ShotAction[]> {
+  return (await getPlayByPlaySnapshot(gameId, opts)).shots;
 }
 
 // Player info types

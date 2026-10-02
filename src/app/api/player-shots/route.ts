@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSeasonSchedule, getPlayByPlay, type ShotAction } from "@/lib/api";
+import { getCurrentSeasonSchedule, getPlayByPlaySnapshot, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
 import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
 import { CURRENT_SEASON } from "@/lib/constants";
@@ -54,10 +54,15 @@ export async function GET(request: NextRequest) {
     for (let i = 0; i < recentGames.length; i += 5) {
       const batch = recentGames.slice(i, i + 5);
       const results = await Promise.all(
-        batch.map((gid) => getPlayByPlay(gid, { final }).catch(() => []))
+        batch.map((gid) => getPlayByPlaySnapshot(gid, { final }).catch(() => ({ shots: [], available: false, stale: false })))
       );
-      for (const shots of results) {
-        for (const s of shots) {
+      if (results.some(result => !result.available || result.stale)) {
+        return NextResponse.json({ error: "Player shot data unavailable" }, {
+          status: 503, headers: { "Cache-Control": "no-store" },
+        });
+      }
+      for (const result of results) {
+        for (const s of result.shots) {
           if (s.personId === pid && s.actionType !== "freethrow") {
             allShots.push(s);
           }

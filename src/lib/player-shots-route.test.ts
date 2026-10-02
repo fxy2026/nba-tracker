@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({ stats: vi.fn(), schedule: vi.fn(), pbp: vi.fn() }));
 vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStats: mocks.stats }));
-vi.mock("@/lib/api", () => ({ getCurrentSeasonSchedule: mocks.schedule, getPlayByPlay: mocks.pbp }));
+vi.mock("@/lib/api", () => ({ getCurrentSeasonSchedule: mocks.schedule, getPlayByPlaySnapshot: mocks.pbp }));
 vi.mock("@/lib/constants", () => ({ CURRENT_SEASON: "2026-27" }));
 import { GET } from "@/app/api/player-shots/route";
 
@@ -16,7 +16,7 @@ const game = (gameId: string, status = 3, home = "LAL", away = "BOS") => ({ game
 
 beforeEach(() => {
   mocks.stats.mockReset(); mocks.schedule.mockReset(); mocks.pbp.mockReset();
-  mocks.schedule.mockResolvedValue([]); mocks.pbp.mockResolvedValue([shot]);
+  mocks.schedule.mockResolvedValue([]); mocks.pbp.mockResolvedValue({shots:[shot],available:true,stale:false});
   vi.stubGlobal("fetch", vi.fn(() => { throw new Error("Unexpected external fetch"); }));
 });
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -24,7 +24,7 @@ afterEach(() => { vi.unstubAllGlobals(); });
 describe("player shot season routing and unavailable game logs", () => {
   it("forwards the exact explicit historical season and filters player field goals", async () => {
     mocks.stats.mockResolvedValue(ok(log(["0022500340"])));
-    mocks.pbp.mockResolvedValue([shot, { ...shot, personId: 1 }, { ...shot, actionType: "freethrow" }]);
+    mocks.pbp.mockResolvedValue({shots:[shot, { ...shot, personId: 1 }, { ...shot, actionType: "freethrow" }],available:true,stale:false});
     const res = await GET(request(query));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ shots: [shot], gamesLoaded: 1, totalGames: 1 });
@@ -125,4 +125,16 @@ describe("player shot season routing and unavailable game logs", () => {
     expect(res.status).toBe(200); expect(data.totalGames).toBe(35); expect(data.gamesLoaded).toBe(30);
     expect(mocks.pbp.mock.calls.map(([id]) => id)).toEqual(ids.slice(-30)); expect(mocks.stats).toHaveBeenCalledTimes(1);
   });
+});
+
+it.each(['unavailable','throw','stale'])('failed PBP %s does not become cached successful empty or partial season',async failure=>{
+ mocks.stats.mockResolvedValue(ok(log(['0022500340','0022500341'])));
+ mocks.pbp.mockResolvedValueOnce({shots:[shot],available:true,stale:false});
+ if(failure==='throw')mocks.pbp.mockRejectedValueOnce(new Error('offline'));
+ else mocks.pbp.mockResolvedValueOnce({shots:failure==='stale'?[shot]:[],available:false,stale:failure==='stale'});
+ const response=await GET(request(query));expect(response.status).toBe(503);expect(response.headers.get('Cache-Control')).toBe('no-store');expect(await response.json()).toEqual({error:'Player shot data unavailable'});
+ mocks.pbp.mockResolvedValue({shots:[shot],available:true,stale:false});const retry=await GET(request(query));expect(retry.status).toBe(200);expect((await retry.json()).gamesLoaded).toBe(2);
+});
+it('successful game feeds with no shots by selected player remain legitimate empty',async()=>{
+ mocks.stats.mockResolvedValue(ok(log(['0022500340'])));mocks.pbp.mockResolvedValue({shots:[{...shot,personId:1}],available:true,stale:false});const response=await GET(request(query));expect(response.status).toBe(200);expect(await response.json()).toEqual({shots:[],gamesLoaded:1,totalGames:1});
 });
