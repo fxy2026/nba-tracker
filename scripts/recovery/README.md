@@ -21,7 +21,7 @@ The job uses only approved job-level `contents:write` and `actions:read` for the
 3. Fetch the resolved match's stats. Validate shapes, numeric values, shooting arithmetic, rebound splits and combined points. Provider current-roster team fields never establish historical membership
 4. Save generalized rows as **combined, historically unassigned** player tables, clearly attributed to the provider. These consistency checks do not independently establish each row's accuracy
 5. Preserve every separately verified historical snapshot. Never invent NBA player IDs, DNP rows, coordinates, exact minutes, play-by-play, season averages or career totals
-6. Validate saved data, then publish at most one data/cursor commit. If master advanced, withhold the commit. Never force push or overwrite concurrent work
+6. Validate saved data, then publish one data/cursor commit on the original base. If master advanced, attempt at most one validated, additions-only data replay without the stale cursor/state. Never force push or overwrite concurrent work. Unresolved conflicts fail explicitly while an uploaded recovery bundle remains available for its retention period.
 
 Snapshots are server-only. Minutes remain provider-rounded. Final-game rows are not fetched again automatically once saved. Publishing a new adapter does not establish that its current-season source has returned usable data.
 
@@ -84,3 +84,16 @@ Validated selected identities are immutable per-game records in `src/data/observ
 Before any new files are written, the temporary recovery bundle captures normalized player files plus `official-<NBA game ID>.json` identity records. At most20 of each,40 files and2MB total, are allowed. Matching pairs must agree on season/date/teams/scores; only the two strict projections and fixed manifest metadata may enter it. Upload remains conditional,7-day temporary retention, and does not replace permanent repository publication. The data commit allowlist adds only the observed identity directory; permissions are unchanged.
 
 Existing verified historical tables retain their stronger source and membership evidence. New generic provider data remains explicitly unassigned until game-time team membership is independently established. No automated membership route or2026-27 provider coverage has been demonstrated by these offline tests.
+
+
+## Concurrent publication recovery
+
+The normal path still stages the same data allowlist, fetches master once, and commits/pushes once after the existing tests. It does not run another test suite or fetch provider data. The publisher step has no provider-key environment and uses only checkout's already authorized Git credential.
+
+When master advances, the original compiled publisher may create one detached temporary worktree at the fresh commit. Before reading its data, it requires real tree entries for every data-directory ancestor/store and rejects data symlinks. Changes to the validation source, helpers/types, manifest code, package/lock files, relevant build configuration or workflow cause a refusal; it never executes scripts from the newer checkout.
+
+The original run/SHA-bound bundle is revalidated against the latest stores and historical/current official identities. Fully identical files are skipped without rewriting their bytes. Conflicting content or source provenance, provider UUID ownership, protected verified/quarantined history, or invalid identities refuses the entire batch. Only new canonical JSON files under the generic player and observed-final directories can enter the replay commit. Existing files, code, cursor, retry state and metadata from newer master remain unchanged.
+
+A known authentication/permission denial stops immediately with a fixed error code. For an uncertain original push, the publisher first checks whether its exact candidate is already in remote history. An unchanged remote without confirmed publication does not trigger a new candidate. A genuine concurrent update permits one replay; another race or unconfirmed result ends as a failed publication, not an automatic success. No force push or repeated replay is allowed.
+
+The previously uploaded bundle is the recovery fallback for failures, with seven-day retention only. Its preparation is not proof of upload, and upload is not permanent publication. Source credentials, raw Git errors, provider bodies and unrelated files are never included in the bundle or publisher logs.

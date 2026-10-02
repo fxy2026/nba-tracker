@@ -75,7 +75,7 @@ jobs:
       - name: Verify ingestion code before credential access
         run: npm test && npx tsc --noEmit
       - name: Compile bounded ingestor
-        run: npx tsc scripts/recovery/ingest.ts scripts/recovery/check-pending-batch.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
+        run: npx tsc scripts/recovery/ingest.ts scripts/recovery/check-pending-batch.ts scripts/recovery/publish-pending-batch.ts --outDir "$RUNNER_TEMP/nba-recovery-build" --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck --strict
       - name: Verify known provider snapshots
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'verify'
         run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
@@ -144,18 +144,4 @@ jobs:
           overwrite: false
       - name: Publish one data-only commit without force
         if: always() && !cancelled() && github.event_name != 'push' && steps.verified_data.outcome == 'success' && steps.pending_bundle.outcome == 'success'
-        run: |
-          git add -- src/data/provider-player-boxes/ src/data/observed-final-games/ src/data/provider-recovery-state.json
-          if git diff --cached --quiet; then
-            echo 'No data changes to publish.'
-            exit 0
-          fi
-          git fetch origin master
-          if [ "$(git rev-parse origin/master)" != "$GITHUB_SHA" ]; then
-            echo 'Master advanced; data was not published. If the recovery bundle upload succeeded, it can be restored within 7 days.'
-            exit 1
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Update provider player-stat snapshots'
-          git push origin HEAD:master
+        run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/publish-pending-batch.js"
