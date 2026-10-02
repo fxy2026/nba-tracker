@@ -59,6 +59,29 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+
+  // The page supplies the committed URL query. A same-route navigation reuses
+  // this component, so adopt new URL values without overwriting typing drafts.
+  useEffect(() => {
+    requestRef.current?.abort();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync a new committed URL query
+    setQuery(initialQuery);
+    setResults([]);
+    setSelectedIndex(-1);
+    setShowDropdown(false);
+    setLoading(false);
+  }, [initialQuery]);
+
+  function changeQuery(next: string) {
+    // Cancel immediately, including between the input event and effect cleanup.
+    requestRef.current?.abort();
+    setQuery(next);
+    setResults([]);
+    setSelectedIndex(-1);
+    setShowDropdown(false);
+    setLoading(false);
+  }
 
   // Hydration: search history from localStorage.
   useEffect(() => {
@@ -103,22 +126,31 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
+    const controller = new AbortController();
+    requestRef.current = controller;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
     if (query.trim().length < 2) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setShowDropdown(false);
+      setLoading(false);
       return;
     }
 
     debounceRef.current = setTimeout(async () => {
+      if (controller.signal.aborted) return;
       setLoading(true);
+      timeout = setTimeout(() => {
+        controller.abort();
+        if (requestRef.current === controller) setLoading(false);
+      }, 8000);
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(`/api/search?context=1&q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
-        clearTimeout(timeout);
+        if (controller.signal.aborted) return;
         if (res.ok) {
           const json = await res.json();
+          if (controller.signal.aborted) return;
           setResults(json.data || []);
           setShowDropdown(true);
           if ((json.data || []).length > 0) {
@@ -127,13 +159,18 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           }
         }
       } catch { /* timeout or network error */ }
-      setLoading(false);
+      finally {
+        clearTimeout(timeout);
+        if (!controller.signal.aborted) setLoading(false);
+      }
     }, 250);
 
     return () => {
+      controller.abort();
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query, initialQuery]);
 
   return (
     <div ref={wrapperRef} className="relative w-full max-w-xl mx-auto">
@@ -142,7 +179,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => changeQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
@@ -153,7 +190,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); setResults([]); setShowDropdown(false); }}
+            onClick={() => changeQuery("")}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
           >
             <X size={16} />
@@ -173,7 +210,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
           {searchHistory.map((q) => (
             <button
               key={q}
-              onMouseDown={(e) => { e.preventDefault(); setQuery(q); }}
+              onMouseDown={(e) => { e.preventDefault(); changeQuery(q); }}
               className="chip cursor-pointer"
             >
               {q}

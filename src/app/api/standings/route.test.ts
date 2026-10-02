@@ -43,3 +43,13 @@ describe("standings cache season boundaries", () => {
     expect(getCurrentSeasonSchedule.mock.calls).toEqual([["2025-26"], ["2026-27"]]);
   });
 });
+
+describe('standings final-score safety',()=>{
+ it.each([100,NaN,Infinity,-1,100.5,null,undefined])('invalid final %s cannot fabricate a win alongside a valid game',async invalid=>{
+  vi.setSystemTime(new Date('2026-10-02T00:00:00Z'));
+  const valid=schedule(110);const bad=schedule(invalid as number);getCurrentSeasonSchedule.mockResolvedValue([...valid,...bad]);
+  const{GET}=await import('./route');const data=await(await GET()).json();
+  expect(data.data.find((t:{tricode:string})=>t.tricode==='BOS')).toMatchObject({wins:1,losses:0});
+  expect(data.data.find((t:{tricode:string})=>t.tricode==='NYK')).toMatchObject({wins:0,losses:1});
+ });
+});

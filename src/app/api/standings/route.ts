@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentSeasonSchedule } from "@/lib/api";
 import { isRegular } from "@/lib/games";
+import { validFinalScore } from "@/lib/team-rank";
 import { currentSeason } from "@/lib/constants";
 import { standingsPayload } from "@/lib/season-snapshot";
 
@@ -26,7 +27,7 @@ async function computeStandings(season: string): Promise<TeamRecord[]> {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
       // Only count regular season games (gameId starts with "002")
-      if (!isRegular(g.gameId)) continue;
+      if (!isRegular(g.gameId) || !validFinalScore(g.homeTeam.score, g.awayTeam.score)) continue;
       const h = g.homeTeam;
       const a = g.awayTeam;
       if (!teamMap[h.teamTricode])

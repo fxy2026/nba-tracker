@@ -4,6 +4,7 @@
 import type { ScheduleDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { isRegular, winPct } from "@/lib/games";
+import { validFinalScore } from "@/lib/team-rank";
 
 export interface StandingsRow {
   tricode: string;
@@ -62,7 +63,7 @@ export function computeStandingsRows(schedule: ScheduleDate[]): StandingsRow[] {
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
-      if (!isRegular(g.gameId)) continue; // regular season only
+      if (!isRegular(g.gameId) || !validFinalScore(g.homeTeam.score, g.awayTeam.score)) continue; // regular season only
       const h = acc(g.homeTeam);
       const a = acc(g.awayTeam);
       const homeWon = g.homeTeam.score > g.awayTeam.score;
@@ -143,7 +144,7 @@ export function computeStandingsRows(schedule: ScheduleDate[]): StandingsRow[] {
 }
 
 /** Games behind the conference leader, formatted Hupu-style ("-" for the leader). */
-export function gamesBehind(leader: StandingsRow, team: StandingsRow): string {
+export function gamesBehind(leader: Pick<StandingsRow, "tricode" | "wins" | "losses">, team: Pick<StandingsRow, "tricode" | "wins" | "losses">): string {
   if (leader.tricode === team.tricode) return "-";
   // The pct leader can trail another team in W−L with uneven games played, so
   // clamp at 0 — a negative GB never appears in NBA/Hupu standings.

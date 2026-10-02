@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/components/LocaleProvider";
 import { teamLogoUrl } from "@/lib/teamUrls";
+import { gamesBehind } from "@/lib/standings-splits";
+import { parseStandingsResponse, type StandingsTeamRecord } from "@/lib/standings-response";
 
-interface TeamRecord { tricode: string; teamId: number; teamName: string; teamCity: string; wins: number; losses: number; }
+type TeamRecord = StandingsTeamRecord;
 
 const EAST = ["ATL","BOS","BKN","CHA","CHI","CLE","DET","IND","MIA","MIL","NYK","ORL","PHI","TOR","WAS"];
 
@@ -16,34 +18,41 @@ export default function TeamStandings() {
   const [teams, setTeams] = useState<TeamRecord[]>([]);
   const [archivedSeason, setArchivedSeason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [conf, setConf] = useState<"all" | "east" | "west">("all");
 
   useEffect(() => {
     const controller = new AbortController();
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     (async () => {
-      setLoading(true);
+      setLoading(true); setError(false);
       try {
-        const res = await fetch("/api/standings", { signal: controller.signal });
-        if (!res.ok) throw new Error("Failed");
-        const json = await res.json();
-        if (!controller.signal.aborted) {
-          setTeams(json.data || []);
-          if (json.archived && json.season) setArchivedSeason(String(json.season));
-        }
-      } catch { if (!controller.signal.aborted) setTeams([]); }
-      if (!controller.signal.aborted) setLoading(false);
+        const request = (async () => {
+          const response = await fetch("/api/standings", { signal: controller.signal });
+          if (!response.ok) throw new Error("Unavailable standings");
+          return await response.json() as unknown;
+        })();
+        const deadline = new Promise<never>((_, reject) => {
+          timer = setTimeout(() => { controller.abort(); reject(new Error("Standings timeout")); }, 18_000);
+        });
+        const json = await Promise.race([request, deadline]);
+        if (!active || controller.signal.aborted) return;
+        const parsed = parseStandingsResponse(json);
+        if (!parsed) throw new Error("Invalid standings");
+        setTeams(parsed.teams); setArchivedSeason(parsed.archivedSeason);
+      } catch { if (active) setError(true); }
+      finally { clearTimeout(timer); if (active) setLoading(false); }
     })();
-    return () => controller.abort();
-  }, []);
+    return () => { active = false; controller.abort(); clearTimeout(timer); };
+  }, [retry]);
 
   const filtered = useMemo(() =>
     conf === "all" ? teams : teams.filter((t) => conf === "east" ? EAST.includes(t.tricode) : !EAST.includes(t.tricode)),
     [teams, conf]
   );
-  const topPct = useMemo(() =>
-    filtered[0] ? filtered[0].wins / (filtered[0].wins + filtered[0].losses || 1) : 0,
-    [filtered]
-  );
+
 
   return (
     <div>
@@ -63,15 +72,20 @@ export default function TeamStandings() {
         )}
       </div>
 
+      {error && <div role="alert" className="glass-tile p-4 mb-4 space-y-2">
+        <p>{isZh ? "排名数据暂时无法加载，请重试。" : "Standings are temporarily unavailable. Please retry."}</p>
+        {teams.length > 0 && <p className="text-xs text-text-secondary">{isZh ? "下方保留上次成功加载的数据，可能已过时。" : "The last successfully loaded standings remain below and may be stale."}</p>}
+        <button type="button" disabled={loading} onClick={() => setRetry(value => value + 1)} className="text-accent hover:underline disabled:opacity-50">{isZh ? "重试" : "Retry"}</button>
+      </div>}
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="glass-tile h-11 skeleton-shimmer" />
           ))}
         </div>
-      ) : (
+      ) : filtered.length === 0 ? (!error && <p role="status" className="glass-tile p-4 text-text-secondary">{isZh ? "暂无可用的已完赛排名数据。" : "No finished-game standings are available."}</p>) : (
         <div className="glass-tile overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={isZh ? "球队排名，可横向滚动" : "Team standings, scroll horizontally"}>
             <table className="w-full text-sm stats-table">
               <thead className="sticky top-0 z-10 bg-bg-card">
                 <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
@@ -86,7 +100,7 @@ export default function TeamStandings() {
               <tbody>
                 {filtered.map((tm, i) => {
                   const pct = tm.wins + tm.losses > 0 ? tm.wins / (tm.wins + tm.losses) : 0;
-                  const gb = i === 0 ? "-" : (((topPct - pct) * (filtered[0].wins + filtered[0].losses)) / 2).toFixed(1);
+                  const gb = gamesBehind(filtered[0], tm);
                   const logoUrl = teamLogoUrl(tm.teamId);
                   const isTop3 = i < 3;
                   const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"

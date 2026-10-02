@@ -1,0 +1,13 @@
+import {expect,it} from 'vitest';
+import snapshot from '../data/season-2025-26-final.json';
+import {parseStandingsResponse} from './standings-response';
+import {gamesBehind,computeStandingsRows} from './standings-splits';
+import type {ScheduleDate} from './api';
+const team=(tricode:string,wins:number,losses:number)=>({...snapshot.teams.find(t=>t.tricode===tricode)!,wins,losses});
+it('equal games played uses full win-loss gap, not half the percentage gap',()=>{expect(gamesBehind(team('BOS',60,22),team('NYK',50,32))).toBe('10.0');});
+it('unequal games, ties and leader preserve existing standings semantics',()=>{expect(gamesBehind(team('BOS',10,2),team('NYK',8,3))).toBe('1.5');expect(gamesBehind(team('BOS',10,2),team('NYK',10,2))).toBe('0.0');expect(gamesBehind(team('BOS',10,2),team('BOS',10,2))).toBe('-');});
+it('actual archive payload validates without a source request',()=>{expect(parseStandingsResponse({data:snapshot.teams,archived:true,season:snapshot.season})?.teams).toHaveLength(30);});
+it('zero-win played record survives but unplayed records never get ranked',()=>{const result=parseStandingsResponse({data:[team('BOS',0,0),team('NYK',0,3)]});expect(result?.teams).toEqual([team('NYK',0,3)]);});
+it('valid empty and malformed payloads remain distinct',()=>{expect(parseStandingsResponse({data:[]})).toEqual({teams:[],archivedSeason:null});expect(parseStandingsResponse({})).toBeNull();expect(parseStandingsResponse({data:null})).toBeNull();});
+it.each(['negative','nan','fractional','missing','wrong-id','unknown-team','duplicate','bad-season'])('rejects malformed record metadata: %s',kind=>{const raw:{data:Record<string,unknown>[];archived?:boolean;season?:string}={data:[team('BOS',1,0)]};if(kind==='negative')raw.data[0].wins=-1;if(kind==='nan')raw.data[0].wins=NaN;if(kind==='fractional')raw.data[0].losses=0.5;if(kind==='missing')delete raw.data[0].wins;if(kind==='wrong-id')raw.data[0].teamId=1;if(kind==='unknown-team')raw.data[0].tricode='XXX';if(kind==='duplicate')raw.data.push({...raw.data[0]});if(kind==='bad-season'){raw.archived=true;raw.season='unknown';}expect(parseStandingsResponse(raw)).toBeNull();});
+it.each([100,NaN,Infinity,-1,100.5,null,undefined])('standings page excludes invalid final score %s',score=>{const rows=computeStandingsRows([{games:[{gameId:'0022600001',gameStatus:3,homeTeam:{...team('BOS',0,0),teamTricode:'BOS',score},awayTeam:{...team('NYK',0,0),teamTricode:'NYK',score:100}}]}] as unknown as ScheduleDate[]);expect(rows).toEqual([]);});
