@@ -24,6 +24,9 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
       {hasBlockCorrections && <p className="text-xs text-text-secondary">{isZh
         ? "† 标记的盖帽数已按本场 NBA 官方报告校正；原始数据源数值和报告依据保留在公开存档中。"
         : "† Marked block counts were corrected from this game's NBA official report; original provider values and report references are retained in the public archive."}</p>}
+      {!!box.excludedProviderRecords && <p className="text-xs text-text-secondary">{isZh
+        ? `已排除 ${box.excludedProviderRecords} 条未获官方报告支持的数据源记录；原始记录单独保留，不将其认定为出场或 DNP。`
+        : `${box.excludedProviderRecords} provider records unsupported by the official report were excluded and retained separately; no played or DNP status is inferred for them.`}</p>}
       <a href={box.reportUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">{isZh ? "核验依据：NBA 官方赛后报告（PDF）" : "Reference: NBA official final report (PDF)"}</a>
       <p className="text-xs text-text-secondary">{isZh ? "快照获取时间（约）" : "Snapshot retrieved (approximately)"}: {box.retrievedAt.replace("T", " ").replace(":00Z", " UTC")}</p>
     </div>

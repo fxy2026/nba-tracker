@@ -1,29 +1,20 @@
 {
-  "version": 1,
+  "gameId": "0042500221",
+  "gameDate": "2026-05-05",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500221",
-    "providerMatchId": "6da4a7ac-c10c-4c72-a340-6794c7bc905e",
-    "season": "2025-26",
-    "gameDate": "2026-05-05",
-    "home": {
-      "tricode": "OKC",
-      "score": 108
-    },
-    "away": {
-      "tricode": "LAL",
-      "score": 90
-    }
-  },
+  "providerMatchId": "6da4a7ac-c10c-4c72-a340-6794c7bc905e",
   "retrievedAt": "2026-10-02T14:12:01.177Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260505/20260505_LALOKC.pdf",
+  "home": "OKC",
+  "away": "LAL",
+  "homeScore": 108,
+  "awayScore": 90,
   "players": [
     {
       "providerPlayerId": "007bb1a4-afa1-48c4-a196-ddba7d341555",
       "name": "LeBron James",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "LAL",
       "points": 27,
       "rebounds": 4,
       "assists": 6,
@@ -40,13 +31,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 1,
       "plusMinus": -6,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "050ea4d2-ee0d-48e7-855e-92f191168326",
       "name": "Dalton Knecht",
-      "team": null,
-      "minutesRounded": 2,
+      "team": "LAL",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -63,13 +54,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 2
     },
     {
       "providerPlayerId": "215f08f0-8bce-4f3a-bd9b-aacefd03d7dd",
       "name": "Luke Kennard",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "LAL",
       "points": 7,
       "rebounds": 5,
       "assists": 1,
@@ -86,13 +77,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": -14,
-      "starter": false
+      "starter": false,
+      "minutes": 29
     },
     {
       "providerPlayerId": "26f7a264-d44c-40e6-8082-898cd8a08ec4",
       "name": "Austin Reaves",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "LAL",
       "points": 8,
       "rebounds": 5,
       "assists": 6,
@@ -109,13 +100,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -10,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "3dcbc0d5-edc8-4a06-bfcc-777e7f1863e6",
       "name": "Chet Holmgren",
-      "team": null,
-      "minutesRounded": 31,
+      "team": "OKC",
       "points": 24,
       "rebounds": 12,
       "assists": 1,
@@ -132,13 +123,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": 10,
-      "starter": true
+      "starter": true,
+      "minutes": 31
     },
     {
       "providerPlayerId": "3f36f7b7-5b71-4c54-a1f1-0dc7888bf070",
       "name": "Ajay Mitchell",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "OKC",
       "points": 18,
       "rebounds": 2,
       "assists": 4,
@@ -155,13 +146,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 3,
       "plusMinus": 14,
-      "starter": true
+      "starter": true,
+      "minutes": 28
     },
     {
       "providerPlayerId": "4574f2be-5ec9-4cc0-8647-33f848af398c",
       "name": "Alex Caruso",
-      "team": null,
-      "minutesRounded": 20,
+      "team": "OKC",
       "points": 5,
       "rebounds": 2,
       "assists": 2,
@@ -178,13 +169,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 15,
-      "starter": false
+      "starter": false,
+      "minutes": 20
     },
     {
       "providerPlayerId": "47997465-5135-487c-af4f-2882c366fa31",
       "name": "Deandre Ayton",
-      "team": null,
-      "minutesRounded": 27,
+      "team": "LAL",
       "points": 10,
       "rebounds": 12,
       "assists": 2,
@@ -201,13 +192,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -4,
-      "starter": true
+      "starter": true,
+      "minutes": 27
     },
     {
       "providerPlayerId": "4bea060e-148e-4dee-a607-95b03f79f729",
       "name": "Isaiah Hartenstein",
-      "team": null,
-      "minutesRounded": 25,
+      "team": "OKC",
       "points": 8,
       "rebounds": 9,
       "assists": 4,
@@ -224,13 +215,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 5,
-      "starter": true
+      "starter": true,
+      "minutes": 25
     },
     {
       "providerPlayerId": "5690e649-6c07-4877-a95c-9e875be1db47",
       "name": "Isaiah Joe",
-      "team": null,
-      "minutesRounded": 11,
+      "team": "OKC",
       "points": 9,
       "rebounds": 1,
       "assists": 1,
@@ -247,13 +238,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 11,
-      "starter": false
+      "starter": false,
+      "minutes": 11
     },
     {
       "providerPlayerId": "58378230-e720-424d-a931-8ae2a56b2cdf",
       "name": "Aaron Wiggins",
-      "team": null,
-      "minutesRounded": 5,
+      "team": "OKC",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -270,13 +261,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -2,
-      "starter": false
+      "starter": false,
+      "minutes": 5
     },
     {
       "providerPlayerId": "5b5fd1c0-bb65-47a5-9ce6-8c513e883c16",
       "name": "Jarred Vanderbilt",
-      "team": null,
-      "minutesRounded": 6,
+      "team": "LAL",
       "points": 2,
       "rebounds": 1,
       "assists": 0,
@@ -293,13 +284,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -4,
-      "starter": false
+      "starter": false,
+      "minutes": 6
     },
     {
       "providerPlayerId": "666741f7-fe6e-4db9-9863-d42946382c6a",
       "name": "Kenrich Williams",
-      "team": null,
-      "minutesRounded": 2,
+      "team": "OKC",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -316,13 +307,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 2
     },
     {
       "providerPlayerId": "6b5ec5dc-29cb-4b91-908b-d9e7e8991bf7",
       "name": "Jared McCain",
-      "team": null,
-      "minutesRounded": 15,
+      "team": "OKC",
       "points": 12,
       "rebounds": 2,
       "assists": 2,
@@ -339,13 +330,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "minutes": 15
     },
     {
       "providerPlayerId": "6e19d5b7-fa55-4a79-b3ce-51645c67dd91",
       "name": "Jake LaRavia",
-      "team": null,
-      "minutesRounded": 14,
+      "team": "LAL",
       "points": 3,
       "rebounds": 1,
       "assists": 0,
@@ -362,13 +353,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -9,
-      "starter": false
+      "starter": false,
+      "minutes": 14
     },
     {
       "providerPlayerId": "76ff0884-b0f8-4b4a-9152-6cc7d18f37f2",
       "name": "Rui Hachimura",
-      "team": null,
-      "minutesRounded": 37,
+      "team": "LAL",
       "points": 18,
       "rebounds": 2,
       "assists": 2,
@@ -385,13 +376,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -21,
-      "starter": true
+      "starter": true,
+      "minutes": 37
     },
     {
       "providerPlayerId": "78207678-1fb5-4883-8697-a0315d31dcc5",
       "name": "Bronny James",
-      "team": null,
-      "minutesRounded": 2,
+      "team": "LAL",
       "points": 0,
       "rebounds": 0,
       "assists": 1,
@@ -408,13 +399,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 2
     },
     {
       "providerPlayerId": "80ebff4b-4247-4f41-93c4-3fc756611dbd",
       "name": "Jaylin Williams",
-      "team": null,
-      "minutesRounded": 20,
+      "team": "OKC",
       "points": 3,
       "rebounds": 7,
       "assists": 3,
@@ -431,13 +422,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 11,
-      "starter": false
+      "starter": false,
+      "minutes": 20
     },
     {
       "providerPlayerId": "83aceaae-5acd-4636-9e69-e431ce5cc3f1",
       "name": "Adou Thiero",
-      "team": null,
-      "minutesRounded": 2,
+      "team": "LAL",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -454,13 +445,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 2
     },
     {
       "providerPlayerId": "8930e786-a87a-40d1-a55c-c11805582a05",
       "name": "Jaxson Hayes",
-      "team": null,
-      "minutesRounded": 16,
+      "team": "LAL",
       "points": 3,
       "rebounds": 6,
       "assists": 1,
@@ -477,13 +468,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -12,
-      "starter": false
+      "starter": false,
+      "minutes": 16
     },
     {
       "providerPlayerId": "93b472ce-0bdc-4e44-8005-d564072a1b74",
       "name": "Marcus Smart",
-      "team": null,
-      "minutesRounded": 32,
+      "team": "LAL",
       "points": 12,
       "rebounds": 4,
       "assists": 7,
@@ -500,13 +491,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -10,
-      "starter": true
+      "starter": true,
+      "minutes": 32
     },
     {
       "providerPlayerId": "9ad04095-0182-41d0-a98b-6f85e278bc89",
       "name": "Nick Smith Jr.",
-      "team": null,
-      "minutesRounded": 2,
+      "team": "LAL",
       "points": 0,
       "rebounds": 1,
       "assists": 0,
@@ -523,13 +514,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 2
     },
     {
       "providerPlayerId": "d7d8ebb9-5687-4b84-8278-af65df86dcde",
       "name": "Cason Wallace",
-      "team": null,
-      "minutesRounded": 19,
+      "team": "OKC",
       "points": 5,
       "rebounds": 4,
       "assists": 2,
@@ -546,13 +537,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 11,
-      "starter": false
+      "starter": false,
+      "minutes": 19
     },
     {
       "providerPlayerId": "da512af3-b9e9-47b2-90db-cc8d457af926",
       "name": "Shai Gilgeous-Alexander",
-      "team": null,
-      "minutesRounded": 35,
+      "team": "OKC",
       "points": 18,
       "rebounds": 2,
       "assists": 6,
@@ -569,13 +560,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 3,
       "plusMinus": 9,
-      "starter": true
+      "starter": true,
+      "minutes": 35
     },
     {
       "providerPlayerId": "f4d39f0d-2a3b-4bae-abef-1ca5d038b0b0",
       "name": "Luguentz Dort",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "OKC",
       "points": 6,
       "rebounds": 3,
       "assists": 4,
@@ -592,12 +583,8 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 2,
-      "starter": true
+      "starter": true,
+      "minutes": 28
     }
-  ],
-  "validation": {
-    "combinedPoints": 198,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

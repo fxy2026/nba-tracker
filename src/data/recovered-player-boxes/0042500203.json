@@ -1,29 +1,20 @@
 {
-  "version": 1,
+  "gameId": "0042500203",
+  "gameDate": "2026-05-09",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500203",
-    "providerMatchId": "c0b277e5-9799-450d-bf18-d8a18d224613",
-    "season": "2025-26",
-    "gameDate": "2026-05-09",
-    "home": {
-      "tricode": "CLE",
-      "score": 116
-    },
-    "away": {
-      "tricode": "DET",
-      "score": 109
-    }
-  },
+  "providerMatchId": "c0b277e5-9799-450d-bf18-d8a18d224613",
   "retrievedAt": "2026-10-02T14:12:00.494Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260509/20260509_DETCLE.pdf",
+  "home": "CLE",
+  "away": "DET",
+  "homeScore": 116,
+  "awayScore": 109,
   "players": [
     {
       "providerPlayerId": "03fe2f8b-77e5-482e-9a7e-ffb9688af242",
       "name": "Javonte Green",
-      "team": null,
-      "minutesRounded": 11,
+      "team": "DET",
       "points": 3,
       "rebounds": 2,
       "assists": 0,
@@ -40,13 +31,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -9,
-      "starter": false
+      "starter": false,
+      "minutes": 11
     },
     {
       "providerPlayerId": "0728f232-a06f-4228-b455-cbcab75368f7",
       "name": "Dennis Schröder",
-      "team": null,
-      "minutesRounded": 22,
+      "team": "CLE",
       "points": 11,
       "rebounds": 1,
       "assists": 2,
@@ -63,13 +54,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 22
     },
     {
       "providerPlayerId": "103ff956-ab5b-40c5-a5a7-1efea04f0457",
       "name": "Donovan Mitchell",
-      "team": null,
-      "minutesRounded": 38,
+      "team": "CLE",
       "points": 35,
       "rebounds": 10,
       "assists": 4,
@@ -86,13 +77,13 @@
       "freeThrowsMade": 7,
       "freeThrowsAttempted": 8,
       "plusMinus": 7,
-      "starter": true
+      "starter": true,
+      "minutes": 38
     },
     {
       "providerPlayerId": "18b94fd5-607f-4f6e-b8d3-cd76b57d281f",
       "name": "Paul Reed",
-      "team": null,
-      "minutesRounded": 10,
+      "team": "DET",
       "points": 11,
       "rebounds": 3,
       "assists": 0,
@@ -109,13 +100,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 3,
       "plusMinus": 11,
-      "starter": false
+      "starter": false,
+      "minutes": 10
     },
     {
       "providerPlayerId": "2fc8881c-d1ce-44e9-817c-181bb5735dab",
       "name": "Ausar Thompson",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "DET",
       "points": 9,
       "rebounds": 7,
       "assists": 5,
@@ -132,13 +123,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": 12,
-      "starter": true
+      "starter": true,
+      "minutes": 29
     },
     {
       "providerPlayerId": "3eb84ae5-29ae-4514-8bd3-7eada6f4534f",
       "name": "Max Strus",
-      "team": null,
-      "minutesRounded": 26,
+      "team": "CLE",
       "points": 7,
       "rebounds": 5,
       "assists": 2,
@@ -155,13 +146,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 8,
-      "starter": false
+      "starter": false,
+      "minutes": 26
     },
     {
       "providerPlayerId": "43ce53a8-18cc-47fa-9017-cff7b0681830",
       "name": "Jalen Duren",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "DET",
       "points": 11,
       "rebounds": 4,
       "assists": 1,
@@ -178,13 +169,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -14,
-      "starter": true
+      "starter": true,
+      "minutes": 29
     },
     {
       "providerPlayerId": "5d151d49-a3bb-4095-ad40-4e4f4c09db8b",
       "name": "James Harden",
-      "team": null,
-      "minutesRounded": 40,
+      "team": "CLE",
       "points": 19,
       "rebounds": 2,
       "assists": 7,
@@ -201,13 +192,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 1,
       "plusMinus": 8,
-      "starter": true
+      "starter": true,
+      "minutes": 40
     },
     {
       "providerPlayerId": "64568b25-c7ae-4570-89c7-6642f6d4fb1f",
       "name": "Daniss Jenkins",
-      "team": null,
-      "minutesRounded": 18,
+      "team": "DET",
       "points": 2,
       "rebounds": 1,
       "assists": 3,
@@ -224,13 +215,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -28,
-      "starter": false
+      "starter": false,
+      "minutes": 18
     },
     {
       "providerPlayerId": "67606fe4-75e9-411e-b396-38328796f26e",
       "name": "Isaiah Stewart",
-      "team": null,
-      "minutesRounded": 9,
+      "team": "DET",
       "points": 4,
       "rebounds": 2,
       "assists": 0,
@@ -247,13 +238,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -4,
-      "starter": false
+      "starter": false,
+      "minutes": 9
     },
     {
       "providerPlayerId": "6a450f31-4f21-42a4-a3e9-fa03d56121fa",
       "name": "Cade Cunningham",
-      "team": null,
-      "minutesRounded": 39,
+      "team": "DET",
       "points": 27,
       "rebounds": 10,
       "assists": 10,
@@ -270,13 +261,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": 6,
-      "starter": true
+      "starter": true,
+      "minutes": 39
     },
     {
       "providerPlayerId": "6eca0af3-33f1-4f0e-b025-41b876e814f7",
       "name": "Sam Merrill",
-      "team": null,
-      "minutesRounded": 14,
+      "team": "CLE",
       "points": 7,
       "rebounds": 0,
       "assists": 0,
@@ -293,13 +284,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "minutes": 14
     },
     {
       "providerPlayerId": "74ebd3aa-3aa3-40ba-aa80-d9eb954ee054",
       "name": "Evan Mobley",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "CLE",
       "points": 13,
       "rebounds": 8,
       "assists": 4,
@@ -316,13 +307,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 10,
       "plusMinus": 9,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "7bb336cd-393e-4fed-b7f2-c0b90b540c02",
       "name": "Tobias Harris",
-      "team": null,
-      "minutesRounded": 38,
+      "team": "DET",
       "points": 21,
       "rebounds": 5,
       "assists": 0,
@@ -339,13 +330,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 5,
       "plusMinus": 3,
-      "starter": true
+      "starter": true,
+      "minutes": 38
     },
     {
       "providerPlayerId": "89398fa3-0b44-4b5e-8eaf-2874958d7866",
       "name": "Dean Wade",
-      "team": null,
-      "minutesRounded": 17,
+      "team": "CLE",
       "points": 3,
       "rebounds": 1,
       "assists": 0,
@@ -362,36 +353,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -6,
-      "starter": true
-    },
-    {
-      "providerPlayerId": "9679c0f9-c40d-4c95-90bb-ac9b0a31b226",
-      "name": "Tristan Enaruna",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": true,
+      "minutes": 17
     },
     {
       "providerPlayerId": "9ed24e95-eb1a-4f22-bc7d-4936aa598b51",
       "name": "Jarrett Allen",
-      "team": null,
-      "minutesRounded": 32,
+      "team": "CLE",
       "points": 18,
       "rebounds": 4,
       "assists": 1,
@@ -408,36 +376,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 7,
       "plusMinus": 3,
-      "starter": true
-    },
-    {
-      "providerPlayerId": "b32f72fb-6629-4818-8808-47be2a117f66",
-      "name": "Wendell Moore Jr.",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": true,
+      "minutes": 32
     },
     {
       "providerPlayerId": "b8763da2-8bd4-41dd-bced-ecd5a75dcfbf",
       "name": "Duncan Robinson",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "DET",
       "points": 15,
       "rebounds": 3,
       "assists": 4,
@@ -454,13 +399,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": 1,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "c25d0a70-1e6c-42f9-9108-ea2792352954",
       "name": "Ronald Holland II",
-      "team": null,
-      "minutesRounded": 4,
+      "team": "DET",
       "points": 0,
       "rebounds": 1,
       "assists": 0,
@@ -477,36 +422,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -3,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "c5ef0752-e3d0-4e53-816b-b78ebceb50f1",
-      "name": "Olivier Sarr",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 4
     },
     {
       "providerPlayerId": "c6ca1c28-901d-4e0b-b456-4dca87b54d70",
       "name": "Jaylon Tyson",
-      "team": null,
-      "minutesRounded": 14,
+      "team": "CLE",
       "points": 3,
       "rebounds": 2,
       "assists": 2,
@@ -523,36 +445,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 2,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "ceb678fa-fac5-4514-b343-de77b87ddc52",
-      "name": "Riley Minix",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 14
     },
     {
       "providerPlayerId": "f2db0b14-e65c-4567-bf52-5a748d96580c",
       "name": "Caris LeVert",
-      "team": null,
-      "minutesRounded": 17,
+      "team": "DET",
       "points": 6,
       "rebounds": 2,
       "assists": 0,
@@ -569,35 +468,9 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -10,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "fa25f451-8659-4da0-9c8e-fd5dcc5a3787",
-      "name": "Isaac Jones",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 17
     }
   ],
-  "validation": {
-    "combinedPoints": 225,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  "excludedProviderRecords": 5
 }

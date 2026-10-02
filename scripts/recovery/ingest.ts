@@ -1,4 +1,4 @@
-import { readSnapshotDirectory, readQuarantinedSnapshots, buildStoredSnapshotIndex, writeNewSnapshots } from './snapshot-store';
+import { readStoredArchives, buildStoredSnapshotIndex, writeNewSnapshots } from './snapshot-store';
 import { RECOVERY_DAILY_LIMIT } from "../../src/lib/recovery-run-budget";
 import { readFileSync,writeFileSync,renameSync,appendFileSync } from 'node:fs';
 import { selectRecoveryTargets } from '../../src/lib/recovery-target-selection';
@@ -19,7 +19,7 @@ async function main(){
   if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='backfill'||requested!==120))throw new Error('Invalid kickoff bounds');
   const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
-  const verified=read('src/data/recovered-player-boxes.json');
+  const {generic:prior,verified,quarantined}=readStoredArchives();
   if(mode==='verify'){
     const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
     const checked=await verifyKnownProviderSnapshots(verified,client);
@@ -32,10 +32,9 @@ async function main(){
     const summary=JSON.stringify({type:'bounded-provider-metadata',...result});
     console.log(summary);if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');return;
   }
-  const quarantined=readQuarantinedSnapshots('src/data/quarantined-player-boxes','src/data/player-box-quarantine.json');
-  const prior=readSnapshotDirectory('src/data/provider-player-boxes');const state=read('src/data/provider-recovery-state.json');
+  const state=read('src/data/provider-recovery-state.json');
   if(!prior||typeof prior!=='object'||Array.isArray(prior)||!verified||typeof verified!=='object'||Array.isArray(verified)||!state||typeof state!=='object'||Array.isArray(state))throw new Error('Invalid existing snapshots');
-  const {existing,protectedIds:verifiedIds,existingMatches}=buildStoredSnapshotIndex(prior,verified as Record<string,unknown>,quarantined);
+  const {existing,protectedIds:verifiedIds,existingMatches}=buildStoredSnapshotIndex(prior,verified,quarantined);
   const cursor='cursor'in state&&typeof state.cursor==='string'?state.cursor:null;
   const targets=selectRecoveryTargets(read('src/data/schedule-2025-26.json'),existing,cursor,20);
   if(mode!=='restore'&&!targets.length){console.log('No eligible unarchived games in the controlled target source.');return;}

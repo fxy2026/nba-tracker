@@ -1,29 +1,20 @@
 {
-  "version": 1,
+  "gameId": "0042500214",
+  "gameDate": "2026-05-10",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500214",
-    "providerMatchId": "957280ea-beee-46fa-a909-7e765204d99e",
-    "season": "2025-26",
-    "gameDate": "2026-05-10",
-    "home": {
-      "tricode": "PHI",
-      "score": 114
-    },
-    "away": {
-      "tricode": "NYK",
-      "score": 144
-    }
-  },
+  "providerMatchId": "957280ea-beee-46fa-a909-7e765204d99e",
   "retrievedAt": "2026-10-02T14:12:00.265Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260510/20260510_NYKPHI.pdf",
+  "home": "PHI",
+  "away": "NYK",
+  "homeScore": 114,
+  "awayScore": 144,
   "players": [
     {
       "providerPlayerId": "04dbe94b-efc9-4831-a3f4-80dcd1100a03",
       "name": "Landry Shamet",
-      "team": null,
-      "minutesRounded": 11,
+      "team": "NYK",
       "points": 12,
       "rebounds": 0,
       "assists": 0,
@@ -40,36 +31,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 13,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "0bc08d8b-614b-40cf-b84b-be86aa113d18",
-      "name": "Tyrese Martin",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 11
     },
     {
       "providerPlayerId": "1327400e-4254-4873-b84d-b3aafaa9834c",
       "name": "Joel Embiid",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "PHI",
       "points": 24,
       "rebounds": 5,
       "assists": 4,
@@ -86,36 +54,13 @@
       "freeThrowsMade": 6,
       "freeThrowsAttempted": 7,
       "plusMinus": -24,
-      "starter": true
-    },
-    {
-      "providerPlayerId": "2d9e2aab-4bdd-4e11-9d0e-bd258e1392ad",
-      "name": "Kevin McCullar Jr.",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": true,
+      "minutes": 28
     },
     {
       "providerPlayerId": "328d93eb-e9f7-4364-b6c8-533d046bb881",
       "name": "Jalen Brunson",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "NYK",
       "points": 22,
       "rebounds": 4,
       "assists": 6,
@@ -132,13 +77,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 31,
-      "starter": true
+      "starter": true,
+      "minutes": 28
     },
     {
       "providerPlayerId": "3404602d-39d6-4b1a-b434-10bf8d1200bc",
       "name": "Mikal Bridges",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "NYK",
       "points": 12,
       "rebounds": 4,
       "assists": 6,
@@ -155,13 +100,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 31,
-      "starter": true
+      "starter": true,
+      "minutes": 28
     },
     {
       "providerPlayerId": "37d786e2-63d9-4ba7-a1e9-e17dac05f7c0",
       "name": "Jabari Walker",
-      "team": null,
-      "minutesRounded": 7,
+      "team": "PHI",
       "points": 0,
       "rebounds": 2,
       "assists": 0,
@@ -178,13 +123,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 12,
-      "starter": false
+      "starter": false,
+      "minutes": 7
     },
     {
       "providerPlayerId": "37db336f-8a5b-4bc0-ab64-6c0da2bf1a08",
       "name": "Andre Drummond",
-      "team": null,
-      "minutesRounded": 7,
+      "team": "PHI",
       "points": 4,
       "rebounds": 4,
       "assists": 0,
@@ -201,13 +146,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -14,
-      "starter": false
+      "starter": false,
+      "minutes": 7
     },
     {
       "providerPlayerId": "38768ea3-c5b3-407e-a772-41984cf2a919",
       "name": "Justin Edwards",
-      "team": null,
-      "minutesRounded": 17,
+      "team": "PHI",
       "points": 8,
       "rebounds": 1,
       "assists": 1,
@@ -224,13 +169,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 3,
-      "starter": false
+      "starter": false,
+      "minutes": 17
     },
     {
       "providerPlayerId": "4120b056-b94d-4ee6-81bf-e5075d1f5b55",
       "name": "Pacome Dadiet",
-      "team": null,
-      "minutesRounded": 12,
+      "team": "NYK",
       "points": 5,
       "rebounds": 3,
       "assists": 1,
@@ -247,13 +192,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -9,
-      "starter": false
+      "starter": false,
+      "minutes": 12
     },
     {
       "providerPlayerId": "4fe842ef-ffa4-43ce-aa53-ac11586f621a",
       "name": "Jose Alvarado",
-      "team": null,
-      "minutesRounded": 10,
+      "team": "NYK",
       "points": 7,
       "rebounds": 3,
       "assists": 1,
@@ -270,36 +215,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 13,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "582c21be-fb3d-4f9a-ab5e-f2ac5c1922b8",
-      "name": "Dillon Jones",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 10
     },
     {
       "providerPlayerId": "59e841de-7273-4042-9229-5cbf78bfcc90",
       "name": "Tyler Kolek",
-      "team": null,
-      "minutesRounded": 13,
+      "team": "NYK",
       "points": 4,
       "rebounds": 3,
       "assists": 2,
@@ -316,13 +238,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -7,
-      "starter": false
+      "starter": false,
+      "minutes": 13
     },
     {
       "providerPlayerId": "66a7e672-8289-4887-b7fe-d1f5c6e1f843",
       "name": "Tyrese Maxey",
-      "team": null,
-      "minutesRounded": 33,
+      "team": "PHI",
       "points": 17,
       "rebounds": 2,
       "assists": 4,
@@ -339,13 +261,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 6,
       "plusMinus": -35,
-      "starter": true
+      "starter": true,
+      "minutes": 33
     },
     {
       "providerPlayerId": "6ee39187-128b-46cd-b6a3-e8f6dada827b",
       "name": "Trendon Watford",
-      "team": null,
-      "minutesRounded": 9,
+      "team": "PHI",
       "points": 2,
       "rebounds": 0,
       "assists": 1,
@@ -362,13 +284,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 14,
-      "starter": false
+      "starter": false,
+      "minutes": 9
     },
     {
       "providerPlayerId": "7983d017-89dd-44ed-b9d0-90907cf01aee",
       "name": "Ariel Hukporti",
-      "team": null,
-      "minutesRounded": 16,
+      "team": "NYK",
       "points": 5,
       "rebounds": 4,
       "assists": 1,
@@ -385,13 +307,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 6,
       "plusMinus": -2,
-      "starter": false
+      "starter": false,
+      "minutes": 16
     },
     {
       "providerPlayerId": "84db360f-4371-4b11-8409-918ad3cd65ab",
       "name": "Mohamed Diawara",
-      "team": null,
-      "minutesRounded": 9,
+      "team": "NYK",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -408,13 +330,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -14,
-      "starter": false
+      "starter": false,
+      "minutes": 9
     },
     {
       "providerPlayerId": "8d345cde-bb0d-43a0-948b-2b478a496800",
       "name": "Dalen Terry",
-      "team": null,
-      "minutesRounded": 12,
+      "team": "PHI",
       "points": 9,
       "rebounds": 1,
       "assists": 3,
@@ -431,13 +353,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 5,
       "plusMinus": 9,
-      "starter": false
+      "starter": false,
+      "minutes": 12
     },
     {
       "providerPlayerId": "904f1e20-97a9-42e2-ab05-a8dd961ce283",
       "name": "Kelly Oubre Jr.",
-      "team": null,
-      "minutesRounded": 26,
+      "team": "PHI",
       "points": 10,
       "rebounds": 4,
       "assists": 0,
@@ -454,13 +376,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 3,
       "plusMinus": -28,
-      "starter": true
+      "starter": true,
+      "minutes": 26
     },
     {
       "providerPlayerId": "9f2f9a07-3f1b-451d-92f3-d250696b89e4",
       "name": "Karl-Anthony Towns",
-      "team": null,
-      "minutesRounded": 20,
+      "team": "NYK",
       "points": 17,
       "rebounds": 4,
       "assists": 10,
@@ -477,13 +399,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": 23,
-      "starter": true
+      "starter": true,
+      "minutes": 20
     },
     {
       "providerPlayerId": "a0394287-1f28-4278-990f-cd5071c20644",
       "name": "VJ Edgecombe",
-      "team": null,
-      "minutesRounded": 30,
+      "team": "PHI",
       "points": 8,
       "rebounds": 6,
       "assists": 7,
@@ -500,36 +422,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -33,
-      "starter": true
-    },
-    {
-      "providerPlayerId": "a1077686-3b33-42aa-9435-89765447b76f",
-      "name": "Trey Jemison III",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": true,
+      "minutes": 30
     },
     {
       "providerPlayerId": "a48fc8fb-75aa-482e-849c-94ac0de28ff9",
       "name": "Johni Broome",
-      "team": null,
-      "minutesRounded": 3,
+      "team": "PHI",
       "points": 7,
       "rebounds": 1,
       "assists": 1,
@@ -546,13 +445,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "minutes": 3
     },
     {
       "providerPlayerId": "b101009c-e248-4728-85d1-1ec61899e665",
       "name": "Dominick Barlow",
-      "team": null,
-      "minutesRounded": 15,
+      "team": "PHI",
       "points": 5,
       "rebounds": 1,
       "assists": 1,
@@ -569,13 +468,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": -3,
-      "starter": false
+      "starter": false,
+      "minutes": 15
     },
     {
       "providerPlayerId": "b89cc8d2-acb7-4592-a301-ac2fb82e8af9",
       "name": "Adem Bona",
-      "team": null,
-      "minutesRounded": 10,
+      "team": "PHI",
       "points": 7,
       "rebounds": 2,
       "assists": 0,
@@ -592,13 +491,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "minutes": 10
     },
     {
       "providerPlayerId": "c112e35a-fcc0-4baa-8ff0-bf1625fe4364",
       "name": "Jeremy Sochan",
-      "team": null,
-      "minutesRounded": 9,
+      "team": "NYK",
       "points": 5,
       "rebounds": 2,
       "assists": 2,
@@ -615,13 +514,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": -14,
-      "starter": false
+      "starter": false,
+      "minutes": 9
     },
     {
       "providerPlayerId": "c66a7fe5-0e0c-4e39-92d9-c5ba2dd125a8",
       "name": "Josh Hart",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "NYK",
       "points": 17,
       "rebounds": 9,
       "assists": 1,
@@ -638,13 +537,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": 30,
-      "starter": true
+      "starter": true,
+      "minutes": 29
     },
     {
       "providerPlayerId": "c6bafc74-58f6-43b9-b9e1-7ae4e1742129",
       "name": "Miles McBride",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "NYK",
       "points": 25,
       "rebounds": 4,
       "assists": 0,
@@ -661,13 +560,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": 33,
-      "starter": true
+      "starter": true,
+      "minutes": 29
     },
     {
       "providerPlayerId": "df457607-9efc-4880-9021-45a9f01c33f2",
       "name": "Paul George",
-      "team": null,
-      "minutesRounded": 27,
+      "team": "PHI",
       "points": 7,
       "rebounds": 1,
       "assists": 2,
@@ -684,13 +583,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -35,
-      "starter": true
+      "starter": true,
+      "minutes": 27
     },
     {
       "providerPlayerId": "e1c9f7d0-f6c1-44b5-a4e5-08867a830fc2",
       "name": "Jordan Clarkson",
-      "team": null,
-      "minutesRounded": 8,
+      "team": "NYK",
       "points": 7,
       "rebounds": 1,
       "assists": 3,
@@ -707,36 +606,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": 8,
-      "starter": false
-    },
-    {
-      "providerPlayerId": "f24a360c-ec9c-4b63-92e0-9cc81365dbff",
-      "name": "MarJon Beauchamp",
-      "team": null,
-      "minutesRounded": null,
-      "points": 0,
-      "rebounds": 0,
-      "assists": 0,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 0,
-      "steals": 0,
-      "blocks": 0,
-      "turnovers": 0,
-      "fouls": 0,
-      "fieldGoalsMade": 0,
-      "fieldGoalsAttempted": 0,
-      "threePointersMade": 0,
-      "threePointersAttempted": 0,
-      "freeThrowsMade": 0,
-      "freeThrowsAttempted": 0,
-      "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 8
     },
     {
       "providerPlayerId": "f3a6b6c4-8a8f-4d57-be95-b63f7374d9ab",
       "name": "Quentin Grimes",
-      "team": null,
-      "minutesRounded": 16,
+      "team": "PHI",
       "points": 6,
       "rebounds": 0,
       "assists": 0,
@@ -753,13 +629,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -24,
-      "starter": false
+      "starter": false,
+      "minutes": 16
     },
     {
       "providerPlayerId": "ff7aaae7-a452-4561-946b-20657a0e8040",
       "name": "Mitchell Robinson",
-      "team": null,
-      "minutesRounded": 16,
+      "team": "NYK",
       "points": 6,
       "rebounds": 6,
       "assists": 0,
@@ -776,12 +652,9 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 4,
       "plusMinus": 14,
-      "starter": false
+      "starter": false,
+      "minutes": 16
     }
   ],
-  "validation": {
-    "combinedPoints": 258,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  "excludedProviderRecords": 5
 }

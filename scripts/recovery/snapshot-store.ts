@@ -1,6 +1,7 @@
 import { existsSync, lstatSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { validateRecoveredPlayerBox, type RecoveredPlayerBox, type RecoveredScheduleIdentity } from '../../src/lib/recovered-player-box';
 import { validateProviderPlayerSnapshot } from '../../src/lib/provider-player-snapshot';
 import type { ProviderBasicSnapshot } from '../../src/lib/provider-player-normalizer';
 const safeId = (id: string) => /^\d{10}$/.test(id);
@@ -31,14 +32,49 @@ export function writeNewSnapshots(directory: string, snapshots: ProviderBasicSna
   }
   for (const snapshot of snapshots) writeFileSync(join(directory,`${snapshot.game.nbaGameId}.json`),JSON.stringify(snapshot,null,2)+'\n',{flag:'wx'});
 }
-export function generateSnapshotAggregate(directory: string, output: string) {
-  const snapshots = readSnapshotDirectory(directory);
-  if (!Object.keys(snapshots).length && existsSync(output) && Object.keys(JSON.parse(readFileSync(output,'utf8'))).length) throw new Error('Empty archive cannot replace existing snapshots');
-  const text = JSON.stringify(snapshots,null,2)+'\n';
-  if (existsSync(output) && readFileSync(output,'utf8') === text) return;
-  const temporary = `${output}.${randomUUID()}.tmp`;
-  try { writeFileSync(temporary,text,{flag:'wx'}); renameSync(temporary,output); }
-  finally { if(existsSync(temporary)) unlinkSync(temporary); }
+function writeGeneratedAggregate(snapshots:Record<string,unknown>,output:string,movedIds:ReadonlySet<string>=new Set()) {
+  if(!Object.keys(snapshots).length&&existsSync(output)){
+    const previous=Object.keys(JSON.parse(readFileSync(output,'utf8')));
+    if(previous.some(id=>!movedIds.has(id)))throw new Error('Empty archive cannot replace existing snapshots');
+  }
+  const text=JSON.stringify(snapshots,null,2)+'\n';
+  if(existsSync(output)&&readFileSync(output,'utf8')===text)return;
+  const temporary=`${output}.${randomUUID()}.tmp`;
+  try{writeFileSync(temporary,text,{flag:'wx'});renameSync(temporary,output);}
+  finally{if(existsSync(temporary))unlinkSync(temporary);}
+}
+export function generateSnapshotAggregate(directory:string,output:string){
+  writeGeneratedAggregate(readSnapshotDirectory(directory),output);
+}
+const record=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
+export function readVerifiedSnapshotDirectory(directory:string,schedule:unknown):Record<string,RecoveredPlayerBox>{
+  if(!record(schedule)||!Array.isArray(schedule.dates))throw new Error('Invalid schedule reference');
+  const games=new Map<string,unknown>();
+  for(const day of schedule.dates){if(!record(day)||!Array.isArray(day.games))throw new Error('Invalid schedule day');for(const game of day.games){if(record(game)&&typeof game.gameId==='string')games.set(game.gameId,game);}}
+  const result:Record<string,RecoveredPlayerBox>={};const owners=new Set<string>();
+  for(const file of readdirSync(directory).sort()){
+    if(!/^\d{10}\.json$/.test(file)||!lstatSync(join(directory,file)).isFile())throw new Error('Invalid verified snapshot filename');
+    const id=file.slice(0,-5),game=games.get(id),raw:unknown=JSON.parse(readFileSync(join(directory,file),'utf8'));
+    if(!record(game)||typeof game.gameCode!=='string'||typeof game.gameStatus!=='number'||!record(game.homeTeam)||!record(game.awayTeam)||typeof game.homeTeam.teamTricode!=='string'||typeof game.awayTeam.teamTricode!=='string'||typeof game.homeTeam.score!=='number'||typeof game.awayTeam.score!=='number')throw new Error('Missing verified schedule identity');
+    const box=validateRecoveredPlayerBox(raw,game as unknown as RecoveredScheduleIdentity);
+    if(!box||box.gameId!==id||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(box.providerMatchId)||owners.has(box.providerMatchId.toLowerCase()))throw new Error('Invalid verified snapshot');
+    owners.add(box.providerMatchId.toLowerCase());result[id]=box;
+  }
+  return result;
+}
+export function readStoredArchives(root='src/data'){
+  const generic=readSnapshotDirectory(join(root,'provider-player-boxes'));
+  const verified=readVerifiedSnapshotDirectory(join(root,'recovered-player-boxes'),JSON.parse(readFileSync(join(root,'schedule-2025-26.json'),'utf8')));
+  const quarantined=readQuarantinedSnapshots(join(root,'quarantined-player-boxes'),join(root,'player-box-quarantine.json'));
+  buildStoredSnapshotIndex(generic,verified,quarantined);
+  return{generic,verified,quarantined};
+}
+export function generateStoredArchives(root='src/data'){
+  // Read and validate all inputs and cross-directory identities before writing
+  // either artifact. Bad data never yields a partial "successful" new build.
+  const {generic,verified,quarantined}=readStoredArchives(root);
+  writeGeneratedAggregate(generic,join(root,'provider-player-boxes.json'),new Set([...Object.keys(verified),...Object.keys(quarantined)]));
+  writeGeneratedAggregate(verified,join(root,'recovered-player-boxes.json'));
 }
 
 export function readQuarantinedSnapshots(directory:string,metadataFile:string):Record<string,ProviderBasicSnapshot> {

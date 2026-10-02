@@ -1,29 +1,20 @@
 {
-  "version": 1,
+  "gameId": "0042500233",
+  "gameDate": "2026-05-08",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500233",
-    "providerMatchId": "ab9e3cb9-0901-4fbf-af5e-2ba65ea4e6f0",
-    "season": "2025-26",
-    "gameDate": "2026-05-08",
-    "home": {
-      "tricode": "MIN",
-      "score": 108
-    },
-    "away": {
-      "tricode": "SAS",
-      "score": 115
-    }
-  },
+  "providerMatchId": "ab9e3cb9-0901-4fbf-af5e-2ba65ea4e6f0",
   "retrievedAt": "2026-10-02T14:12:00.638Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260508/20260508_SASMIN.pdf",
+  "home": "MIN",
+  "away": "SAS",
+  "homeScore": 108,
+  "awayScore": 115,
   "players": [
     {
       "providerPlayerId": "12d2069c-4109-4241-a1bc-02bf2d0ecd95",
       "name": "Harrison Barnes",
-      "team": null,
-      "minutesRounded": 6,
+      "team": "SAS",
       "points": 0,
       "rebounds": 1,
       "assists": 0,
@@ -40,13 +31,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 3,
-      "starter": false
+      "starter": false,
+      "minutes": 6
     },
     {
       "providerPlayerId": "36101013-4509-4d6d-b48b-1720c5e39645",
       "name": "Carter Bryant",
-      "team": null,
-      "minutesRounded": 8,
+      "team": "SAS",
       "points": 6,
       "rebounds": 0,
       "assists": 0,
@@ -63,13 +54,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 7,
-      "starter": false
+      "starter": false,
+      "minutes": 8
     },
     {
       "providerPlayerId": "37693a15-fe12-4cfb-b16a-23c8a100a1f6",
       "name": "Devin Vassell",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "SAS",
       "points": 13,
       "rebounds": 6,
       "assists": 3,
@@ -86,13 +77,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 10,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "490894e5-70ef-4ab5-b5af-5795d7d0e1b4",
       "name": "Julius Randle",
-      "team": null,
-      "minutesRounded": 31,
+      "team": "MIN",
       "points": 12,
       "rebounds": 6,
       "assists": 0,
@@ -109,13 +100,13 @@
       "freeThrowsMade": 6,
       "freeThrowsAttempted": 6,
       "plusMinus": -11,
-      "starter": true
+      "starter": true,
+      "minutes": 31
     },
     {
       "providerPlayerId": "50d9b207-77eb-4eed-b3b6-5533d77d1234",
       "name": "Terrence Shannon Jr.",
-      "team": null,
-      "minutesRounded": 28,
+      "team": "MIN",
       "points": 5,
       "rebounds": 2,
       "assists": 2,
@@ -132,13 +123,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 19,
-      "starter": false
+      "starter": false,
+      "minutes": 28
     },
     {
       "providerPlayerId": "64dc831e-a52d-4e00-b0c6-4721ed6cd03e",
       "name": "Dylan Harper",
-      "team": null,
-      "minutesRounded": 20,
+      "team": "SAS",
       "points": 8,
       "rebounds": 4,
       "assists": 1,
@@ -155,13 +146,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 6,
       "plusMinus": -1,
-      "starter": false
+      "starter": false,
+      "minutes": 20
     },
     {
       "providerPlayerId": "655b5094-006c-4764-9938-cfbfe6f72907",
       "name": "Luke Kornet",
-      "team": null,
-      "minutesRounded": 11,
+      "team": "SAS",
       "points": 2,
       "rebounds": 1,
       "assists": 0,
@@ -178,13 +169,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -9,
-      "starter": false
+      "starter": false,
+      "minutes": 11
     },
     {
       "providerPlayerId": "6801ea20-8f6b-4d9a-b4e6-b2f55d24bc4e",
       "name": "Rudy Gobert",
-      "team": null,
-      "minutesRounded": 31,
+      "team": "MIN",
       "points": 13,
       "rebounds": 7,
       "assists": 2,
@@ -201,13 +192,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": -6,
-      "starter": true
+      "starter": true,
+      "minutes": 31
     },
     {
       "providerPlayerId": "6fe5ddbf-6b83-4941-9845-19c185025cb6",
       "name": "De'Aaron Fox",
-      "team": null,
-      "minutesRounded": 35,
+      "team": "SAS",
       "points": 17,
       "rebounds": 3,
       "assists": 5,
@@ -224,13 +215,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 3,
       "plusMinus": -2,
-      "starter": true
+      "starter": true,
+      "minutes": 35
     },
     {
       "providerPlayerId": "8c6dc258-8c5f-4b5d-88f1-7879f77d40d6",
       "name": "Mike Conley",
-      "team": null,
-      "minutesRounded": 4,
+      "team": "MIN",
       "points": 0,
       "rebounds": 2,
       "assists": 0,
@@ -247,13 +238,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -10,
-      "starter": true
+      "starter": true,
+      "minutes": 4
     },
     {
       "providerPlayerId": "8cd3eab4-66bc-491f-8885-82e3dc0db733",
       "name": "Victor Wembanyama",
-      "team": null,
-      "minutesRounded": 37,
+      "team": "SAS",
       "points": 39,
       "rebounds": 15,
       "assists": 1,
@@ -270,13 +261,13 @@
       "freeThrowsMade": 10,
       "freeThrowsAttempted": 12,
       "plusMinus": 16,
-      "starter": true
+      "starter": true,
+      "minutes": 37
     },
     {
       "providerPlayerId": "9daa086b-6b5e-4e05-a127-b56df8d87947",
       "name": "Jaden McDaniels",
-      "team": null,
-      "minutesRounded": 40,
+      "team": "MIN",
       "points": 17,
       "rebounds": 7,
       "assists": 2,
@@ -293,13 +284,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": -15,
-      "starter": true
+      "starter": true,
+      "minutes": 40
     },
     {
       "providerPlayerId": "9fb2da0f-eca9-4655-9dbe-de119d03d56b",
       "name": "Keldon Johnson",
-      "team": null,
-      "minutesRounded": 19,
+      "team": "SAS",
       "points": 11,
       "rebounds": 2,
       "assists": 1,
@@ -316,13 +307,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": -11,
-      "starter": false
+      "starter": false,
+      "minutes": 19
     },
     {
       "providerPlayerId": "a9c2d8ed-c85c-4eef-9ad4-b657b65a21a0",
       "name": "Julian Champagnie",
-      "team": null,
-      "minutesRounded": 29,
+      "team": "SAS",
       "points": 6,
       "rebounds": 12,
       "assists": 3,
@@ -339,13 +330,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 5,
-      "starter": true
+      "starter": true,
+      "minutes": 29
     },
     {
       "providerPlayerId": "c0118efe-5c96-4938-ad6f-86d1663f02f6",
       "name": "Anthony Edwards",
-      "team": null,
-      "minutesRounded": 41,
+      "team": "MIN",
       "points": 32,
       "rebounds": 14,
       "assists": 6,
@@ -362,13 +353,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": -10,
-      "starter": true
+      "starter": true,
+      "minutes": 41
     },
     {
       "providerPlayerId": "e3f3d8f3-4656-4c2e-8c6e-fc02c0beaff3",
       "name": "Naz Reid",
-      "team": null,
-      "minutesRounded": 32,
+      "team": "MIN",
       "points": 18,
       "rebounds": 9,
       "assists": 5,
@@ -385,13 +376,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 4,
       "plusMinus": 3,
-      "starter": false
+      "starter": false,
+      "minutes": 32
     },
     {
       "providerPlayerId": "f50acc24-ca06-4858-88de-dc6240e9fd6e",
       "name": "Stephon Castle",
-      "team": null,
-      "minutesRounded": 40,
+      "team": "SAS",
       "points": 13,
       "rebounds": 4,
       "assists": 12,
@@ -408,13 +399,13 @@
       "freeThrowsMade": 6,
       "freeThrowsAttempted": 8,
       "plusMinus": 17,
-      "starter": true
+      "starter": true,
+      "minutes": 40
     },
     {
       "providerPlayerId": "f849dcd3-671c-43bf-bf39-f6fefb769387",
       "name": "Ayo Dosunmu",
-      "team": null,
-      "minutesRounded": 32,
+      "team": "MIN",
       "points": 11,
       "rebounds": 7,
       "assists": 5,
@@ -431,12 +422,8 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -5,
-      "starter": false
+      "starter": false,
+      "minutes": 32
     }
-  ],
-  "validation": {
-    "combinedPoints": 223,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

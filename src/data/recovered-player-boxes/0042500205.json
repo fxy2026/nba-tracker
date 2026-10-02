@@ -1,29 +1,20 @@
 {
-  "version": 1,
+  "gameId": "0042500205",
+  "gameDate": "2026-05-13",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500205",
-    "providerMatchId": "44622be4-5db8-4858-8f51-efc9f69a6218",
-    "season": "2025-26",
-    "gameDate": "2026-05-13",
-    "home": {
-      "tricode": "DET",
-      "score": 113
-    },
-    "away": {
-      "tricode": "CLE",
-      "score": 117
-    }
-  },
+  "providerMatchId": "44622be4-5db8-4858-8f51-efc9f69a6218",
   "retrievedAt": "2026-10-02T13:42:29.813Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260513/20260513_CLEDET.pdf",
+  "home": "DET",
+  "away": "CLE",
+  "homeScore": 113,
+  "awayScore": 117,
   "players": [
     {
       "providerPlayerId": "0728f232-a06f-4228-b455-cbcab75368f7",
       "name": "Dennis Schröder",
-      "team": null,
-      "minutesRounded": 17,
+      "team": "CLE",
       "points": 5,
       "rebounds": 0,
       "assists": 5,
@@ -40,13 +31,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 5,
       "plusMinus": 9,
-      "starter": false
+      "starter": false,
+      "minutes": 17
     },
     {
       "providerPlayerId": "103ff956-ab5b-40c5-a5a7-1efea04f0457",
       "name": "Donovan Mitchell",
-      "team": null,
-      "minutesRounded": 42,
+      "team": "CLE",
       "points": 21,
       "rebounds": 4,
       "assists": 3,
@@ -63,13 +54,13 @@
       "freeThrowsMade": 6,
       "freeThrowsAttempted": 6,
       "plusMinus": -4,
-      "starter": true
+      "starter": true,
+      "minutes": 42
     },
     {
       "providerPlayerId": "18b94fd5-607f-4f6e-b8d3-cd76b57d281f",
       "name": "Paul Reed",
-      "team": null,
-      "minutesRounded": 17,
+      "team": "DET",
       "points": 10,
       "rebounds": 8,
       "assists": 1,
@@ -86,13 +77,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "minutes": 17
     },
     {
       "providerPlayerId": "2fc8881c-d1ce-44e9-817c-181bb5735dab",
       "name": "Ausar Thompson",
-      "team": null,
-      "minutesRounded": 41,
+      "team": "DET",
       "points": 6,
       "rebounds": 7,
       "assists": 5,
@@ -109,13 +100,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 1,
-      "starter": true
+      "starter": true,
+      "minutes": 41
     },
     {
       "providerPlayerId": "3b86a645-2fc8-4ee7-b59c-256b58aafd76",
       "name": "Marcus Sasser",
-      "team": null,
-      "minutesRounded": 16,
+      "team": "DET",
       "points": 2,
       "rebounds": 2,
       "assists": 0,
@@ -132,13 +123,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 9,
-      "starter": false
+      "starter": false,
+      "minutes": 16
     },
     {
       "providerPlayerId": "3eb84ae5-29ae-4514-8bd3-7eada6f4534f",
       "name": "Max Strus",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "CLE",
       "points": 20,
       "rebounds": 8,
       "assists": 1,
@@ -155,13 +146,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 9,
-      "starter": false
+      "starter": false,
+      "minutes": 36
     },
     {
       "providerPlayerId": "43ce53a8-18cc-47fa-9017-cff7b0681830",
       "name": "Jalen Duren",
-      "team": null,
-      "minutesRounded": 25,
+      "team": "DET",
       "points": 9,
       "rebounds": 5,
       "assists": 4,
@@ -178,13 +169,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": -16,
-      "starter": true
+      "starter": true,
+      "minutes": 25
     },
     {
       "providerPlayerId": "5d151d49-a3bb-4095-ad40-4e4f4c09db8b",
       "name": "James Harden",
-      "team": null,
-      "minutesRounded": 43,
+      "team": "CLE",
       "points": 30,
       "rebounds": 8,
       "assists": 6,
@@ -201,13 +192,13 @@
       "freeThrowsMade": 11,
       "freeThrowsAttempted": 14,
       "plusMinus": 11,
-      "starter": true
+      "starter": true,
+      "minutes": 43
     },
     {
       "providerPlayerId": "64568b25-c7ae-4570-89c7-6642f6d4fb1f",
       "name": "Daniss Jenkins",
-      "team": null,
-      "minutesRounded": 41,
+      "team": "DET",
       "points": 19,
       "rebounds": 2,
       "assists": 3,
@@ -224,13 +215,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": -9,
-      "starter": true
+      "starter": true,
+      "minutes": 41
     },
     {
       "providerPlayerId": "67606fe4-75e9-411e-b396-38328796f26e",
       "name": "Isaiah Stewart",
-      "team": null,
-      "minutesRounded": 11,
+      "team": "DET",
       "points": 8,
       "rebounds": 2,
       "assists": 1,
@@ -247,13 +238,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 12,
-      "starter": false
+      "starter": false,
+      "minutes": 11
     },
     {
       "providerPlayerId": "6a450f31-4f21-42a4-a3e9-fa03d56121fa",
       "name": "Cade Cunningham",
-      "team": null,
-      "minutesRounded": 48,
+      "team": "DET",
       "points": 39,
       "rebounds": 7,
       "assists": 9,
@@ -270,13 +261,13 @@
       "freeThrowsMade": 7,
       "freeThrowsAttempted": 8,
       "plusMinus": -4,
-      "starter": true
+      "starter": true,
+      "minutes": 48
     },
     {
       "providerPlayerId": "6eca0af3-33f1-4f0e-b025-41b876e814f7",
       "name": "Sam Merrill",
-      "team": null,
-      "minutesRounded": 21,
+      "team": "CLE",
       "points": 6,
       "rebounds": 0,
       "assists": 1,
@@ -293,13 +284,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -7,
-      "starter": false
+      "starter": false,
+      "minutes": 21
     },
     {
       "providerPlayerId": "74ebd3aa-3aa3-40ba-aa80-d9eb954ee054",
       "name": "Evan Mobley",
-      "team": null,
-      "minutesRounded": 43,
+      "team": "CLE",
       "points": 19,
       "rebounds": 8,
       "assists": 8,
@@ -316,13 +307,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": -7,
-      "starter": true
+      "starter": true,
+      "minutes": 43
     },
     {
       "providerPlayerId": "7bb336cd-393e-4fed-b7f2-c0b90b540c02",
       "name": "Tobias Harris",
-      "team": null,
-      "minutesRounded": 40,
+      "team": "DET",
       "points": 13,
       "rebounds": 6,
       "assists": 3,
@@ -339,13 +330,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -2,
-      "starter": true
+      "starter": true,
+      "minutes": 40
     },
     {
       "providerPlayerId": "89398fa3-0b44-4b5e-8eaf-2874958d7866",
       "name": "Dean Wade",
-      "team": null,
-      "minutesRounded": 23,
+      "team": "CLE",
       "points": 0,
       "rebounds": 6,
       "assists": 0,
@@ -362,13 +353,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 2,
-      "starter": true
+      "starter": true,
+      "minutes": 23
     },
     {
       "providerPlayerId": "95e08edc-d0d9-453c-82d7-136dd741699b",
       "name": "Kevin Huerter",
-      "team": null,
-      "minutesRounded": 3,
+      "team": "DET",
       "points": 0,
       "rebounds": 0,
       "assists": 1,
@@ -385,13 +376,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -4,
-      "starter": false
+      "starter": false,
+      "minutes": 3
     },
     {
       "providerPlayerId": "9ed24e95-eb1a-4f22-bc7d-4936aa598b51",
       "name": "Jarrett Allen",
-      "team": null,
-      "minutesRounded": 36,
+      "team": "CLE",
       "points": 16,
       "rebounds": 10,
       "assists": 1,
@@ -408,13 +399,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 5,
       "plusMinus": 14,
-      "starter": true
+      "starter": true,
+      "minutes": 36
     },
     {
       "providerPlayerId": "c6ca1c28-901d-4e0b-b456-4dca87b54d70",
       "name": "Jaylon Tyson",
-      "team": null,
-      "minutesRounded": 3,
+      "team": "CLE",
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -431,13 +422,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -7,
-      "starter": false
+      "starter": false,
+      "minutes": 3
     },
     {
       "providerPlayerId": "f2db0b14-e65c-4567-bf52-5a748d96580c",
       "name": "Caris LeVert",
-      "team": null,
-      "minutesRounded": 24,
+      "team": "DET",
       "points": 7,
       "rebounds": 1,
       "assists": 1,
@@ -454,12 +445,8 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 3,
       "plusMinus": -7,
-      "starter": false
+      "starter": false,
+      "minutes": 24
     }
-  ],
-  "validation": {
-    "combinedPoints": 230,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

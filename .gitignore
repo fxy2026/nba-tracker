@@ -53,3 +53,6 @@ article-images/frames/
 
 # Generated from authoritative per-game snapshots; never hand-edit.
 /src/data/provider-player-boxes.json
+
+# Generated from verified per-game snapshots.
+/src/data/recovered-player-boxes.json

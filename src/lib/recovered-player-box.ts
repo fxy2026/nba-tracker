@@ -1,4 +1,12 @@
-import type { ScheduleGame } from "./api";
+// Minimal structural identity keeps this validator usable by offline build
+// tooling without importing API code or either generated archive.
+export interface RecoveredScheduleIdentity {
+  gameId: string;
+  gameStatus: number;
+  gameCode: string;
+  homeTeam: { teamTricode: string; score: number };
+  awayTeam: { teamTricode: string; score: number };
+}
 
 export interface RecoveredPlayerLine {
   name: string;
@@ -52,6 +60,7 @@ export interface RecoveredPlayerBox {
   homeScore: number;
   awayScore: number;
   players: RecoveredPlayerLine[];
+  excludedProviderRecords?: number;
 }
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 const count = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
@@ -60,7 +69,7 @@ const countFields = ["minutes", "rebounds", "assists", "fieldGoalsMade", "fieldG
 
 // This is a deliberately separate basic-stat contract, never a synthetic NBA
 // BoxScore. It cannot unlock play-by-play, shot coordinates or derived widgets.
-export function validateRecoveredPlayerBox(raw: unknown, game: ScheduleGame): RecoveredPlayerBox | null {
+export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredScheduleIdentity): RecoveredPlayerBox | null {
   if (!object(raw) || game.gameStatus !== 3 || raw.gameId !== game.gameId || raw.provider !== "BigBallsData" ||
     raw.season !== "2025-26" || typeof raw.providerMatchId !== "string" || !/^[0-9a-f-]{36}$/.test(raw.providerMatchId) ||
     typeof raw.retrievedAt !== "string" || !Number.isFinite(Date.parse(raw.retrievedAt)) ||
@@ -69,6 +78,7 @@ export function validateRecoveredPlayerBox(raw: unknown, game: ScheduleGame): Re
     raw.home !== game.homeTeam.teamTricode || raw.away !== game.awayTeam.teamTricode || raw.home === raw.away ||
     !count(raw.homeScore) || !count(raw.awayScore) || raw.homeScore !== game.homeTeam.score || raw.awayScore !== game.awayTeam.score ||
     !Array.isArray(raw.players) || raw.players.length === 0) return null;
+  if (raw.excludedProviderRecords !== undefined && !count(raw.excludedProviderRecords)) return null;
   const names = new Set<string>();
   for (const p of raw.players) {
     if (!object(p) || typeof p.name !== "string" || !p.name.trim() || names.has(p.name) ||
