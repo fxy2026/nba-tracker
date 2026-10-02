@@ -109,18 +109,8 @@ for si, gid in assign.items():
         'homeTeam': mk_team(e['home'], hs, (wht.get('wins') or 0, wht.get('losses') or 0)),
         'awayTeam': mk_team(e['away'], as_, (wat.get('wins') or 0, wat.get('losses') or 0)),
     }
-    gl = w.get('gameLeaders') or {}
-    cands = [(gl.get('homeLeaders'), wht.get('teamId'), e['home']),
-             (gl.get('awayLeaders'), wat.get('teamId'), e['away'])]
-    pls = []
-    for lead, tid, tc in cands:
-        if lead and lead.get('points'):
-            nm = (lead.get('name') or '').split(' ', 1)
-            pls.append({'personId': lead.get('personId') or 0, 'firstName': nm[0], 'lastName': nm[1] if len(nm) > 1 else '',
-                        'teamId': tid or teams[tc]['teamId'], 'teamTricode': tc, 'points': lead['points']})
-    if pls:
-        top = max(p['points'] for p in pls)
-        game['pointsLeaders'] = [p for p in pls if p['points'] == top]
+    # Do not promote potentially in-progress Wayback leaders to final leaders.
+    # Only final team totals are reconstructed/verified here.
     games_out[gid] = (e['date'], game)
     espn_map[gid] = e['espnId']
 

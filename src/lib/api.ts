@@ -6,6 +6,7 @@ import archiveSchedule from "@/data/schedule-2025-26.json";
 import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { currentSeason } from "@/lib/constants";
 import { scheduleForSeason } from "@/lib/games";
+import { isValidBoxScore } from "./box-score-validation";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
 const HEADERS: HeadersInit = {
@@ -68,7 +69,7 @@ export interface PlayerStats {
   personId: number;
   name: string;
   nameI: string;
-  position: string;
+  position?: string | null;
   jerseyNum: string;
   starter: string; // "1" or "0"
   oncourt: string;
@@ -120,7 +121,7 @@ export interface BoxScore {
   gameStatus: number;
   gameStatusText: string;
   gameTimeUTC: string;
-  arena: { arenaName: string; arenaCity: string; arenaState: string };
+  arena: { arenaName: string; arenaCity: string; arenaState?: string | null };
   homeTeam: BoxScoreTeam;
   awayTeam: BoxScoreTeam;
 }
@@ -282,7 +283,21 @@ let scheduleSeasonYear: string | null = null;
 // baked in below. Live data always wins — the archive only contributes dates
 // the live feed doesn't cover, so an unblock or the 2026-27 feed heals
 // seamlessly without dropping last season's history.
-const ARCHIVE_FEED = archiveSchedule as unknown as { seasonYear: string; dates: ScheduleDate[] };
+const reconstructedArchive = archiveSchedule as unknown as { seasonYear: string; dates: ScheduleDate[] };
+const ARCHIVE_FEED = {
+  ...reconstructedArchive,
+  dates: reconstructedArchive.dates.map((date) => ({
+    ...date,
+    games: date.games.map((game) => {
+      // Wayback leader snapshots may be in-progress even when the merged ESPN
+      // totals are final. This applies only to baked archive provenance.
+      const clean = { ...game };
+      delete clean.gameLeaders;
+      delete clean.pointsLeaders;
+      return clean;
+    }),
+  })),
+};
 
 function mergeWithArchive(live: ScheduleDate[]): ScheduleDate[] {
   const seen = new Set(live.map((d) => d.gameDate.slice(0, 10)));
@@ -471,7 +486,7 @@ export async function getCurrentSeasonSchedule(season = currentSeason()): Promis
 // route 503) falls back to the direct CDN fetch — never worse than before.
 async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
   try {
-    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
+    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim?schema=2`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const body = (await res.json()) as { seasonYear?: string; dates?: ScheduleDate[] };
     if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
@@ -556,15 +571,22 @@ export async function getBoxScore(gameId: string): Promise<BoxScore | null> {
   const existing = boxScoreInflight.get(gameId);
   if (existing) return existing;
   const p = (async (): Promise<BoxScore | null> => {
-    const res = await fetch(
-      `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
-      { headers: HEADERS, next: { revalidate: 30 }, signal: AbortSignal.timeout(8000) }
-    );
-    if (!res.ok) return cached ?? null;
-    const data = await res.json();
-    const game: BoxScore | null = data.game || null;
-    if (game) lruSet(boxScoreCache, gameId, game);
-    return game;
+    try {
+      const res = await fetch(
+        `${CDN_BASE}/liveData/boxscore/boxscore_${gameId}.json`,
+        { headers: HEADERS, next: { revalidate: 30 }, signal: AbortSignal.timeout(8000) }
+      );
+      if (!res.ok) return cached ?? null;
+      const data: unknown = await res.json();
+      const game = data && typeof data === "object" && "game" in data ? data.game : null;
+      if (!isValidBoxScore(game, gameId)) return cached ?? null;
+      lruSet(boxScoreCache, gameId, game);
+      return game;
+    } catch {
+      // Network, timeout and JSON failures must leave the schedule fallback
+      // available instead of rejecting the game page's Promise.all.
+      return cached ?? null;
+    }
   })();
   boxScoreInflight.set(gameId, p);
   try {
