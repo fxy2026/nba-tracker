@@ -205,7 +205,7 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <RecentVisitTracker
-        kind="game"
+        kind="series"
         id={id}
         label={`${team1.tricode} vs ${team2.tricode} · ${round.short}`}
       />

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Clock, User, Users, Trophy } from "lucide-react";
-import { getRecent, type RecentItem } from "@/lib/recentlyViewed";
+import { getRecent, recentItemHref, type RecentItem } from "@/lib/recentlyViewed";
 import { useLocale } from "@/components/LocaleProvider";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import TeamLogo from "@/components/TeamLogo";
@@ -35,11 +35,8 @@ export default function RecentlyViewed() {
       </div>
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
         {items.map((it) => {
-          const href = it.kind === "player"
-            ? `/player/${it.id}`
-            : it.kind === "team"
-            ? `/team/${it.id}`
-            : `/game/${it.id}`;
+          const href = recentItemHref(it);
+          if (!href) return null;
           const KindIcon = it.kind === "player" ? User : it.kind === "team" ? Users : Trophy;
 
           return (
@@ -61,7 +58,7 @@ export default function RecentlyViewed() {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-mono uppercase tracking-[0.1em] text-text-secondary/60">
-                  {it.kind === "player" ? (isZh ? "球员" : "Player") : it.kind === "team" ? (isZh ? "球队" : "Team") : (isZh ? "比赛" : "Game")}
+                  {it.kind === "player" ? (isZh ? "球员" : "Player") : it.kind === "team" ? (isZh ? "球队" : "Team")  : it.kind === "series" ? (isZh ? "系列赛" : "Series") : (isZh ? "比赛" : "Game")}
                 </p>
                 <p className="text-xs font-medium text-text-primary group-hover:text-accent transition-colors truncate">{it.label}</p>
               </div>

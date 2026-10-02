@@ -1,0 +1,11 @@
+import { renderToStaticMarkup } from 'react-dom/server';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+const state=vi.hoisted(()=>({items:[] as unknown[],locale:'en'}));
+vi.mock('react',async original=>({...await original<typeof import('react')>(),useState:()=>[state.items,vi.fn()],useEffect:()=>{}}));
+vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:state.locale})}));
+import RecentlyViewed from '@/components/RecentlyViewed';
+beforeEach(()=>{state.locale='en';state.items=[{kind:'game',id:'004250040',label:'Finals',ts:1},{kind:'game',id:'0042500405',label:'Game5',ts:2},{kind:'series',id:'004250011',label:'Round1',ts:3}];});
+it.each(['en','zh'])('recent links route actual and legacy series safely in %s',locale=>{state.locale=locale;const html=renderToStaticMarkup(RecentlyViewed());expect(html).toContain('href="/series/004250040"');expect(html).toContain('href="/series/004250011"');expect(html).toContain('href="/game/0042500405"');expect(html).not.toContain('href="/game/004250040"');expect(html).toContain(locale==='zh'?'系列赛':'Series');});
+it('series detail records the series kind',()=>{const source=readFileSync('src/app/series/[id]/page.tsx','utf8');expect(source).toMatch(/<RecentVisitTracker\s+kind="series"/);});
+it('unknown persisted shapes cannot render unsafe hrefs',()=>{state.items=[{kind:'bad',id:'../../evil',label:'Bad',ts:1}];expect(renderToStaticMarkup(RecentlyViewed())).not.toContain('href=');});
