@@ -1,7 +1,11 @@
+import { currentSeason } from "@/lib/constants";
+import { rookieCohort } from "@/lib/rookie-cohort";
+import { playerIndexLabel } from "@/lib/player-index-provenance";
+import { hasCompleteAverages } from "@/lib/player-profile-stats";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, GraduationCap, Users, Globe, TrendingUp } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
@@ -31,28 +35,6 @@ interface RookieRow {
 
 function scoreRookie(p: { pts: number; reb: number; ast: number }) {
   return p.pts + p.reb * 1.2 + p.ast * 1.5;
-}
-
-// Identify the most recent draft class with non-zero stats (so the page
-// actually has data to show). NBA playerIndex's pts/reb/ast fields trail
-// by a season — currently-playing rookies often have 0s mid-year, so we
-// surface the latest draft class that has populated numbers.
-function classify(players: { draftYear: number | null; pts: number }[]): {
-  rookieYear: number | null;
-  sophomoreYear: number | null;
-  seasonLabel: string;
-} {
-  // Most recent draft year that has at least one player with pts > 0
-  const yearsWithStats = new Set(
-    players.filter((p) => p.draftYear && p.pts > 0).map((p) => p.draftYear as number)
-  );
-  if (yearsWithStats.size === 0) {
-    return { rookieYear: null, sophomoreYear: null, seasonLabel: "" };
-  }
-  const maxYear = Math.max(...yearsWithStats);
-  // Convert draft year to season label: 2024 draft → 2024-25 season
-  const seasonLabel = `${maxYear}-${String((maxYear + 1) % 100).padStart(2, "0")}`;
-  return { rookieYear: maxYear, sophomoreYear: maxYear - 1, seasonLabel };
 }
 
 function Card({ p, rank }: { p: RookieRow; rank: number }) {
@@ -108,21 +90,25 @@ function Card({ p, rank }: { p: RookieRow; rank: number }) {
 export default async function RookieWatchPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot();
+  const players = snapshot.players;
+  const seasonLabel = currentSeason();
+  const cohort = rookieCohort(players, snapshot.provenance, seasonLabel);
+  if (!cohort.available) return (
+    <div className="max-w-4xl mx-auto px-4 py-6">
+      <PageHeader eyebrow={seasonLabel} icon={Sparkles} title={isZh ? "新秀榜" : "Rookie Watch"} />
+      <p className="text-xs text-text-secondary mb-4">{playerIndexLabel(snapshot.provenance, locale)}</p>
+      <EmptyState icon={Sparkles} title={isZh ? "本赛季新秀名单暂不可用" : "Current-season rookie cohort unavailable"}
+        description={isZh ? "当前来源不足以核实本赛季一年级球员，不使用历史选秀届替代排名。" : "The available source cannot establish this season's first-year cohort. Older draft classes are not substituted."} />
+    </div>
+  );
 
-  if (players.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={Sparkles} title={isZh ? "新秀榜" : "Rookie Watch"} />
-        <EmptyState icon={Sparkles} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
-      </div>
-    );
-  }
-
-  const { rookieYear, sophomoreYear, seasonLabel } = classify(players);
+  const rookieIds = new Set(cohort.rookieIds);
+  const sophomoreIds = new Set(cohort.sophomoreIds);
 
   const rookies: RookieRow[] = players
-    .filter((p) => p.draftYear === rookieYear && p.pts > 0)
+    .filter(hasCompleteAverages)
+    .filter((p) => rookieIds.has(p.personId))
     .map((p) => ({
       personId: p.personId,
       firstName: p.firstName,
@@ -142,7 +128,8 @@ export default async function RookieWatchPage() {
     .slice(0, 25);
 
   const sophomores: RookieRow[] = players
-    .filter((p) => p.draftYear === sophomoreYear && p.pts > 0)
+    .filter(hasCompleteAverages)
+    .filter((p) => sophomoreIds.has(p.personId))
     .map((p) => ({
       personId: p.personId,
       firstName: p.firstName,
@@ -169,10 +156,12 @@ export default async function RookieWatchPage() {
         title={isZh ? "新秀榜" : "Rookie Watch"}
         subtitle={
           isZh
-            ? `${rookieYear ? `${rookieYear} 届选秀 (${seasonLabel} 赛季) ` : ""}综合分数排名 · PPG + RPG×1.2 + APG×1.5 · 数据为该球员近期赛季均值`
-            : `${rookieYear ? `${rookieYear} draft class (${seasonLabel} season) ` : ""}ranked by composite score · PPG + RPG×1.2 + APG×1.5 · stats are most recent season averages`
+            ? `${seasonLabel} 赛季索引一年级球员 · 启发式综合分数：PPG + RPG×1.2 + APG×1.5`
+            : `${seasonLabel} first-year index cohort · heuristic composite: PPG + RPG×1.2 + APG×1.5`
         }
       />
+
+      <p className="text-xs text-text-secondary mb-4">{playerIndexLabel(snapshot.provenance, locale)}</p>
 
       {rookies.length > 0 ? (
         <section className="mb-10">
@@ -192,7 +181,7 @@ export default async function RookieWatchPage() {
         <EmptyState
           icon={Sparkles}
           title={isZh ? "暂无新秀数据" : "No rookies tracked yet"}
-          description={isZh ? "球员索引尚未提供本赛季的一年级球员。" : "The player index has not surfaced first-year players for this season."}
+          description={isZh ? "已识别的一年级球员暂无完整场均数据。" : "The identified first-year players do not yet have complete averages."}
         />
       )}
 
@@ -215,18 +204,7 @@ export default async function RookieWatchPage() {
       <div className="glass-tile p-4 mt-6">
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          {isZh ? (
-            <>新秀按 <span className="font-mono">draftYear</span> 识别（最新选秀届有数据者）。二年级生是上一届选秀。
-              <br />
-              ⚠️ NBA 球员索引的场均数据滞后一个赛季 — 即“现役 2025-26 新秀”如果赛季尚未结束，其数据可能为 0 或缺失，因此榜单展示的是最近有数据的选秀届（通常是上赛季新秀）。综合得分加权篮板与助攻，强调全能表现。</>
-          ) : (
-            <>Rookies identified by <span className="font-mono">draftYear</span> (most recent class with stats). Sophomores
-              are the prior year.
-              <br />
-              ⚠️ NBA&apos;s player index reports last-completed-season averages, so an in-season rookie class may show as 0
-              until the season finalizes. This page surfaces the most recent class that has populated numbers. Composite
-              score weights rebounds and assists for well-rounded play.</>
-          )}
+          {isZh ? "仅使用明确标注本赛季且未过期的 NBA 球员索引。按索引首年识别一年级与二年级球员，不以选秀年份替代；仅排名三项场均数据完整者。这是启发式展示，并非 NBA 官方新秀资格或奖项排名。" : "Uses a fresh NBA index explicitly declaring the current season. First NBA year identifies first- and second-year cohorts, not draft year. Rankings require all three averages. This is a heuristic display, not official rookie eligibility or award ranking."}
         </p>
       </div>
 

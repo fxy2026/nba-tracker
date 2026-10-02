@@ -4,15 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy, Star, Shield, Sparkles, TrendingUp, Award, Crown, Target, Activity } from "lucide-react";
+import { rookieCohort, filterRookieRows } from "@/lib/rookie-cohort";
+import { playerIndexLabel } from "@/lib/player-index-provenance";
 import { CURRENT_SEASON } from "@/lib/constants";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
-
-// Derive season start year from CURRENT_SEASON e.g. "2025-26" → 2025
-const CURRENT_SEASON_START_YEAR = parseInt(CURRENT_SEASON.split("-")[0], 10);
 
 export interface MvpSeason {
   id: string;
@@ -121,7 +120,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
-  const [rookieIndex, setRookieIndex] = useState<PlayerIndexRow[]>([]);
+  const [rookieIndex, setRookieIndex] = useState<{ players: PlayerIndexRow[]; provenance: unknown } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeRace, setActiveRace] = useState<RaceKey>("mvp");
 
@@ -163,7 +162,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
     (async () => {
       try {
         const res = await fetch("/api/player-index", { signal: controller.signal });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error("Index unavailable");
         const json = await res.json();
         const players = Array.isArray(json.data) ? json.data : [];
         const trimmed: PlayerIndexRow[] = players.map((p: PlayerIndexRow) => ({
@@ -174,31 +173,13 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
           fromYear: p.fromYear,
           toYear: p.toYear,
         }));
-        if (!controller.signal.aborted) setRookieIndex(trimmed);
-      } catch { /* ignore — ROY tab will fall back to unfiltered */ }
+        if (!controller.signal.aborted) setRookieIndex({ players: trimmed, provenance: json.provenance });
+      } catch { if (!controller.signal.aborted) setRookieIndex({ players: [], provenance: null }); }
     })();
     return () => controller.abort();
   }, []);
 
-  // Build rookie eligibility lookup once. A player counts as a current-season rookie
-  // if their draftYear matches CURRENT_SEASON_START_YEAR, OR if their NBA tenure
-  // (fromYear..toYear) is just this season — both signals from the player index.
-  const { rookieIds, rookieNameSet } = useMemo(() => {
-    const ids = new Set<number>();
-    const names = new Set<string>();
-    for (const p of rookieIndex) {
-      const fy = parseInt(p.fromYear, 10);
-      const ty = parseInt(p.toYear, 10);
-      const isFirstYear = !Number.isNaN(fy) && !Number.isNaN(ty)
-        && fy === CURRENT_SEASON_START_YEAR && ty === CURRENT_SEASON_START_YEAR;
-      const isDraftClass = p.draftYear === CURRENT_SEASON_START_YEAR;
-      if (isFirstYear || isDraftClass) {
-        ids.add(p.personId);
-        names.add(`${p.firstName} ${p.lastName}`.trim().toLowerCase());
-      }
-    }
-    return { rookieIds: ids, rookieNameSet: names };
-  }, [rookieIndex]);
+  const cohort = useMemo(() => rookieCohort(rookieIndex?.players ?? [], rookieIndex?.provenance, CURRENT_SEASON), [rookieIndex]);
 
   // Compute scored leaders for active race
   const ranked = useMemo(() => {
@@ -208,19 +189,11 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
       // Sixth Man: heuristic — high PTS but lower minutes (suggesting bench role)
       pool = pool.filter((p) => p.MIN < 28);
     }
-    if (activeRace === "roy" && (rookieIds.size > 0 || rookieNameSet.size > 0)) {
-      // Rookie filter: keep only players whose personId or name matches the rookie set.
-      // leagueleaders rows use PLAYER_ID and PLAYER (full name).
-      pool = pool.filter((p) => {
-        if (rookieIds.has(p.PLAYER_ID)) return true;
-        if (p.PLAYER && rookieNameSet.has(p.PLAYER.trim().toLowerCase())) return true;
-        return false;
-      });
-    }
+    if (activeRace === "roy") pool = filterRookieRows(pool, cohort);
     const scored = pool.map((p) => ({ ...p, _score: scoreForRace(p, activeRace) }));
     scored.sort((a, b) => b._score - a._score);
     return scored.slice(0, 10);
-  }, [allPlayers, activeRace, rookieIds, rookieNameSet]);
+  }, [allPlayers, activeRace, cohort]);
 
   const topScore = ranked[0]?._score || 1;
   const races = useMemo(() => buildRaces(isZh), [isZh]);
@@ -254,6 +227,8 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         ))}
       </div>
 
+      {activeRace === "roy" && cohort.provenance && <p className="text-xs text-text-secondary mb-3">{playerIndexLabel(cohort.provenance, locale)} · {isZh ? "按索引首年识别；仅为启发式排名，并非官方资格认定" : "First-year index cohort; heuristic ranking, not official eligibility"}</p>}
+
       {/* Active race header */}
       <div className="glass-tile p-5 mb-6 relative overflow-hidden">
         <div
@@ -275,7 +250,13 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         </div>
       </div>
 
-      {loading ? (
+      {activeRace === "roy" && rookieIndex !== null && !cohort.available ? (
+        <EmptyState icon={Sparkles}
+          title={isZh ? "本赛季新秀名单暂不可用" : "Current-season rookie cohort unavailable"}
+          description={isZh
+            ? `无法核实本赛季一年级球员名单，暂不生成 ROY 排名。索引赛季：${cohort.sourceSeason ?? "未注明"}。`
+            : `ROY ranking is unavailable without a supported current-season first-year cohort. Index season: ${cohort.sourceSeason ?? "unspecified"}.`} />
+      ) : loading || (activeRace === "roy" && rookieIndex === null) ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="glass-tile h-16 skeleton-shimmer" />
@@ -285,7 +266,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         <EmptyState
           icon={Award}
           title={isZh ? "暂无符合条件的球员" : "No qualifying players yet"}
-          description={isZh ? "至少需要出场 20 场比赛才具备奖项资格。请稍后再试。" : "Need at least 20 games played for awards eligibility. Try again later in the season."}
+          description={isZh ? "本站展示至少出场 20 场且有完整数据的球员；这不是 NBA 官方奖项资格规则。" : "This view requires at least 20 games and complete data; this is a site sample rule, not official NBA award eligibility."}
         />
       ) : (
         <div className="space-y-2">
