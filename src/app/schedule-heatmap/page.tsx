@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, Calendar, ListOrdered, Repeat } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -33,7 +33,7 @@ function parseUSDate(s: string): { y: number; m: number; d: number } | null {
 }
 
 async function build() {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const map = new Map<string, DayCell>();
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;

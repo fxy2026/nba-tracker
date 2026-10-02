@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { LineChart, TrendingUp, BarChart3, Trophy, Activity } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { computeTrajectories, maxGamesPlayed } from "@/lib/team-trajectory";
 import PageHeader from "@/components/PageHeader";
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TeamTrajectoryPage() {
   const isZh = (await getLocale()) === "zh";
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const trajectories = computeTrajectories(schedule);
   const maxGames = maxGamesPlayed(trajectories);
 
@@ -69,8 +69,8 @@ export default async function TeamTrajectoryPage() {
           title={isZh ? "暂无数据" : "No data yet"}
           description={
             isZh
-              ? "等常规赛打响、有已结束的比赛后，轨迹图就会出现在这里。"
-              : "Once the regular season tips off and finished games are recorded, the trajectory chart appears here."
+              ? "轨迹图需要本赛季已完成常规赛的记录，目前暂无可用数据。"
+              : "The trajectory chart needs recorded current-season regular-season finals; none are currently available."
           }
         />
       )}

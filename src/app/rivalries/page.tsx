@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Swords, GitCompareArrows, Trophy, Repeat, TrendingUp, ListOrdered } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -34,7 +34,7 @@ interface SeriesData {
 }
 
 async function compute(): Promise<SeriesData[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   const map = new Map<string, SeriesData>();
 
   for (const gd of schedule) {
@@ -143,7 +143,7 @@ export default async function RivalriesPage() {
         <EmptyState
           icon={Swords}
           title={isZh ? "暂无数据" : "No data"}
-          description={isZh ? "球队在常规赛交手后，系列数据会显示在这里。" : "Series data populates once teams have played each other in the regular season."}
+          description={isZh ? "暂无本赛季已完成常规赛交锋的数据。" : "No completed regular-season matchup data is available for the current season."}
         />
       </div>
     );

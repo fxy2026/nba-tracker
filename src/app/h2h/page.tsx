@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getFullSchedule } from "@/lib/api";
+import { getCurrentSeasonSchedule } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { isPreseason } from "@/lib/games";
 import TeamLogo from "@/components/TeamLogo";
@@ -39,7 +39,7 @@ export default async function H2HPage({ searchParams }: PageProps) {
   let t1Wins = 0, t2Wins = 0;
 
   if (t1 && t2 && t1 !== t2 && TEAM_META[t1] && TEAM_META[t2]) {
-    const schedule = await getFullSchedule().catch(() => []);
+    const schedule = await getCurrentSeasonSchedule().catch(() => []);
     for (const gd of schedule) {
       for (const g of gd.games) {
         if (g.gameStatus !== 3) continue;
@@ -99,13 +99,13 @@ export default async function H2HPage({ searchParams }: PageProps) {
               <div className="flex flex-col items-center gap-2">
                 <TeamLogo teamId={TEAM_META[t1].teamId} tricode={t1} size={48} />
                 <span className="font-semibold text-sm">{TEAM_META[t1].city} {TEAM_META[t1].name}</span>
-                <span className={`text-4xl font-light font-mono tabular-nums ${t1Wins >= t2Wins ? "text-accent-amber" : "text-text-secondary"}`}>{t1Wins}</span>
+                <span className={`text-4xl font-light font-mono tabular-nums ${t1Wins >= t2Wins ? "text-accent-amber" : "text-text-secondary"}`}>{games.length ? t1Wins : "—"}</span>
               </div>
               <div className="text-text-secondary text-xl">-</div>
               <div className="flex flex-col items-center gap-2">
                 <TeamLogo teamId={TEAM_META[t2].teamId} tricode={t2} size={48} />
                 <span className="font-semibold text-sm">{TEAM_META[t2].city} {TEAM_META[t2].name}</span>
-                <span className={`text-4xl font-light font-mono tabular-nums ${t2Wins >= t1Wins ? "text-accent-amber" : "text-text-secondary"}`}>{t2Wins}</span>
+                <span className={`text-4xl font-light font-mono tabular-nums ${t2Wins >= t1Wins ? "text-accent-amber" : "text-text-secondary"}`}>{games.length ? t2Wins : "—"}</span>
               </div>
             </div>
             {/* Season record context */}

@@ -309,7 +309,7 @@ const zh: Translations = {
     gamesThisSeason: "场本赛季交锋",
     dominates: "占据优势",
     seriesTied: "系列赛平局",
-    noGames: "本赛季两队之间没有已完成的比赛",
+    noGames: "暂无本赛季两队已完成交锋的数据",
     avgScore: "场均得分：",
     gamesPlayed: "场比赛",
     blowoutWins: "大比分获胜 (>15分)",

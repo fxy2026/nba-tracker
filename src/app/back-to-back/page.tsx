@@ -1,8 +1,9 @@
+import { offsetCalendarDate } from "@/lib/calendar-date";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Repeat, Activity, Zap, Calendar } from "lucide-react";
-import { getFullSchedule, getScheduleAge, formatDate } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge, formatDate } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPreseason } from "@/lib/games";
@@ -31,17 +32,12 @@ function parseUS(s: string): string | null {
   const date = s.split(" ")[0];
   const parts = date.split("/");
   if (parts.length !== 3) return null;
-  return `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
-}
-
-function addDays(iso: string, days: number): string {
-  const d = new Date(iso + "T00:00:00");
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  const iso = `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
+  try { return offsetCalendarDate(iso, 0); } catch { return null; }
 }
 
 async function compute() {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   type Apr = { date: string; gameId: string; status: number; teamId: number; won: boolean | null };
   const teamApps = new Map<string, Apr[]>();
 
@@ -68,7 +64,7 @@ async function compute() {
     for (let i = 0; i < apps.length - 1; i++) {
       const a = apps[i];
       const b = apps[i + 1];
-      if (b.date !== addDays(a.date, 1)) continue;
+      if (b.date !== offsetCalendarDate(a.date, 1)) continue;
       instances.push({
         teamTricode: tricode,
         teamId: a.teamId,
@@ -129,7 +125,7 @@ export default async function BackToBackPage() {
         <EmptyState
           icon={Repeat}
           title={isZh ? "未检测到背靠背" : "No B2Bs detected"}
-          description={isZh ? "赛程中未发现连续两天的比赛。" : "No consecutive-day game pairs were found in the schedule."}
+          description={isZh ? "现有本赛季赛程数据中未找到连续两天的比赛。" : "No consecutive-day game pairs were found in the available current-season schedule."}
         />
       </div>
     );

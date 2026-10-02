@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Flame, Snowflake, TrendingDown, TrendingUp, Crown, Target, Layers } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff } from "@/lib/games";
@@ -28,7 +28,7 @@ interface TeamStreak {
 }
 
 async function computeStreaks(): Promise<TeamStreak[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
 
   // Collect chronological finished games per team (most recent first)
   type GameOutcome = { date: string; won: boolean; ptsFor: number; ptsAgainst: number; teamId: number };
@@ -206,7 +206,7 @@ export default async function StreaksPage() {
         <EmptyState
           icon={Flame}
           title={isZh ? "暂无连胜数据" : "No streak data yet"}
-          description={isZh ? "连胜分析需要本赛季已结束的若干场比赛。" : "Streak analysis needs at least a handful of finished games for the season."}
+          description={isZh ? "暂无可用于连胜分析的本赛季已完成比赛数据。" : "No completed current-season game data is available for streak analysis."}
         />
       </div>
     );

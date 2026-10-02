@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Activity, Crown, Repeat, Users } from "lucide-react";
-import { getFullSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular } from "@/lib/games";
@@ -30,7 +30,7 @@ interface MomentumRec {
 }
 
 async function compute(): Promise<MomentumRec[]> {
-  const schedule = await getFullSchedule().catch(() => []);
+  const schedule = await getCurrentSeasonSchedule().catch(() => []);
   type Game = { date: string; won: boolean; teamId: number };
   const map = new Map<string, Game[]>();
   for (const gd of schedule) {
@@ -124,10 +124,11 @@ export default async function MomentumPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
   const all = await compute();
+  const qualified = all.filter((r) => r.last5W + r.last5L >= 3 && r.prior10W + r.prior10L >= 3);
 
   const breadcrumbs = <Breadcrumbs items={[{ label: isZh ? "势头" : "Momentum" }]} />;
 
-  if (all.length === 0) {
+  if (qualified.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
         {breadcrumbs}
@@ -135,13 +136,12 @@ export default async function MomentumPage() {
         <EmptyState
           icon={TrendingUp}
           title={isZh ? "暂无数据" : "No data"}
-          description={isZh ? "球队打过足够比赛后，势头数据会显示。" : "Momentum will populate once teams have played enough games."}
+          description={isZh ? "需要本赛季至少 8 场已记录的常规赛，才能比较最近 5 场和更早的比赛。" : "At least 8 recorded regular-season games this season are needed to compare the last 5 with earlier games."}
         />
       </div>
     );
   }
 
-  const qualified = all.filter((r) => r.last5W + r.last5L >= 3 && r.prior10W + r.prior10L >= 3);
   const heating = [...qualified].sort((a, b) => b.delta - a.delta).slice(0, 10);
   const cooling = [...qualified].sort((a, b) => a.delta - b.delta).slice(0, 10);
 

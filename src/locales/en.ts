@@ -309,7 +309,7 @@ const en: Translations = {
     gamesThisSeason: "games this season",
     dominates: "dominates",
     seriesTied: "series tied",
-    noGames: "No completed games between these teams this season",
+    noGames: "No completed matchup data is available for these teams this season",
     avgScore: "Avg Score: ",
     gamesPlayed: "games played",
     blowoutWins: "Blowout Wins (>15 pts)",
