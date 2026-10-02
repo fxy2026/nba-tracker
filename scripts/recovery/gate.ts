@@ -35,7 +35,7 @@ async function main() {
   // the completed read, without allowing a UTC-day rollover mid-admission.
   const allowance=calculateRecoveryRunBudget({...evidence.input,now:finishedAt});
   if(!allowance.allowed){skip();return;}
-  const maxRequests=Math.min(allowance.maxRequests-connection.reservedRequests,process.env.GITHUB_EVENT_NAME==='push'?60:RECOVERY_DAILY_LIMIT);
+  const maxRequests=Math.min(allowance.maxRequests-connection.reservedRequests,process.env.GITHUB_EVENT_NAME==='push'?120:RECOVERY_DAILY_LIMIT);
   if(maxRequests<1){skip();return;}
   // This file contains only public bounds, never tokens or provider responses.
   appendFileSync(output,`allowed=true\nmax_requests=${maxRequests}\nexpires_at=${allowance.expiresAt}\n`);
