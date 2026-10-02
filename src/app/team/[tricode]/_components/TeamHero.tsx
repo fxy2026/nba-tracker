@@ -1,3 +1,4 @@
+import { hasPlayedRecord } from "@/lib/team-rank";
 import Link from "next/link";
 import TeamLogo from "@/components/TeamLogo";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -8,6 +9,7 @@ import type { Translations } from "@/locales";
 
 interface TeamHeroProps {
   team: TeamMeta;
+  season: string;
   t: Translations;
   // Record + KPI
   wins: number;
@@ -42,13 +44,15 @@ interface TeamHeroProps {
  * scope — splitting them would force prop drilling of the color twice.
  */
 export default function TeamHero({
-  team, t,
+  team, t, season,
   wins, losses, winPct, w10, l10,
   playoffWins, playoffLosses, rosterCount, confRank,
   gamesPlayed, ppg, oppPpg, homeWins, homeLosses, awayWins, awayLosses,
   streakType, streakDisplay, longestWinStreak, longestLossStreak,
   updatedAt,
 }: TeamHeroProps) {
+  const hasRecord = hasPlayedRecord({ w: wins, l: losses });
+  const hasRecent = hasPlayedRecord({ w: w10, l: l10 });
   return (
     <div
       className="glass-tile glass-tile-featured mt-6 p-6 sm:p-8 relative overflow-hidden"
@@ -79,7 +83,7 @@ export default function TeamHero({
             <span className="block text-3xl sm:text-5xl font-bold text-text-primary">{team.name}</span>
           </h1>
           <div className="flex items-center gap-3 mt-3 flex-wrap">
-            {confRank > 0 && (
+            {hasRecord && confRank > 0 && (
               <span className={`text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded-full font-bold ${
                 confRank <= 6 ? "bg-accent-amber/15 text-accent-amber border border-accent-amber/30" :
                 confRank <= 10 ? "bg-accent/15 text-accent border border-accent/30" :
@@ -94,19 +98,21 @@ export default function TeamHero({
             <FavoriteButton type="team" id={team.tricode} />
             {/* Share embeds the canonical URL inside the text body so the link
                 travels with the share/clipboard payload. */}
-            <ShareButton text={`${team.city} ${team.name} ${wins}-${losses} | NBA Tracker\nhttps://nba.xpy.me/team/${team.tricode}`} />
+            <ShareButton text={`${team.city} ${team.name} · ${season} · ${hasRecord ? `${wins}-${losses}` : t.teamPage.noRegularData} | NBA Tracker\nhttps://nba.xpy.me/team/${team.tricode}`} />
           </div>
         </div>
       </div>
 
+      <p className="relative mt-4 text-xs text-text-secondary">{season}{!hasRecord ? ` · ${t.teamPage.noRegularData}` : ""}</p>
+
       {/* KPI strip — hairline cells, oversized numerals */}
       <div className="relative grid grid-cols-2 sm:grid-cols-5 mt-8 border-t border-border">
         <TeamKpiCell label="Record" value={
-          <><span className="text-success">{wins}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{losses}</span></>
+          hasRecord ? <><span className="text-success">{wins}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{losses}</span></> : "—"
         } />
-        <TeamKpiCell label="Win %" value={<span className="text-accent-amber">{winPct}%</span>} />
+        <TeamKpiCell label="Win %" value={<span className="text-accent-amber">{hasRecord ? `${winPct}%` : "—"}</span>} />
         <TeamKpiCell label={t.teamPage.last10} value={
-          <><span className="text-success">{w10}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{l10}</span></>
+          hasRecent ? <><span className="text-success">{w10}</span><span className="text-text-secondary/40 mx-1">–</span><span className="text-danger">{l10}</span></> : "—"
         } />
         {(playoffWins + playoffLosses > 0) ? (
           <TeamKpiCell label={t.common.playoffs} value={

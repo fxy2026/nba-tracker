@@ -638,6 +638,7 @@ const zh: Translations = {
   },
 
   teamPage: {
+    noRegularData: "暂无已完成常规赛数据",
     backToStandings: "返回排名",
     record: "战绩",
     winPct: "胜率",

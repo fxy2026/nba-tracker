@@ -638,6 +638,7 @@ const en: Translations = {
   },
 
   teamPage: {
+    noRegularData: "No completed regular-season data available",
     backToStandings: "Back to standings",
     record: "Record",
     winPct: "Win%",

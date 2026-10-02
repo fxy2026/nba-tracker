@@ -1,0 +1,11 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { expect, it, vi } from "vitest";
+import TeamHero from "@/app/team/[tricode]/_components/TeamHero";
+import { TEAM_META } from "./teams";
+import { getTranslations } from "@/locales";
+vi.mock("@/components/ShareButton",()=>({default:({text}:{text:string})=>createElement("span",{"data-share-text":text})}));
+const props={team:TEAM_META.BOS,season:"2026-27",wins:0,losses:0,winPct:"0.0",w10:0,l10:0,playoffWins:0,playoffLosses:0,rosterCount:16,confRank:2,gamesPlayed:0,ppg:"0.0",oppPpg:"0.0",homeWins:0,homeLosses:0,awayWins:0,awayLosses:0,streakType:"",streakDisplay:"",longestWinStreak:0,longestLossStreak:0,updatedAt:null};
+it.each(["en","zh"] as const)("missing data has no rank, fabricated zero percent or share record in %s",locale=>{const html=renderToStaticMarkup(createElement(TeamHero,{...props,t:getTranslations(locale)}));expect(html).toContain("2026-27");expect(html).toContain(getTranslations(locale).teamPage.noRegularData);expect(html).not.toContain("#2");expect(html).not.toContain("0.0%");expect(html).not.toContain("0-0");expect(html).toContain("—");});
+it("valid record including zero wins retains the genuine zero percentage",()=>{const html=renderToStaticMarkup(createElement(TeamHero,{...props,t:getTranslations("en"),losses:1,l10:1,confRank:2}));expect(html).toContain("#2");expect(html).toContain("0.0%");expect(html).toContain("0-1");expect(html).not.toContain("No completed regular-season");});
+it("normal played data preserves rank and win percentage",()=>{const html=renderToStaticMarkup(createElement(TeamHero,{...props,t:getTranslations("en"),wins:8,losses:2,w10:8,l10:2,winPct:"80.0"}));expect(html).toContain("#2");expect(html).toContain("80.0%");expect(html).toContain("8-2");});

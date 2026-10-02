@@ -5,7 +5,8 @@ import { getCurrentSeasonSchedule, getPlayerIndexSnapshot, formatDate, getSchedu
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
-import { conferenceRank } from "@/lib/team-rank";
+import { currentSeason } from "@/lib/constants";
+import { conferenceRank, validFinalScore } from "@/lib/team-rank";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import PointDiffChart from "@/components/PointDiffChart";
@@ -70,6 +71,7 @@ export default async function TeamPage({ params }: PageProps) {
 
   for (const gd of schedule) {
     for (const g of gd.games) {
+      if (g.gameStatus === 3 && !validFinalScore(g.homeTeam.score, g.awayTeam.score)) continue;
       if (g.gameStatus === 3 && isRegular(g.gameId)) {
         const ht = g.homeTeam.teamTricode;
         const at = g.awayTeam.teamTricode;
@@ -253,7 +255,7 @@ export default async function TeamPage({ params }: PageProps) {
       />
 
       <TeamHero
-        team={team} t={t}
+        team={team} t={t} season={currentSeason()}
         wins={wins} losses={losses} winPct={winPct} w10={w10} l10={l10}
         playoffWins={playoffWins} playoffLosses={playoffLosses}
         rosterCount={roster.length} confRank={confRank}

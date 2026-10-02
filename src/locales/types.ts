@@ -685,6 +685,7 @@ export interface Translations {
 
   // ---- Team Page ----
   teamPage: {
+    noRegularData: string;
     backToStandings: string;
     record: string;
     winPct: string;

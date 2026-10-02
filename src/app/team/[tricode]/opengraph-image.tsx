@@ -3,6 +3,8 @@ import { ImageResponse } from "next/og";
 import { TEAM_META } from "@/lib/teams";
 import { getCurrentSeasonSchedule } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
+import { validFinalScore } from "@/lib/team-rank";
+import { currentSeason } from "@/lib/constants";
 import { isRegular, winPct } from "@/lib/games";
 
 export const runtime = "nodejs";
@@ -44,7 +46,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
   let wins = 0, losses = 0;
   for (const gd of schedule) {
     for (const g of gd.games) {
-      if (g.gameStatus !== 3 || !isRegular(g.gameId)) continue;
+      if (g.gameStatus !== 3 || !isRegular(g.gameId) || !validFinalScore(g.homeTeam.score, g.awayTeam.score)) continue;
       const isHome = g.homeTeam.teamTricode === team.tricode;
       const isAway = g.awayTeam.teamTricode === team.tricode;
       if (!isHome && !isAway) continue;
@@ -148,6 +150,9 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
             >
               {team.name}
             </div>
+            <div style={{ display: "flex", fontSize: 18, color: "rgba(255,255,255,0.7)", marginTop: 14 }}>
+              {currentSeason()}{wins + losses === 0 ? " · No completed regular-season data available" : ""}
+            </div>
             {wins + losses > 0 && (
               <div style={{ display: "flex", alignItems: "baseline", gap: 16, marginTop: 16 }}>
                 <span
@@ -171,7 +176,7 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
                     display: "flex",
                   }}
                 >
-                  .{String(Math.round(pct * 1000)).padStart(3, "0")}
+                  {pct.toFixed(3).replace(/^0/, "")}
                 </span>
               </div>
             )}
