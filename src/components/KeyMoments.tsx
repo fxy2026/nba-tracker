@@ -2,6 +2,7 @@
 
 import { useMemo, memo } from "react";
 import { useLocale } from "@/components/LocaleProvider";
+import { getScoringRuns, getScoringChange, chronologicalActions, readScorePair, type ScorePair } from "@/lib/scoring-runs";
 import { describeAction, type PlayAction } from "@/components/PlayByPlay";
 
 interface Props {
@@ -47,22 +48,24 @@ export default memo(function KeyMoments({ actions }: Props) {
   const moments = useMemo(() => {
     if (actions.length === 0) return [];
 
-    const keyMoments: KeyMoment[] = [];
+    const keyMoments: KeyMoment[] = getScoringRuns(actions).map((run) => ({
+      period: run.period, clock: run.clock, scoreHome: run.scoreHome, scoreAway: run.scoreAway,
+      description: isZh ? `${run.teamTricode} 打出 ${run.points}-0 攻击波` : `${run.teamTricode} goes on a ${run.points}-0 run`,
+      type: "run",
+    }));
 
-    // Track scoring for runs and lead changes
+    // Lead changes use paired scores only; unknown values are never zero.
     let prevDiff = 0; // positive = away leads
-    let runTeam = "";
-    let runPoints = 0;
-    let runStartIdx = 0;
+    let previousScore: ScorePair | null = null;
 
-    for (let i = 0; i < actions.length; i++) {
-      const action = actions[i];
-      const scoreAway = parseInt(action.scoreAway) || 0;
-      const scoreHome = parseInt(action.scoreHome) || 0;
+    for (const action of chronologicalActions(actions)) {
+      const score = readScorePair(action);
+      if (!score) { prevDiff = 0; previousScore = null; continue; }
+      const scoring = previousScore ? getScoringChange(action, previousScore, score) : null;
+      if (previousScore && !scoring && (score.scoreHome !== previousScore.scoreHome || score.scoreAway !== previousScore.scoreAway)) prevDiff = 0;
+      previousScore = score;
+      const { scoreAway, scoreHome } = score;
       const diff = scoreAway - scoreHome; // positive = away leads
-
-      // Skip actions without score
-      if (!action.scoreAway && !action.scoreHome) continue;
 
       // Lead change: diff sign changes (and previous diff was not 0)
       if (prevDiff !== 0 && diff !== 0 && Math.sign(diff) !== Math.sign(prevDiff)) {
@@ -78,31 +81,8 @@ export default memo(function KeyMoments({ actions }: Props) {
         });
       }
 
-      // Scoring runs: track consecutive scoring by one team
-      if (action.isFieldGoal || action.actionType === "freethrow") {
-        if (action.teamTricode === runTeam) {
-          runPoints += (scoreAway + scoreHome) - (parseInt(actions[runStartIdx]?.scoreAway) || 0) - (parseInt(actions[runStartIdx]?.scoreHome) || 0);
-        } else {
-          // Check if previous run was significant (8+ unanswered)
-          if (runPoints >= 8 && runTeam) {
-            const startAction = actions[runStartIdx];
-            keyMoments.push({
-              period: startAction?.period || action.period,
-              clock: startAction?.clock || action.clock,
-              description: isZh ? `${runTeam} 打出 ${runPoints}-0 攻击波` : `${runTeam} goes on a ${runPoints}-0 run`,
-              scoreAway: parseInt(actions[i - 1]?.scoreAway) || scoreAway,
-              scoreHome: parseInt(actions[i - 1]?.scoreHome) || scoreHome,
-              type: "run",
-            });
-          }
-          runTeam = action.teamTricode;
-          runPoints = 0;
-          runStartIdx = i;
-        }
-      }
-
       // Clutch: shots in final 2 minutes of Q4 or any OT (made shots only)
-      if ((action.period === 4 || action.period > 4) && action.shotResult === "Made") {
+      if (action.period >= 4 && scoring) {
         const clock = action.clock || "";
         const ptMatch = clock.match(/PT(\d+)M/);
         const minutesLeft = ptMatch ? parseInt(ptMatch[1]) : 99;
@@ -126,23 +106,10 @@ export default memo(function KeyMoments({ actions }: Props) {
       if (diff !== 0) prevDiff = diff;
     }
 
-    // Check final run
-    if (runPoints >= 8 && runTeam) {
-      const startAction = actions[runStartIdx];
-      keyMoments.push({
-        period: startAction?.period || 1,
-        clock: startAction?.clock || "",
-        description: isZh ? `${runTeam} 打出 ${runPoints}-0 攻击波` : `${runTeam} goes on a ${runPoints}-0 run`,
-        scoreAway: parseInt(actions[actions.length - 1]?.scoreAway) || 0,
-        scoreHome: parseInt(actions[actions.length - 1]?.scoreHome) || 0,
-        type: "run",
-      });
-    }
-
     // Remove duplicates and sort by game time
     const unique = keyMoments.filter((m, idx, arr) => {
       // Remove duplicates with same clock and period
-      return idx === arr.findIndex((mm) => mm.period === m.period && mm.clock === m.clock && mm.type === m.type);
+      return idx === arr.findIndex((mm) => mm.period === m.period && mm.clock === m.clock && mm.type === m.type && mm.scoreHome === m.scoreHome && mm.scoreAway === m.scoreAway);
     });
 
     // Sort by period then clock (descending time remaining = chronological order)

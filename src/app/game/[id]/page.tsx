@@ -460,7 +460,7 @@ export default async function GamePage({ params }: PageProps) {
 
           {isLiveOrFinal && <ShootingEfficiency homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} t={t} />}
 
-          {isFinal && <Suspense fallback={null}><WithPlayByPlay data={pbp!}>{({ actions }) => <KeyMomentsSection actions={actions.filter((a) => a.scoreHome !== "" && a.scoreAway !== "")} />}</WithPlayByPlay></Suspense>}
+          {isFinal && <Suspense fallback={null}><WithPlayByPlay data={pbp!}>{({ actions }) => <KeyMomentsSection actions={actions} />}</WithPlayByPlay></Suspense>}
 
           {isFinal && topScorers.length > 0 && (
             <div className="mt-6">
