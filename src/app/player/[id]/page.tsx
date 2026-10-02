@@ -776,13 +776,13 @@ export default async function PlayerPage({ params }: PageProps) {
             : []),
           { href: `/compare?p1=${player.personId}`, label: isZh ? "对比球员" : "Compare with another", icon: GitCompareArrows },
           ...(player.position
-            ? [{ href: `/by-position?pos=${player.position}`, label: isZh ? "同位置球员" : "Same position", icon: Activity }]
+            ? [{ href: `/by-position?pos=${encodeURIComponent(player.position)}`, label: isZh ? "同位置球员" : "Same position", icon: Activity }]
             : []),
           ...(player.country
             ? [{ href: `/by-country?country=${encodeURIComponent(player.country)}`, label: isZh ? "同国家球员" : "Same country", icon: Globe }]
             : []),
           ...(player.draftYear
-            ? [{ href: `/draft-classes/${player.draftYear}`, label: isZh ? `${player.draftYear} 届选秀` : `${player.draftYear} draft class`, icon: GraduationCap }]
+            ? [{ href: `/draft-classes?year=${player.draftYear}`, label: isZh ? `${player.draftYear} 届选秀` : `${player.draftYear} draft class`, icon: GraduationCap }]
             : []),
           { href: "/milestones", label: isZh ? "里程碑追踪" : "Career milestones", icon: Award },
         ]}

@@ -1,3 +1,5 @@
+import PlayerDirectoryFilter from "@/components/PlayerDirectoryFilter";
+import { directoryFilter, matchesDirectoryPosition, type DirectoryPageProps } from "@/lib/player-directory-filter";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Users, Globe, GraduationCap, Award, Crown } from "lucide-react";
@@ -87,17 +89,21 @@ const GROUPS: PosGroup[] = [
   },
 ];
 
-export default async function ByPositionPage() {
+export default async function ByPositionPage({ searchParams }: DirectoryPageProps = {}) {
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);
-  const players = snapshot?.players ?? [];
+  const allPlayers = (snapshot?.players ?? []).map(player => ({ ...player, position: (player.position || "").trim().toUpperCase() }));
+  const params = await searchParams;
+  const filter = directoryFilter(params?.pos, allPlayers.map(p => (p.position || "").trim()).filter(Boolean), true);
+  const players = filter.value ? allPlayers.filter(p => matchesDirectoryPosition(p.position || "", filter.value!)) : allPlayers;
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={Users} title={isZh ? "按位置榜" : "Leaders By Position"} />
         <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/by-position" locale={locale} />
         <EmptyState icon={Users} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
@@ -131,6 +137,7 @@ export default async function ByPositionPage() {
       />
 
       <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/by-position" locale={locale} />
       <div className="space-y-6">
         {byGroup.map(({ group, list, unranked }) => {
           if (list.length === 0 && unranked.length === 0) return null;

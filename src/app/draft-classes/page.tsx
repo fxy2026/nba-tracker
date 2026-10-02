@@ -1,3 +1,5 @@
+import PlayerDirectoryFilter from "@/components/PlayerDirectoryFilter";
+import { directoryFilter, type DirectoryPageProps } from "@/lib/player-directory-filter";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GraduationCap, Activity, Users, Globe, Crown, Sparkles, ArrowRight } from "lucide-react";
@@ -38,17 +40,21 @@ interface ClassGroup {
   unranked: ClassPlayer[];
 }
 
-export default async function DraftClassesPage() {
+export default async function DraftClassesPage({ searchParams }: DirectoryPageProps = {}) {
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);
-  const players = snapshot?.players ?? [];
+  const allPlayers = snapshot?.players ?? [];
+  const params = await searchParams;
+  const filter = directoryFilter(params?.year, allPlayers.map(p => String(p.draftYear ?? "")).filter(Boolean));
+  const players = filter.value ? allPlayers.filter(p => String(p.draftYear) === filter.value) : allPlayers;
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "选秀" : "Draft"} icon={GraduationCap} title={isZh ? "选秀届" : "Draft Classes"} />
         <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/draft-classes" locale={locale} />
         <EmptyState icon={GraduationCap} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
@@ -101,6 +107,7 @@ export default async function DraftClassesPage() {
       />
 
       <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/draft-classes" locale={locale} />
       <Link
         href="/draft/2026"
         className="glass-tile p-5 mb-4 flex items-center gap-4 group cursor-pointer ring-1 ring-accent/20"

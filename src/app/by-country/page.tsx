@@ -1,3 +1,5 @@
+import PlayerDirectoryFilter from "@/components/PlayerDirectoryFilter";
+import { directoryFilter, type DirectoryPageProps } from "@/lib/player-directory-filter";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Globe, GraduationCap, Users, Activity, Crown } from "lucide-react";
@@ -103,17 +105,21 @@ const FLAGS: Record<string, string> = {
   "Portugal": "🇵🇹",
 };
 
-export default async function ByCountryPage() {
+export default async function ByCountryPage({ searchParams }: DirectoryPageProps = {}) {
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);
-  const players = snapshot?.players ?? [];
+  const allPlayers = snapshot?.players ?? [];
+  const params = await searchParams;
+  const filter = directoryFilter(params?.country, allPlayers.map(p => (p.country || "").trim()).filter(Boolean));
+  const players = filter.value ? allPlayers.filter(p => (p.country || "").trim() === filter.value) : allPlayers;
 
   if (players.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "全球" : "Global"} icon={Globe} title={isZh ? "NBA 国别" : "NBA By Country"} />
         <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/by-country" locale={locale} />
         <EmptyState icon={Globe} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
@@ -167,6 +173,7 @@ export default async function ByCountryPage() {
       />
 
       <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <PlayerDirectoryFilter filter={filter} href="/by-country" locale={locale} />
       {/* USA hero tile */}
       {usa && (
         <section className="mb-8">

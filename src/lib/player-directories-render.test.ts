@@ -21,3 +21,20 @@ for(const view of views){
 }
 it("draft unknown pick does not become an undrafted or active-roster claim",async()=>{snapshot.mockResolvedValue({players:[{...player,draftNumber:null}],provenance:archive});const html=renderToStaticMarkup(await Draft());expect(html).toContain('Pick unspecified');expect(html).not.toContain('Undrafted');expect(html).not.toContain('still active');expect(html).toContain('/draft/2026');});
 it("country preserves named non-US groups and known PPG even when other averages are absent",async()=>{snapshot.mockResolvedValue({players:[{...player,country:'France',reb:null}],provenance:archive});const html=renderToStaticMarkup(await Country());expect(html).toContain('France');expect(html).toContain('10.0');expect(html).toContain('Incomplete averages');});
+for (const [render, key, value, path] of [[Position,'pos','G','/by-position'],[Country,'country','USA','/by-country'],[Draft,'year','2020','/draft-classes']] as const) {
+ it.each(['en','zh'])(`${key}: selected snapshot group and reset navigation in %s`,async(language)=>{
+  locale.mockResolvedValue(language);
+  snapshot.mockResolvedValue({players:[player,{...player,personId:43,position:'C',country:'France',draftYear:2003}],provenance:archive});
+  const html=renderToStaticMarkup(await render({searchParams:Promise.resolve({[key]:value})}));
+  expect(html).toContain('/player/42');expect(html).not.toContain('/player/43');expect(html).toContain(language==='zh'?'当前筛选':'Selected filter');expect(html).toContain(`href="${path}"`);expect(html).toContain(playerIndexLabel(archive,language));expect(snapshot).toHaveBeenCalledTimes(1);
+ });
+ it.each([undefined,'BAD_FILTER_VALUE',['2020','2003']])(`${key}: absent or unusable filter retains all groups %j`,async(value)=>{
+  snapshot.mockResolvedValue({players:[player,{...player,personId:43,position:'C',country:'France',draftYear:2003}],provenance:archive});
+  const html=renderToStaticMarkup(await render({searchParams:Promise.resolve({[key]:value})}));
+  expect(html).toContain('/player/42');expect(html).toContain('/player/43');expect(html).not.toContain('BAD_FILTER_VALUE');if(value!==undefined)expect(html).toContain('Filter unavailable');
+ });
+}
+it('hybrid position is retained in its existing group',async()=>{snapshot.mockResolvedValue({players:[{...player,position:'G-F'}, {...player,personId:43}],provenance:archive});const html=renderToStaticMarkup(await Position({searchParams:Promise.resolve({pos:'F-G'})}));expect(html).toContain('/player/42');expect(html).not.toContain('/player/43');expect(html).toContain('Wings');});
+it('encoded country query displays the matching actual group',async()=>{const country="Côte d'Ivoire";snapshot.mockResolvedValue({players:[{...player,country},{...player,personId:43}],provenance:archive});const html=renderToStaticMarkup(await Country({searchParams:Promise.resolve(Object.fromEntries(new URLSearchParams(`country=${encodeURIComponent(country)}`)))}));expect(html).toContain('/player/42');expect(html).not.toContain('/player/43');});
+
+it('padded lowercase hybrid source positions keep selected rows and their group',async()=>{snapshot.mockResolvedValue({players:[{...player,position:' g-f '}],provenance:archive});const html=renderToStaticMarkup(await Position({searchParams:Promise.resolve({pos:'F-G'})}));expect(html).toContain('/player/42');expect(html).toContain('Wings');expect(html).toContain('Selected filter: G-F');});

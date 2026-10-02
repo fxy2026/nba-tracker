@@ -40,3 +40,11 @@ it.each([null,0])("null/zero PPG %s does not invent split or totals in either lo
  if(pts===0)expect(nodes(tree).some(e=>typeof e.type==="function"&&e.type.name==="CountUpNumber"&&e.props.value===0)).toBe(true);
  }
 });
+it('profile directory links target existing query routes', async()=>{
+ const all=nodes(await page('F-G'));
+ const related=all.flatMap(e=>Array.isArray(e.props.pages)?e.props.pages:Array.isArray(e.props.links)?e.props.links:[]) as {href:string}[];
+ expect(related.map(link=>link.href)).toContain('/by-position?pos=F-G');
+ expect(related.map(link=>link.href)).toContain('/by-country?country=USA');
+ expect(related.map(link=>link.href)).toContain('/draft-classes?year=2003');
+ expect(related.some(link=>link.href.startsWith('/draft-classes/'))).toBe(false);
+});
