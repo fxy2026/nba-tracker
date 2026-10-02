@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Globe, GraduationCap, Users, Activity, Crown } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
+import { directoryStats } from "@/lib/player-directory";
+import { PlayerDirectorySource, UnrankedDirectoryPlayers } from "@/components/PlayerDirectoryContext";
+import { playerIndexStat } from "@/lib/player-index-provenance";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
@@ -27,7 +30,8 @@ interface CountryGroup {
   country: string;
   count: number;
   topThree: CountryPlayer[];
-  bestPpg: number;
+  bestPpg: number | null;
+  unranked: CountryPlayer[];
 }
 
 // Rough flag emoji mapping for common NBA countries
@@ -102,12 +106,14 @@ const FLAGS: Record<string, string> = {
 export default async function ByCountryPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot().catch(() => null);
+  const players = snapshot?.players ?? [];
 
   if (players.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "全球" : "Global"} icon={Globe} title={isZh ? "NBA 国别" : "NBA By Country"} />
+        <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
         <EmptyState icon={Globe} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
@@ -133,13 +139,12 @@ export default async function ByCountryPage() {
 
   const groups: CountryGroup[] = [];
   for (const [country, list] of byCountry) {
-    const ranked = [...list].sort((a, b) => (b.pts + b.reb * 1.2 + b.ast * 1.5) - (a.pts + a.reb * 1.2 + a.ast * 1.5));
-    const bestPpg = list.reduce((m, p) => p.pts > m ? p.pts : m, 0);
+    const { ranked, unranked, bestPpg } = directoryStats(list);
     groups.push({
       country,
       count: list.length,
       topThree: ranked.slice(0, 3),
-      bestPpg,
+      bestPpg, unranked,
     });
   }
   groups.sort((a, b) => b.count - a.count);
@@ -156,11 +161,12 @@ export default async function ByCountryPage() {
         title={isZh ? "NBA 国别" : "NBA By Country"}
         subtitle={
           isZh
-            ? `来自 ${groups.length} 个国家的球员 · 国际 ${totalInternational} + 本土 ${usa?.count ?? 0} · 场均数据为上赛季`
-            : `Players from ${groups.length} countries · ${totalInternational} international + ${usa?.count ?? 0} domestic · per-game stats from last season`
+            ? `来自 ${groups.length} 个国家的球员 · 国际 ${totalInternational} + 本土 ${usa?.count ?? 0} · 快照中的球员`
+            : `Players from ${groups.length} countries · ${totalInternational} international + ${usa?.count ?? 0} domestic · players in this snapshot`
         }
       />
 
+      <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
       {/* USA hero tile */}
       {usa && (
         <section className="mb-8">
@@ -181,8 +187,8 @@ export default async function ByCountryPage() {
                     <p className="text-xl font-light font-mono tabular-nums">{usa.count}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最高得分 · 上赛季" : "Best PPG · last season"}</p>
-                    <p className="text-xl font-light font-mono tabular-nums text-accent-amber">{usa.bestPpg.toFixed(1)}</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最高已知场均得分" : "Best known PPG"}</p>
+                    <p className="text-xl font-light font-mono tabular-nums text-accent-amber">{playerIndexStat(usa.bestPpg)}</p>
                   </div>
                 </div>
               </div>
@@ -193,12 +199,13 @@ export default async function ByCountryPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.firstName} {p.lastName}</p>
                       <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                        {p.teamAbbr} · <span className="tabular-nums">{p.pts.toFixed(1)}</span>/<span className="tabular-nums">{p.reb.toFixed(1)}</span>/<span className="tabular-nums">{p.ast.toFixed(1)}</span>
+                        {p.teamAbbr} · <span className="tabular-nums">{playerIndexStat(p.pts)}</span>/<span className="tabular-nums">{playerIndexStat(p.reb)}</span>/<span className="tabular-nums">{playerIndexStat(p.ast)}</span>
                       </p>
                     </div>
                   </Link>
                 ))}
               </div>
+              <UnrankedDirectoryPlayers players={usa.unranked} locale={locale} />
             </div>
           </div>
         </section>
@@ -224,9 +231,9 @@ export default async function ByCountryPage() {
                     <p className="text-sm font-semibold text-text-primary truncate">{g.country}</p>
                     <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
                       {isZh ? (
-                        <><span className="tabular-nums">{g.count}</span> 名球员 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · 上赛季</>
+                        <><span className="tabular-nums">{g.count}</span> 名球员 · 最高得分 <span className="tabular-nums">{playerIndexStat(g.bestPpg)}</span></>
                       ) : (
-                        <><span className="tabular-nums">{g.count}</span> player{g.count === 1 ? "" : "s"} · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · last season</>
+                        <><span className="tabular-nums">{g.count}</span> player{g.count === 1 ? "" : "s"} · best PPG <span className="tabular-nums">{playerIndexStat(g.bestPpg)}</span></>
                       )}
                     </p>
                   </div>
@@ -243,10 +250,11 @@ export default async function ByCountryPage() {
                     <span className="text-xs font-medium text-text-primary group-hover:text-accent transition-colors truncate flex-1">
                       {p.firstName} {p.lastName}
                     </span>
-                    <span className="text-[10px] font-mono tabular-nums text-text-secondary shrink-0">{p.pts.toFixed(1)}</span>
+                    <span className="text-[10px] font-mono tabular-nums text-text-secondary shrink-0">{playerIndexStat(p.pts)}</span>
                   </Link>
                 ))}
               </div>
+              <UnrankedDirectoryPlayers players={g.unranked} locale={locale} />
             </div>
           ))}
         </div>
@@ -257,7 +265,7 @@ export default async function ByCountryPage() {
         pages={[
           { href: "/by-college", label: isZh ? "按大学榜" : "By College", description: isZh ? "按大学分组" : "Players by college", icon: GraduationCap },
           { href: "/by-position", label: isZh ? "按位置榜" : "By Position", description: isZh ? "按位置分组" : "Leaders by position", icon: Users },
-          { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份" : "Active players by draft year", icon: GraduationCap },
+          { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份" : "Snapshot players by draft year", icon: GraduationCap },
           { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", description: isZh ? "本届新秀表现" : "Top rookies this season", icon: Activity },
           { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
         ]}

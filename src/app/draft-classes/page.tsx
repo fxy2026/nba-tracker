@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GraduationCap, Activity, Users, Globe, Crown, Sparkles, ArrowRight } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
+import { directoryStats } from "@/lib/player-directory";
+import { PlayerDirectorySource, UnrankedDirectoryPlayers } from "@/components/PlayerDirectoryContext";
+import { playerIndexStat } from "@/lib/player-index-provenance";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
@@ -10,7 +13,7 @@ import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Draft Classes",
-  description: "Active NBA players grouped by their draft year — see how each class has held up.",
+  description: "NBA player-index snapshots grouped by declared draft year, with source-season context.",
 };
 
 interface ClassPlayer {
@@ -30,23 +33,22 @@ interface ClassGroup {
   players: ClassPlayer[];
   totalPlayers: number;
   topThree: ClassPlayer[];
-  avgPts: number;
-  bestPpg: number;
-}
-
-function scoreImpact(p: ClassPlayer) {
-  return p.pts + p.reb * 1.2 + p.ast * 1.5;
+  avgPts: number | null;
+  bestPpg: number | null;
+  unranked: ClassPlayer[];
 }
 
 export default async function DraftClassesPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot().catch(() => null);
+  const players = snapshot?.players ?? [];
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "选秀" : "Draft"} icon={GraduationCap} title={isZh ? "选秀届" : "Draft Classes"} />
+        <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
         <EmptyState icon={GraduationCap} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
@@ -73,17 +75,14 @@ export default async function DraftClassesPage() {
 
   const groups: ClassGroup[] = [];
   for (const [year, list] of byYear) {
-    const ranked = [...list].sort((a, b) => scoreImpact(b) - scoreImpact(a));
-    const ppgList = list.filter((p) => p.pts > 0);
-    const avgPts = ppgList.length > 0 ? ppgList.reduce((s, p) => s + p.pts, 0) / ppgList.length : 0;
-    const bestPpg = ppgList.reduce((m, p) => p.pts > m ? p.pts : m, 0);
+    const { ranked, unranked, avgPts, bestPpg } = directoryStats(list);
     groups.push({
       year,
       players: list,
       totalPlayers: list.length,
       topThree: ranked.slice(0, 3),
       avgPts,
-      bestPpg,
+      bestPpg, unranked,
     });
   }
   groups.sort((a, b) => b.year - a.year);
@@ -96,11 +95,12 @@ export default async function DraftClassesPage() {
         title={isZh ? "选秀届" : "Draft Classes"}
         subtitle={
           isZh
-            ? `现役球员按选秀年份分组 · 共 ${groups.length} 届`
-            : `Active players grouped by draft year · ${groups.length} classes represented`
+            ? `快照球员按已知选秀年份分组 · 共 ${groups.length} 届`
+            : `Snapshot players grouped by declared draft year · ${groups.length} classes represented`
         }
       />
 
+      <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
       <Link
         href="/draft/2026"
         className="glass-tile p-5 mb-4 flex items-center gap-4 group cursor-pointer ring-1 ring-accent/20"
@@ -109,9 +109,9 @@ export default async function DraftClassesPage() {
           <Sparkles size={22} className="text-accent" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "最新一届" : "Newest class"}</p>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "选秀档案" : "Draft archive"}</p>
           <p className="font-semibold text-text-primary group-hover:text-accent transition-colors">{isZh ? "2026 选秀 · 逐顺位结果" : "2026 Draft · pick by pick"}</p>
-          <p className="text-[11px] text-text-secondary leading-snug mt-0.5">{isZh ? "新秀尚未进入现役索引 —— 单独查看完整选秀结果。" : "Rookies aren't in the active index yet — see the full draft board."}</p>
+          <p className="text-[11px] text-text-secondary leading-snug mt-0.5">{isZh ? "单独查看 2026 选秀结果。" : "View the separate 2026 draft board."}</p>
         </div>
         <ArrowRight size={16} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
       </Link>
@@ -128,16 +128,16 @@ export default async function DraftClassesPage() {
                 </div>
                 <div className="flex items-center gap-5 text-right">
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "现役" : "Active"}</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "快照人数" : "In snapshot"}</p>
                     <p className="text-lg font-light font-mono tabular-nums text-text-primary">{g.totalPlayers}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "场均得分" : "Avg PPG"}</p>
-                    <p className="text-lg font-light font-mono tabular-nums text-text-secondary">{g.avgPts.toFixed(1)}</p>
+                    <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "已知场均均值" : "Known PPG average"}</p>
+                    <p className="text-lg font-light font-mono tabular-nums text-text-secondary">{playerIndexStat(g.avgPts)}</p>
                   </div>
                   <div>
                     <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最高得分" : "Best PPG"}</p>
-                    <p className="text-lg font-light font-mono tabular-nums text-accent-amber">{g.bestPpg.toFixed(1)}</p>
+                    <p className="text-lg font-light font-mono tabular-nums text-accent-amber">{playerIndexStat(g.bestPpg)}</p>
                   </div>
                 </div>
               </div>
@@ -156,13 +156,13 @@ export default async function DraftClassesPage() {
                       <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={44} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                          #{i + 1} · {p.draftNumber ? (isZh ? `顺位 ${p.draftNumber}` : `Pick ${p.draftNumber}`) : (isZh ? "落选" : "Undrafted")}
+                          #{i + 1} · {p.draftNumber ? (isZh ? `顺位 ${p.draftNumber}` : `Pick ${p.draftNumber}`) : (isZh ? "顺位未注明" : "Pick unspecified")}
                         </p>
                         <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">
                           {p.firstName} {p.lastName}
                         </p>
                         <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                          {p.teamAbbr || "—"} · <span className="tabular-nums">{p.pts.toFixed(1)}</span>/<span className="tabular-nums">{p.reb.toFixed(1)}</span>/<span className="tabular-nums">{p.ast.toFixed(1)}</span>
+                          {p.teamAbbr || "—"} · <span className="tabular-nums">{playerIndexStat(p.pts)}</span>/<span className="tabular-nums">{playerIndexStat(p.reb)}</span>/<span className="tabular-nums">{playerIndexStat(p.ast)}</span>
                         </p>
                       </div>
                     </Link>
@@ -170,12 +170,13 @@ export default async function DraftClassesPage() {
                 })}
               </div>
 
+              <UnrankedDirectoryPlayers players={g.unranked} locale={locale} />
               {undrafted > 0 && (
                 <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">
                   {isZh ? (
-                    <><span className="tabular-nums">{undrafted}</span> 名未选秀但仍现役的球员</>
+                    <><span className="tabular-nums">{undrafted}</span> 名球员顺位未注明</>
                   ) : (
-                    <><span className="tabular-nums">{undrafted}</span> undrafted player{undrafted === 1 ? "" : "s"} still active from this class</>
+                    <><span className="tabular-nums">{undrafted}</span> player{undrafted === 1 ? "" : "s"} with an unspecified pick</>
                   )}
                 </p>
               )}

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Users, Globe, GraduationCap, Award, Crown } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
+import { directoryStats } from "@/lib/player-directory";
+import { PlayerDirectorySource, UnrankedDirectoryPlayers } from "@/components/PlayerDirectoryContext";
+import { playerIndexStat } from "@/lib/player-index-provenance";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
@@ -84,27 +87,25 @@ const GROUPS: PosGroup[] = [
   },
 ];
 
-function score(p: { pts: number; reb: number; ast: number }) {
-  return p.pts + p.reb * 1.2 + p.ast * 1.5;
-}
-
 export default async function ByPositionPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot().catch(() => null);
+  const players = snapshot?.players ?? [];
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={Users} title={isZh ? "按位置榜" : "Leaders By Position"} />
+        <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
         <EmptyState icon={Users} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
 
   const byGroup = GROUPS.map((g) => {
-    const list: PosPlayer[] = players
-      .filter((p) => p.position && g.matches(p.position) && p.pts > 0)
+    const eligible: PosPlayer[] = players
+      .filter((p) => p.position && g.matches(p.position))
       .map((p) => ({
         personId: p.personId,
         firstName: p.firstName,
@@ -115,10 +116,9 @@ export default async function ByPositionPage() {
         pts: p.pts,
         reb: p.reb,
         ast: p.ast,
-      }))
-      .sort((a, b) => score(b) - score(a))
-      .slice(0, 10);
-    return { group: g, list };
+      }));
+    const { ranked, unranked } = directoryStats(eligible);
+    return { group: g, list: ranked.slice(0, 10), unranked };
   });
 
   return (
@@ -127,12 +127,13 @@ export default async function ByPositionPage() {
         eyebrow={isZh ? "球员" : "Players"}
         icon={Users}
         title={isZh ? "按位置榜" : "Leaders By Position"}
-        subtitle={isZh ? "每个位置桶的现役前 10 球员 · 按 PPG + RPG×1.2 + APG×1.5 排序 · 数据来自 NBA 球员索引（上赛季场均）" : "Top 10 active players in each positional bucket · ranked by PPG + RPG×1.2 + APG×1.5 · stats from NBA player index (last season averages)"}
+        subtitle={isZh ? "快照中各位置前 10 球员 · 按 PPG + RPG×1.2 + APG×1.5 排序 · 仅完整场均参与排名" : "Top 10 snapshot players per position · ranked by PPG + RPG×1.2 + APG×1.5 · complete averages required"}
       />
 
+      <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
       <div className="space-y-6">
-        {byGroup.map(({ group, list }) => {
-          if (list.length === 0) return null;
+        {byGroup.map(({ group, list, unranked }) => {
+          if (list.length === 0 && unranked.length === 0) return null;
           return (
             <section key={group.label} className="glass-tile p-5 relative overflow-hidden">
               <div className="absolute inset-y-0 left-0 w-1.5 opacity-80" style={{ background: group.color }} />
@@ -178,7 +179,7 @@ export default async function ByPositionPage() {
                           <div className="text-right">
                             <p className="text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">P/R/A</p>
                             <p className="text-sm font-mono tabular-nums text-text-primary">
-                              {p.pts.toFixed(1)}/{p.reb.toFixed(1)}/{p.ast.toFixed(1)}
+                              {playerIndexStat(p.pts)}/{playerIndexStat(p.reb)}/{playerIndexStat(p.ast)}
                             </p>
                           </div>
                         </div>
@@ -186,6 +187,7 @@ export default async function ByPositionPage() {
                     );
                   })}
                 </div>
+                <UnrankedDirectoryPlayers players={unranked} locale={locale} />
               </div>
             </section>
           );
@@ -197,7 +199,7 @@ export default async function ByPositionPage() {
         pages={[
           { href: "/by-country", label: isZh ? "国别分布" : "By Country", description: isZh ? "按国家分组" : "Players by country", icon: Globe },
           { href: "/by-college", label: isZh ? "按大学榜" : "By College", description: isZh ? "按大学分组" : "Players by college", icon: GraduationCap },
-          { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份" : "Active players by draft year", icon: GraduationCap },
+          { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份" : "Snapshot players by draft year", icon: GraduationCap },
           { href: "/awards-race", label: isZh ? "奖项竞争" : "Awards Race", description: isZh ? "MVP / ROY / DPOY" : "MVP / ROY / DPOY tracker", icon: Award },
           { href: "/all-time-leaders", label: isZh ? "历史榜首" : "All-Time Leaders", description: isZh ? "历史数据领跑者" : "Career stat leaders", icon: Crown },
         ]}
