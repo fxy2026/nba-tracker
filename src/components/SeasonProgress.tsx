@@ -26,7 +26,7 @@ export default function SeasonProgress() {
         </span>
         <div className="flex items-center gap-2">
           {daysLeft !== null && daysLeft > 0 && (
-            <span className="text-[10px] text-text-secondary font-mono tabular-nums">{daysLeft}{t.seasonProgress.daysLeft}</span>
+            <span className="text-[10px] text-text-secondary font-mono tabular-nums">{daysLeft}{phase === "upcoming" ? (isZh ? "天后开赛" : " days until start") : t.seasonProgress.daysLeft}</span>
           )}
           <span className="text-[10px] font-medium text-accent">
             {labels[phase]}{progress !== null && <> &middot; <span className="font-mono tabular-nums">{progress.toFixed(0)}%</span></>}

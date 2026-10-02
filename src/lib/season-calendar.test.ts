@@ -40,6 +40,9 @@ it.each(["en", "zh"] as const)("renders scoped progress and source attribution i
   expect(html).not.toContain("100%"); expect(html).not.toContain("2025-10-21");
   expect(html).toContain("https://pr.nba.com/2026-27-nba-regular-season-schedule/");
   expect(html).toContain(locale === "zh" ? "常规赛日程" : "Regular-season calendar");
+  const text = html.replace(/<[^>]+>/g, "");
+  expect(text).toContain(locale === "zh" ? "18天后开赛" : "18 days until start");
+  expect(text).not.toContain("18天后结束");
 });
 it("renders unknown future dates without a fake percentage or progressbar", () => {
   state.locale = "en"; vi.useFakeTimers(); vi.setSystemTime(new Date("2027-10-02T12:00:00Z"));
