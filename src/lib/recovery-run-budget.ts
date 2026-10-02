@@ -8,6 +8,7 @@ export const RECOVERY_DAILY_LIMIT = 100;
 export const RECOVERY_MANUAL_RESERVATION = { requests: 7, reservedAt: "2026-10-02T10:13:00Z" } as const;
 export const RECOVERY_WORKFLOW_PATH = ".github/workflows/player-data-ingestion.yml";
 export const RECOVERY_INGESTION_JOB_NAME = "Ingest player data";
+export const RECOVERY_FIRST_PILOT = { runId: 37006667059, jobId: 110836575247, sha: "60e9585a4f44ffb182db89fc39c381212c3944df", maxRequests: 25 } as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface RecoveryIngestionSkipProof {
@@ -37,6 +38,7 @@ export interface RecoveryRunRecord {
   createdAt: string;
   startedAt: string | null;
   updatedAt: string;
+  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25; allJobsFetched: true };
   ingestionSkippedProof?: RecoveryIngestionSkipProof | null;
 }
 
@@ -136,6 +138,12 @@ export function calculateRecoveryRunBudget(input: unknown): RecoveryRunBudgetRes
       const run = value as unknown as RecoveryRunRecord;
       const proof = proofStatus(value.ingestionSkippedProof, run, repository, workflowPath);
       if (proof === "invalid") return deny("Skipped-ingestion exclusion proof is incomplete or mismatched");
+      let reservation = RECOVERY_DAILY_LIMIT;
+      if (value.reviewedPilotProof !== undefined) {
+        const bounded=value.reviewedPilotProof;
+        if(!isRecord(bounded)||bounded.source!=="complete-github-job-metadata"||repository!=="fxy2026/nba-tracker"||value.id!==RECOVERY_FIRST_PILOT.runId||value.runAttempt!==1||value.status!=="completed"||value.conclusion!=="success"||bounded.runId!==value.id||bounded.jobId!==RECOVERY_FIRST_PILOT.jobId||bounded.headSha!==RECOVERY_FIRST_PILOT.sha||bounded.headBranch!=="master"||bounded.event!=="push"||bounded.maxRequests!==25||bounded.allJobsFetched!==true)return deny("Invalid immutable pilot bound proof");
+        reservation=RECOVERY_FIRST_PILOT.maxRequests;
+      }
       if (value.id === currentRun.id) {
         currentCount++;
         if (value.runAttempt !== 1) return deny("The current run is a rerun");
@@ -147,7 +155,7 @@ export function calculateRecoveryRunBudget(input: unknown): RecoveryRunBudgetRes
       if (started === null && (value.status === "completed" || value.status === "in_progress")) return deny("A potentially executed run has no start timestamp");
       // Rerun metadata may refer to a later attempt; count any recent activity.
       const reservationAt = value.runAttempt > 1 ? Math.max(created, started ?? created, updated) : started ?? created;
-      if (reservationAt >= dayStart) priorReservedRequests += RECOVERY_DAILY_LIMIT;
+      if (reservationAt >= dayStart) priorReservedRequests += reservation;
       else if (value.status !== "completed") return deny("An old nonterminal run leaves outstanding usage uncertain");
       if (!Number.isSafeInteger(priorReservedRequests)) return deny("Reservation counts are uncertain");
     }

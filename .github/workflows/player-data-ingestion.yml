@@ -1,6 +1,9 @@
 name: Recover NBA player data
-run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
+run-name: ${{ github.event_name == 'push' && 'Diagnose playoff metadata' || github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
 on:
+  push:
+    branches: ['master']
+    paths: ['.github/recovery-kickoff/2026-10-02-playoff-metadata-diagnostic.json']
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
@@ -10,7 +13,7 @@ on:
         required: true
         type: choice
         default: 'verify'
-        options: ['verify', 'backfill']
+        options: ['verify', 'backfill', 'diagnose']
       max_requests:
         description: 'Maximum provider requests for this operator run (first verification:3)'
         required: true
@@ -53,7 +56,7 @@ jobs:
         run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/gate.js"
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          RECOVERY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'backfill' }}
+          RECOVERY_MODE: ${{ github.event_name == 'push' && 'diagnose' || github.event_name == 'workflow_dispatch' && inputs.mode || 'backfill' }}
 
   ingest:
     # This exact name is used by the all-attempt skipped-job proof.
@@ -85,15 +88,24 @@ jobs:
           RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
           RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
           RECOVERY_REQUEST_LIMIT: '3'
+      - name: Diagnose one playoff metadata response
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'diagnose')
+        run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
+        env:
+          BIGBALLSDATA_API_KEY: ${{ secrets.BIGBALLSDATA_API_KEY }}
+          RECOVERY_MODE: diagnose
+          RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
+          RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
+          RECOVERY_REQUEST_LIMIT: '3'
       - name: Fetch and normalize provider data
-        if: github.event_name != 'workflow_dispatch' || inputs.mode == 'backfill'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'backfill')
         run: node "$RUNNER_TEMP/nba-recovery-build/scripts/recovery/ingest.js"
         env:
           BIGBALLSDATA_API_KEY: ${{ secrets.BIGBALLSDATA_API_KEY }}
           RECOVERY_MODE: backfill
           RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
           RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
-          RECOVERY_REQUEST_LIMIT: ${{ github.event_name == 'push' && '25' || github.event_name == 'workflow_dispatch' && inputs.max_requests || '100' }}
+          RECOVERY_REQUEST_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.max_requests || '100' }}
       - name: Verify normalized snapshot changes
         run: npm test && npx tsc --noEmit
       - name: Publish one data-only commit without force

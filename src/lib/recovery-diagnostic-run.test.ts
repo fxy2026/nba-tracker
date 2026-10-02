@@ -1,0 +1,15 @@
+import{expect,it,vi}from'vitest';
+import schedule from'../data/schedule-2025-26.json';
+import{selectRecoveryTargets}from'./recovery-target-selection';
+import{createRecoveryProviderClient}from'./recovery-provider-client';
+import{runPlayoffMetadataDiagnostic}from'./recovery-diagnostic-run';
+const target=selectRecoveryTargets(schedule,new Set(),null)[0];
+const uuid='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+// Synthetic metadata/list envelopes; no claim to reproduce the missing pilot bodies.
+const body={data:{players:[{name:'NEVER_LOG_PLAYER',stats:{points:{value:'SECRET_BODY'}}}],team_stats:[]},meta:{available:false,players_available:false,team_stats_available:false,withheld:{players:0,team_stats:0}},token:'NEVER_LOG_TOKEN'};
+function fetcher(){return vi.fn(async(input:string|URL|Request)=>{const url=new URL(String(input));if(url.pathname.endsWith('/stats'))return new Response(JSON.stringify(body));const date=url.searchParams.get('date');const data=date===target.gameDate?[{id:uuid,sport:'basketball',league:'NBA',status:'finished',kickoff_utc:`${date}T19:30:00Z`,home:{name:'San Antonio Spurs',short_name:'SA'},away:{name:'New York Knicks',short_name:'NY'},score:{home:target.home.score,away:target.away.score}}]:[];return new Response(JSON.stringify({data,meta:{date_window:{date}},pagination:{total:data.length,offset:0,limit:100}}));});}
+const client=(f:ReturnType<typeof fetcher>,max=3)=>createRecoveryProviderClient({apiKey:'NEVER_LOG_KEY',maxRequests:max,expiresAt:'2026-10-03T00:00:00Z',now:()=>Date.parse('2026-10-02T13:00:00Z'),fetcher:f});
+it('uses at most2date lists plus1stats request and emits only bounded safe metadata',async()=>{const f=fetcher();const before=JSON.stringify(schedule);const result=await runPlayoffMetadataDiagnostic(schedule,client(f));expect(f).toHaveBeenCalledTimes(3);expect(result).toMatchObject({nbaGameId:'0042500405',providerMatchId:uuid,stage:'metadata',requests:3,httpStatus:200,normalized:false,reason:'flag-available-false'});const text=JSON.stringify(result);for(const bad of['NEVER_LOG_PLAYER','SECRET_BODY','NEVER_LOG_TOKEN','NEVER_LOG_KEY'])expect(text).not.toContain(bad);expect(JSON.stringify(schedule)).toBe(before);});
+it('cannot exceed admitted budget even when a stats request would complete diagnosis',async()=>{const f=fetcher();const result=await runPlayoffMetadataDiagnostic(schedule,client(f,2));expect(f).toHaveBeenCalledTimes(2);expect(result).toMatchObject({stage:'stats',requests:2,reason:'budget-or-deadline-exhausted'});});
+it('stops on the first HTTPfailure without retry or raw error logging',async()=>{const f=vi.fn().mockResolvedValue(new Response('NEVER_LOG_BODY',{status:403}));const result=await runPlayoffMetadataDiagnostic(schedule,client(f));expect(f).toHaveBeenCalledTimes(1);expect(result).toMatchObject({stage:'date-list',httpStatus:403,requests:1});expect(JSON.stringify(result)).not.toContain('NEVER_LOG_BODY');});
+it('requires the fixed canonical playoff target rather than substituting another game',async()=>{const f=fetcher();await expect(runPlayoffMetadataDiagnostic({dates:[]},client(f))).rejects.toThrow('Diagnostic target');expect(f).not.toHaveBeenCalled();});

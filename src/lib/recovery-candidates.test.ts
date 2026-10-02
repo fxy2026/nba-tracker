@@ -118,3 +118,6 @@ describe("offline provider candidate resolution", () => {
     expect({ t, p }).toEqual(before); if (!r.ok) throw new Error(r.reason); r.game.home.score = 1; expect(t.home.score).toBe(133);
   });
 });
+
+it.each([0,1])('a valid unrelated soccer%d–%d draw cannot poison an exact NBA match',score=>{const p=page();p.body.data.push({...structuredClone(p.body.data[0]),id:'5ce3b301-7023-433a-b8d1-ce8ee1b306be',sport:'soccer',league:'MLS',home:{name:'Seattle Sounders',short_name:'SEA'},away:{name:'Portland Timbers',short_name:'POR'},score:{home:score,away:score}});p.body.pagination.total=2;expect(resolveRecoveryCandidate(target,[p]).ok).toBe(true);p.body.data[1].id=p.body.data[0].id;fail(target,[p],'duplicate-match-uuid-within-page');});
+it('soccer draw alone never resolves an NBA target and NBA ties still fail',()=>{const p=page();p.body.data[0].sport='soccer';p.body.data[0].score={home:1,away:1};fail(target,[p],'no-matching-finished-game');p.body.data[0].sport='basketball';fail(target,[p],'invalid-finished-score');});

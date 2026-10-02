@@ -101,7 +101,7 @@ export function resolveRecoveryCandidate(target: unknown, pages: unknown): Recov
         const home = isNBA ? teamIdentity(value.home) : normalizeName(value.home.name);
         const away = isNBA ? teamIdentity(value.away) : normalizeName(value.away.name);
         if (!home || !away || home === away) return reject("invalid-team-identity");
-        if (value.status === "finished" && (!count(value.score.home) || !count(value.score.away) || value.score.home === value.score.away)) return reject("invalid-finished-score");
+        if (isNBA && value.status === "finished" && (!count(value.score.home) || !count(value.score.away) || value.score.home === value.score.away)) return reject("invalid-finished-score");
         const id = value.id.toLowerCase();
         if (pageIds.has(id)) return reject("duplicate-match-uuid-within-page");
         pageIds.add(id);

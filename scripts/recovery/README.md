@@ -47,3 +47,11 @@ Captured excerpts in the tests intentionally contain fewer rows than their origi
 ## Confirmed first connection
 
 The standalone manual run [37003396261](https://github.com/fxy2026/nba-tracker/actions/runs/37003396261), commit `bbb5b153779bf9460d0ab1c4752dc4d330ed92fa`, succeeded on2026-10-02 at11:52UTC. Both fixed sample requests returned HTTP200 and matched their22/19 player counts and selected known values. This verifies the saved Actions Secret path; it does not establish broader ingestion coverage. Its two calls plus the seven earlier manual evaluation calls leave at most91 requests for the first controlled daily batch on that UTC date. A partial run still conservatively reserves the full day for subsequent admissions.
+
+## First pilot and bounded metadata diagnosis
+
+The first playoff pilot, run37006667059 on immutable commit `60e9585a4f44ffb182db89fc39c381212c3944df`, used25 requests and accepted0 games. Seven stats responses failed the former combined metadata gate, two date pages failed the final-score check, and the last stats attempt had no request budget left. HTTP200 did not establish usable data. Do not infer a paid-plan restriction from that combined error.
+
+Only this exact successful run/job/commit/master/push/first-attempt proof can reserve its reviewed25-request bound instead of the conservative100. Unknown or unverifiable runs still reserve100. Together with the seven manual evaluation calls and two connection-check calls, this leaves at most66 requests on2026-10-02 before another controlled operation. The configured daily limit remains100; the provider's250 allowance is not permission to increase this task's cap.
+
+A separate, one-time diagnostic is limited to three requests for game0042500405 and writes no player snapshots or cursor. It logs only fixed metadata kinds, availability flags, counts and allowlisted error codes, never raw bodies, headers or credentials. Its new exact nonce/message/path rejects the retired25-request kickoff. Remove the temporary push trigger and manifest after its terminal run. Scheduled/operator data recovery remains quota-gated.

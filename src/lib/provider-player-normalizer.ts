@@ -66,7 +66,19 @@ export function normalizeProviderPlayerStats(raw: unknown, game: RecoveryManifes
   const reject = (reason: string): ProviderNormalization => ({ok:false,reason});
   if (context.requestedMatchId !== game.providerMatchId) return reject("request-match-mismatch");
   if (!Number.isFinite(Date.parse(context.retrievedAt))) return reject("invalid-retrieval-time");
-  if (!object(raw) || !object(raw.data) || !object(raw.meta) || raw.meta.available !== true || raw.meta.players_available !== true || raw.meta.team_stats_available !== true || !object(raw.meta.withheld) || raw.meta.withheld.players !== 0 || raw.meta.withheld.team_stats !== 0) return reject("unavailable-or-withheld");
+  if (!object(raw)) return reject("malformed-envelope");
+  if (!object(raw.data)) return reject("malformed-data");
+  if (!object(raw.meta)) return reject("malformed-meta");
+  for (const flag of ["available", "players_available", "team_stats_available"] as const) {
+    if (raw.meta[flag] === false) return reject(`flag-${flag}-false`);
+    if (raw.meta[flag] !== true) return reject(`flag-${flag}-missing-or-invalid`);
+  }
+  if (!object(raw.meta.withheld)) return reject("withheld-missing-or-malformed");
+  for (const field of ["players", "team_stats"] as const) {
+    const count = raw.meta.withheld[field];
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) return reject(`withheld-${field}-missing-or-invalid`);
+    if (count > 0) return reject(`withheld-${field}-positive`);
+  }
   if (!Array.isArray(raw.data.players) || !raw.data.players.length || !Array.isArray(raw.data.team_stats)) return reject("missing-player-or-team-data");
   const teams = new Set<string>();
   for (const row of raw.data.team_stats) {
