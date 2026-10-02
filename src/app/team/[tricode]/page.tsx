@@ -128,14 +128,18 @@ export default async function TeamPage({ params }: PageProps) {
   recentGames.sort((a, b) => b.date.localeCompare(a.date));
   upcomingGames.sort((a, b) => a.date.localeCompare(b.date));
 
-  // Compute season stats
+  // Summary analytics share the regular-season population used by W/L.
+  // Keep the separate recent-game navigation list across all game types.
+  const regularGames = recentGames.filter(game => isRegular(game.gameId));
+
+  // Compute regular-season stats
   let totalPointsScored = 0;
   let totalPointsAllowed = 0;
   let homeWins = 0, homeLosses = 0;
   let awayWins = 0, awayLosses = 0;
   let gamesPlayed = 0;
 
-  for (const g of recentGames) {
+  for (const g of regularGames) {
     gamesPlayed++;
     const [scored, allowed] = g.score.split("-").map(Number);
     totalPointsScored += scored;
@@ -157,7 +161,7 @@ export default async function TeamPage({ params }: PageProps) {
   const h2hMap: Record<string, Rivalry> = {};
   {
     // Current streak (from desc order — most recent first)
-    for (const g of recentGames) {
+    for (const g of regularGames) {
       const curr = g.won ? "W" : "L";
       if (streakCount === 0) { streakType = curr; streakCount = 1; }
       else if (curr === streakType) streakCount++;
@@ -165,8 +169,8 @@ export default async function TeamPage({ params }: PageProps) {
     }
     // Longest streaks + h2h (chronological — reverse of desc)
     let currentW = 0, currentL = 0;
-    for (let i = recentGames.length - 1; i >= 0; i--) {
-      const g = recentGames[i];
+    for (let i = regularGames.length - 1; i >= 0; i--) {
+      const g = regularGames[i];
       if (g.won) { currentW++; currentL = 0; if (currentW > longestWinStreak) longestWinStreak = currentW; }
       else { currentL++; currentW = 0; if (currentL > longestLossStreak) longestLossStreak = currentL; }
       if (!h2hMap[g.opponent]) h2hMap[g.opponent] = { opponent: g.opponent, opponentId: g.opponentId, wins: 0, losses: 0 };
@@ -189,7 +193,7 @@ export default async function TeamPage({ params }: PageProps) {
   // extra iteration over the schedule.
   const confRank = conferenceRank(team, teamRecordMap);
 
-  const last10 = recentGames.slice(0, 10);
+  const last10 = regularGames.slice(0, 10);
   const w10 = last10.filter((g) => g.won).length;
   const l10 = last10.length - w10;
 
@@ -254,6 +258,7 @@ export default async function TeamPage({ params }: PageProps) {
         ]}
       />
 
+      <p className="mb-3 text-xs text-text-secondary">{currentSeason()} · {isZh ? "常规赛统计；季后赛战绩单独列出" : "Regular-season statistics; playoff record shown separately"}</p>
       <TeamHero
         team={team} t={t} season={currentSeason()}
         wins={wins} losses={losses} winPct={winPct} w10={w10} l10={l10}
@@ -269,26 +274,26 @@ export default async function TeamPage({ params }: PageProps) {
 
       <TeamPace wins={wins} losses={losses} w10={w10} l10={l10} t={t} />
 
-      <TeamStatsPanel team={team} t={t} recentGames={recentGames} gamesPlayed={gamesPlayed} ppg={ppg} oppPpg={oppPpg} />
+      <TeamStatsPanel team={team} t={t} recentGames={regularGames} gamesPlayed={gamesPlayed} ppg={ppg} oppPpg={oppPpg} />
 
       {/* Point Differential Chart (last 15 games) */}
-      {recentGames.length > 0 && (
+      {regularGames.length > 0 && (
         <PointDiffChart
-          games={recentGames}
-          title={`${t.teamPage.pointDiff} · ${t.teamPage.lastNGames.replace("%s", String(Math.min(recentGames.length, 15)))}`}
+          games={regularGames}
+          title={`${t.teamPage.pointDiff} · ${t.teamPage.lastNGames.replace("%s", String(Math.min(regularGames.length, 15)))}`}
           teamColor={team.primaryColor}
           count={15}
         />
       )}
 
-      <Last10Streak recentGames={recentGames} t={t} />
+      <Last10Streak recentGames={regularGames} t={t} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <TeamScheduleCard mode="recent" t={t} games={recentGames} />
         <TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} difficulty={upcomingDifficulty} />
       </div>
 
-      <TeamTrendsPanel t={t} recentGames={recentGames} rivalries={rivalries} />
+      <TeamTrendsPanel t={t} recentGames={regularGames} rivalries={rivalries} />
 
       <p className="mt-6 text-xs text-text-secondary">{playerIndexLabel(playerIndex.provenance, locale)} · {isZh ? "名单与场均数据来自该快照" : "Roster and averages reflect this snapshot"}</p>
       <TeamRoster roster={roster} t={t} />
