@@ -1,22 +1,22 @@
 {
   "version": 1,
-  "cursor": "0042500235",
-  "lastRunAt": "2026-10-02T13:42:29.934Z",
+  "cursor": "0042500143",
+  "lastRunAt": "2026-10-02T14:12:03.333Z",
   "lastBatch": {
-    "requests": 46,
-    "accepted": 17,
+    "requests": 57,
+    "accepted": 37,
     "withheld": [
       {
-        "gameId": "0042500316",
-        "reason": "inconsistent-rebounds"
-      },
-      {
-        "gameId": "0042500303",
+        "gameId": "0042500211",
         "reason": "no-matching-finished-game"
       },
       {
-        "gameId": "0042500313",
-        "reason": "no-matching-finished-game"
+        "gameId": "0042500166",
+        "reason": "incomplete-or-mismatched-points-total"
+      },
+      {
+        "gameId": "0042500165",
+        "reason": "incomplete-or-mismatched-points-total"
       }
     ]
   }
