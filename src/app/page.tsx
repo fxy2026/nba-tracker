@@ -1,3 +1,4 @@
+import { selectedDateFromUrl } from "@/lib/schedule-navigation";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { formatDate, getTodayScoreboard, type ScheduleGame } from "@/lib/api";
@@ -72,7 +73,7 @@ async function getInitialGames(): Promise<ScheduleGame[]> {
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const today = formatDate(new Date());
-  const initialDate = params.date || today;
+  const initialDate = selectedDateFromUrl(params.date ?? null, today);
   // Only SSR the small today scoreboard; non-today dates short-circuit to null so
   // the 11MB getFullSchedule never blocks the shell (GamesList client-fetches the
   // dated view from /api/games instead).

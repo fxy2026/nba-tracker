@@ -5,7 +5,7 @@ import { getLocale } from "@/lib/locale";
 import { formatGameDate } from "@/lib/dates";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { SEASON_SNAPSHOT, type SnapshotTeam } from "@/lib/season-snapshot";
-import { CURRENT_SEASON, PLAYOFFS_END, NEXT_SEASON_START_ESTIMATE } from "@/lib/constants";
+import { PLAYOFFS_END, NEXT_SEASON_START_ESTIMATE } from "@/lib/constants";
 
 interface EspnTxn {
   date?: string;
@@ -134,7 +134,7 @@ export default async function OffseasonHero() {
         <div className="space-y-3">
           {finals && (
             <Link
-              href="/season/2025-26"
+              href={`/season/${SEASON_SNAPSHOT.season}`}
               className="glass-tile relative overflow-hidden p-4 flex items-center gap-3 group cursor-pointer hover:border-accent/40 transition-colors"
             >
               <div
@@ -153,7 +153,7 @@ export default async function OffseasonHero() {
                 <div className="flex items-center gap-1.5">
                   <Trophy size={11} className="text-accent-amber shrink-0" />
                   <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-accent-amber">
-                    {CURRENT_SEASON} {isZh ? "总冠军" : "Champions"}
+                    {SEASON_SNAPSHOT.season} {isZh ? "总冠军" : "Champions"}
                   </span>
                 </div>
                 <p className="font-bold text-text-primary truncate mt-0.5">
@@ -276,7 +276,7 @@ export default async function OffseasonHero() {
               </span>
             </Link>
             <Link
-              href="/season/2025-26"
+              href={`/season/${SEASON_SNAPSHOT.season}`}
               className="glass-tile p-3 flex items-center gap-2 group cursor-pointer hover:border-accent/40 transition-colors"
             >
               <Trophy size={14} className="text-accent shrink-0" />

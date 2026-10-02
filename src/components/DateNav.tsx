@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { offsetCalendarDate, calendarDateLabels } from "@/lib/calendar-date";
 import { localToday, localTz } from "@/lib/timezone";
 
 interface DateNavProps {
@@ -15,11 +16,6 @@ interface DateNavProps {
 // tz-dependent "today" highlight stays absent until hydration (avoids a mismatch).
 const NO_TODAY = "";
 
-function offsetDate(base: string, offset: number): string {
-  const d = new Date(base + "T12:00:00");
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().split("T")[0];
-}
 
 export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   const { t, locale } = useLocale();
@@ -61,8 +57,8 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
       if (e.altKey || e.metaKey || e.ctrlKey) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
       if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.closest('[role="dialog"]'))) return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); navigate(offsetDate(selectedDate, -1)); }
-      if (e.key === "ArrowRight") { e.preventDefault(); navigate(offsetDate(selectedDate, 1)); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); navigate(offsetCalendarDate(selectedDate, -1)); }
+      if (e.key === "ArrowRight") { e.preventDefault(); navigate(offsetCalendarDate(selectedDate, 1)); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -87,7 +83,7 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
       // Only trigger date change on mostly-horizontal swipes (Y delta < 50px)
       // so vertical scrolls don't accidentally navigate.
       if (Math.abs(diff) > 80 && Math.abs(diffY) < 50) {
-        navigate(offsetDate(selectedDate, diff > 0 ? -1 : 1));
+        navigate(offsetCalendarDate(selectedDate, diff > 0 ? -1 : 1));
       }
     };
     el.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -99,14 +95,8 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   const days = useMemo(() => {
     const result: { date: string; label: string; weekday: string }[] = [];
     for (let i = -3; i <= 3; i++) {
-      const d = new Date(selectedDate + "T12:00:00");
-      d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split("T")[0];
-      result.push({
-        date: dateStr,
-        label: d.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" }),
-        weekday: d.toLocaleDateString("zh-CN", { weekday: "short" }),
-      });
+      const date = offsetCalendarDate(selectedDate, i);
+      result.push({ date, ...calendarDateLabels(date) });
     }
     return result;
   }, [selectedDate]);
@@ -119,8 +109,8 @@ export default function DateNav({ selectedDate, onDateChange }: DateNavProps) {
   // on first paint to match the server HTML.
   const today = useMemo(() => (mounted ? localToday() : NO_TODAY), [mounted]);
 
-  const prevDate = offsetDate(selectedDate, -1);
-  const nextDate = offsetDate(selectedDate, 1);
+  const prevDate = offsetCalendarDate(selectedDate, -1);
+  const nextDate = offsetCalendarDate(selectedDate, 1);
 
   return (
     <div
