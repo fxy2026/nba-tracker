@@ -1,3 +1,4 @@
+import { parseShotGameDate, orderUniqueShotGames, type DatedShotGame } from "@/lib/player-shot-game-order";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSeasonSchedule, getPlayByPlaySnapshot, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
@@ -80,9 +81,9 @@ export async function GET(request: NextRequest) {
 }
 
 // Get game IDs from current season schedule (CDN)
-async function getGameIdsFromSchedule(teamTricode: string, seasonType: string): Promise<string[]> {
+async function getGameIdsFromSchedule(teamTricode: string, seasonType: string): Promise<string[] | null> {
   const schedule = await getCurrentSeasonSchedule();
-  const gameIds: string[] = [];
+  const games: DatedShotGame[] = [];
   for (const gd of schedule) {
     for (const g of gd.games) {
       if (g.gameStatus !== 3) continue;
@@ -93,10 +94,12 @@ async function getGameIdsFromSchedule(teamTricode: string, seasonType: string): 
       if (seasonType === "regular" && !isRegular) continue;
       if (seasonType === "playoffs" && !isPlayoff) continue;
       if (seasonType === "all" && !isRegular && !isPlayoff) continue;
-      gameIds.push(g.gameId);
+      const date = parseShotGameDate(gd.gameDate);
+      if (!date) return null;
+      games.push({ gameId: g.gameId, date });
     }
   }
-  return gameIds;
+  return orderUniqueShotGames(games);
 }
 
 // Historical seasons: fetch game IDs from stats.nba.com playergamelog (server-side, no CORS).
@@ -105,7 +108,7 @@ async function getGameIdsFromStatsNba(playerId: number, season: string, seasonTy
     ? ["Regular Season", "Playoffs"]
     : [seasonType === "playoffs" ? "Playoffs" : "Regular Season"];
 
-  const gameIds: string[] = [];
+  const games: DatedShotGame[] = [];
   for (const st of types) {
     const url = `${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${encodeURIComponent(season)}&SeasonType=${encodeURIComponent(st)}`;
     // stats.nba.com data is stable for past seasons — cache 24h
@@ -118,15 +121,18 @@ async function getGameIdsFromStatsNba(playerId: number, season: string, seasonTy
         || !rs.headers.every((header: unknown) => typeof header === "string")
         || new Set(rs.headers).size !== rs.headers.length) return null;
       const gi = rs.headers.indexOf("Game_ID") >= 0 ? rs.headers.indexOf("Game_ID") : rs.headers.indexOf("GAME_ID");
-      if (gi < 0) return null;
+      const di = rs.headers.indexOf("GAME_DATE");
+      if (gi < 0 || di < 0) return null;
       for (const row of rs.rowSet) {
         if (!Array.isArray(row) || row.length < rs.headers.length
           || typeof row[gi] !== "string" || !/^\d{10}$/.test(row[gi])) return null;
-        gameIds.push(row[gi]);
+        const date = parseShotGameDate(row[di]);
+        if (!date) return null;
+        games.push({ gameId: row[gi], date });
       }
     } catch {
       return null;
     }
   }
-  return gameIds;
+  return orderUniqueShotGames(games);
 }

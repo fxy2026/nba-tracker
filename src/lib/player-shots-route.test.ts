@@ -9,7 +9,7 @@ import { GET } from "@/app/api/player-shots/route";
 
 const request = (query: string) => new NextRequest(`http://localhost/api/player-shots?${query}`);
 const ok = (payload: unknown) => ({ ok: true, json: async () => payload });
-const log = (ids: unknown[] = [], header = "Game_ID") => ({ resultSets: [{ name: "PlayerGameLog", headers: [header], rowSet: ids.map(id => [id]) }] });
+const log = (ids: unknown[] = [], header = "Game_ID") => ({ resultSets: [{ name: "PlayerGameLog", headers: [header, "GAME_DATE"], rowSet: ids.map((id,index) => [id,new Date(Date.UTC(2026,0,index+1)).toISOString().slice(0,10)]) }] });
 const query = "playerId=2544&team=LAL&season=2025-26";
 const shot = { personId: 2544, actionType: "2pt", shotResult: "Made", x: 10, y: 20, shotDistance: 5 };
 const game = (gameId: string, status = 3, home = "LAL", away = "BOS") => ({ gameId, gameStatus: status, homeTeam: { teamTricode: home }, awayTeam: { teamTricode: away } });
@@ -37,7 +37,7 @@ describe("player shot season routing and unavailable game logs", () => {
   });
 
   it("keeps omitted season on the current schedule fast path", async () => {
-    mocks.schedule.mockResolvedValue([{ games: [game("0022600001"), game("0022600002", 1), game("0022600003", 3, "ATL", "DEN"), game("0042600001")] }]);
+    mocks.schedule.mockResolvedValue([{ gameDate: "10/21/2026", games: [game("0022600001"), game("0022600002", 1), game("0022600003", 3, "ATL", "DEN"), game("0042600001")] }]);
     const res = await GET(request("playerId=2544&team=LAL"));
     expect(res.status).toBe(200); expect(await res.json()).toEqual({ shots: [shot], gamesLoaded: 1, totalGames: 1 });
     expect(mocks.schedule).toHaveBeenCalledExactlyOnceWith(); expect(mocks.stats).not.toHaveBeenCalled();
@@ -137,4 +137,25 @@ it.each(['unavailable','throw','stale'])('failed PBP %s does not become cached s
 });
 it('successful game feeds with no shots by selected player remain legitimate empty',async()=>{
  mocks.stats.mockResolvedValue(ok(log(['0022500340'])));mocks.pbp.mockResolvedValue({shots:[{...shot,personId:1}],available:true,stale:false});const response=await GET(request(query));expect(response.status).toBe(200);expect(await response.json()).toEqual({shots:[],gamesLoaded:1,totalGames:1});
+});
+it('descending game log still selects the most recent30 by date, not the oldest30',async()=>{
+ const ids=Array.from({length:35},(_,i)=>`00225${String(i).padStart(5,'0')}`);
+ const rows=ids.map((id,i)=>[id,new Date(Date.UTC(2026,0,i+1)).toISOString().slice(0,10)]).reverse();
+ mocks.stats.mockResolvedValue(ok({resultSets:[{headers:['Game_ID','GAME_DATE'],rowSet:rows}]}));
+ const response=await GET(request(query));expect(response.status).toBe(200);expect(mocks.pbp.mock.calls.map(([id])=>id)).toEqual(ids.slice(5));expect((await response.json()).totalGames).toBe(35);
+});
+it('all-season responses merge by date and deduplicate repeated game identities',async()=>{
+ const payload=(rows:string[][])=>ok({resultSets:[{headers:['Game_ID','GAME_DATE'],rowSet:rows}]});
+ mocks.stats.mockResolvedValueOnce(payload([['0022500002','JAN 02, 2026'],['0022500001','OCT 21, 2025']])).mockResolvedValueOnce(payload([['0042500405','JUN 13, 2026'],['0022500001','OCT 21, 2025']]));
+ const response=await GET(request(query+'&seasonType=all'));expect(response.status).toBe(200);expect(mocks.pbp.mock.calls.map(([id])=>id)).toEqual(['0022500001','0022500002','0042500405']);expect((await response.json()).totalGames).toBe(3);
+});
+it.each(['missing','invalid','conflict'])('bad game-log date %s is unavailable before any PBP request',async kind=>{
+ const body=kind==='missing'?{headers:['Game_ID'],rowSet:[['0022500001']]}:kind==='invalid'?{headers:['Game_ID','GAME_DATE'],rowSet:[['0022500001','FEB 30, 2026']]}:{headers:['Game_ID','GAME_DATE'],rowSet:[['0022500001','2026-01-01'],['0022500001','2026-01-02']]};mocks.stats.mockResolvedValue(ok({resultSets:[body]}));
+ const response=await GET(request(query));expect(response.status).toBe(503);expect(response.headers.get('Cache-Control')).toBe('no-store');expect(mocks.pbp).not.toHaveBeenCalled();
+});
+it('current schedule also sorts by actual schedule day and removes duplicates',async()=>{
+ mocks.schedule.mockResolvedValue([{gameDate:'11/03/2026',games:[game('0022600003')]},{gameDate:'10/21/2026',games:[game('0022600001'),game('0022600001')]}]);const response=await GET(request('playerId=2544&team=LAL'));expect(response.status).toBe(200);expect(mocks.pbp.mock.calls.map(([id])=>id)).toEqual(['0022600001','0022600003']);expect((await response.json()).totalGames).toBe(2);
+});
+it('a failed first batch stops later PBP requests instead of spending all30',async()=>{
+ mocks.stats.mockResolvedValue(ok(log(Array.from({length:12},(_,i)=>`00225${String(i).padStart(5,'0')}`))));mocks.pbp.mockResolvedValue({shots:[],available:false,stale:false});const response=await GET(request(query));expect(response.status).toBe(503);expect(mocks.pbp).toHaveBeenCalledTimes(5);
 });

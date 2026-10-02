@@ -3,7 +3,7 @@ import { currentSeason } from "./constants";
 // A player's latest indexed season is not necessarily the league's current
 // season (retired players and archived indexes both retain older years).
 export function playerShotRequestUrl(playerId: number, team: string, season: string, seasonType: string, leagueSeason = currentSeason()) {
-  const params = new URLSearchParams({ playerId: String(playerId), team, seasonType, context: "3" });
+  const params = new URLSearchParams({ playerId: String(playerId), team, seasonType, context: "4" });
   if (season !== leagueSeason || team === "TOT") params.set("season", season);
   return `/api/player-shots?${params}`;
 }
