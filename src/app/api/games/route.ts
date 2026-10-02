@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGamesByDate, getTodayScoreboard, getFullSchedule, formatDate, type ScheduleGame } from "@/lib/api";
 
+import { getScheduleDayView, type ScheduleNavigation } from "@/lib/schedule-navigation";
+
 // "YYYY-MM-DD" of a UTC instant in the given IANA timezone.
 function dateInTz(utcIso: string, tz: string): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -38,21 +40,15 @@ export async function GET(request: NextRequest) {
     const isToday = date === localToday;
 
     let games: ScheduleGame[];
+    let navigation: ScheduleNavigation | undefined;
 
     if (tz) {
       // Timezone-aware: scan full schedule, pick games whose UTC tipoff falls
       // on `date` in `tz`. This is what a Beijing user means by "today's games".
       const schedule = await getFullSchedule();
-      const matched: ScheduleGame[] = [];
-      for (const gd of schedule) {
-        for (const g of gd.games) {
-          if (!g.gameDateTimeUTC) continue;
-          if (dateInTz(g.gameDateTimeUTC, tz) !== date) continue;
-          if (g.ifNecessary === true && g.gameStatus === 1 && /tbd/i.test(g.gameStatusText || "")) continue;
-          matched.push(g);
-        }
-      }
-      games = matched;
+      const view = getScheduleDayView(schedule, date, tz);
+      games = view.games;
+      navigation = view.navigation;
 
       // For live games (currently playing in ET), upgrade scores from live scoreboard.
       if (isToday || date === etToday) {
@@ -97,7 +93,7 @@ export async function GET(request: NextRequest) {
       : "public, s-maxage=300, stale-while-revalidate=3600";
 
     return NextResponse.json(
-      { data: games },
+      { data: games, ...(games.length === 0 && navigation ? { navigation } : {}) },
       { headers: { "Cache-Control": cacheControl } }
     );
   } catch {

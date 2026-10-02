@@ -8,6 +8,8 @@ import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
 import { createLatestRequestGate } from "@/lib/latest-request";
 import { localTz } from "@/lib/timezone";
+import type { ScheduleNavigation } from "@/lib/schedule-navigation";
+import ScheduleEmptyNavigation from "./ScheduleEmptyNavigation";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
@@ -30,20 +32,21 @@ interface GamesListProps {
 export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const [games, setGames] = useState<ScheduleGame[]>(initialGames || []);
+  const [{ games, navigation, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; date: string }>({ games: initialGames || [], navigation: null, date: selectedDate });
   const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
   const [loading, setLoading] = useState(!initialGames);
   const [error, setError] = useState(false);
-  const initialFetchDone = useRef(!!initialGames);
+  const initialFetchDone = useRef(!!initialGames?.length);
   const [requests] = useState(createLatestRequestGate);
 
   const fetchGames = useCallback(async (date: string) => {
     const request = requests.begin();
     const { signal } = request;
     setError(false);
+    setResults((previous) => ({ ...previous, navigation: null }));
     try {
       const [gamesRes, replayRes] = await Promise.all([
-        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(localTz())}`, { signal }),
+        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(localTz())}&navigation=1`, { signal }),
         fetch("/api/replay?action=ids", { signal }).catch(() => null),
       ]);
       if (!gamesRes.ok) throw new Error("Failed to fetch games");
@@ -57,7 +60,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
         return order(a.gameStatus) - order(b.gameStatus);
       });
-      setGames(rawGames);
+      setResults({ games: rawGames, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, date });
 
       if (replayJson) setReplayIds(replayJson.ids || []);
     } catch {
@@ -360,8 +363,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             <path d="M10,40 Q40,15 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="M10,40 Q40,65 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <p className="text-lg font-medium text-text-primary">{selectedDate} — {t.home.noGames}</p>
-          <p className="text-sm mt-1 mb-4">{t.home.noGamesHint}</p>
+          <ScheduleEmptyNavigation date={selectedDate} navigation={responseDate === selectedDate ? navigation : null} isZh={isZh} />
           {(() => {
             const facts = [
               "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",
@@ -388,7 +390,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
           </div>
           {isToday && (
             <div className="mt-6 w-full max-w-lg">
-              <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{t.home.noGamesToday}</p>
+              <p className="text-xs text-text-secondary uppercase font-medium mb-3 text-center">{isZh ? "更多浏览方式" : "More ways to explore"}</p>
               <div className="grid grid-cols-2 gap-3">
                 <Link href={`/?date=${(() => {
                   const d = new Date(); d.setDate(d.getDate() - 1);
