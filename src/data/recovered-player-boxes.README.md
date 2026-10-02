@@ -18,3 +18,9 @@ Names, per-game side assignments, counting stats, starter flags and plus/minus a
 Minutes are provider-rounded whole minutes, not exact duration. Nine DNP/DND roster rows absent from the provider are not fabricated. These snapshots supply only player box tables; they do not synthesize NBA BoxScore objects, play-by-play, shot coordinates, exact clocks or career statistics. The normal NBA box remains preferred whenever available.
 
 Keep the JSON behind the server-only archive module. Do not import it into client components or replace missing fields with zero.
+
+## Finals game4 and5 historical assignments
+
+The previously saved provider snapshots for0042500404 (2026-06-10,SAS atNYK) and0042500405 (2026-06-13,NYK atSAS) were manually checked against their official final scorer reports. All42 played rows,16 numeric fields,starter flags and source-rounded minutes match; both games contain12 NYK players and9 SAS players. Jeremy Sochan's team in these games is NYK, as the reports explicitly show.
+
+These two snapshots now use the verified two-team renderer. Provider player UUIDs are retained without inferring NBA player IDs; numeric values are unchanged. The original unassigned snapshots remain retrievable in source commit2b940ea22e950396c5e5f0679b335a578c3f0e8f. Report URLs, page numbers, PDF hashes, source-snapshot hashes and each historical assignment are recorded in recovered-player-box-provenance.json. No report/PDF file is republished.

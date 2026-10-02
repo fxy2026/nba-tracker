@@ -16,6 +16,7 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
       <p className="text-xs text-text-secondary">{isZh
         ? "本场历史球队归属与球员得分已对照 NBA 官方报告核验。分钟为数据源提供的取整值；未列出未出场球员。"
         : "Historical team assignments and player points were checked against the NBA official report. Minutes are rounded by the source; non-playing roster members are not listed."}</p>
+      <a href={box.reportUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">{isZh ? "核验依据：NBA 官方赛后报告（PDF）" : "Reference: NBA official final report (PDF)"}</a>
       <p className="text-xs text-text-secondary">{isZh ? "快照获取时间（约）" : "Snapshot retrieved (approximately)"}: {box.retrievedAt.replace("T", " ").replace(":00Z", " UTC")}</p>
     </div>
     {[box.away, box.home].map(team => <div key={team} className="glass-tile overflow-hidden">

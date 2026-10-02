@@ -1,0 +1,13 @@
+import{createElement}from'react';
+import{renderToStaticMarkup}from'react-dom/server';
+import{expect,it}from'vitest';
+import archive from'../data/recovered-player-boxes.json';
+import provider from'../data/provider-player-boxes.json';
+import evidence from'../data/recovered-player-box-provenance.json';
+import schedule from'../data/schedule-2025-26.json';
+import{validateRecoveredPlayerBox}from'./recovered-player-box';
+import type{ScheduleGame}from'./api';
+import RecoveredPlayerBox from'../app/game/[id]/_components/RecoveredPlayerBox';
+it.each(['0042500404','0042500405'] as const)('verified Finals%s keeps two historical teams and exact points',id=>{const raw=archive[id],proof=evidence[id];const game=schedule.dates.flatMap(day=>day.games).find(game=>game.gameId===id)! as ScheduleGame;const box=validateRecoveredPlayerBox(raw,game);expect(box).not.toBeNull();expect(box!.players).toHaveLength(21);expect(box!.players.filter(p=>p.team==='NYK')).toHaveLength(12);expect(box!.players.filter(p=>p.team==='SAS')).toHaveLength(9);expect(box!.players.find(p=>p.name==='Jeremy Sochan')?.team).toBe('NYK');for(const team of[box!.home,box!.away])expect(box!.players.filter(p=>p.team===team).reduce((n,p)=>n+p.points,0)).toBe(team===box!.home?box!.homeScore:box!.awayScore);expect(proof.officialReportUrl).toBe(box!.reportUrl);for(const p of box!.players)expect(proof.nameToTeam[p.name as keyof typeof proof.nameToTeam]).toBe(p.team);expect(Object.hasOwn(provider,id)).toBe(false);});
+it.each([true,false])('rendered Finals table groups each row only once with source in both languages,zh=%s',isZh=>{const raw=archive['0042500405'];const game=schedule.dates.flatMap(day=>day.games).find(game=>game.gameId===raw.gameId)! as ScheduleGame;const box=validateRecoveredPlayerBox(raw,game)!;const html=renderToStaticMarkup(createElement(RecoveredPlayerBox,{box,isZh}));expect(html.match(/<table/g)).toHaveLength(2);expect(html).toContain('NYK · 94');expect(html).toContain('SAS · 90');const nyk=html.indexOf('NYK · 94'),sas=html.indexOf('SAS · 90'),sochan=html.indexOf('Jeremy Sochan');expect(sochan).toBeGreaterThan(nyk);expect(sochan).toBeLessThan(sas);expect(html.match(/Jeremy Sochan/g)).toHaveLength(1);expect(html).toContain('BigBallsData');expect(html).toContain(isZh?'历史球队归属':'Historical team assignments');});
+it('a malformed optional provider identity cannot enter verified rows',()=>{const raw=structuredClone(archive['0042500405']);raw.players[0].providerPlayerId='not-an-id';const game=schedule.dates.flatMap(day=>day.games).find(g=>g.gameId===raw.gameId)! as ScheduleGame;expect(validateRecoveredPlayerBox(raw,game)).toBeNull();});

@@ -2,6 +2,7 @@ import type { ScheduleGame } from "./api";
 
 export interface RecoveredPlayerLine {
   name: string;
+  providerPlayerId?: string | null;
   team: string;
   minutes: number | null;
   points: number;
@@ -58,6 +59,7 @@ export function validateRecoveredPlayerBox(raw: unknown, game: ScheduleGame): Re
       (p.team !== raw.home && p.team !== raw.away) || !count(p.points) || !countFields.every(key => optionalCount(p[key])) ||
       !(p.plusMinus === null || (typeof p.plusMinus === "number" && Number.isSafeInteger(p.plusMinus))) ||
       !(p.starter === null || typeof p.starter === "boolean")) return null;
+    if (!(p.providerPlayerId === undefined || p.providerPlayerId === null || (typeof p.providerPlayerId === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(p.providerPlayerId)))) return null;
     names.add(p.name);
     for (const [made, attempts] of [["fieldGoalsMade", "fieldGoalsAttempted"], ["threePointersMade", "threePointersAttempted"], ["freeThrowsMade", "freeThrowsAttempted"]]) {
       if (count(p[made]) && count(p[attempts]) && p[made] > p[attempts]) return null;
