@@ -1,6 +1,9 @@
 name: Recover NBA player data
 run-name: ${{ github.event_name == 'push' && 'Diagnose NBA game membership' || github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
 on:
+  push:
+    branches: ['master']
+    paths: ['.github/recovery-kickoff/2026-10-02-membership-april-2.json']
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
@@ -120,7 +123,7 @@ jobs:
           RECOVERY_MODE: membership
           RECOVERY_MAX_REQUESTS: ${{ needs.quota.outputs.max_requests }}
           RECOVERY_EXPIRES_AT: ${{ needs.quota.outputs.expires_at }}
-          RECOVERY_REQUEST_LIMIT: '3'
+          RECOVERY_REQUEST_LIMIT: '2'
       - name: Verify normalized snapshot changes
         id: verified_data
         run: npm test && npx tsc --noEmit

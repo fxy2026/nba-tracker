@@ -37,8 +37,8 @@ async function main() {
   const allowance=calculateRecoveryRunBudget({...evidence.input,now:finishedAt});
   if(!allowance.allowed){skip();return;}
   const available=allowance.maxRequests-connection.reservedRequests;
-  if(mode==='membership'&&available<3){skip();return;}
-  const maxRequests=Math.min(available,mode==='membership'?3:RECOVERY_DAILY_LIMIT);
+  if(mode==='membership'&&available<2){skip();return;}
+  const maxRequests=Math.min(available,mode==='membership'?2:RECOVERY_DAILY_LIMIT);
   if(maxRequests<1){skip();return;}
   // This file contains only public bounds, never tokens or provider responses.
   appendFileSync(output,`allowed=true\nmax_requests=${maxRequests}\nexpires_at=${allowance.expiresAt}\n`);

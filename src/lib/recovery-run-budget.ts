@@ -13,12 +13,14 @@ export const RECOVERY_METADATA_DIAGNOSTIC = {runId:37011342891,jobId:11085173101
 export const RECOVERY_FINALS_RESTORE = {runId:37012916918,jobId:110856904401,sha:"8ede07e180a38cb665a701f37b430a4fc4f5af6c",maxRequests:1} as const;
 export const RECOVERY_PLAYOFF_BATCH = {runId:37014621758,jobId:110862528475,sha:"e25c8e3b9d2587a033a8349b221226070918b15d",maxRequests:60} as const;
 export const RECOVERY_PLAYOFF_BATCH_40 = {runId:37018021993,jobId:110873833607,sha:"26d0ee3ac5d4f6249ce7e74558b21a5ef2b7b34a",maxRequests:120} as const;
+export const RECOVERY_MEMBERSHIP_DIAGNOSTIC = {runId:37062310459,jobId:111021780119,sha:"7b61b4bfd70dbeae52e73075b47d95990d8eb2f1",maxRequests:3} as const;
 export const RECOVERY_REVIEWED_RUNS = [
  {...RECOVERY_FIRST_PILOT,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_METADATA_DIAGNOSTIC,stepName:"Diagnose one playoff metadata response"},
  {...RECOVERY_FINALS_RESTORE,stepName:"Restore one validated Finals player table"},
  {...RECOVERY_PLAYOFF_BATCH,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_PLAYOFF_BATCH_40,stepName:"Fetch and normalize provider data"},
+ {...RECOVERY_MEMBERSHIP_DIAGNOSTIC,stepName:"Diagnose fixed NBA game membership"},
 ] as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 

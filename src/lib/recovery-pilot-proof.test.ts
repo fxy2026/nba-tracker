@@ -1,5 +1,5 @@
 import{expect,it,vi}from'vitest';
-import{calculateRecoveryRunBudget,RECOVERY_FIRST_PILOT,RECOVERY_METADATA_DIAGNOSTIC,RECOVERY_FINALS_RESTORE,RECOVERY_PLAYOFF_BATCH,RECOVERY_PLAYOFF_BATCH_40,RECOVERY_REVIEWED_RUNS,RECOVERY_WORKFLOW_PATH,type RecoveryRunBudgetInput,type RecoveryRunRecord}from'./recovery-run-budget';
+import{calculateRecoveryRunBudget,RECOVERY_FIRST_PILOT,RECOVERY_METADATA_DIAGNOSTIC,RECOVERY_FINALS_RESTORE,RECOVERY_PLAYOFF_BATCH,RECOVERY_PLAYOFF_BATCH_40,RECOVERY_MEMBERSHIP_DIAGNOSTIC,RECOVERY_REVIEWED_RUNS,RECOVERY_WORKFLOW_PATH,type RecoveryRunBudgetInput,type RecoveryRunRecord}from'./recovery-run-budget';
 import{readRecoveryRunLedger,RECOVERY_REPOSITORY}from'./recovery-github-ledger';
 const now='2026-10-02T20:30:00Z';
 const jobBinding=(id:number)=>({run_attempt:1,head_sha:String(RECOVERY_REVIEWED_RUNS.find(row=>row.jobId===id)!.sha),head_branch:'master'});
@@ -35,3 +35,24 @@ it.each(['valid','wrong-id','wrong-sha','wrong-branch','wrong-attempt','failed-s
  expect(result.ok).toBe(true);if(result.ok){expect(result.priorPushRun).toBe(kind!=='valid');expect(calculateRecoveryRunBudget(result.input)).toMatchObject(kind==='valid'?{allowed:true,priorReservedRequests:120,maxRequests:103}:{allowed:false});}
 });
 it('a 120 proof cannot substitute observed57 usage',()=>{const fixed=RECOVERY_PLAYOFF_BATCH_40;expect(calculateRecoveryRunBudget(input({...previous,id:fixed.runId,reviewedPilotProof:{...proof,runId:fixed.runId,jobId:fixed.jobId,headSha:fixed.sha,maxRequests:57 as 120}}))).toMatchObject({allowed:false});});
+
+
+it('all six reviewed bounds reserve212 and leave9 after standalone2, without refunding the membership404 call',()=>{
+ const value=input();
+ for(const fixed of [RECOVERY_METADATA_DIAGNOSTIC,RECOVERY_FINALS_RESTORE,RECOVERY_PLAYOFF_BATCH,RECOVERY_PLAYOFF_BATCH_40,RECOVERY_MEMBERSHIP_DIAGNOSTIC])value.ledger.runs.push({...previous,id:fixed.runId,reviewedPilotProof:{...proof,runId:fixed.runId,jobId:fixed.jobId,headSha:fixed.sha,maxRequests:fixed.maxRequests}});
+ value.ledger.totalCount=value.ledger.runs.length;
+ expect(calculateRecoveryRunBudget(value)).toMatchObject({allowed:true,maxRequests:11,priorReservedRequests:212,knownManualRequests:7});
+});
+it.each(['valid','wrong-id','wrong-sha','wrong-branch','wrong-attempt','failed-step','wrong-step','truncated'])('membership3 bound requires complete exact immutable run/job/step evidence: %s',async kind=>{
+ const fixed=RECOVERY_MEMBERSHIP_DIAGNOSTIC;const batch={...rawRun(previous),id:fixed.runId,head_sha:fixed.sha};
+ const job={...jobBinding(fixed.jobId),id:fixed.jobId as number,run_id:fixed.runId,name:'Ingest player data',status:'completed',conclusion:'success',steps:[{name:'Diagnose fixed NBA game membership',status:'completed',conclusion:'success'}]};
+ if(kind==='wrong-id')job.id=123;if(kind==='wrong-sha')job.head_sha='b'.repeat(40);if(kind==='wrong-branch')job.head_branch='dev';if(kind==='wrong-attempt')job.run_attempt=2;if(kind==='failed-step')job.steps[0].conclusion='failure';if(kind==='wrong-step')job.steps[0].name='Fetch and normalize provider data';
+ const get=vi.fn().mockResolvedValueOnce({id:5,path:RECOVERY_WORKFLOW_PATH}).mockResolvedValueOnce({total_count:2,workflow_runs:[rawRun(current),batch]}).mockResolvedValueOnce({total_count:kind==='truncated'?2:1,jobs:[job]}).mockResolvedValueOnce({total_count:2,jobs:[]});
+ const result=await readRecoveryRunLedger(get,{id:99,runAttempt:1},now);
+ if(kind==='truncated'){expect(result.ok).toBe(false);return;}
+ expect(result.ok).toBe(true);if(result.ok){expect(result.priorPushRun).toBe(kind!=='valid');expect(calculateRecoveryRunBudget(result.input)).toMatchObject(kind==='valid'?{allowed:true,priorReservedRequests:3,maxRequests:220}:{allowed:false});}
+});
+it('membership proof cannot substitute the observed one request for its immutable three-call bound',()=>{
+ const fixed=RECOVERY_MEMBERSHIP_DIAGNOSTIC;
+ expect(calculateRecoveryRunBudget(input({...previous,id:fixed.runId,reviewedPilotProof:{...proof,runId:fixed.runId,jobId:fixed.jobId,headSha:fixed.sha,maxRequests:1}}))).toMatchObject({allowed:false});
+});

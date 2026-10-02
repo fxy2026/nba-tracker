@@ -1,5 +1,4 @@
 import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
-/* eslint-disable @next/next/no-img-element -- ImageResponse template requires raw <img> */
 import { ImageResponse } from "next/og";
 import { getPlayerIndexSnapshot, getPlayerHeadshotUrl } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";

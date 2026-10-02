@@ -3,7 +3,7 @@ import { isMembershipRequest, MEMBERSHIP_REQUEST_LIMIT, type MembershipKind } fr
 
 export type MembershipResponse = { ok: true; body: unknown; retrievedAt: string; responseSha256: string } |
   { ok: false; reason: string; httpStatus?: number; code?: 'plan_required' };
-/** Exact three-route diagnostic transport. No generic provider request method. */
+/** Exact two-route April diagnostic transport. No generic provider request method. */
 export function createRecoveryMembershipClient(options: { apiKey: string; maxRequests: number; expiresAt: string; now?: () => number; fetcher?: typeof fetch }) {
   const now = options.now ?? Date.now, fetcher = options.fetcher ?? fetch, started = now();
   const midnight = Date.UTC(new Date(started).getUTCFullYear(), new Date(started).getUTCMonth(), new Date(started).getUTCDate() + 1);
@@ -29,6 +29,12 @@ export function createRecoveryMembershipClient(options: { apiKey: string; maxReq
         const work = (async (): Promise<MembershipResponse> => {
           const response = await fetcher(`https://api.bigballsdata.com${path}`, { headers: { 'x-api-key': options.apiKey, Accept: 'application/json' }, redirect: 'error', signal: controller.signal });
           if (controller.signal.aborted || now() >= deadline) { stopped = true; return fail('deadline-exhausted'); }
+          if (response.status === 404) {
+            // This fixed resource is missing; only the other pre-approved path
+            // may follow. The error body is never read and this call still counts.
+            if (response.headers.get('x-ratelimit-remaining') === '0') stopped = true;
+            return fail('resource-missing', 404);
+          }
           if (response.status !== 200) { stopped = true; return fail('provider-unavailable', response.status); }
           const length = response.headers.get('content-length');
           if (length && Number(length) > 100_000) { stopped = true; return fail('response-too-large'); }

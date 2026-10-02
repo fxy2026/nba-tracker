@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element -- ImageResponse template requires raw <img> */
 import { ImageResponse } from "next/og";
 import { TEAM_META } from "@/lib/teams";
 import { getCurrentSeasonSchedule } from "@/lib/api";

@@ -3,13 +3,17 @@ import { isQuarantinedProviderIdentity } from './provider-identity-quarantine';
 import type { RecoveredPlayerBox } from './recovered-player-box';
 
 export type MembershipKind = 'availability' | 'lineups';
-export const MEMBERSHIP_REQUEST_LIMIT = 3;
+export const MEMBERSHIP_REQUEST_LIMIT = 2;
 export const MEMBERSHIP_TARGETS = [
-  { kind: 'availability', gameId: '0042500405' },
   { kind: 'availability', gameId: '0042500155' },
   { kind: 'lineups', gameId: '0042500155' },
 ] as const;
 export function isMembershipRequest(kind: unknown, id: unknown): boolean {
+  return MEMBERSHIP_TARGETS.some(target => target.kind === kind && target.gameId === id);
+}
+// Preserve the original evidence parser for the completed Finals reference.
+// This does not authorize another transport request for that game.
+function isSupportedMembershipEvidence(kind: unknown, id: unknown): boolean {
   return (kind === 'availability' && (id === '0042500405' || id === '0042500155')) ||
     (kind === 'lineups' && id === '0042500155');
 }
@@ -68,7 +72,7 @@ export function isMembershipReference(box: RecoveredPlayerBox): boolean {
 
 /** Diagnostic only. Never supplies a recovered snapshot, identity alias or DNP. */
 export function diagnoseMembershipResponse(raw: unknown, kind: MembershipKind, reference: RecoveredPlayerBox) {
-  if (!isMembershipRequest(kind, reference.gameId) || !isMembershipReference(reference)) throw new Error('Invalid fixed membership reference');
+  if (!isSupportedMembershipEvidence(kind, reference.gameId) || !isMembershipReference(reference)) throw new Error('Invalid fixed membership reference');
   const issues = new Set<string>();
   const base = { kind, gameId: reference.gameId, diagnosticOnly: true, officialPromotion: false,
     expectedBinding: { gameId: reference.gameId, matchId: reference.providerMatchId, gameDate: reference.gameDate,

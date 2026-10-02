@@ -21,7 +21,7 @@ function body(id = '0042500405') {
   const team = (home: boolean) => { const row = TEAM_META[box[home ? 'home' : 'away']]; return { team_id: teamId(home), name: `${row.city} ${row.name}` }; };
   return { data: { game: { game_id: id, match_id: box.providerMatchId, game_date: box.gameDate, season_year: 2025, postseason: true, home: team(true), away: team(false) }, home: side(true), away: side(false) }, meta: { availability_available: true, data_type: 'post_game_participation', players_unassigned: 0 } };
 }
-const client = (fetcher: typeof fetch, maxRequests = 3) => createRecoveryMembershipClient({ apiKey: 'TEST_ONLY_NOT_A_REAL_KEY', maxRequests, expiresAt: expiry, fetcher });
+const client = (fetcher: typeof fetch, maxRequests = 2) => createRecoveryMembershipClient({ apiKey: 'TEST_ONLY_NOT_A_REAL_KEY', maxRequests, expiresAt: expiry, fetcher });
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-02T20:30:00Z')); });
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -118,29 +118,52 @@ it.each(['bbs_private_key', 'https://evil.test', 'Authorization: secret', 'Name\
   expect(JSON.stringify(result)).not.toContain(unsafe); expect(result.issues).toContain('unsafe-or-missing-player-name');
 });
 
-it('performs only the three fixed calls, returns bounded evidence, and leaves references unchanged', async () => {
+it('performs only the two fixed April calls, returns bounded evidence, and leaves references unchanged', async () => {
   const prior = JSON.stringify(refs);
   const fetcher = vi.fn(async (url: string | URL | Request) => new Response(JSON.stringify(body(String(url).includes('0042500155') ? '0042500155' : '0042500405'))));
   const c = client(fetcher); const result = await runMembershipDiagnostic(refs, c);
-  expect(result.requests).toBe(3); expect(result.results).toHaveLength(3); expect(JSON.stringify(refs)).toBe(prior);
+  expect(result.requests).toBe(2); expect(result.results).toHaveLength(2); expect(JSON.stringify(refs)).toBe(prior);
   expect(fetcher.mock.calls.map(c => String(c[0]))).toEqual(MEMBERSHIP_TARGETS.map(t => `https://api.bigballsdata.com/v1/nba/games/${t.gameId}/${t.kind}`));
   expect(JSON.stringify(result)).not.toContain('TEST_ONLY'); expect(vi.getTimerCount()).toBe(0);
 });
-it.each([0, 4, 230, NaN, 1.5])('rejects client allowance %s before requests', maxRequests => {
+it.each([0, 3, 4, 230, NaN, 1.5])('rejects client allowance %s before requests', maxRequests => {
   const fetcher = vi.fn(); expect(() => client(fetcher, maxRequests)).toThrow(); expect(fetcher).not.toHaveBeenCalled();
 });
 it('rejects unknown paths and repeat calls without spending another request', async () => {
   const fetcher = vi.fn(async () => new Response(JSON.stringify(body()))); const c = client(fetcher);
   expect((await c.get('lineups', '0042500405')).ok).toBe(false);
-  await c.get('availability', '0042500405'); expect((await c.get('availability', '0042500405')).ok).toBe(false);
+  expect((await c.get('availability', '0042500405')).ok).toBe(false);
+  await c.get('availability', '0042500155'); expect((await c.get('availability', '0042500155')).ok).toBe(false);
   expect(fetcher).toHaveBeenCalledTimes(1); expect(c.requestsMade).toBe(1);
 });
-it.each([403, 429, 500])('stops after HTTP%s without reading or logging an error body', async status => {
+it.each([201, 301, 400, 401, 403, 429, 500])('stops after HTTP%s without reading or logging an error body', async status => {
   const text = vi.fn(async () => 'secret/raw upstream error');
   const fetcher = vi.fn(async () => ({ status, headers: new Headers(), text }) as unknown as Response);
   const result = await runMembershipDiagnostic(refs, client(fetcher));
   expect(result.requests).toBe(1); expect(fetcher).toHaveBeenCalledTimes(1); expect(text).not.toHaveBeenCalled();
   expect(result.results[0]).toMatchObject({ ok: false, httpStatus: status }); expect(JSON.stringify(result)).not.toContain('secret');
+});
+it.each([200, 404])('404 availability records resource-missing and permits the fixed lineups response %s', async nextStatus => {
+  const errorText = vi.fn(async () => 'secret/raw missing-resource body');
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce({ status: 404, headers: new Headers(), text: errorText } as unknown as Response)
+    .mockResolvedValueOnce(nextStatus === 200 ? new Response(JSON.stringify(body('0042500155'))) :
+      { status: 404, headers: new Headers(), text: errorText } as unknown as Response);
+  const c = client(fetcher), result = await runMembershipDiagnostic(refs, c);
+  expect(result.requests).toBe(2); expect(result.results).toHaveLength(2);
+  expect(result.results[0]).toMatchObject({ kind: 'availability', gameId: '0042500155', ok: false, reason: 'resource-missing', httpStatus: 404 });
+  expect(fetcher.mock.calls.map(call => call[0])).toEqual([
+    'https://api.bigballsdata.com/v1/nba/games/0042500155/availability',
+    'https://api.bigballsdata.com/v1/nba/games/0042500155/lineups',
+  ]);
+  expect(errorText).not.toHaveBeenCalled(); expect(JSON.stringify(result)).not.toContain('secret');
+  expect((await c.get('availability', '0042500155')).ok).toBe(false); expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it('404 does not override exhausted provider quota', async () => {
+  const fetcher = vi.fn(async () => ({ status: 404, headers: new Headers({ 'x-ratelimit-remaining': '0' }), text: vi.fn() }) as unknown as Response);
+  const result = await runMembershipDiagnostic(refs, client(fetcher));
+  expect(result.requests).toBe(1); expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(result.results[0]).toMatchObject({ reason: 'resource-missing', httpStatus: 404 });
 });
 it('stops a HTTP200 plan_required envelope and omits its message', async () => {
   const fetcher = vi.fn(async () => new Response(JSON.stringify({ error: { code: 'plan_required', message: 'secret-url-or-key' } })));
@@ -159,10 +182,10 @@ it('noncooperative body cannot commit after timeout, and timers are cleaned', as
   let resolve!: (text: string) => void;
   const text = new Promise<string>(r => { resolve = r; });
   const fetcher = vi.fn(async () => ({ status: 200, headers: new Headers(), text: () => text }) as Response);
-  const c = client(fetcher); const pending = c.get('availability', '0042500405');
+  const c = client(fetcher); const pending = c.get('availability', '0042500155');
   await vi.advanceTimersByTimeAsync(8000); expect(await pending).toMatchObject({ ok: false, reason: 'provider-request-failed' });
   resolve(JSON.stringify(body())); await Promise.resolve();
-  expect((await c.get('availability', '0042500155')).ok).toBe(false); expect(fetcher).toHaveBeenCalledTimes(1); expect(vi.getTimerCount()).toBe(0);
+  expect((await c.get('lineups', '0042500155')).ok).toBe(false); expect(fetcher).toHaveBeenCalledTimes(1); expect(vi.getTimerCount()).toBe(0);
 });
 it('stops before midnight without resetting allowance', async () => {
   vi.setSystemTime(new Date('2026-10-02T23:59:59Z'));

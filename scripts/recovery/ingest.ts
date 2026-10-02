@@ -20,8 +20,8 @@ async function main(){
   if(process.env.GITHUB_REPOSITORY!=='fxy2026/nba-tracker'||process.env.GITHUB_REF!=='refs/heads/master'||process.env.GITHUB_RUN_ATTEMPT!=='1')throw new Error('Invalid ingestion context');
   const allowance=Number(process.env.RECOVERY_MAX_REQUESTS),requested=Number(process.env.RECOVERY_REQUEST_LIMIT),expiresAt=process.env.RECOVERY_EXPIRES_AT??'';
   if(!Number.isSafeInteger(allowance)||allowance<1||allowance>RECOVERY_DAILY_LIMIT||!Number.isSafeInteger(requested)||requested<1||requested>RECOVERY_DAILY_LIMIT)throw new Error('Invalid request bound');
-  if((process.env.GITHUB_EVENT_NAME==='push')!==(mode==='membership') || (mode==='membership'&&(requested!==3||allowance!==3)))throw new Error('Invalid kickoff bounds');
-  const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:3);
+  if((process.env.GITHUB_EVENT_NAME==='push')!==(mode==='membership') || (mode==='membership'&&(requested!==2||allowance!==2)))throw new Error('Invalid kickoff bounds');
+  const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:mode==='membership'?2:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
   const {generic:prior,verified,quarantined}=readStoredArchives();
   if(mode==='membership'){

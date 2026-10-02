@@ -9,7 +9,11 @@ export async function runMembershipDiagnostic(references: Record<string, Recover
   const results = [];
   for (const { kind, gameId } of MEMBERSHIP_TARGETS) {
     const result = await client.get(kind, gameId);
-    if (!result.ok) { results.push({ kind, gameId, ...result }); break; }
+    if (!result.ok) {
+      results.push({ kind, gameId, ...result });
+      if (result.reason === 'resource-missing' && result.httpStatus === 404) continue;
+      break;
+    }
     const evidence = diagnoseMembershipResponse(result.body, kind, references[gameId]);
     results.push({ ...evidence, retrievedAt: result.retrievedAt, responseSha256: result.responseSha256 });
     if (evidence.status === 'malformed-envelope' || evidence.status === 'provider-error') break;
