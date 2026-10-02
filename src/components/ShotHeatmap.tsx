@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { createLatestRequestGate } from "@/lib/latest-request";
+import { playerShotRequestUrl, normalizePlayerShotData, type PlayerShotData } from "@/lib/player-shot-request";
 import { useLocale } from "@/components/LocaleProvider";
 import { aggregateZoneStats, getZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
 
@@ -9,13 +11,6 @@ interface Props {
   teamTricode: string;
   fromYear: string;
   toYear: string;
-}
-
-interface ShotRow {
-  x: number;
-  y: number;
-  shotDistance: number;
-  shotResult: string;
 }
 
 // ============================================================
@@ -272,14 +267,17 @@ const ZONE_LABELS: Record<ShotZone, [number, number]> = RENDER_ORDER.reduce((acc
 // ---- Main component ----
 export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }: Props) {
   const { t, locale } = useLocale();
-  const currentSeason = `${toYear}-${String(parseInt(toYear) + 1).slice(2)}`;
-  const [season, setSeason] = useState(currentSeason);
+  const latestIndexedSeason = `${toYear}-${String(parseInt(toYear) + 1).slice(2)}`;
+  const [season, setSeason] = useState(latestIndexedSeason);
   const [seasonType, setSeasonType] = useState<"regular" | "playoffs" | "all">("regular");
-  const [shots, setShots] = useState<ShotRow[]>([]);
+  const [result, setResult] = useState<(PlayerShotData & { key: string }) | null>(null);
+  const requestGate = useRef(createLatestRequestGate());
+  const requestKey = `${playerId}|${teamTricode}|${season}|${seasonType}`;
+  const shots = useMemo(() => result?.key === requestKey ? result.shots : [], [result, requestKey]);
+  const gamesInfo = result?.key === requestKey ? { loaded: result.gamesLoaded, total: result.totalGames } : { loaded: 0, total: 0 };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hoveredZone, setHoveredZone] = useState<ShotZone | null>(null);
-  const [gamesInfo, setGamesInfo] = useState({ loaded: 0, total: 0 });
 
   const seasons = useMemo(() => {
     const from = parseInt(fromYear);
@@ -290,32 +288,30 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
   }, [fromYear, toYear]);
 
   const fetchShots = useCallback(async (s: string, st: string) => {
+    const request = requestGate.current.begin();
     setLoading(true);
     setError("");
-    setGamesInfo({ loaded: 0, total: 0 });
+    setResult(null);
     try {
-      const params = new URLSearchParams({ playerId: String(playerId), team: teamTricode, seasonType: st });
-      // Historical seasons go through stats.nba.com proxied server-side (CORS-safe).
-      if (s !== currentSeason) params.set("season", s);
-      const res = await fetch(`/api/player-shots?${params}`);
+      const res = await fetch(playerShotRequestUrl(playerId, teamTricode, s, st), { signal: request.signal });
+      if (!request.isCurrent()) return;
       if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      setShots(data.shots || []);
-      setGamesInfo({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
-      if ((data.shots || []).length === 0) {
-        setError(locale === "zh" ? "该赛季无投篮数据" : "No shot data for this season");
-      }
+      const data = normalizePlayerShotData(await res.json());
+      if (!request.isCurrent()) return;
+      if (!data) throw new Error("Malformed shot response");
+      setResult({ ...data, key: `${playerId}|${teamTricode}|${s}|${st}` });
     } catch {
-      setError(locale === "zh" ? "加载投篮数据失败" : "Failed to load shot data");
+      if (request.isCurrent()) setError(locale === "zh" ? "投篮数据源暂不可用，请重试" : "Shot data is temporarily unavailable. Please retry.");
     } finally {
-      setLoading(false);
+      if (request.isCurrent()) setLoading(false);
     }
-  }, [playerId, teamTricode, currentSeason, locale]);
+  }, [playerId, teamTricode, locale]);
 
   useEffect(() => {
-    // fetchShots internally toggles loading state — intentional dep-change refetch.
+    const gate = requestGate.current;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchShots(season, seasonType);
+    void fetchShots(season, seasonType);
+    return () => gate.cancel();
   }, [season, seasonType, fetchShots]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
@@ -366,8 +362,8 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
       </div>
 
       {loading && <div className="h-64 flex items-center justify-center text-text-secondary text-sm">{locale === "zh" ? "加载中..." : "Loading..."}</div>}
-      {error && <div className="h-32 flex items-center justify-center text-danger text-sm">{error}</div>}
-      {!loading && !error && shots.length === 0 && <div className="h-32 flex items-center justify-center text-text-secondary text-sm">{locale === "zh" ? "该赛季无投篮数据" : "No shot data"}</div>}
+      {error && <div className="h-32 flex flex-col items-center justify-center gap-2 text-danger text-sm">{error}<button onClick={() => void fetchShots(season, seasonType)} className="text-accent hover:underline">{t.common.retry}</button></div>}
+      {!loading && !error && shots.length === 0 && <div className="h-32 flex items-center justify-center text-text-secondary text-sm">{locale === "zh" ? "当前选择暂无可用投篮数据" : "No shot data is available for this selection"}</div>}
 
       {!loading && shots.length > 0 && (
         <>

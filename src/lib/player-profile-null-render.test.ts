@@ -50,3 +50,13 @@ it("valid profile calculations retain complete peers and exclude incomplete peer
 it("Chinese unknown-profile copy preserves snapshot provenance",async()=>{
  const tree=await page({...base,pts:null,reb:null,ast:null},[],"zh");expect(text(tree)).toContain("暂无符合条件的完整");expect(text(tree)).toContain("2025-26 · 存档快照");
 });
+
+it("player and indexed-range navigation remounts the heatmap selection", async () => {
+ const heatmap = async (player: unknown) => elements(await page(player)).find(e => e.props.fromYear !== undefined && e.props.toYear !== undefined)!;
+ const first = await heatmap({...base, personId:2544, fromYear:"2003", toYear:"2025"});
+ const retired = await heatmap({...base, personId:977, fromYear:"1996", toYear:"2015"});
+ const refreshed = await heatmap({...base, personId:2544, fromYear:"2003", toYear:"2026"});
+ expect(first.key).toBe("2544:2003:2025");
+ expect(retired.key).toBe("977:1996:2015");
+ expect(refreshed.key).toBe("2544:2003:2026");
+});

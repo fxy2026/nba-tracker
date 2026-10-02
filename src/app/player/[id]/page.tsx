@@ -422,7 +422,7 @@ export default async function PlayerPage({ params }: PageProps) {
         <SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" />
         <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-        <ShotHeatmap playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
+        <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
         <PlayerMeasurements draftYear={player.draftYear} />
         <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
         <PlayerNews playerName={fullName} />
