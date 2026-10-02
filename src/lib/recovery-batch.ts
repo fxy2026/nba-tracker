@@ -8,22 +8,22 @@ export async function runRecoveryBatch(targets:RecoveryTarget[],client:ReturnTyp
   for(const target of targets){
     if(verifiedIds.has(target.nbaGameId))continue;
     if(client.requestsMade>=maxRequests)break;
-    cursor=target.nbaGameId;
     let transportFailed=false;
     for(const date of target.lookupDates){
       if(pages.has(date))continue;
       const result=await client.getMatches(date);
-      if(!result.ok){rejected.push({gameId:target.nbaGameId,reason:`provider-list-unavailable-${result.httpStatus ?? 'network-or-budget'}`});transportFailed=true;break;}
+      if(!result.ok){rejected.push({gameId:target.nbaGameId,reason:`provider-list-${result.reason ?? 'unavailable'}${result.httpStatus===undefined?'':`-http-${result.httpStatus}`}`});transportFailed=true;break;}
       pages.set(date,{requestedDate:date,body:result.body});
     }
     if(transportFailed)break;
     const candidate=resolveRecoveryCandidate(target,target.lookupDates.map(date=>pages.get(date)!));
-    if(!candidate.ok){rejected.push({gameId:target.nbaGameId,reason:candidate.reason});continue;}
+    if(!candidate.ok){cursor=target.nbaGameId;rejected.push({gameId:target.nbaGameId,reason:candidate.reason});continue;}
     const owner=matched.get(candidate.game.providerMatchId);
-    if(owner&&owner!==target.nbaGameId){rejected.push({gameId:target.nbaGameId,reason:'provider-match-already-assigned'});continue;}
+    if(owner&&owner!==target.nbaGameId){cursor=target.nbaGameId;rejected.push({gameId:target.nbaGameId,reason:'provider-match-already-assigned'});continue;}
     const result=await client.getStats(candidate.game.providerMatchId);
-    if(!result.ok||!result.retrievedAt){rejected.push({gameId:target.nbaGameId,reason:`provider-stats-unavailable-${result.httpStatus ?? 'network-or-budget'}`});break;}
+    if(!result.ok||!result.retrievedAt){rejected.push({gameId:target.nbaGameId,reason:`provider-stats-${result.reason ?? 'unavailable'}${result.httpStatus===undefined?'':`-http-${result.httpStatus}`}`});break;}
     const normalized=normalizeProviderPlayerStats(result.body,candidate.game,{requestedMatchId:result.requestedMatchId,retrievedAt:result.retrievedAt,retrievedAtPrecision:'exact'});
+    cursor=target.nbaGameId;
     if(normalized.ok){accepted.push(normalized.snapshot);matched.set(candidate.game.providerMatchId,target.nbaGameId);}
     else rejected.push({gameId:target.nbaGameId,reason:normalized.reason});
   }

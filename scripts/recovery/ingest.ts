@@ -44,9 +44,11 @@ async function main(){
   for(const snapshot of result.accepted){if(verifiedIds.has(snapshot.game.nbaGameId))throw new Error('Verified snapshot overwrite refused');next[snapshot.game.nbaGameId]=snapshot;}
   const write=(path:string,value:unknown)=>{const temp=`${path}.tmp`;writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});renameSync(temp,path);};
   if(result.accepted.length)write('src/data/provider-player-boxes.json',next);
-  if(result.cursor)write('src/data/provider-recovery-state.json',{version:1,cursor:result.cursor,lastRunAt:new Date().toISOString()});
+  const diagnostics={requests:result.requests,accepted:result.accepted.length,withheld:result.rejected.slice(0,20)};
+  if(result.requests>0)write('src/data/provider-recovery-state.json',{version:1,cursor:result.cursor??cursor,lastRunAt:new Date().toISOString(),lastBatch:diagnostics});
   const summary=`Provider recovery: ${result.requests} requests, ${result.accepted.length} accepted, ${result.rejected.length} withheld.\n`;
   console.log(summary.trim());
+  for(const row of diagnostics.withheld)console.log(`Withheld ${row.gameId}: ${row.reason}`);
   if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+result.rejected.map(r=>`- ${r.gameId}: ${r.reason}`).join('\n')+'\n');
 }
 void main().catch(()=>{console.error('Ingestion stopped safely; no credentials or upstream bodies are logged.');process.exitCode=1;});
