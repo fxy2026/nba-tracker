@@ -60,3 +60,10 @@ it("player and indexed-range navigation remounts the heatmap selection", async (
  expect(retired.key).toBe("977:1996:2015");
  expect(refreshed.key).toBe("2544:2003:2026");
 });
+it.each([['en','Jokić'],['zh','Dončić']])('profile comparison CTAs use the exact player ID, not a name query %s',async(language,lastName)=>{
+ const tree=await page({...base,personId:203999,lastName},[],language);
+ const comparisons=elements(tree).filter(e=>typeof e.props.href==='string'&&String(e.props.href).startsWith('/compare'));
+ expect(comparisons.length).toBeGreaterThanOrEqual(2);
+ expect(comparisons.filter(link=>new URL(String(link.props.href),'https://example.test').searchParams.get('p1')==='203999').length).toBeGreaterThanOrEqual(2);
+ for(const link of comparisons){const url=new URL(String(link.props.href),'https://example.test');expect(url.searchParams.get('q1')).toBeNull();expect(url.searchParams.get('p1')).toMatch(/^203999(?:-\d{4})?$/);}
+});

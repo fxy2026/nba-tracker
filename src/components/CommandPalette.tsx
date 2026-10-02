@@ -43,29 +43,22 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerElRef = useRef<HTMLElement | null>(null);
   const baseId = useId();
   const listboxId = `${baseId}-results`;
 
-  // Reset query/focus on open transition (false → true).
-  // Also capture the trigger element so we can restore focus on close.
-  const prevOpenRef = useRef(open);
+  // Each opening owns its focus timer and restores the trigger on close.
   useEffect(() => {
-    const justOpened = !prevOpenRef.current && open;
-    const justClosed = prevOpenRef.current && !open;
-    prevOpenRef.current = open;
-    if (justOpened) {
-      triggerElRef.current = (document.activeElement as HTMLElement) || null;
-      setTimeout(() => {
-        setQuery("");
-        setActiveIdx(0);
-        inputRef.current?.focus();
-      }, 0);
-    } else if (justClosed) {
-      // Restore focus to the trigger that originally opened the dialog
-      triggerElRef.current?.focus?.();
-      triggerElRef.current = null;
-    }
+    if (!open) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const id = setTimeout(() => {
+      setQuery("");
+      setActiveIdx(0);
+      inputRef.current?.focus();
+    }, 0);
+    return () => {
+      clearTimeout(id);
+      trigger?.focus?.();
+    };
   }, [open]);
 
   // Body scroll lock when open
@@ -114,7 +107,13 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       const { activeIdx: a, flatItems: items, open: isOpen } = stateRef.current;
-      if (!isOpen) return;
+      const root = dialogRef.current;
+      if (!isOpen || e.defaultPrevented || e.isComposing || e.keyCode === 229 || !root ||
+        !(e.target instanceof Node) || !root.contains(e.target)) return;
+      // The combobox owns result selection. Buttons and links retain their
+      // native Enter activation, including Close, Clear and focused results.
+      if ((e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp") &&
+        e.target !== inputRef.current) return;
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
@@ -135,8 +134,6 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         }
       } else if (e.key === "Tab") {
         // Focus trap — wrap focus inside the dialog
-        const root = dialogRef.current;
-        if (!root) return;
         const focusables = Array.from(
           root.querySelectorAll<HTMLElement>(
             'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -212,7 +209,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
           />
           {query && (
             <button
-              onClick={() => setQuery("")}
+              onClick={() => { setQuery(""); inputRef.current?.focus(); }}
               className="text-text-secondary hover:text-text-primary p-1 rounded cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
               aria-label={isZh ? "清除搜索" : "Clear search"}
             >

@@ -16,3 +16,16 @@ it('curated career and iconic records keep their distinct scope without an index
  const iconic=await(await GET(new Request('https://site.test/api/search?id=2544-2015'))).json();expect(iconic.data.isIconicSeason).toBe(true);expect(iconic.data.season).toBe('2015-16');expect(snapshot).not.toHaveBeenCalled();
 });
 it('missing lookup remains null and failure does not fabricate averages',async()=>{snapshot.mockRejectedValue(new Error('offline'));const json=await(await GET(new Request('https://site.test/api/search?id=202681'))).json();expect(json.data).toBeNull();});
+it.each([
+ ['Jokic','Nikola','Jokić',203999],['Jokić','Nikola','Jokić',203999],['  NIKOLA   JOKIC ','Nikola','Jokić',203999],['Jokic Nikola','Nikola','Jokić',203999],['约基奇','Nikola','Jokić',203999],['Joker','Nikola','Jokić',203999],
+ ['Doncic','Luka','Dončić',1629029],['Schroder','Dennis','Schröder',203471],
+])('accent-safe query %s preserves exact source name and ID',async(q,firstName,lastName,personId)=>{
+ snapshot.mockResolvedValue({players:[{...player,personId,firstName,lastName}],provenance:archive});
+ const json=await(await GET(new Request(`https://site.test/api/search?q=${encodeURIComponent(String(q))}`))).json();
+ expect(json.data.find((p:{personId:number;isIconicSeason?:boolean})=>p.personId===personId&&!p.isIconicSeason)).toMatchObject({personId,firstName,lastName,indexProvenance:archive});
+ expect(snapshot).toHaveBeenCalledTimes(1);
+});
+it('ASCII surname also finds curated seasons without rewriting their accented names',async()=>{
+ snapshot.mockResolvedValue({players:[],provenance:archive});const json=await(await GET(new Request('https://site.test/api/search?q=Jokic'))).json();
+ expect(json.data.some((p:{isIconicSeason?:boolean;lastName:string})=>p.isIconicSeason&&p.lastName==='Jokić')).toBe(true);
+});

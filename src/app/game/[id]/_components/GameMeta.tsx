@@ -1,13 +1,10 @@
 import type { BoxScoreTeam } from "@/lib/api";
 import type { Translations } from "@/locales";
 
-// 4-up metadata strip: estimated pace (normalized to 48 min), total pts, bench
-// pts, free-throw attempts. OT is rolled into pace by extending denominator.
+// Only source-backed totals. Points per48 minutes are not possession pace.
 export default function GameMeta({ homeTeam, awayTeam, t }: { homeTeam: BoxScoreTeam; awayTeam: BoxScoreTeam; t: Translations }) {
   const totalPts = homeTeam.score + awayTeam.score;
-  const periodsCount = homeTeam.periods?.length || 4;
-  const otPeriods = Math.max(periodsCount - 4, 0);
-  const pace = Math.round((totalPts / (48 + otPeriods * 5)) * 48);
+
 
   let homeBench = 0;
   let awayBench = 0;
@@ -25,12 +22,8 @@ export default function GameMeta({ homeTeam, awayTeam, t }: { homeTeam: BoxScore
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-      <div className="glass-tile p-3 text-center">
-        <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{pace}</p>
-        <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.estPace}</p>
-      </div>
-      <div className="glass-tile p-3 text-center">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+      <div className="glass-tile p-3 text-center col-span-2 sm:col-span-1">
         <p className="text-2xl font-light font-mono tabular-nums text-text-primary">{totalPts}</p>
         <p className="text-[10px] text-text-secondary uppercase">{t.gameDetail.totalPoints}</p>
       </div>

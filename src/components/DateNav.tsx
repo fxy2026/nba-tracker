@@ -98,10 +98,10 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
     const result: { date: string; label: string; weekday: string }[] = [];
     for (let i = -3; i <= 3; i++) {
       const date = offsetCalendarDate(selectedDate, i);
-      result.push({ date, ...calendarDateLabels(date) });
+      result.push({ date, ...calendarDateLabels(date, isZh ? "zh-CN" : "en-US") });
     }
     return result;
-  }, [selectedDate]);
+  }, [selectedDate, isZh]);
 
   // Local timezone "today" — for a Beijing user, this is YYYY-MM-DD in Beijing
   // time, matching the timezone-aware grouping in /api/games and /api/calendar.

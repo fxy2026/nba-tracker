@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPlayerIndexSnapshot } from "@/lib/api";
 import { expandQuery } from "@/lib/playerAliases";
+import { normalizePlayerSearchText } from "@/lib/player-search-text";
 import { TEAM_META } from "@/lib/teams";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
@@ -8,7 +9,7 @@ import { getAccolades } from "@/lib/playerAccolades";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim().toLowerCase().slice(0, 100);
+  const q = normalizePlayerSearchText((searchParams.get("q") ?? "").slice(0, 100));
   const id = searchParams.get("id")?.trim().slice(0, 50);
 
   // Lookup-by-id path — used by /compare to rehydrate the two selected
@@ -130,21 +131,21 @@ export async function GET(request: Request) {
     const players = snapshot.players;
 
     // Expand colloquial / Chinese nicknames into matchable name fragments.
-    const queries = expandQuery(q);
+    const queries = expandQuery(q).map(normalizePlayerSearchText);
 
     // Team-name search: queries like "Lakers" or "湖人 center" should match
     // every player on that team. Collect matching team tricodes.
     const matchedTeams = new Set<string>();
     for (const [tri, meta] of Object.entries(TEAM_META)) {
-      const haystack = `${meta.city} ${meta.name} ${tri}`.toLowerCase();
+      const haystack = normalizePlayerSearchText(`${meta.city} ${meta.name} ${tri}`);
       if (queries.some((qq) => haystack.includes(qq))) matchedTeams.add(tri);
     }
 
     const results = players
       .filter((p) => {
-        const full = `${p.firstName} ${p.lastName}`.toLowerCase();
-        const reversed = `${p.lastName} ${p.firstName}`.toLowerCase();
-        const last = p.lastName.toLowerCase();
+        const full = normalizePlayerSearchText(`${p.firstName} ${p.lastName}`);
+        const reversed = normalizePlayerSearchText(`${p.lastName} ${p.firstName}`);
+        const last = normalizePlayerSearchText(p.lastName);
         if (queries.some((qq) => full.includes(qq) || reversed.includes(qq) || last.includes(qq))) return true;
         // Team-name path: include players from matched teams.
         if (matchedTeams.has(p.teamAbbr)) return true;
@@ -174,8 +175,8 @@ export async function GET(request: Request) {
     const legendResults = ALL_TIME_LEADERS
       .filter((p) => !p.active && p.personId > 0)
       .filter((p) => {
-        const full = p.name.toLowerCase();
-        const last = p.name.split(" ").slice(-1)[0].toLowerCase();
+        const full = normalizePlayerSearchText(p.name);
+        const last = normalizePlayerSearchText(p.name.split(" ").slice(-1)[0]);
         return queries.some((qq) => full.includes(qq) || last.includes(qq));
       })
       .slice(0, 10)
@@ -208,8 +209,8 @@ export async function GET(request: Request) {
     const queryNum = parseInt(q, 10);
     const seasonResults = ICONIC_SEASONS
       .filter((s) => {
-        const full = s.name.toLowerCase();
-        const last = s.name.split(" ").slice(-1)[0].toLowerCase();
+        const full = normalizePlayerSearchText(s.name);
+        const last = normalizePlayerSearchText(s.name.split(" ").slice(-1)[0]);
         const nameMatches = queries.some((qq) => full.includes(qq) || last.includes(qq));
         const yearMatches = !isNaN(queryNum) && (queryNum === s.seasonYear || queryNum === s.seasonYear + 1);
         const seasonStrMatches = s.season.includes(lowerQ);

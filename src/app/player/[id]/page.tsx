@@ -349,7 +349,7 @@ export default async function PlayerPage({ params }: PageProps) {
 
         {/* Tile 7 — Compare CTA (compact, packed) */}
         <Link
-          href={`/compare?q1=${encodeURIComponent(player.lastName)}`}
+          href={`/compare?p1=${player.personId}`}
           className="glass-tile col-span-2 sm:col-span-2 row-span-1 p-3 flex items-center justify-between group cursor-pointer bento-rise"
           style={{ animationDelay: "360ms" }}
         >
