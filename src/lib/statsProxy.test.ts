@@ -83,4 +83,22 @@ describe("fetchStats", () => {
     await fetchStats(URL_A, { key: "leaguedashteamstats" });
     expect(timeoutArgs()).toEqual([8000, 8000]);
   });
+
+  it("does not fetch when the caller's deadline already expired", async () => {
+    const fetchStats = await freshFetchStats();
+    const controller = new AbortController(); controller.abort();
+    expect(await fetchStats(URL_A, { key: "playercareerstats", signal: controller.signal })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("propagates caller cancellation without treating it as an upstream blackhole", async () => {
+    const fetchStats = await freshFetchStats(); const controller = new AbortController();
+    fetchMock.mockImplementationOnce((_url, { signal }) => new Promise((_resolve, reject) => {
+      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+    })).mockResolvedValueOnce(ok());
+    const pending = fetchStats(URL_A, { key: "playercareerstats", signal: controller.signal });
+    controller.abort(); expect(await pending).toBeNull();
+    expect((await fetchStats(URL_A, { key: "playercareerstats" }))?.ok).toBe(true);
+    expect(timeoutArgs()).toEqual([8000, 8000]);
+  });
 });

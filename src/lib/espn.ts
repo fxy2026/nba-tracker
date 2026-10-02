@@ -8,33 +8,41 @@ const ESPN_TEAMS: Record<string, number> = {
   SAC: 23, SAS: 24, TOR: 28, UTA: 26, WAS: 27,
 };
 
-async function fetchJSON(url: string): Promise<unknown | null> {
+async function fetchJSON(url: string, signal?: AbortSignal): Promise<unknown | null> {
+  if (signal?.aborted) return null;
+  const controller = new AbortController();
+  const abort = () => controller.abort(signal?.reason);
+  signal?.addEventListener("abort", abort, { once: true });
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
       signal: controller.signal,
     });
-    clearTimeout(timeout);
     if (!res.ok) return null;
-    return await res.json();
+    // The per-provider timeout must include JSON/body consumption too.
+    const data = await res.json();
+    return controller.signal.aborted ? null : data;
   } catch { return null; }
+  finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener("abort", abort);
+  }
 }
 
 // Find ESPN athlete ID by looking up the team roster and matching by name
-export async function findESPNId(playerName: string, teamTricode: string): Promise<string | null> {
+export async function findESPNId(playerName: string, teamTricode: string, signal?: AbortSignal): Promise<string | null> {
   const espnTeamId = ESPN_TEAMS[teamTricode];
   if (!espnTeamId) return null;
 
   const data = await fetchJSON(
-    `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/roster`
+    `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/roster`, signal,
   ) as { athletes?: { id: string; fullName: string }[] } | null;
 
-  if (!data?.athletes) return null;
+  if (!Array.isArray(data?.athletes)) return null;
   const nameLower = playerName.toLowerCase();
-  const match = data.athletes.find(a => a.fullName?.toLowerCase() === nameLower);
-  return match?.id || null;
+  const match = data.athletes.find(a => typeof a?.fullName === "string" && a.fullName.toLowerCase() === nameLower);
+  return typeof match?.id === "string" && /^\d+$/.test(match.id) ? match.id : null;
 }
 
 interface ESPNSeasonStats {
@@ -47,44 +55,60 @@ interface ESPNSeasonStats {
   AST: number;
   STL: number;
   BLK: number;
-  FG_PCT: number;
-  FG3_PCT: number;
-  FT_PCT: number;
-  FGA: number;
-  FG3A: number;
-  FTA: number;
+  FG_PCT: number | null;
+  FG3_PCT: number | null;
+  FT_PCT: number | null;
+  FGA: number | null;
+  FG3A: number | null;
+  FTA: number | null;
 }
 
 // Fetch career season-by-season stats from ESPN
-export async function getESPNCareerStats(espnId: string): Promise<{ careerSeasons: ESPNSeasonStats[]; recentGames: null }> {
+export async function getESPNCareerStats(espnId: string, signal?: AbortSignal): Promise<{ careerSeasons: ESPNSeasonStats[] | null; recentGames: null }> {
   const data = await fetchJSON(
-    `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${espnId}/stats`
-  ) as { categories?: { name: string; labels: string[]; statistics: { season: { displayName: string }; stats: string[]; teamSlug?: string }[] }[] } | null;
+    `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${espnId}/stats`, signal,
+  ) as { categories?: { name: string; labels: string[]; statistics: { season: { displayName: string }; stats: (string | null)[]; teamSlug?: string }[] }[] } | null;
 
-  if (!data?.categories) return { careerSeasons: [], recentGames: null };
+  const unavailable = { careerSeasons: null, recentGames: null };
+  if (!Array.isArray(data?.categories)) return unavailable;
 
-  const cat = data.categories.find(c => c.name === "regularSeason") || data.categories[0];
-  if (!cat?.statistics?.length) return { careerSeasons: [], recentGames: null };
+  const cat = data.categories.find(c => c?.name === "regularSeason");
+  if (!Array.isArray(cat?.statistics) || !Array.isArray(cat.labels)
+    || !["GP", "MIN", "PTS", "REB", "AST", "STL", "BLK", "FG%", "3P%", "FT%"].every(label => cat.labels.includes(label))) return unavailable;
 
   const labels = cat.labels || [];
-  const get = (vals: string[], label: string) => {
+  const get = (vals: (string | null)[], label: string) => {
     const idx = labels.indexOf(label);
     return idx >= 0 ? vals[idx] : null;
   };
 
   const careerSeasons = cat.statistics
     .map((s): ESPNSeasonStats | null => {
+      if (!Array.isArray(s?.stats) || typeof s.season?.displayName !== "string" || !s.season.displayName
+        || (s.teamSlug != null && typeof s.teamSlug !== "string")) return null;
       const v = s.stats;
       const num = (label: string): number | null => {
         const raw = get(v, label);
-        if (raw == null || raw === "") return null;
-        const n = parseFloat(raw);
+        if (typeof raw !== "string" || raw.trim() === "") return null;
+        const n = Number(raw);
         return Number.isFinite(n) ? n : null;
       };
-      const parseSplit = (raw: string | null) => {
-        if (!raw) return { m: 0, a: 0 };
-        const [m, a] = raw.split("-").map(Number);
-        return { m: m || 0, a: a || 0 };
+      // An explicit missing percentage is unknown, not a zero or a reason to
+      // discard the known counting stats. Undefined/junk still means malformed.
+      const percentage = (label: string): number | null | undefined => {
+        const raw = get(v, label);
+        if (raw === null) return null;
+        if (typeof raw !== "string") return undefined;
+        const value = raw.trim();
+        if (value === "" || value === "--" || value === "-") return null;
+        if (!/^\d+(?:\.\d+)?$/.test(value)) return undefined;
+        const n = Number(value);
+        return Number.isFinite(n) && n <= 100 ? n / 100 : undefined;
+      };
+      const attempts = (raw: string | null): number | null => {
+        if (typeof raw !== "string" || !/^\d+(?:\.\d+)?-\d+(?:\.\d+)?$/.test(raw)) return null;
+        const [made, attempted] = raw.split("-").map(Number);
+        return Number.isFinite(attempted) && made <= attempted ? attempted : null;
       };
       const gp = num("GP");
       const min = num("MIN");
@@ -93,18 +117,15 @@ export async function getESPNCareerStats(espnId: string): Promise<{ careerSeason
       const ast = num("AST");
       const stl = num("STL");
       const blk = num("BLK");
-      const fgPct = num("FG%");
-      const fg3Pct = num("3P%");
-      const ftPct = num("FT%");
+      const fgPct = percentage("FG%");
+      const fg3Pct = percentage("3P%");
+      const ftPct = percentage("FT%");
       // A missing label means ESPN changed the payload — a fake all-zero season
       // row would silently corrupt career charts and advanced-stat math.
       if (gp === null || min === null || pts === null || reb === null || ast === null
-        || stl === null || blk === null || fgPct === null || fg3Pct === null || ftPct === null) {
+        || stl === null || blk === null || fgPct === undefined || fg3Pct === undefined || ftPct === undefined) {
         return null;
       }
-      const fg = parseSplit(get(v, "FG"));
-      const fg3 = parseSplit(get(v, "3PT"));
-      const ft = parseSplit(get(v, "FT"));
 
       return {
         SEASON_ID: s.season?.displayName || "",
@@ -116,15 +137,17 @@ export async function getESPNCareerStats(espnId: string): Promise<{ careerSeason
         AST: ast,
         STL: stl,
         BLK: blk,
-        FG_PCT: fgPct / 100,
-        FG3_PCT: fg3Pct / 100,
-        FT_PCT: ftPct / 100,
-        FGA: fg.a,
-        FG3A: fg3.a,
-        FTA: ft.a,
+        FG_PCT: fgPct,
+        FG3_PCT: fg3Pct,
+        FT_PCT: ftPct,
+        FGA: attempts(get(v, "FG")),
+        FG3A: attempts(get(v, "3PT")),
+        FTA: attempts(get(v, "FT")),
       };
     })
     .filter((row): row is ESPNSeasonStats => row !== null);
 
-  return { careerSeasons, recentGames: null };
+  // Dropping malformed rows must not turn a failed payload into empty history
+  // or present a partial career as complete.
+  return careerSeasons.length === cat.statistics.length ? { careerSeasons, recentGames: null } : unavailable;
 }

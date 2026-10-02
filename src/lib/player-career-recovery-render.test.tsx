@@ -1,0 +1,15 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { expect, it, vi } from "vitest";
+import en from "@/locales/en";
+import zh from "@/locales/zh";
+const state=vi.hoisted(()=>({locale:'en',result:{} as Record<string,unknown>}));
+vi.mock('@/lib/usePlayerCareer',()=>({usePlayerCareer:()=>state.result}));
+vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:state.locale,t:state.locale==='zh'?zh:en})}));
+vi.mock('@/components/player/PlayerRankBadges',()=>({default:()=>null}));
+import PlayerStatsBundle from '@/components/player/PlayerStatsBundle';
+const row={SEASON_ID:'2025-26',TEAM_ABBREVIATION:'LAL',GP:70,MIN:30,PTS:20,REB:5,AST:6,STL:1,BLK:0,FG_PCT:.5,FG3_PCT:null,FT_PCT:.8};
+const render=()=>renderToStaticMarkup(createElement(PlayerStatsBundle,{playerId:2544,playerName:'LeBron James',teamTricode:'LAL'}));
+it.each(['en','zh'])('unavailable exposes retry rather than disappearing, %s',locale=>{state.locale=locale;state.result={data:null,loading:false,error:true,stale:false,retry:vi.fn()};const html=render();expect(html).toContain(locale==='zh'?'重试':'Retry');expect(html).toContain('nba.com/player/2544');});
+it.each(['en','zh'])('valid empty has explicit source-empty status, %s',locale=>{state.locale=locale;state.result={data:{careerSeasons:[]},loading:false,error:false,stale:false,retry:vi.fn()};expect(render()).toContain(locale==='zh'?'数据源已响应':'The source responded');});
+it.each(['en','zh'])('failed refresh retains career table and labels stale, %s',locale=>{state.locale=locale;state.result={data:{careerSeasons:[row]},loading:false,error:true,stale:true,retry:vi.fn()};const html=render();expect(html).toContain('2025-26');expect(html).toContain('20.0');expect(html).toContain(locale==='zh'?'保留上次成功加载':'last successfully loaded');});

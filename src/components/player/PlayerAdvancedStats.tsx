@@ -33,18 +33,18 @@ function computeAdvanced(seasons: CareerSeasonRow[]): AdvancedData | null {
 }
 
 export default function PlayerAdvancedStats({ playerId, playerName, teamTricode }: { playerId: number; playerName?: string; teamTricode?: string }) {
-  const { t } = useLocale();
-  const { data, loading, error } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
+  const { t, locale } = useLocale();
+  const { data, loading, error, stale } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
   const stats = data ? computeAdvanced(data.careerSeasons) : null;
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="h-20 bg-bg-secondary/60 rounded-lg skeleton-shimmer" />
     );
   }
 
   // If failed, just hide — advanced stats are supplementary
-  if (error) return null;
+  if (error && !data) return null;
 
   if (!stats || (stats.TS_PCT == null && stats.EFG_PCT == null)) return null;
 
@@ -57,6 +57,7 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
           {t.playerAdvanced.title}
         </h3>
       </div>
+      {stale && <p className="text-xs text-text-secondary mb-2">{locale === "zh" ? "基于上次成功加载的数据" : "Based on the last successfully loaded data"}</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.TS_PCT != null && (
           <div className="glass-tile p-3 text-center">

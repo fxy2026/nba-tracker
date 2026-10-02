@@ -16,10 +16,10 @@ interface Props {
 
 export default function PlayerStatsBundle({ playerId, playerName, teamTricode }: Props) {
   const { t, locale } = useLocale();
-  const { data, loading, error, retry } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
+  const { data, loading, error, stale, retry } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
   const seasons = data?.careerSeasons ?? null;
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -29,11 +29,12 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
     );
   }
 
-  if (error) {
+  if (error && !seasons?.length) {
     const encodedName = encodeURIComponent(playerName || "");
     return (
       <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
         <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
+        <p className="text-xs text-text-secondary">{locale === "zh" ? "失败后暂停请求 30 秒，再点重试。" : "After a failed request, wait 30 seconds before retrying."}</p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
@@ -52,11 +53,17 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   }
 
   if (!seasons?.length) {
-    return null;
+    return <p className="text-sm text-text-secondary p-4">{locale === "zh"
+      ? "数据源已响应，但未返回可用的常规赛生涯记录。"
+      : "The source responded with no regular-season career records."}</p>;
   }
 
   return (
     <div className="space-y-6">
+      {stale && <div role="status" className="text-xs text-text-secondary">
+        {locale === "zh" ? "刷新暂不可用，保留上次成功加载的数据。请在 30 秒后重试。" : "Refresh unavailable. Showing the last successfully loaded data. Retry after 30 seconds."}
+        <button onClick={retry} className="ml-2 text-accent">{t.common.retry}</button>
+      </div>}
       {/* Current-season league-rank badges (silent-hide when not a leader) */}
       <PlayerRankBadges playerId={playerId} />
 

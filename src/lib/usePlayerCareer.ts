@@ -1,96 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPlayerCareerLoader } from "./player-career-cache";
+import type { PlayerCareerData } from "./player-career-data";
+export type { CareerSeasonRow, PlayerCareerData } from "./player-career-data";
 
-// Career row from /api/player's careerSeasons — the SeasonTotalsRegularSeason
-// result set, or the ESPN fallback (same field names). Shooting-volume
-// columns can be absent on very old seasons, so they stay optional.
-export interface CareerSeasonRow {
-  SEASON_ID: string;
-  TEAM_ABBREVIATION: string;
-  GP: number;
-  MIN: number;
-  PTS: number;
-  REB: number;
-  AST: number;
-  STL: number;
-  BLK: number;
-  FG_PCT: number;
-  FG3_PCT: number;
-  FT_PCT: number;
-  FGA?: number | null;
-  FG3A?: number | null;
-  FTA?: number | null;
-}
-
-export interface PlayerCareerData {
-  careerSeasons: CareerSeasonRow[];
-}
-
-// Module-level promise cache: PlayerStatsBundle and PlayerAdvancedStats mount
-// on the same page and would otherwise issue duplicate /api/player requests.
-const careerCache = new Map<string, Promise<PlayerCareerData>>();
-
-function fetchPlayerCareer(url: string): Promise<PlayerCareerData> {
-  const cached = careerCache.get(url);
-  if (cached) return cached;
-  const p = (async () => {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) throw new Error(`player api ${res.status}`);
-    const raw = (await res.json()) as { careerSeasons?: CareerSeasonRow[] | null };
-    return { careerSeasons: raw.careerSeasons ?? [] };
-  })();
-  // a rejected promise must not poison the cache — the next mount retries
-  p.catch(() => careerCache.delete(url));
-  careerCache.set(url, p);
-  return p;
-}
+// Lazy fetch binding keeps this client module safe during server rendering.
+const loadCareer = createPlayerCareerLoader((...args) => fetch(...args));
+interface State { url: string; data: PlayerCareerData | null; loading: boolean; error: boolean; stale: boolean; }
 
 export function usePlayerCareer(personId: number, name: string, teamAbbr: string): {
-  data: PlayerCareerData | null;
-  loading: boolean;
-  error: boolean;
-  retry: () => void;
+  data: PlayerCareerData | null; loading: boolean; error: boolean; stale: boolean; retry: () => void;
 } {
-  const [data, setData] = useState<PlayerCareerData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [state, setState] = useState<State>({ url: "", data: null, loading: true, error: false, stale: false });
   const [retryKey, setRetryKey] = useState(0);
-
-  const qs = new URLSearchParams({ id: String(personId) });
+  const retryUrl = useRef<string | null>(null);
+  const qs = new URLSearchParams({ id: String(personId), context: "2" });
   if (name) qs.set("name", name);
   if (teamAbbr) qs.set("team", teamAbbr);
   const url = `/api/player?${qs}`;
 
-  // Loading state reset on url/retry change — intentional dep-change refetch pattern.
   useEffect(() => {
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(false);
-    fetchPlayerCareer(url).then(
-      (d) => {
-        if (!cancelled) {
-          setData(d);
-          setLoading(false);
-        }
-      },
-      () => {
-        if (!cancelled) {
-          setError(true);
-          setLoading(false);
-        }
-      },
-    );
-    return () => {
-      cancelled = true;
+    setState(previous => ({ url, data: previous.url === url ? previous.data : null, loading: true, error: false, stale: previous.url === url && previous.stale }));
+    const apply = (result: Awaited<ReturnType<typeof loadCareer>>) => {
+      if (!cancelled) setState({ url, data: result.data, loading: false, error: result.unavailable, stale: result.stale });
     };
+    const unsubscribe = loadCareer.subscribe(url, apply);
+    const explicitRetry = retryUrl.current === url;
+    retryUrl.current = null;
+    loadCareer(url, explicitRetry).then(apply);
+    // Shared requests survive one consumer unmount; late results cannot update
+    // that consumer or display a previous player's data during navigation.
+    return () => { cancelled = true; unsubscribe(); };
   }, [url, retryKey]);
 
-  const retry = () => {
-    careerCache.delete(url);
-    setRetryKey((k) => k + 1);
-  };
-
-  return { data, loading, error, retry };
+  const visible = state.url === url ? state : { data: null, loading: true, error: false, stale: false };
+  return { data: visible.data, loading: visible.loading, error: visible.error, stale: visible.stale, retry: () => { retryUrl.current = url; setRetryKey(k => k + 1); } };
 }

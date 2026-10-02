@@ -24,9 +24,10 @@ const DEFAULT_REVALIDATE = 300;
 
 export async function fetchStats(
   url: string,
-  opts: { key: string; timeoutMs?: number; revalidate?: number },
+  opts: { key: string; timeoutMs?: number; revalidate?: number; signal?: AbortSignal },
 ): Promise<Response | null> {
-  const { key, timeoutMs = DEFAULT_TIMEOUT_MS, revalidate = DEFAULT_REVALIDATE } = opts;
+  const { key, timeoutMs = DEFAULT_TIMEOUT_MS, revalidate = DEFAULT_REVALIDATE, signal } = opts;
+  if (signal?.aborted) return null;
 
   // When the breaker is open we still attempt the fetch, but with a short
   // timeout: Next's data-cache hits return in milliseconds and succeed, while
@@ -39,14 +40,17 @@ export async function fetchStats(
     const res = await fetch(url, {
       headers: STATS_HEADERS,
       next: { revalidate },
-      signal: AbortSignal.timeout(fetchTimeout),
+      // Keep both deadlines attached to the response body, not just headers.
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(fetchTimeout)])
+        : AbortSignal.timeout(fetchTimeout),
     });
     BLACKHOLED_UNTIL.delete(key);
     return res;
   } catch {
     // Only a full-timeout failure arms/extends the breaker — the short probe
     // must leave the existing deadline so the breaker still half-opens on time.
-    if (!breakerOpen) BLACKHOLED_UNTIL.set(key, Date.now() + BLACKHOLE_TTL_MS);
+    if (!breakerOpen && !signal?.aborted) BLACKHOLED_UNTIL.set(key, Date.now() + BLACKHOLE_TTL_MS);
     return null;
   }
 }
