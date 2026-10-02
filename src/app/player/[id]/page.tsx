@@ -1,3 +1,4 @@
+import { knownAverage, hasCompleteAverages, profileStatContext, type StatContext } from "@/lib/player-profile-stats";
 import { currentSeason } from "@/lib/constants";
 import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
 import type { Metadata } from "next";
@@ -87,38 +88,26 @@ export default async function PlayerPage({ params }: PageProps) {
   const fullName = `${player.firstName} ${player.lastName}`;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
-  // Helper: compute rank/percentile/delta for any stat
-  function statContext(statKey: "pts" | "reb" | "ast", value: number) {
-    const active = allPlayers.filter((p) => p.pts > 0);
-    if (active.length === 0 || value <= 0) return { rank: 0, percentile: 0, delta: 0, leagueAvg: 0 };
-    const leagueAvg = active.reduce((s, p) => s + p[statKey], 0) / active.length;
-    const sorted = [...active].sort((a, b) => b[statKey] - a[statKey]);
-    const rank = sorted.findIndex((p) => p.personId === personId) + 1;
-    const percentile = rank > 0 ? Math.round(((sorted.length - rank) / sorted.length) * 100) : 0;
-    const delta = leagueAvg > 0 ? ((value - leagueAvg) / leagueAvg) * 100 : 0;
-    return { rank, percentile, delta, leagueAvg };
-  }
-
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
   // Client components will attempt fetch and show graceful fallback if blocked.
 
-  const ppg = typeof player.pts === "number" ? player.pts : parseFloat(String(player.pts || 0));
-  const rpg = typeof player.reb === "number" ? player.reb : parseFloat(String(player.reb || 0));
-  const apg = typeof player.ast === "number" ? player.ast : parseFloat(String(player.ast || 0));
+  const ppg = knownAverage(player.pts);
+  const rpg = knownAverage(player.reb);
+  const apg = knownAverage(player.ast);
 
   // Team primary color for accents
   const teamColor = player.teamAbbr ? TEAM_META[player.teamAbbr]?.primaryColor || "#3B82F6" : "#3B82F6";
 
-  const ptsCtx = statContext("pts", ppg);
-  const rebCtx = statContext("reb", rpg);
-  const astCtx = statContext("ast", apg);
+  const ptsCtx = profileStatContext(allPlayers, personId, "pts", ppg);
+  const rebCtx = profileStatContext(allPlayers, personId, "reb", rpg);
+  const astCtx = profileStatContext(allPlayers, personId, "ast", apg);
 
   // Similar players — 3 closest active peers + 2 closest historical legends
   // by normalized PPG/RPG/APG distance. Cross-era reach lets "who plays like
   // this active player?" land on a retired great when the shape matches.
   const { activePeers: similarPlayers, legendPeers: similarLegends } = (() => {
-    if (ppg <= 0) return { activePeers: [], legendPeers: [] };
-    const peers = allPlayers.filter((p) => p.personId !== personId && p.pts > 0);
+    if (ppg === null || rpg === null || apg === null || ppg <= 0) return { activePeers: [], legendPeers: [] };
+    const peers = allPlayers.filter(hasCompleteAverages).filter((p) => p.personId !== personId && p.pts > 0);
     if (peers.length === 0) return { activePeers: [], legendPeers: [] };
     const stddev = (vals: number[]) => {
       const m = vals.reduce((s, v) => s + v, 0) / vals.length;
@@ -273,7 +262,7 @@ export default async function PlayerPage({ params }: PageProps) {
           <div className="h-full flex flex-col justify-between p-4 sm:p-5">
             <div className="flex items-start justify-between">
               <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Points / Game</p>
-              {ptsCtx.rank > 0 && (
+              {ptsCtx && ptsCtx.rank > 0 && (
                 <span className="text-[9px] font-mono tabular-nums uppercase tracking-[0.15em] text-accent-amber flex items-center gap-1">
                   <span className="w-1 h-1 rounded-full bg-accent-amber" />
                   #{ptsCtx.rank} in NBA
@@ -283,9 +272,9 @@ export default async function PlayerPage({ params }: PageProps) {
             <div>
               <div className="flex items-baseline gap-3">
                 <p className="text-[clamp(3rem,8vw,6rem)] font-light font-mono tabular-nums leading-none text-accent-amber">
-                  {ppg > 0 ? <CountUpNumber value={ppg} decimals={1} stripTrailingZero durationMs={1100} /> : "—"}
+                  {ppg !== null ? <CountUpNumber value={ppg} decimals={1} stripTrailingZero durationMs={1100} /> : "—"}
                 </p>
-                {ppg > 0 && ptsCtx.leagueAvg > 0 && (
+                {ptsCtx && ptsCtx.delta !== null && (
                   <span className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded ${
                     ptsCtx.delta >= 0
                       ? "bg-success/15 text-success"
@@ -297,13 +286,13 @@ export default async function PlayerPage({ params }: PageProps) {
               </div>
               <div className="flex items-center justify-between gap-3 mt-3">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-text-secondary font-mono">
-                  vs league avg <span className="text-text-primary">{ptsCtx.leagueAvg.toFixed(1)}</span>
+                  vs league avg <span className="text-text-primary">{ptsCtx ? ptsCtx.leagueAvg.toFixed(1) : "—"}</span>
                 </p>
-                {ptsCtx.percentile > 0 && (
+                {ptsCtx && ptsCtx.percentile > 0 && (
                   <p className="text-[9px] font-mono tabular-nums text-text-secondary">P{ptsCtx.percentile}</p>
                 )}
               </div>
-              {ptsCtx.percentile > 0 && (
+              {ptsCtx && ptsCtx.percentile > 0 && (
                 <div className="mt-2 h-1 bg-bg-hover rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-accent to-accent-amber rounded-full"
@@ -382,14 +371,14 @@ export default async function PlayerPage({ params }: PageProps) {
       {/* ─── Profile (archetype + scoring DNA + body metrics) ─── */}
       {(() => {
         const tags: { label: string; tone: "amber" | "blue" | "green" }[] = [];
-        if (ppg > 0) {
+        if (ppg !== null && ppg > 0) {
           if (ppg >= 25) tags.push({ label: t.playerDetail.eliteScorer, tone: "amber" });
           else if (ppg >= 20) tags.push({ label: t.playerDetail.scorer, tone: "blue" });
-          if (apg >= 8) tags.push({ label: t.playerDetail.floorGeneral, tone: "blue" });
-          else if (apg >= 5) tags.push({ label: t.playerDetail.playmaker, tone: "blue" });
-          if (rpg >= 10) tags.push({ label: t.playerDetail.glassCleaner, tone: "green" });
-          else if (rpg >= 7) tags.push({ label: t.playerDetail.rebounder, tone: "green" });
-          if (ppg >= 15 && rpg >= 5 && apg >= 5) tags.push({ label: t.playerDetail.allAround, tone: "amber" });
+          if (apg !== null && apg >= 8) tags.push({ label: t.playerDetail.floorGeneral, tone: "blue" });
+          else if (apg !== null && apg >= 5) tags.push({ label: t.playerDetail.playmaker, tone: "blue" });
+          if (rpg !== null && rpg >= 10) tags.push({ label: t.playerDetail.glassCleaner, tone: "green" });
+          else if (rpg !== null && rpg >= 7) tags.push({ label: t.playerDetail.rebounder, tone: "green" });
+          if (ppg >= 15 && rpg !== null && rpg >= 5 && apg !== null && apg >= 5) tags.push({ label: t.playerDetail.allAround, tone: "amber" });
           if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, tone: "amber" });
           if (seasons <= 2 && ppg >= 10) tags.push({ label: t.playerDetail.risingStar, tone: "amber" });
         }
@@ -420,7 +409,7 @@ export default async function PlayerPage({ params }: PageProps) {
             )}
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 auto-rows-[90px]">
               {/* Scoring DNA (3-col wide) — only when scoring data exists */}
-              {ppg > 0 ? (
+              {ppg !== null && ppg > 0 ? (
                 <ScoringDnaTile ppg={ppg} fg2Pct={fg2Pct} fg3Pct={fg3Pct} ftPct={ftPct} t={t} />
               ) : (
                 <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
@@ -439,7 +428,7 @@ export default async function PlayerPage({ params }: PageProps) {
       })()}
 
       {/* ─── Career Milestones ───────────────── */}
-      {ppg > 0 && seasons > 0 && (() => {
+      {ppg !== null && ppg > 0 && seasons > 0 && (() => {
         const gpEstimate = 70;
         const estTotalPts = Math.round(ppg * gpEstimate * seasons);
         const milestones: string[] = [];
@@ -497,15 +486,15 @@ export default async function PlayerPage({ params }: PageProps) {
       {(() => {
         const teammates = player.teamAbbr
           ? allPlayers
-              .filter((p) => p.teamAbbr === player.teamAbbr && p.personId !== personId && p.pts > 0)
+              .filter((p) => p.teamAbbr === player.teamAbbr && p.personId !== personId && knownAverage(p.pts) !== null && p.pts > 0)
               .sort((a, b) => b.pts - a.pts)
               .slice(0, 6)
           : [];
 
         const similarCandidates: { p: typeof allPlayers[number]; distance: number }[] = [];
-        if (ppg > 0) {
+        if (ppg !== null && rpg !== null && apg !== null && ppg > 0) {
           for (const p of allPlayers) {
-            if (p.personId === personId || p.pts <= 0 || p.position !== player.position) continue;
+            if (!hasCompleteAverages(p) || p.personId === personId || p.pts <= 0 || p.position !== player.position) continue;
             const dPts = p.pts - ppg;
             const dReb = (p.reb - rpg) * 1.5;
             const dAst = (p.ast - apg) * 1.5;
@@ -668,6 +657,10 @@ export default async function PlayerPage({ params }: PageProps) {
           </Link>
         )}
       </section>
+
+      {similarPlayers.length === 0 && similarLegends.length === 0 && (
+        <p className="mt-8 text-sm text-text-secondary">{isZh ? "暂无符合条件的完整场均得分、篮板和助攻数据可用于相似球员比较。" : "No eligible complete points, rebounds and assists records are available for player similarity comparisons."}</p>
+      )}
 
       {/* Similar players — closest current peers (top row) + closest
           historical legends (bottom row). Both rows linked into /compare. */}
@@ -959,30 +952,30 @@ function ExternalLinkTile({ icon: Icon, iconColor, label, title, subtitle, href 
 
 function DataStatTile({ label, value, ctx, delayMs = 0 }: {
   label: string;
-  value: number;
-  ctx: { rank: number; percentile: number; delta: number; leagueAvg: number };
+  value: number | null;
+  ctx: StatContext | null;
   delayMs?: number;
 }) {
   return (
     <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: `${delayMs}ms` }}>
       <div className="flex items-center justify-between">
         <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
-        {ctx.rank > 0 && ctx.rank <= 50 && (
+        {ctx && ctx.rank > 0 && ctx.rank <= 50 && (
           <p className="text-[9px] font-mono tabular-nums text-accent-amber">#{ctx.rank}</p>
         )}
       </div>
       <div>
         <div className="flex items-baseline gap-1.5">
           <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums leading-none text-text-primary">
-            {value > 0 ? <CountUpNumber value={value} decimals={1} stripTrailingZero durationMs={900} /> : "—"}
+            {value !== null ? <CountUpNumber value={value} decimals={1} stripTrailingZero durationMs={900} /> : "—"}
           </p>
-          {value > 0 && ctx.leagueAvg > 0 && (
+          {ctx && ctx.delta !== null && (
             <span className={`text-[9px] font-mono tabular-nums ${ctx.delta >= 0 ? "text-success" : "text-danger"}`}>
               {ctx.delta >= 0 ? "▲" : "▼"}{Math.abs(ctx.delta).toFixed(0)}%
             </span>
           )}
         </div>
-        {ctx.percentile > 0 && (
+        {ctx && ctx.percentile > 0 && (
           <div className="mt-1.5 h-0.5 bg-bg-hover rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-accent to-accent-amber"
