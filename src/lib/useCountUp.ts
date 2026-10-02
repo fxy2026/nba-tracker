@@ -3,15 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Animate a number toward `target`. Starts from 0 on mount, then animates
- * from previous value on subsequent target changes (great for live scores).
+ * Render the same target on the server and first client render, then animate
+ * from the displayed value on subsequent target changes (great for live scores).
  * Respects `prefers-reduced-motion`.
  */
 export function useCountUp(target: number, durationMs = 900): number {
-  const [value, setValue] = useState(() => {
-    if (typeof window === "undefined") return target;
-    return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? target : 0;
-  });
+  const [value, setValue] = useState(target);
   const rafRef = useRef<number | undefined>(undefined);
   const valueRef = useRef(value);
 
@@ -22,14 +19,16 @@ export function useCountUp(target: number, durationMs = 900): number {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || !isFinite(target)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const from = valueRef.current;
+    if (Object.is(from, target)) return;
+    if (reduced || !Number.isFinite(durationMs) || durationMs <= 0 || !Number.isFinite(target) || !Number.isFinite(from)) {
       setValue(target);
       return;
     }
     const start = performance.now();
-    const from = valueRef.current;
+    let cancelled = false;
     const step = (now: number) => {
+      if (cancelled) return;
       const elapsed = now - start;
       const t = Math.min(elapsed / durationMs, 1);
       const eased = 1 - Math.pow(1 - t, 3);
@@ -38,6 +37,7 @@ export function useCountUp(target: number, durationMs = 900): number {
     };
     rafRef.current = requestAnimationFrame(step);
     return () => {
+      cancelled = true;
       if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current);
     };
   }, [target, durationMs]);
