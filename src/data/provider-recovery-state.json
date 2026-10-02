@@ -1,5 +1,10 @@
 {
   "version": 1,
   "cursor": "0042500314",
-  "lastRunAt": "2026-10-02T12:27:33.110Z"
+  "lastRunAt": "2026-10-02T13:27:09.236Z",
+  "lastBatch": {
+    "requests": 1,
+    "accepted": 1,
+    "withheld": []
+  }
 }
