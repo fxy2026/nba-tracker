@@ -41,14 +41,14 @@ interface EspnArticle {
   categories?: EspnCategory[];
 }
 
-// Nickname-only match — nicknames are unique across the NBA, while city
-// matching would confuse "Los Angeles Lakers" with LA Clippers.
+// News categories need an unambiguous whole nickname. The shared display-name
+// helper also falls back to cities, which is intentionally too broad here.
 function matchTeam(description: string) {
-  const lower = description.toLowerCase();
-  for (const meta of Object.values(TEAM_META)) {
-    if (lower.includes(meta.name.toLowerCase())) return meta;
-  }
-  return null;
+  const normalized = ` ${description.toLowerCase().trim().replace(/\s+/g, " ")} `;
+  const matches = Object.values(TEAM_META).filter((meta) =>
+    normalized.includes(` ${meta.name.toLowerCase()} `)
+  );
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function publishedMs(iso: string): number {
