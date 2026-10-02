@@ -4,7 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, Play } from "lucide-react";
 import type { GameLeader, ScheduleGame } from "@/lib/api";
-import { getGameStatusDisplay } from "@/lib/api";
+import { getGameStatusDisplay } from "@/lib/nba-display";
 import TeamLogo from "./TeamLogo";
 import QuarterScores from "./QuarterScores";
 import GameCountdown from "./GameCountdown";

@@ -6,7 +6,7 @@ import { ICONIC_GAMES } from "@/lib/iconicGames";
 import { SEASON_DECADES } from "@/lib/decades";
 import { TEAM_META } from "@/lib/teams";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
-import { formatDate } from "@/lib/api";
+import { formatDate } from "@/lib/nba-display";
 import { getLocale } from "@/lib/locale";
 
 // Deterministic pick of the day. Hashing on the calendar date gives every

@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { getPlayerHeadshotUrl, type ScoringShot, type PlayerInfo } from "@/lib/api";
+import { getPlayerHeadshotUrl } from "@/lib/nba-display";
+import type { ScoringShot, PlayerInfo } from "@/lib/api";
 import {
   BASKET_PCT_X,
   FT_LINE_PCT_X,

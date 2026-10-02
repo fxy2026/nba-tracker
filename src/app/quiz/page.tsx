@@ -12,7 +12,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { readQuizStats, recordAnswer, markDailyPlayed, EMPTY_QUIZ_STATS, type QuizStats } from "@/lib/quizStats";
 import { hashString } from "@/lib/recap";
-import { formatDate } from "@/lib/api";
+import { formatDate } from "@/lib/nba-display";
 
 interface Player {
   personId: number;
