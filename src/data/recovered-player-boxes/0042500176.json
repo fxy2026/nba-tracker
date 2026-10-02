@@ -1,29 +1,19 @@
 {
-  "version": 1,
+  "gameId": "0042500176",
+  "gameDate": "2026-05-01",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500176",
-    "providerMatchId": "7b9b6f9e-7d62-4f24-a3a9-7e3caa68579a",
-    "season": "2025-26",
-    "gameDate": "2026-05-01",
-    "home": {
-      "tricode": "HOU",
-      "score": 78
-    },
-    "away": {
-      "tricode": "LAL",
-      "score": 98
-    }
-  },
+  "providerMatchId": "7b9b6f9e-7d62-4f24-a3a9-7e3caa68579a",
   "retrievedAt": "2026-10-02T14:12:01.767Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260501/20260501_LALHOU.pdf",
+  "home": "HOU",
+  "away": "LAL",
+  "homeScore": 78,
+  "awayScore": 98,
   "players": [
     {
       "providerPlayerId": "007bb1a4-afa1-48c4-a196-ddba7d341555",
       "name": "LeBron James",
-      "team": null,
-      "minutesRounded": 37,
       "points": 28,
       "rebounds": 7,
       "assists": 8,
@@ -40,13 +30,13 @@
       "freeThrowsMade": 6,
       "freeThrowsAttempted": 8,
       "plusMinus": 26,
-      "starter": true
+      "starter": true,
+      "team": "LAL",
+      "minutes": 37
     },
     {
       "providerPlayerId": "050ea4d2-ee0d-48e7-855e-92f191168326",
       "name": "Dalton Knecht",
-      "team": null,
-      "minutesRounded": 3,
       "points": 0,
       "rebounds": 1,
       "assists": 0,
@@ -63,13 +53,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -6,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 3
     },
     {
       "providerPlayerId": "0ad54bea-ec31-4c76-8551-f97596174878",
       "name": "Amen Thompson",
-      "team": null,
-      "minutesRounded": 45,
       "points": 18,
       "rebounds": 8,
       "assists": 3,
@@ -86,13 +76,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 6,
       "plusMinus": -26,
-      "starter": true
+      "starter": true,
+      "team": "HOU",
+      "minutes": 45
     },
     {
       "providerPlayerId": "215f08f0-8bce-4f3a-bd9b-aacefd03d7dd",
       "name": "Luke Kennard",
-      "team": null,
-      "minutesRounded": 29,
       "points": 3,
       "rebounds": 3,
       "assists": 3,
@@ -109,13 +99,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 22,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 29
     },
     {
       "providerPlayerId": "26f7a264-d44c-40e6-8082-898cd8a08ec4",
       "name": "Austin Reaves",
-      "team": null,
-      "minutesRounded": 31,
       "points": 15,
       "rebounds": 3,
       "assists": 2,
@@ -132,13 +122,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": 3,
-      "starter": true
+      "starter": true,
+      "team": "LAL",
+      "minutes": 31
     },
     {
       "providerPlayerId": "2ede0d95-d8c7-41ee-9710-d2cce64acf60",
       "name": "Dorian Finney-Smith",
-      "team": null,
-      "minutesRounded": 8,
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -155,13 +145,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -13,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 8
     },
     {
       "providerPlayerId": "3769d259-6dd0-4c77-9262-9cbf3d14057e",
       "name": "Josh Okogie",
-      "team": null,
-      "minutesRounded": 13,
       "points": 3,
       "rebounds": 4,
       "assists": 1,
@@ -178,13 +168,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 13
     },
     {
       "providerPlayerId": "40ce6dd0-de60-4866-943f-f2b74b11fbe8",
       "name": "Aaron Holiday",
-      "team": null,
-      "minutesRounded": 12,
       "points": 2,
       "rebounds": 1,
       "assists": 2,
@@ -201,13 +191,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 12
     },
     {
       "providerPlayerId": "47997465-5135-487c-af4f-2882c366fa31",
       "name": "Deandre Ayton",
-      "team": null,
-      "minutesRounded": 28,
       "points": 7,
       "rebounds": 16,
       "assists": 1,
@@ -224,13 +214,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 7,
       "plusMinus": 5,
-      "starter": true
+      "starter": true,
+      "team": "LAL",
+      "minutes": 28
     },
     {
       "providerPlayerId": "4c599e0d-9e89-4295-a0f4-318bf3b53377",
       "name": "Clint Capela",
-      "team": null,
-      "minutesRounded": 2,
       "points": 2,
       "rebounds": 1,
       "assists": 0,
@@ -247,13 +237,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 7,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 2
     },
     {
       "providerPlayerId": "51de1f4f-1b4b-4df9-88f6-e5dd6694b04f",
       "name": "Jabari Smith Jr.",
-      "team": null,
-      "minutesRounded": 42,
       "points": 9,
       "rebounds": 12,
       "assists": 3,
@@ -270,13 +260,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 3,
       "plusMinus": -24,
-      "starter": true
+      "starter": true,
+      "team": "HOU",
+      "minutes": 42
     },
     {
       "providerPlayerId": "6b27f1bd-fa4f-4041-8b96-13da1636a34d",
       "name": "Alperen Şengün",
-      "team": null,
-      "minutesRounded": 38,
       "points": 17,
       "rebounds": 11,
       "assists": 1,
@@ -293,13 +283,13 @@
       "freeThrowsMade": 7,
       "freeThrowsAttempted": 10,
       "plusMinus": -27,
-      "starter": true
+      "starter": true,
+      "team": "HOU",
+      "minutes": 38
     },
     {
       "providerPlayerId": "6e19d5b7-fa55-4a79-b3ce-51645c67dd91",
       "name": "Jake LaRavia",
-      "team": null,
-      "minutesRounded": 16,
       "points": 7,
       "rebounds": 5,
       "assists": 0,
@@ -316,13 +306,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 2,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 16
     },
     {
       "providerPlayerId": "76ff0884-b0f8-4b4a-9152-6cc7d18f37f2",
       "name": "Rui Hachimura",
-      "team": null,
-      "minutesRounded": 35,
       "points": 21,
       "rebounds": 6,
       "assists": 2,
@@ -339,13 +329,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 20,
-      "starter": true
+      "starter": true,
+      "team": "LAL",
+      "minutes": 35
     },
     {
       "providerPlayerId": "78207678-1fb5-4883-8697-a0315d31dcc5",
       "name": "Bronny James",
-      "team": null,
-      "minutesRounded": 3,
       "points": 0,
       "rebounds": 1,
       "assists": 1,
@@ -362,13 +352,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -6,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 3
     },
     {
       "providerPlayerId": "83aceaae-5acd-4636-9e69-e431ce5cc3f1",
       "name": "Adou Thiero",
-      "team": null,
-      "minutesRounded": 3,
       "points": 2,
       "rebounds": 1,
       "assists": 0,
@@ -385,13 +375,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 2,
       "plusMinus": -6,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 3
     },
     {
       "providerPlayerId": "8930e786-a87a-40d1-a55c-c11805582a05",
       "name": "Jaxson Hayes",
-      "team": null,
-      "minutesRounded": 17,
       "points": 5,
       "rebounds": 4,
       "assists": 1,
@@ -408,13 +398,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": 21,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 17
     },
     {
       "providerPlayerId": "90e6a734-72ca-4093-b19f-2a09ae046a9e",
       "name": "JD Davison",
-      "team": null,
-      "minutesRounded": 2,
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -431,13 +421,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 7,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 2
     },
     {
       "providerPlayerId": "93b472ce-0bdc-4e44-8005-d564072a1b74",
       "name": "Marcus Smart",
-      "team": null,
-      "minutesRounded": 35,
       "points": 7,
       "rebounds": 7,
       "assists": 1,
@@ -454,13 +444,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": 25,
-      "starter": true
+      "starter": true,
+      "team": "LAL",
+      "minutes": 35
     },
     {
       "providerPlayerId": "9ad04095-0182-41d0-a98b-6f85e278bc89",
       "name": "Nick Smith Jr.",
-      "team": null,
-      "minutesRounded": 3,
       "points": 3,
       "rebounds": 0,
       "assists": 0,
@@ -477,13 +467,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -6,
-      "starter": false
+      "starter": false,
+      "team": "LAL",
+      "minutes": 3
     },
     {
       "providerPlayerId": "b6547791-a69c-4eb4-bc26-a2907d51ec16",
       "name": "Jae'Sean Tate",
-      "team": null,
-      "minutesRounded": 6,
       "points": 3,
       "rebounds": 3,
       "assists": 0,
@@ -500,13 +490,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": 10,
-      "starter": false
+      "starter": false,
+      "team": "HOU",
+      "minutes": 6
     },
     {
       "providerPlayerId": "bdaf47a2-31d6-4c58-8057-aea60b3dcda9",
       "name": "Tari Eason",
-      "team": null,
-      "minutesRounded": 37,
       "points": 14,
       "rebounds": 5,
       "assists": 2,
@@ -523,13 +513,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -14,
-      "starter": true
+      "starter": true,
+      "team": "HOU",
+      "minutes": 37
     },
     {
       "providerPlayerId": "d167c350-2d38-4e72-969e-085e77c359b5",
       "name": "Reed Sheppard",
-      "team": null,
-      "minutesRounded": 36,
       "points": 10,
       "rebounds": 0,
       "assists": 1,
@@ -546,12 +536,9 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 1,
       "plusMinus": -24,
-      "starter": true
+      "starter": true,
+      "team": "HOU",
+      "minutes": 36
     }
-  ],
-  "validation": {
-    "combinedPoints": 176,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

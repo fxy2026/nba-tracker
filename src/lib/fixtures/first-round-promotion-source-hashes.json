@@ -1,0 +1,622 @@
+{
+  "baseline": "5986758fd18d16a2192bda126b9b61cc37b6e5f9",
+  "oldVerified": {
+    "0022500340": "d939b6f555bed19869118eaab933d084bae29f90bbc246c604b9caf8d93a35ef",
+    "0022500961": "4ff6aa0597ccffa39ba1a6155e1e63bcda40dbf6351874e96cf06f3ba3c8819a",
+    "0042500201": "04bb8979f52358d0a829e201419425227657a7278e4e93d05c775675053521c4",
+    "0042500202": "6caa22dd1967daf273d5dfd3f5a756b4bd8bd55ae23162bd1e5550325c66c0d0",
+    "0042500203": "b793783eebf07179f830ce905e85652495def3e166265f2f6a3161af25807b96",
+    "0042500204": "40fa89217a2de925eadfe398c31b0728a25500215f3cabca0fb1d28d505c245c",
+    "0042500205": "f61b389dbf2abf46e9a28bf9f910d8f8fe7c0a0d25c39764bc959fb07dc90bf3",
+    "0042500206": "5c9bdcb3291c82fd62d463ad1a97f65d115fcc6d7f7b1d779e9aa08435815bd2",
+    "0042500207": "4a9d09b0ea6e954b3ffc296c9a8ecb34bc0c9373b9133e31f6d3f12023b4e0f9",
+    "0042500212": "e794616e745096dc11206add32c8f8cd86ddb430467adeaafdfa9f666ca8fd2e",
+    "0042500213": "e9d090acc6177c35bc26fa04287f7b0f33ae0a6eb99ec7622b3030480acc21ec",
+    "0042500214": "22987c819674e62f1d667545b3674593d5e3d392cc0e9d1fd36da26c8342b93e",
+    "0042500221": "d6ca1aaf19e2ed0c0681ba8bb728ccdcf0bb051106e6d73e06b1835da4247ea4",
+    "0042500222": "4858054fbe31c677ad55cf00014f4d74585fd3783a5816406c1a53a51170bc72",
+    "0042500223": "f5ef69cec83526ab6f1b9b6828c5fcf0ff808dd4d524edac838d15318fe3c6c4",
+    "0042500224": "4e84ea7d99afda8178896411f02a254834dbf8c7dfad8673ca882f324b9f82dc",
+    "0042500231": "26cce72f81b95141a08002a439006c1334ef6246c8cf60bf9a8e8d718387104f",
+    "0042500232": "7205903f931d6afb3326cda43c85d4854d4e72e4a9335aea40e2cc856b35de13",
+    "0042500233": "f1b4153710eca3f2b02fd62dadec498cea734d39af9ce792b9afbdf3e5c936e7",
+    "0042500234": "a207b34341de90b5152faffbd151e49b1f232603eb51547986040a7b3b2fb490",
+    "0042500235": "639a4cd730d6843fd4a2b95c3ecd98473d4534809309bc9f2f99f25e609c4604",
+    "0042500236": "3fc903e0cf4f8d5a1219d016abcd977533ee1fd398076e26d7e970df358a6805",
+    "0042500301": "3f104a93d1fe8dd74ef047a64c14f62017799374d1a6111ab4a2336445dff00f",
+    "0042500302": "62351b25dbfb06170e7b6736b687f4d0ddff291ea6d6b5d2e5d49df15d921cb7",
+    "0042500304": "bb03afce1263a9dee236281d6c7ef97f75b2a03fd9424dc5f120adcf3fb444c3",
+    "0042500311": "a24315eef96e0b58a588790cfd07ffa0988df2d7baf437707a35aa99519ae375",
+    "0042500312": "e58ff10c331c9116e5511c2723241e49791d2f712920f623e7e87bb90a8456f2",
+    "0042500314": "7d431902b63082da5493bffb024276b3662250814d78f104f47055dbab1c531f",
+    "0042500315": "f6896f719f681893d054fbb2050435288d9887532e6ba025c186d5b91deadc40",
+    "0042500317": "a41d791abc82977f0be05b739433e3ed49265f25a6870c535d4baf8b88f251d2",
+    "0042500401": "d8aba1d179f5bb5e5e60d85d01e0c1e3dd62547d007085f41df725d53523e7e3",
+    "0042500402": "9b92a4a8c5c11d1b67168918bc39895ddcd081e8badff52bb019578326a2f4c2",
+    "0042500403": "0e1e4efb06929e3a8bfda4b5676fb80822aa84b3613afe091a4cb1d3ecab6c0e",
+    "0042500404": "20f0175c60d993b94ec8f720675715e41c3fea4b60cd86c4872eec7dd63104ce",
+    "0042500405": "912d799845ba259d61bba05fa4f3206c64f23f2a13831068c7faccce6c970a5b"
+  },
+  "sources": {
+    "0042500104": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500104",
+          "providerMatchId": "3227138f-cb03-45ac-b051-b8d2a1a17117",
+          "season": "2025-26",
+          "gameDate": "2026-04-27",
+          "home": {
+            "tricode": "ORL",
+            "score": 94
+          },
+          "away": {
+            "tricode": "DET",
+            "score": 88
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.868Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 182,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "93c9d1c9d8d3c8a891146f56ebce980e54a8ac5f8cf71b6ba55bc56049c29618"
+    },
+    "0042500105": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500105",
+          "providerMatchId": "8af1e092-b6e0-44d0-a7f4-2189f931838a",
+          "season": "2025-26",
+          "gameDate": "2026-04-29",
+          "home": {
+            "tricode": "DET",
+            "score": 116
+          },
+          "away": {
+            "tricode": "ORL",
+            "score": 109
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.401Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 225,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "2082da4377035a1031f7c7a7c6fbfd64d56e52273cc8f84212fa5cb45a7f20a8"
+    },
+    "0042500106": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500106",
+          "providerMatchId": "4cd9d8cd-8cf5-4de9-a9a2-a621eb8f9439",
+          "season": "2025-26",
+          "gameDate": "2026-05-01",
+          "home": {
+            "tricode": "ORL",
+            "score": 79
+          },
+          "away": {
+            "tricode": "DET",
+            "score": 93
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.923Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 172,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "606f7f542a95533b2c3d86ad3f06d81a59c97af289c743241faf342b1cc50885"
+    },
+    "0042500107": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500107",
+          "providerMatchId": "934c7c70-b872-4c88-a7d2-eaf30374cf0f",
+          "season": "2025-26",
+          "gameDate": "2026-05-03",
+          "home": {
+            "tricode": "DET",
+            "score": 116
+          },
+          "away": {
+            "tricode": "ORL",
+            "score": 94
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.543Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 210,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "5cb865e9c411b026c1a0c6fd30d7c523f59d218490ca2eef85b751d02402d52a"
+    },
+    "0042500114": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500114",
+          "providerMatchId": "9ff35240-4690-4025-988f-20235b49cb44",
+          "season": "2025-26",
+          "gameDate": "2026-04-26",
+          "home": {
+            "tricode": "PHI",
+            "score": 96
+          },
+          "away": {
+            "tricode": "BOS",
+            "score": 128
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:03.156Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 224,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "c81acc76f2fb118f396b4fa3aa37660a560b9a08a606c325fdfad4f6f7f63bc9"
+    },
+    "0042500115": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500115",
+          "providerMatchId": "a83d746a-ceb5-4379-9e31-0f7536b8b8f3",
+          "season": "2025-26",
+          "gameDate": "2026-04-28",
+          "home": {
+            "tricode": "BOS",
+            "score": 97
+          },
+          "away": {
+            "tricode": "PHI",
+            "score": 113
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.633Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 210,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "7c77fd396c96c8ee7c95c2d2795ec1c2fd79cd15f154a02a79fe07248e9d5916"
+    },
+    "0042500116": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500116",
+          "providerMatchId": "debf1eb8-1cea-471d-ada9-f19557d6959e",
+          "season": "2025-26",
+          "gameDate": "2026-04-30",
+          "home": {
+            "tricode": "PHI",
+            "score": 106
+          },
+          "away": {
+            "tricode": "BOS",
+            "score": 93
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.176Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 199,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "bc1c12db61bc40f523c011a0eaafde6a8e99692205bee433396e0761174cf752"
+    },
+    "0042500117": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500117",
+          "providerMatchId": "a64cbe96-e7cc-4790-bd46-fcc886acebc7",
+          "season": "2025-26",
+          "gameDate": "2026-05-02",
+          "home": {
+            "tricode": "BOS",
+            "score": 100
+          },
+          "away": {
+            "tricode": "PHI",
+            "score": 109
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.653Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 209,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "707176584e543cb14a3734dcfc609ff06a334cce3f6a378f6598114ea0e9b2f5"
+    },
+    "0042500125": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500125",
+          "providerMatchId": "2e314a74-2ba7-4b94-a13a-7c5a58850669",
+          "season": "2025-26",
+          "gameDate": "2026-04-28",
+          "home": {
+            "tricode": "NYK",
+            "score": 126
+          },
+          "away": {
+            "tricode": "ATL",
+            "score": 97
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.573Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 223,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "643c754f9d5f7fdea36aaf9c7ec0e914e3336ec1cc48d8b347c20acfc9a1080d"
+    },
+    "0042500126": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500126",
+          "providerMatchId": "fbc0f08b-3f47-422e-81f6-8d4c0cddacb3",
+          "season": "2025-26",
+          "gameDate": "2026-04-30",
+          "home": {
+            "tricode": "ATL",
+            "score": 89
+          },
+          "away": {
+            "tricode": "NYK",
+            "score": 140
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.113Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 229,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "65d593b24a5d2b428fc1fd74ce1abdf2b7a54c7186aa609a37c9df8752142041"
+    },
+    "0042500134": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500134",
+          "providerMatchId": "f567446e-7e8d-4ebe-a4e9-326fbc12f620",
+          "season": "2025-26",
+          "gameDate": "2026-04-26",
+          "home": {
+            "tricode": "TOR",
+            "score": 93
+          },
+          "away": {
+            "tricode": "CLE",
+            "score": 89
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:03.095Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 182,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "9d9598a3f6ac0e643eeb7b16fde741125a50bdc69ff5fa99925ed1e59268a6c6"
+    },
+    "0042500135": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500135",
+          "providerMatchId": "a22e9b70-fc0d-4ee8-8dcb-bf5471c52ce9",
+          "season": "2025-26",
+          "gameDate": "2026-04-29",
+          "home": {
+            "tricode": "CLE",
+            "score": 125
+          },
+          "away": {
+            "tricode": "TOR",
+            "score": 120
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.340Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 245,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "e6fcccd0e1942f924768802af4a30a800734e00203b72405e855a7a5585b732c"
+    },
+    "0042500136": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500136",
+          "providerMatchId": "b7d1d26c-f66e-40d9-b0e2-829826a6c8c5",
+          "season": "2025-26",
+          "gameDate": "2026-05-01",
+          "home": {
+            "tricode": "TOR",
+            "score": 112
+          },
+          "away": {
+            "tricode": "CLE",
+            "score": 110
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.849Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 222,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "94c7fce2a5566397c1e0f57f35b4cbec319c631fe9826c1fe9ddcd8f00f6f811"
+    },
+    "0042500137": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500137",
+          "providerMatchId": "ada53320-353c-4562-9012-a8bbf21c21d8",
+          "season": "2025-26",
+          "gameDate": "2026-05-03",
+          "home": {
+            "tricode": "CLE",
+            "score": 114
+          },
+          "away": {
+            "tricode": "TOR",
+            "score": 102
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.480Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 216,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "03d38ade650600bf6d98172900ff5d98c9d544edf2a5f42866685139fca022aa"
+    },
+    "0042500143": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500143",
+          "providerMatchId": "b65cc4fc-ddec-413f-93ea-1e65ff62fe58",
+          "season": "2025-26",
+          "gameDate": "2026-04-25",
+          "home": {
+            "tricode": "PHX",
+            "score": 109
+          },
+          "away": {
+            "tricode": "OKC",
+            "score": 121
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:03.324Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 230,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "5e8e2ea1c6a903a2dddacd939b07ee92f4a976378f1f21c1dde227b809c770f2"
+    },
+    "0042500144": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500144",
+          "providerMatchId": "1b57955f-ab98-4d2d-8744-76fd72796d2c",
+          "season": "2025-26",
+          "gameDate": "2026-04-27",
+          "home": {
+            "tricode": "PHX",
+            "score": 122
+          },
+          "away": {
+            "tricode": "OKC",
+            "score": 131
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.794Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 253,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "3601479c96cfdcf19cb6fc8e34d98a67dfef94ed64a6969971415b2164d33951"
+    },
+    "0042500164": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500164",
+          "providerMatchId": "a5fed3d7-54aa-4522-a8db-ed23c05314c6",
+          "season": "2025-26",
+          "gameDate": "2026-04-25",
+          "home": {
+            "tricode": "MIN",
+            "score": 112
+          },
+          "away": {
+            "tricode": "DEN",
+            "score": 96
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:03.258Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 208,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "a64b9fd53ea47b661d9086c8ccec1148c0714fe71879ae7aa16b03f9611a6413"
+    },
+    "0042500174": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500174",
+          "providerMatchId": "fa9bd490-a863-44c1-8e59-61e79e7337a5",
+          "season": "2025-26",
+          "gameDate": "2026-04-26",
+          "home": {
+            "tricode": "HOU",
+            "score": 115
+          },
+          "away": {
+            "tricode": "LAL",
+            "score": 96
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.967Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 211,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "723660d72732021715ba6dd92dbd9434d6796a69c28688c8a323cd888e9f88e8"
+    },
+    "0042500175": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500175",
+          "providerMatchId": "01ba227c-178d-478f-95a6-3bcbac3353ae",
+          "season": "2025-26",
+          "gameDate": "2026-04-29",
+          "home": {
+            "tricode": "LAL",
+            "score": 93
+          },
+          "away": {
+            "tricode": "HOU",
+            "score": 99
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:02.280Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 192,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "498d801d93ed8f997f725da2b3f013bc0c8b1a9973d88f8f110d6a957a130f0f"
+    },
+    "0042500176": {
+      "envelope": {
+        "version": 1,
+        "provider": "BigBallsData",
+        "coverage": "provider-basic-unassigned",
+        "game": {
+          "nbaGameId": "0042500176",
+          "providerMatchId": "7b9b6f9e-7d62-4f24-a3a9-7e3caa68579a",
+          "season": "2025-26",
+          "gameDate": "2026-05-01",
+          "home": {
+            "tricode": "HOU",
+            "score": 78
+          },
+          "away": {
+            "tricode": "LAL",
+            "score": 98
+          }
+        },
+        "retrievedAt": "2026-10-02T14:12:01.767Z",
+        "retrievedAtPrecision": "exact",
+        "validation": {
+          "combinedPoints": 176,
+          "historicalTeams": "unassigned",
+          "officialReportChecked": false
+        }
+      },
+      "sha256": "61d8aa069a6d257dc1fa729a41f349c175c0af477a2eaae7639fa72ddd078f56"
+    }
+  }
+}

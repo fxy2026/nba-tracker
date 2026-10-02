@@ -1,29 +1,19 @@
 {
-  "version": 1,
+  "gameId": "0042500104",
+  "gameDate": "2026-04-27",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500104",
-    "providerMatchId": "3227138f-cb03-45ac-b051-b8d2a1a17117",
-    "season": "2025-26",
-    "gameDate": "2026-04-27",
-    "home": {
-      "tricode": "ORL",
-      "score": 94
-    },
-    "away": {
-      "tricode": "DET",
-      "score": 88
-    }
-  },
+  "providerMatchId": "3227138f-cb03-45ac-b051-b8d2a1a17117",
   "retrievedAt": "2026-10-02T14:12:02.868Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260427/20260427_DETORL.pdf",
+  "home": "ORL",
+  "away": "DET",
+  "homeScore": 94,
+  "awayScore": 88,
   "players": [
     {
       "providerPlayerId": "03fe2f8b-77e5-482e-9a7e-ffb9688af242",
       "name": "Javonte Green",
-      "team": null,
-      "minutesRounded": 17,
       "points": 5,
       "rebounds": 5,
       "assists": 0,
@@ -40,13 +30,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 8,
-      "starter": false
+      "starter": false,
+      "team": "DET",
+      "minutes": 17
     },
     {
       "providerPlayerId": "07819028-1c90-4b56-907f-398c28cf79ec",
       "name": "Paolo Banchero",
-      "team": null,
-      "minutesRounded": 40,
       "points": 18,
       "rebounds": 8,
       "assists": 4,
@@ -63,13 +53,13 @@
       "freeThrowsMade": 10,
       "freeThrowsAttempted": 13,
       "plusMinus": 8,
-      "starter": true
+      "starter": true,
+      "team": "ORL",
+      "minutes": 40
     },
     {
       "providerPlayerId": "115fdb4e-ce25-425a-92d9-a33df656ba06",
       "name": "Anthony Black",
-      "team": null,
-      "minutesRounded": 18,
       "points": 2,
       "rebounds": 2,
       "assists": 0,
@@ -86,13 +76,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -19,
-      "starter": false
+      "starter": false,
+      "team": "ORL",
+      "minutes": 18
     },
     {
       "providerPlayerId": "22a10bd6-b441-4d49-9b3e-5bfaa55e65ef",
       "name": "Goga Bitadze",
-      "team": null,
-      "minutesRounded": 13,
       "points": 2,
       "rebounds": 6,
       "assists": 0,
@@ -109,13 +99,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 1,
       "plusMinus": -11,
-      "starter": false
+      "starter": false,
+      "team": "ORL",
+      "minutes": 13
     },
     {
       "providerPlayerId": "2fc8881c-d1ce-44e9-817c-181bb5735dab",
       "name": "Ausar Thompson",
-      "team": null,
-      "minutesRounded": 32,
       "points": 6,
       "rebounds": 9,
       "assists": 1,
@@ -132,13 +122,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 4,
       "plusMinus": -16,
-      "starter": true
+      "starter": true,
+      "team": "DET",
+      "minutes": 32
     },
     {
       "providerPlayerId": "33971a1c-9818-45ee-803a-f01104ba0497",
       "name": "Jamal Cain",
-      "team": null,
-      "minutesRounded": 24,
       "points": 8,
       "rebounds": 9,
       "assists": 0,
@@ -155,13 +145,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -9,
-      "starter": false
+      "starter": false,
+      "team": "ORL",
+      "minutes": 24
     },
     {
       "providerPlayerId": "43ce53a8-18cc-47fa-9017-cff7b0681830",
       "name": "Jalen Duren",
-      "team": null,
-      "minutesRounded": 31,
       "points": 12,
       "rebounds": 8,
       "assists": 3,
@@ -178,13 +168,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -11,
-      "starter": true
+      "starter": true,
+      "team": "DET",
+      "minutes": 31
     },
     {
       "providerPlayerId": "45c30ce9-1b88-4799-98a6-a785f485028b",
       "name": "Tristan Da Silva",
-      "team": null,
-      "minutesRounded": 14,
       "points": 6,
       "rebounds": 4,
       "assists": 1,
@@ -201,13 +191,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -5,
-      "starter": false
+      "starter": false,
+      "team": "ORL",
+      "minutes": 14
     },
     {
       "providerPlayerId": "64568b25-c7ae-4570-89c7-6642f6d4fb1f",
       "name": "Daniss Jenkins",
-      "team": null,
-      "minutesRounded": 13,
       "points": 3,
       "rebounds": 2,
       "assists": 4,
@@ -224,13 +214,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": 2,
-      "starter": false
+      "starter": false,
+      "team": "DET",
+      "minutes": 13
     },
     {
       "providerPlayerId": "67606fe4-75e9-411e-b396-38328796f26e",
       "name": "Isaiah Stewart",
-      "team": null,
-      "minutesRounded": 17,
       "points": 8,
       "rebounds": 3,
       "assists": 1,
@@ -247,13 +237,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 3,
       "plusMinus": 5,
-      "starter": false
+      "starter": false,
+      "team": "DET",
+      "minutes": 17
     },
     {
       "providerPlayerId": "6a450f31-4f21-42a4-a3e9-fa03d56121fa",
       "name": "Cade Cunningham",
-      "team": null,
-      "minutesRounded": 39,
       "points": 25,
       "rebounds": 9,
       "assists": 6,
@@ -270,13 +260,13 @@
       "freeThrowsMade": 8,
       "freeThrowsAttempted": 10,
       "plusMinus": -7,
-      "starter": true
+      "starter": true,
+      "team": "DET",
+      "minutes": 39
     },
     {
       "providerPlayerId": "7bb336cd-393e-4fed-b7f2-c0b90b540c02",
       "name": "Tobias Harris",
-      "team": null,
-      "minutesRounded": 35,
       "points": 20,
       "rebounds": 6,
       "assists": 0,
@@ -293,13 +283,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 5,
       "plusMinus": -10,
-      "starter": true
+      "starter": true,
+      "team": "DET",
+      "minutes": 35
     },
     {
       "providerPlayerId": "831c31ff-c7c1-4a47-9c61-f2e9be1a88ec",
       "name": "Jalen Suggs",
-      "team": null,
-      "minutesRounded": 35,
       "points": 5,
       "rebounds": 2,
       "assists": 2,
@@ -316,13 +306,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 17,
-      "starter": true
+      "starter": true,
+      "team": "ORL",
+      "minutes": 35
     },
     {
       "providerPlayerId": "95e08edc-d0d9-453c-82d7-136dd741699b",
       "name": "Kevin Huerter",
-      "team": null,
-      "minutesRounded": 3,
       "points": 0,
       "rebounds": 1,
       "assists": 0,
@@ -339,13 +329,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 6,
-      "starter": false
+      "starter": false,
+      "team": "DET",
+      "minutes": 3
     },
     {
       "providerPlayerId": "a0b7637f-00ba-49ff-a94c-a58d85fb5a87",
       "name": "Wendell Carter Jr.",
-      "team": null,
-      "minutesRounded": 35,
       "points": 12,
       "rebounds": 11,
       "assists": 4,
@@ -362,13 +352,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 8,
       "plusMinus": 17,
-      "starter": true
+      "starter": true,
+      "team": "ORL",
+      "minutes": 35
     },
     {
       "providerPlayerId": "b8763da2-8bd4-41dd-bced-ecd5a75dcfbf",
       "name": "Duncan Robinson",
-      "team": null,
-      "minutesRounded": 29,
       "points": 7,
       "rebounds": 1,
       "assists": 0,
@@ -385,13 +375,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -18,
-      "starter": true
+      "starter": true,
+      "team": "DET",
+      "minutes": 29
     },
     {
       "providerPlayerId": "c56e7937-6e3b-48fb-b194-e316b3d48810",
       "name": "Franz Wagner",
-      "team": null,
-      "minutesRounded": 24,
       "points": 19,
       "rebounds": 5,
       "assists": 3,
@@ -408,13 +398,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": 17,
-      "starter": true
+      "starter": true,
+      "team": "ORL",
+      "minutes": 24
     },
     {
       "providerPlayerId": "f2db0b14-e65c-4567-bf52-5a748d96580c",
       "name": "Caris LeVert",
-      "team": null,
-      "minutesRounded": 25,
       "points": 2,
       "rebounds": 5,
       "assists": 3,
@@ -431,13 +421,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 11,
-      "starter": false
+      "starter": false,
+      "team": "DET",
+      "minutes": 25
     },
     {
       "providerPlayerId": "fff203c3-044a-47c8-91e5-6a04b54717d6",
       "name": "Desmond Bane",
-      "team": null,
-      "minutesRounded": 37,
       "points": 22,
       "rebounds": 5,
       "assists": 1,
@@ -454,12 +444,9 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": 15,
-      "starter": true
+      "starter": true,
+      "team": "ORL",
+      "minutes": 37
     }
-  ],
-  "validation": {
-    "combinedPoints": 182,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

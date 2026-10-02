@@ -1,6 +1,6 @@
-# Two verified historical player-stat snapshots
+# Reference-checked historical player-stat snapshots
 
-Source: [BigBallsData](https://bigballsdata.com), authenticated free-tier stored-match stats responses retrieved approximately 2026-10-02 09:49 UTC. No API keys or current-roster team assignments are stored here. These are two fixed snapshots, not an automatic or comprehensive archive.
+Source: [BigBallsData](https://bigballsdata.com), authenticated free-tier stored-match stats responses retrieved approximately 2026-10-02 09:49 UTC. No API keys or current-roster team assignments are stored here. These original two fixed snapshots began this manually reference-checked archive; later promotions and their coverage limits are documented below.
 
 | NBA schedule game | Provider match | Verified game/date |
 | --- | --- | --- |
@@ -39,3 +39,9 @@ Eight saved conference-final snapshots (185 played rows) have been checked again
 `recovered-player-boxes/<gameId>.json` is now authoritative. `recovered-player-boxes.json` is a deterministic gitignored build artifact produced with the provider aggregate by `npm run data:generate` (also pretest/prebuild/predev/pretypecheck). Existing server imports are unchanged. The pure validator has no API/archive import, so generation has no circular dependency. Both input directories and active quarantine are fully checked for game identity, points and provider match UUID conflicts before either aggregate is written. Automated ingestion still only publishes generic per-game files plus cursor state; it cannot alter verified files, exclusions or quarantine.
 
 Twenty saved second-round games were checked against their official final reports. 465 played rows match; no numeric field was changed. Ten additional provider records in 0042500203 and0042500214 were unsupported as either played or DNP in the reports. They are excluded from player tables, with an explicit notice; every original value, original row index and source envelope is retained in `excluded-provider-player-records.json`, alongside source commit/hash and report references. The old15 verified game snapshots remain exactly unchanged. Small report-internal printed-minute total differences are retained in provenance, not used to modify matching player values.
+
+### First-round review and explicit partial coverage
+
+Nineteen complete saved first-round games add 423 played rows with historical teams and all source numbers unchanged. Five genuine appearances rounded to zero minutes are retained. Game 0042500164 contains 19 validated rows, but its report lists 21 played players: Denver players DaRon Holmes II and Jalen Pickett each appeared for one second and are absent from the provider snapshot. Its `playedCoverage` records the missing official names, team, report/hash and verification date. The table explicitly shows 19 of 21 coverage without synthesizing the missing rows or marking them DNP. Team point totals still reconcile, which alone does not prove roster completeness.
+
+There are now 55 renderable historical-team snapshots (1,234 rows), including this one partial game. The two identity-defective games remain quarantined with 55 original rows; ten other excluded original records remain separately retained. Thus all 1,299 original stored records across 57 games remain recoverable, but they are not all verified played records. Generic storage is temporarily empty after manual review of every renderable saved game; its empty `.gitkeep` preserves the directory for future daily ingestion. The reader rejects nonempty or nonregular markers.

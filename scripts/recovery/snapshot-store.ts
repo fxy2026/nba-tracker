@@ -9,6 +9,7 @@ export function readSnapshotDirectory(directory: string): Record<string, Provide
   const result: Record<string, ProviderBasicSnapshot> = {};
   const owners = new Set<string>();
   for (const file of readdirSync(directory).sort()) {
+    if(file === '.gitkeep' && lstatSync(join(directory,file)).isFile() && lstatSync(join(directory,file)).size === 0) continue;
     if (!/^\d{10}\.json$/.test(file) || !lstatSync(join(directory,file)).isFile()) throw new Error('Invalid snapshot filename');
     const raw: unknown = JSON.parse(readFileSync(join(directory,file),'utf8'));
     const snapshot = validateProviderPlayerSnapshot(raw);

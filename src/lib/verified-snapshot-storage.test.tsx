@@ -1,12 +1,13 @@
 import{createElement}from'react';
 import{renderToStaticMarkup}from'react-dom/server';
 import{createHash}from'node:crypto';
-import{mkdtempSync,mkdirSync,writeFileSync,readFileSync,cpSync,rmSync,unlinkSync}from'node:fs';
+import{mkdtempSync,mkdirSync,writeFileSync,readFileSync,cpSync,rmSync}from'node:fs';
 import{join}from'node:path';
 import{tmpdir}from'node:os';
 import{expect,it}from'vitest';
 import archive from'../data/recovered-player-boxes.json';
 import generic from'../data/provider-player-boxes.json';
+import storageSample from'./fixtures/provider-snapshot-storage-sample.json';
 import hashes from'./fixtures/verified-box-pre-split-hashes.json';
 import exclusions from'../data/excluded-provider-player-records.json';
 import proof from'../data/recovered-player-box-provenance.json';
@@ -42,7 +43,7 @@ it('legitimate short appearances rounded to zero remain in verified tables',()=>
 function fixtureRoot(){const root=mkdtempSync(join(tmpdir(),'nba-verified-store-'));for(const dir of ['provider-player-boxes','recovered-player-boxes','quarantined-player-boxes'])cpSync(`src/data/${dir}`,join(root,dir),{recursive:true});for(const file of ['schedule-2025-26.json','player-box-quarantine.json'])cpSync(`src/data/${file}`,join(root,file));return root;}
 it('clean source generates both missing aggregates without an import cycle',()=>{const root=fixtureRoot();try{generateStoredArchives(root);expect(JSON.parse(readFileSync(join(root,'recovered-player-boxes.json'),'utf8'))).toEqual(archive);expect(JSON.parse(readFileSync(join(root,'provider-player-boxes.json'),'utf8'))).toEqual(generic);expect(readStoredArchives(root).verified).toEqual(archive);}finally{rmSync(root,{recursive:true,force:true});}});
 it('bad verified input cannot replace either known-good generated aggregate',()=>{const root=fixtureRoot();try{generateStoredArchives(root);const before=['provider-player-boxes.json','recovered-player-boxes.json'].map(file=>readFileSync(join(root,file),'utf8'));const bad=structuredClone(archive['0042500201']);bad.players[0].points++;writeFileSync(join(root,'recovered-player-boxes/0042500201.json'),JSON.stringify(bad));expect(()=>generateStoredArchives(root)).toThrow();for(const[file,index]of [['provider-player-boxes.json',0],['recovered-player-boxes.json',1]] as const)expect(readFileSync(join(root,file),'utf8')).toBe(before[index]);}finally{rmSync(root,{recursive:true,force:true});}});
-it('duplicate provider UUID across generic and verified archives fails before generation',()=>{const root=fixtureRoot();try{const row=structuredClone(Object.values(generic)[0]);row.game.providerMatchId=archive['0042500201'].providerMatchId;writeFileSync(join(root,`provider-player-boxes/${row.game.nbaGameId}.json`),JSON.stringify(row));expect(()=>generateStoredArchives(root)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
+it('duplicate provider UUID across generic and verified archives fails before generation',()=>{const root=fixtureRoot();try{const row=structuredClone(storageSample);row.game.nbaGameId='0042500991';row.game.providerMatchId=archive['0042500201'].providerMatchId;writeFileSync(join(root,`provider-player-boxes/${row.game.nbaGameId}.json`),JSON.stringify(row));expect(()=>generateStoredArchives(root)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
 it('verified filename identity mismatch is rejected',()=>{const root=mkdtempSync(join(tmpdir(),'nba-verified-name-'));try{mkdirSync(join(root,'verified'));writeFileSync(join(root,'verified/0042500999.json'),JSON.stringify(archive['0042500201']));expect(()=>readVerifiedSnapshotDirectory(join(root,'verified'),schedule)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
-it('unconfirmed loss of generic files cannot blank the last-good aggregate',()=>{const root=fixtureRoot();try{generateStoredArchives(root);const prior=JSON.parse(readFileSync(join(root,'provider-player-boxes.json'),'utf8'));for(const id of Object.keys(prior))unlinkSync(join(root,`provider-player-boxes/${id}.json`));expect(()=>generateStoredArchives(root)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
+it('unconfirmed loss of generic files cannot blank the last-good aggregate',()=>{const root=fixtureRoot();try{generateStoredArchives(root);writeFileSync(join(root,'provider-player-boxes.json'),JSON.stringify({'0042500991':storageSample}));expect(()=>generateStoredArchives(root)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
 it('validator has no import of API or generated archives',()=>{const source=readFileSync('src/lib/recovered-player-box.ts','utf8');expect(source).not.toMatch(/import.*(?:api|\.json)/);});

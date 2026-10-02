@@ -61,6 +61,15 @@ export interface RecoveredPlayerBox {
   awayScore: number;
   players: RecoveredPlayerLine[];
   excludedProviderRecords?: number;
+  playedCoverage?: {
+    status: "partial";
+    source: "NBA official final report";
+    officialPlayedPlayerCount: number;
+    reportUrl: string;
+    reportSha256: string;
+    verifiedOn: string;
+    missingOfficialPlayedPlayers: { officialName: string; team: string; reason: "absent-from-provider-snapshot" }[];
+  };
 }
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 const count = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
@@ -113,6 +122,25 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
     if (count(p.fieldGoalsMade) && count(p.threePointersMade) && count(p.freeThrowsMade) &&
       2 * p.fieldGoalsMade + p.threePointersMade + p.freeThrowsMade !== p.points) return null;
     if (count(p.rebounds) && count(p.offensiveRebounds) && count(p.defensiveRebounds) && p.offensiveRebounds + p.defensiveRebounds !== p.rebounds) return null;
+  }
+  if (raw.playedCoverage !== undefined) {
+    const coverage = raw.playedCoverage;
+    if (!object(coverage) || coverage.status !== "partial" || coverage.source !== "NBA official final report" ||
+      !count(coverage.officialPlayedPlayerCount) || coverage.officialPlayedPlayerCount > 50 ||
+      coverage.reportUrl !== raw.reportUrl || typeof coverage.reportSha256 !== "string" || !/^[0-9a-f]{64}$/.test(coverage.reportSha256) ||
+      typeof coverage.verifiedOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(coverage.verifiedOn) || !Number.isFinite(Date.parse(coverage.verifiedOn)) ||
+      !Array.isArray(coverage.missingOfficialPlayedPlayers) || coverage.missingOfficialPlayedPlayers.length === 0 ||
+      coverage.officialPlayedPlayerCount !== raw.players.length + coverage.missingOfficialPlayedPlayers.length) return null;
+    const missingNames = new Set<string>();
+    const displayedNames = new Set([...names].map(name => name.trim().toLowerCase()));
+    for (const missing of coverage.missingOfficialPlayedPlayers) {
+      if (!object(missing) || typeof missing.officialName !== "string" || !missing.officialName.trim() ||
+        missing.officialName !== missing.officialName.trim() || missing.officialName.length > 100 ||
+        (missing.team !== raw.home && missing.team !== raw.away) || missing.reason !== "absent-from-provider-snapshot") return null;
+      const key = missing.officialName.toLowerCase();
+      if (missingNames.has(key) || displayedNames.has(key)) return null;
+      missingNames.add(key);
+    }
   }
   for (const [team, expected] of [[raw.home, raw.homeScore], [raw.away, raw.awayScore]]) {
     if (raw.players.filter(p => p.team === team).reduce((sum, p) => sum + p.points, 0) !== expected) return null;

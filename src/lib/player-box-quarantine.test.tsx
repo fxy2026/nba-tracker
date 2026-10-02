@@ -6,6 +6,7 @@ import{isValidElement,type ReactNode}from'react';
 import{beforeEach,expect,it,vi}from'vitest';
 import metadata from'../data/player-box-quarantine.json';
 import active from'../data/provider-player-boxes.json';
+import storageSample from './fixtures/provider-snapshot-storage-sample.json';
 import verified from'../data/recovered-player-boxes.json';
 import schedule from'../data/schedule-2025-26.json';
 import{isPlayerBoxQuarantined}from'./player-box-quarantine';
@@ -29,7 +30,7 @@ it.each(['en','zh'])('actual game fallback says identity review, with no wrong p
 it('automatic recovery protects quarantined game IDs and UUIDs',()=>{
  const blocked=readQuarantinedSnapshots('src/data/quarantined-player-boxes','src/data/player-box-quarantine.json');const index=buildStoredSnapshotIndex(active,verified,blocked);for(const[id,box]of Object.entries(blocked)){expect(index.existing.has(id)).toBe(true);expect(index.protectedIds.has(id)).toBe(true);expect(index.existingMatches.get(box.game.providerMatchId)).toBe(id);}
  expect(()=>buildStoredSnapshotIndex({...active,...blocked},verified,blocked)).toThrow();
- const sample=structuredClone(Object.values(active)[0]);sample.game.providerMatchId=Object.values(blocked)[0].game.providerMatchId;expect(()=>buildStoredSnapshotIndex({[sample.game.nbaGameId]:sample},verified,blocked)).toThrow();
+ const sample=structuredClone(storageSample);sample.game.nbaGameId='0042500991';sample.game.providerMatchId=Object.values(blocked)[0].game.providerMatchId;expect(()=>buildStoredSnapshotIndex({[sample.game.nbaGameId]:sample},verified,blocked)).toThrow();
 });
 it('tampered quarantine bytes fail validation instead of silently releasing them',()=>{
  const root=mkdtempSync(join(tmpdir(),'nba-quarantine-test-'));try{const dir=join(root,'boxes');mkdirSync(dir);const id='0042500155';const box=JSON.parse(readFileSync(`src/data/quarantined-player-boxes/${id}.json`,'utf8'));box.players.find((p:{name:string})=>p.name==='Drew Doughty').name='Jrue Holiday';writeFileSync(join(dir,`${id}.json`),JSON.stringify(box));const meta=join(root,'meta.json');writeFileSync(meta,JSON.stringify({[id]:metadata[id]}));expect(()=>readQuarantinedSnapshots(dir,meta)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}

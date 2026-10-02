@@ -24,6 +24,9 @@ export default function RecoveredPlayerBox({ box, isZh }: { box: RecoveredBox; i
       {hasBlockCorrections && <p className="text-xs text-text-secondary">{isZh
         ? "† 标记的盖帽数已按本场 NBA 官方报告校正；原始数据源数值和报告依据保留在公开存档中。"
         : "† Marked block counts were corrected from this game's NBA official report; original provider values and report references are retained in the public archive."}</p>}
+      {box.playedCoverage && <p className="text-sm font-medium text-accent-amber">{isZh
+        ? `部分球员数据：已显示 ${box.players.length}/${box.playedCoverage.officialPlayedPlayerCount} 名实际出场球员。缺少 ${box.playedCoverage.missingOfficialPlayedPlayers.map(player => `${player.officialName}（${player.team}）`).join("、")} 的数据源记录；未补造统计，也不将其列为 DNP，请参阅官方报告。`
+        : `Partial player box score: ${box.players.length} of ${box.playedCoverage.officialPlayedPlayerCount} played players. Saved records are missing for ${box.playedCoverage.missingOfficialPlayedPlayers.map(player => `${player.officialName} (${player.team})`).join(", ")}. No stats or DNP status were invented; see the official report.`}</p>}
       {!!box.excludedProviderRecords && <p className="text-xs text-text-secondary">{isZh
         ? `已排除 ${box.excludedProviderRecords} 条未获官方报告支持的数据源记录；原始记录单独保留，不将其认定为出场或 DNP。`
         : `${box.excludedProviderRecords} provider records unsupported by the official report were excluded and retained separately; no played or DNP status is inferred for them.`}</p>}

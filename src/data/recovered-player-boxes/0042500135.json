@@ -1,29 +1,19 @@
 {
-  "version": 1,
+  "gameId": "0042500135",
+  "gameDate": "2026-04-29",
+  "season": "2025-26",
   "provider": "BigBallsData",
-  "coverage": "provider-basic-unassigned",
-  "game": {
-    "nbaGameId": "0042500135",
-    "providerMatchId": "a22e9b70-fc0d-4ee8-8dcb-bf5471c52ce9",
-    "season": "2025-26",
-    "gameDate": "2026-04-29",
-    "home": {
-      "tricode": "CLE",
-      "score": 125
-    },
-    "away": {
-      "tricode": "TOR",
-      "score": 120
-    }
-  },
+  "providerMatchId": "a22e9b70-fc0d-4ee8-8dcb-bf5471c52ce9",
   "retrievedAt": "2026-10-02T14:12:02.340Z",
-  "retrievedAtPrecision": "exact",
+  "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_TORCLE.pdf",
+  "home": "CLE",
+  "away": "TOR",
+  "homeScore": 125,
+  "awayScore": 120,
   "players": [
     {
       "providerPlayerId": "0728f232-a06f-4228-b455-cbcab75368f7",
       "name": "Dennis Schröder",
-      "team": null,
-      "minutesRounded": 21,
       "points": 19,
       "rebounds": 0,
       "assists": 2,
@@ -40,13 +30,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": 8,
-      "starter": false
+      "starter": false,
+      "team": "CLE",
+      "minutes": 21
     },
     {
       "providerPlayerId": "103ff956-ab5b-40c5-a5a7-1efea04f0457",
       "name": "Donovan Mitchell",
-      "team": null,
-      "minutesRounded": 31,
       "points": 19,
       "rebounds": 5,
       "assists": 3,
@@ -63,13 +53,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -9,
-      "starter": true
+      "starter": true,
+      "team": "CLE",
+      "minutes": 31
     },
     {
       "providerPlayerId": "1e2823cf-0986-443d-a4b4-bda832810c2b",
       "name": "Sandro Mamukelashvili",
-      "team": null,
-      "minutesRounded": 15,
       "points": 10,
       "rebounds": 3,
       "assists": 0,
@@ -86,13 +76,13 @@
       "freeThrowsMade": 2,
       "freeThrowsAttempted": 2,
       "plusMinus": -1,
-      "starter": false
+      "starter": false,
+      "team": "TOR",
+      "minutes": 15
     },
     {
       "providerPlayerId": "31b0fe7c-fe3b-4905-baeb-ebba6c25b3c2",
       "name": "Ja'Kobe Walter",
-      "team": null,
-      "minutesRounded": 35,
       "points": 20,
       "rebounds": 3,
       "assists": 2,
@@ -109,13 +99,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -7,
-      "starter": true
+      "starter": true,
+      "team": "TOR",
+      "minutes": 35
     },
     {
       "providerPlayerId": "3eb84ae5-29ae-4514-8bd3-7eada6f4534f",
       "name": "Max Strus",
-      "team": null,
-      "minutesRounded": 27,
       "points": 8,
       "rebounds": 4,
       "assists": 2,
@@ -132,13 +122,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 4,
       "plusMinus": 0,
-      "starter": true
+      "starter": true,
+      "team": "CLE",
+      "minutes": 27
     },
     {
       "providerPlayerId": "40bc8c6a-f9bd-40bd-a2f4-9dfbf26a51d8",
       "name": "Jamison Battle",
-      "team": null,
-      "minutesRounded": 19,
       "points": 7,
       "rebounds": 6,
       "assists": 0,
@@ -155,13 +145,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -13,
-      "starter": false
+      "starter": false,
+      "team": "TOR",
+      "minutes": 19
     },
     {
       "providerPlayerId": "5214377b-30eb-4025-b0ea-6554481ba14d",
       "name": "Thomas Bryant",
-      "team": null,
-      "minutesRounded": 5,
       "points": 0,
       "rebounds": 0,
       "assists": 1,
@@ -178,13 +168,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -1,
-      "starter": false
+      "starter": false,
+      "team": "CLE",
+      "minutes": 5
     },
     {
       "providerPlayerId": "5d151d49-a3bb-4095-ad40-4e4f4c09db8b",
       "name": "James Harden",
-      "team": null,
-      "minutesRounded": 40,
       "points": 23,
       "rebounds": 9,
       "assists": 5,
@@ -201,13 +191,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": 10,
-      "starter": true
+      "starter": true,
+      "team": "CLE",
+      "minutes": 40
     },
     {
       "providerPlayerId": "5f30b64f-438d-4424-9e50-abab8869cc99",
       "name": "RJ Barrett",
-      "team": null,
-      "minutesRounded": 38,
       "points": 25,
       "rebounds": 12,
       "assists": 5,
@@ -224,13 +214,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 9,
       "plusMinus": 2,
-      "starter": true
+      "starter": true,
+      "team": "TOR",
+      "minutes": 38
     },
     {
       "providerPlayerId": "6eca0af3-33f1-4f0e-b025-41b876e814f7",
       "name": "Sam Merrill",
-      "team": null,
-      "minutesRounded": 23,
       "points": 9,
       "rebounds": 1,
       "assists": 2,
@@ -247,13 +237,13 @@
       "freeThrowsMade": 3,
       "freeThrowsAttempted": 4,
       "plusMinus": 19,
-      "starter": false
+      "starter": false,
+      "team": "CLE",
+      "minutes": 23
     },
     {
       "providerPlayerId": "70cdac87-e540-4a1d-b533-8e37d3c212dc",
       "name": "Jakob Poeltl",
-      "team": null,
-      "minutesRounded": 21,
       "points": 14,
       "rebounds": 9,
       "assists": 3,
@@ -270,13 +260,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 6,
       "plusMinus": 6,
-      "starter": true
+      "starter": true,
+      "team": "TOR",
+      "minutes": 21
     },
     {
       "providerPlayerId": "74ebd3aa-3aa3-40ba-aa80-d9eb954ee054",
       "name": "Evan Mobley",
-      "team": null,
-      "minutesRounded": 33,
       "points": 23,
       "rebounds": 9,
       "assists": 1,
@@ -293,13 +283,13 @@
       "freeThrowsMade": 4,
       "freeThrowsAttempted": 8,
       "plusMinus": -2,
-      "starter": true
+      "starter": true,
+      "team": "CLE",
+      "minutes": 33
     },
     {
       "providerPlayerId": "89398fa3-0b44-4b5e-8eaf-2874958d7866",
       "name": "Dean Wade",
-      "team": null,
-      "minutesRounded": 21,
       "points": 7,
       "rebounds": 3,
       "assists": 1,
@@ -316,13 +306,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 4,
-      "starter": false
+      "starter": false,
+      "team": "CLE",
+      "minutes": 21
     },
     {
       "providerPlayerId": "9385a4cf-fe7f-413a-84b4-b68afe286c38",
       "name": "Collin Murray-Boyles",
-      "team": null,
-      "minutesRounded": 26,
       "points": 8,
       "rebounds": 5,
       "assists": 2,
@@ -339,13 +329,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -7,
-      "starter": false
+      "starter": false,
+      "team": "TOR",
+      "minutes": 26
     },
     {
       "providerPlayerId": "9761f14d-966b-4f23-b453-106b481c04a6",
       "name": "A.J. Lawson",
-      "team": null,
-      "minutesRounded": 2,
       "points": 0,
       "rebounds": 0,
       "assists": 0,
@@ -362,13 +352,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -3,
-      "starter": false
+      "starter": false,
+      "team": "TOR",
+      "minutes": 2
     },
     {
       "providerPlayerId": "985bb14e-7342-4f62-8222-746ed4291a0c",
       "name": "Scottie Barnes",
-      "team": null,
-      "minutesRounded": 39,
       "points": 17,
       "rebounds": 8,
       "assists": 11,
@@ -385,13 +375,13 @@
       "freeThrowsMade": 5,
       "freeThrowsAttempted": 6,
       "plusMinus": 2,
-      "starter": true
+      "starter": true,
+      "team": "TOR",
+      "minutes": 39
     },
     {
       "providerPlayerId": "9ed24e95-eb1a-4f22-bc7d-4936aa598b51",
       "name": "Jarrett Allen",
-      "team": null,
-      "minutesRounded": 25,
       "points": 9,
       "rebounds": 3,
       "assists": 1,
@@ -408,13 +398,13 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -4,
-      "starter": true
+      "starter": true,
+      "team": "CLE",
+      "minutes": 25
     },
     {
       "providerPlayerId": "c6ca1c28-901d-4e0b-b456-4dca87b54d70",
       "name": "Jaylon Tyson",
-      "team": null,
-      "minutesRounded": 13,
       "points": 8,
       "rebounds": 1,
       "assists": 2,
@@ -431,13 +421,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": 0,
-      "starter": false
+      "starter": false,
+      "team": "CLE",
+      "minutes": 13
     },
     {
       "providerPlayerId": "f61c7f55-7063-4161-8c8c-cbdc4b715f35",
       "name": "Jamal Shead",
-      "team": null,
-      "minutesRounded": 34,
       "points": 18,
       "rebounds": 1,
       "assists": 7,
@@ -454,13 +444,13 @@
       "freeThrowsMade": 0,
       "freeThrowsAttempted": 0,
       "plusMinus": -2,
-      "starter": false
+      "starter": false,
+      "team": "TOR",
+      "minutes": 34
     },
     {
       "providerPlayerId": "feb79027-3d0f-4b91-a367-a270c854f1e7",
       "name": "Brandon Ingram",
-      "team": null,
-      "minutesRounded": 11,
       "points": 1,
       "rebounds": 1,
       "assists": 2,
@@ -477,12 +467,9 @@
       "freeThrowsMade": 1,
       "freeThrowsAttempted": 2,
       "plusMinus": -2,
-      "starter": true
+      "starter": true,
+      "team": "TOR",
+      "minutes": 11
     }
-  ],
-  "validation": {
-    "combinedPoints": 245,
-    "historicalTeams": "unassigned",
-    "officialReportChecked": false
-  }
+  ]
 }

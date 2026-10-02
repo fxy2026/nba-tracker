@@ -4,10 +4,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readSnapshotDirectory,writeNewSnapshots,generateSnapshotAggregate } from '../../scripts/recovery/snapshot-store';
 import archive from '../data/provider-player-boxes.json';
+import storageSample from './fixtures/provider-snapshot-storage-sample.json';
 import type { ProviderBasicSnapshot } from './provider-player-normalizer';
 const roots:string[]=[];
 const setup=()=>{const root=mkdtempSync(join(tmpdir(),'nba-storage-test-'));roots.push(root);const directory=join(root,'games');mkdirSync(directory);return{root,directory,output:join(root,'aggregate.json')};};
-const sample=()=>structuredClone(Object.values(archive)[0]) as ProviderBasicSnapshot;
+const sample=()=>structuredClone(storageSample) as ProviderBasicSnapshot;
 const next=()=>{const row=sample();row.game.nbaGameId='0042500991';row.game.providerMatchId='11111111-1111-4111-8111-111111111111';return row;};
 const save=(dir:string,row:ProviderBasicSnapshot)=>writeFileSync(join(dir,`${row.game.nbaGameId}.json`),JSON.stringify(row));
 afterEach(()=>{for(const root of roots.splice(0))rmSync(root,{recursive:true,force:true});});
@@ -24,7 +25,7 @@ it('one corrupt file aborts before replacing known-good generated data',()=>{
  writeFileSync(join(directory,'0042500991.json'),'{broken');expect(()=>generateSnapshotAggregate(directory,output)).toThrow();expect(readFileSync(output,'utf8')).toBe(good);
 });
 it('valid-empty directory cannot erase an existing nonempty aggregate',()=>{
- const {directory,output}=setup();writeFileSync(output,JSON.stringify(archive));expect(()=>generateSnapshotAggregate(directory,output)).toThrow();expect(JSON.parse(readFileSync(output,'utf8'))).toEqual(archive);
+ const {directory,output}=setup();const known = {[sample().game.nbaGameId]:sample()};writeFileSync(output,JSON.stringify(known));expect(()=>generateSnapshotAggregate(directory,output)).toThrow();expect(JSON.parse(readFileSync(output,'utf8'))).toEqual(known);
 });
 it.each(['../escape.json','unknown.json','0042500991.json'])('invalid filename or game identity fails closed: %s',filename=>{
  const {directory}=setup();const target=filename.startsWith('../')?join(directory,'unknown.json'):join(directory,filename);writeFileSync(target,JSON.stringify(sample()));expect(()=>readSnapshotDirectory(directory)).toThrow();
@@ -42,3 +43,5 @@ it.each(['existing','protected','invalid','duplicate','owner'])('entire batch is
  if(kind==='owner')bad.game.providerMatchId=sample().game.providerMatchId;
  const batch=kind==='duplicate'?[next(),next()]:[bad];expect(()=>writeNewSnapshots(directory,batch,protectedIds)).toThrow();expect(readdirSync(directory)).toHaveLength(1);
 });
+
+it('empty tracked marker preserves a clean zero-snapshot directory',()=>{const{directory,output}=setup();writeFileSync(join(directory,'.gitkeep'),'');expect(readSnapshotDirectory(directory)).toEqual({});generateSnapshotAggregate(directory,output);expect(JSON.parse(readFileSync(output,'utf8'))).toEqual({});writeFileSync(join(directory,'.gitkeep'),'unexpected');expect(()=>readSnapshotDirectory(directory)).toThrow();});
