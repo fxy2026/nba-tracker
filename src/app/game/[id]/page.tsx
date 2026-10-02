@@ -180,6 +180,7 @@ export default async function GamePage({ params }: PageProps) {
           <div className="mt-6">
             <Suspense fallback={<div className="min-h-[32rem] glass-tile skeleton-shimmer" />}>
               <GamePreview
+                gameId={sg.gameId}
                 home={{ tricode: sg.homeTeam.teamTricode, teamId: sg.homeTeam.teamId, teamCity: sg.homeTeam.teamCity, teamName: sg.homeTeam.teamName }}
                 away={{ tricode: sg.awayTeam.teamTricode, teamId: sg.awayTeam.teamId, teamCity: sg.awayTeam.teamCity, teamName: sg.awayTeam.teamName }}
                 gameTimeUTC={sg.gameDateTimeUTC}
@@ -456,6 +457,7 @@ export default async function GamePage({ params }: PageProps) {
         <div className="mt-6">
           <Suspense fallback={<div className="h-64 glass-tile skeleton-shimmer" />}>
             <GamePreview
+              gameId={boxScore.gameId}
               home={{ tricode: boxScore.homeTeam.teamTricode, teamId: boxScore.homeTeam.teamId, teamCity: boxScore.homeTeam.teamCity, teamName: boxScore.homeTeam.teamName }}
               away={{ tricode: boxScore.awayTeam.teamTricode, teamId: boxScore.awayTeam.teamId, teamCity: boxScore.awayTeam.teamCity, teamName: boxScore.awayTeam.teamName }}
               gameTimeUTC={boxScore.gameTimeUTC}

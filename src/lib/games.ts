@@ -1,16 +1,36 @@
 import type { ScheduleDate, ScheduleGame } from "@/lib/api";
+import archiveGameSeasons from "@/data/archive-game-seasons.json";
 
 /** A merged schedule includes archived years. Scope season analytics by the
  * NBA game ID's start-year digits, not the calendar year (Jan-June belong to
  * the preceding start year). Keep the original archive untouched. */
 export function scheduleForSeason(schedule: ScheduleDate[], season: string): ScheduleDate[] {
   if (!/^\d{4}-\d{2}$/.test(season)) return [];
-  const year = season.slice(2, 4);
+  return scheduleForSeasonKey(schedule, season.slice(2, 4));
+}
+
+/** Canonical NBA IDs encode the start-year key. The small provenance map
+ * preserves known synthetic archive IDs without guessing from arbitrary IDs,
+ * dates, or adding the full archive to this shared client-side utility. */
+export function gameSeasonKey(gameId: string): string | null {
+  if (/^00[1-6]\d{7}$/.test(gameId)) return gameId.slice(3, 5);
+  if (!Object.prototype.hasOwnProperty.call(archiveGameSeasons, gameId)) return null;
+  const season = (archiveGameSeasons as Record<string, string>)[gameId];
+  return season?.slice(2, 4) ?? null;
+}
+
+/** Game detail views follow the requested game's season, even in the archive. */
+export function scheduleForGameSeason(schedule: ScheduleDate[], gameId: string): ScheduleDate[] {
+  const year = gameSeasonKey(gameId);
+  return year === null ? [] : scheduleForSeasonKey(schedule, year);
+}
+
+function scheduleForSeasonKey(schedule: ScheduleDate[], year: string): ScheduleDate[] {
   return schedule
     .map((date) => ({
       ...date,
       games: date.games.filter((game) =>
-        /^00[1-6]\d{7}$/.test(game.gameId) && game.gameId.slice(3, 5) === year
+        gameSeasonKey(game.gameId) === year
       ),
     }))
     .filter((date) => date.games.length > 0);

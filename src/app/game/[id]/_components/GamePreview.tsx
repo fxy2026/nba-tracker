@@ -2,7 +2,7 @@ import Link from "next/link";
 import TeamLogo from "@/components/TeamLogo";
 import GameCountdown from "@/components/GameCountdown";
 import { getFullSchedule, toBeijingTime } from "@/lib/api";
-import { getSeasonSeries, getRecentForm } from "@/lib/games";
+import { getSeasonSeries, getRecentForm, scheduleForGameSeason } from "@/lib/games";
 import { computeStandingsRows, type StandingsRow } from "@/lib/standings-splits";
 import { TEAM_META } from "@/lib/teams";
 
@@ -73,6 +73,7 @@ function rankLabel(rank: number, conference: "East" | "West" | undefined, isZh: 
 }
 
 export default async function GamePreview({
+  gameId,
   home,
   away,
   gameTimeUTC,
@@ -80,6 +81,7 @@ export default async function GamePreview({
   arenaCity,
   isZh,
 }: {
+  gameId: string;
   home: PreviewTeam;
   away: PreviewTeam;
   gameTimeUTC: string;
@@ -87,10 +89,11 @@ export default async function GamePreview({
   arenaCity?: string;
   isZh: boolean;
 }) {
-  const [schedule, injuries] = await Promise.all([
+  const [fullSchedule, injuries] = await Promise.all([
     getFullSchedule().catch(() => []),
     getInjuries(),
   ]);
+  const schedule = scheduleForGameSeason(fullSchedule, gameId);
 
   const rows = computeStandingsRows(schedule);
   const rowOf = (tricode: string): StandingsRow | undefined => rows.find((r) => r.tricode === tricode);
