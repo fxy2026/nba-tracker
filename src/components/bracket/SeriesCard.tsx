@@ -65,7 +65,7 @@ function TeamRow({
     >
       <TeamLogo teamId={team.teamId} tricode={team.tricode} size={logoSize} />
       <div className={`flex-1 min-w-0 flex items-center gap-1.5 ${align === "right" ? "flex-row-reverse" : ""}`}>
-        {team.seed > 0 && (
+        {typeof team.seed === 'number' && team.seed > 0 && (
           <span className="text-[11px] sm:text-[10px] font-mono tabular-nums text-text-secondary/60 shrink-0">{team.seed}</span>
         )}
         <span className={`${triSize} font-bold font-mono ${dim ? "text-text-secondary" : leading ? "text-text-primary" : "text-text-secondary"} truncate`}>

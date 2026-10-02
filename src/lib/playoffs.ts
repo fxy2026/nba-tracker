@@ -7,7 +7,7 @@ export interface SeriesTeam {
   teamCity: string;
   teamName: string;
   wins: number;
-  seed: number;
+  seed?: number;
 }
 
 export interface Series {

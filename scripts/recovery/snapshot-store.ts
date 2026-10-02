@@ -1,3 +1,5 @@
+import { readObservedFinalDirectory } from './official-game-store';
+import { observedFinalsToSchedule, mergeObservedFinalSchedule } from '../../src/lib/observed-final-schedule';
 import { existsSync, lstatSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
@@ -65,18 +67,46 @@ export function readVerifiedSnapshotDirectory(directory:string,schedule:unknown)
 }
 export function readStoredArchives(root='src/data'){
   const generic=readSnapshotDirectory(join(root,'provider-player-boxes'));
-  const verified=readVerifiedSnapshotDirectory(join(root,'recovered-player-boxes'),JSON.parse(readFileSync(join(root,'schedule-2025-26.json'),'utf8')));
+  const observed=readObservedFinalDirectory(join(root,'observed-final-games'));
+  const archivedSchedule=JSON.parse(readFileSync(join(root,'schedule-2025-26.json'),'utf8'));
+  assertObservedIdentityReferences(observed, archivedSchedule, generic);
+  const schedule={...archivedSchedule,dates:mergeObservedFinalSchedule(archivedSchedule.dates,observedFinalsToSchedule(observed))};
+  const verified=readVerifiedSnapshotDirectory(join(root,'recovered-player-boxes'),schedule);
   const quarantined=readQuarantinedSnapshots(join(root,'quarantined-player-boxes'),join(root,'player-box-quarantine.json'));
   assertResolvedHistory(root, verified);
   buildStoredSnapshotIndex(generic,verified,quarantined);
-  return{generic,verified,quarantined};
+  return{generic,verified,quarantined,observed};
+}
+/** A new identity cannot silently attach a known player snapshot or baked game
+ * to different teams, scores or dates. Existing observations remain immutable. */
+export function assertObservedIdentityReferences(
+  observed: ReturnType<typeof readObservedFinalDirectory>, schedule: unknown,
+  generic: Record<string, ProviderBasicSnapshot>,
+) {
+  if (!record(schedule) || !Array.isArray(schedule.dates)) throw new Error('Invalid schedule reference');
+  const games = new Map<string, Record<string, unknown>>();
+  for (const day of schedule.dates) {
+    if (!record(day) || !Array.isArray(day.games)) throw new Error('Invalid schedule reference');
+    for (const game of day.games) if (record(game) && typeof game.gameId === 'string') games.set(game.gameId, game);
+  }
+  for (const [id, value] of Object.entries(observed)) {
+    const game = value.game, prior = games.get(id), box = generic[id]?.game;
+    if (prior && (prior.gameCode !== game.gameCode || prior.gameStatus !== 3
+      || !record(prior.homeTeam) || !record(prior.awayTeam)
+      || prior.homeTeam.teamId !== game.home.teamId || prior.awayTeam.teamId !== game.away.teamId
+      || prior.homeTeam.score !== game.home.score || prior.awayTeam.score !== game.away.score)) throw new Error('Observed identity conflicts with saved schedule');
+    if (box && (box.season !== game.season || box.gameDate !== game.gameDate
+      || box.home.tricode !== game.home.tricode || box.away.tricode !== game.away.tricode
+      || box.home.score !== game.home.score || box.away.score !== game.away.score)) throw new Error('Observed identity conflicts with saved player snapshot');
+  }
 }
 export function generateStoredArchives(root='src/data'){
   // Read and validate all inputs and cross-directory identities before writing
   // either artifact. Bad data never yields a partial "successful" new build.
-  const {generic,verified,quarantined}=readStoredArchives(root);
+  const {generic,verified,quarantined,observed}=readStoredArchives(root);
   writeGeneratedAggregate(generic,join(root,'provider-player-boxes.json'),new Set([...Object.keys(verified),...Object.keys(quarantined)]));
   writeGeneratedAggregate(verified,join(root,'recovered-player-boxes.json'));
+  writeGeneratedAggregate(observed,join(root,'observed-final-games.json'));
 }
 
 export function readQuarantinedSnapshots(directory:string,metadataFile:string):Record<string,ProviderBasicSnapshot> {

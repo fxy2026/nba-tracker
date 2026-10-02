@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
         gameStatus: g.gameStatus,
         gameStatusText: g.gameStatusText,
         gameDateTimeUTC: g.gameTimeUTC,
-        homeTeam: { ...g.homeTeam, teamSlug: "", wins: g.homeTeam.wins || 0, losses: g.homeTeam.losses || 0, seed: g.homeTeam.seed || 0 },
-        awayTeam: { ...g.awayTeam, teamSlug: "", wins: g.awayTeam.wins || 0, losses: g.awayTeam.losses || 0, seed: g.awayTeam.seed || 0 },
+        homeTeam: { ...g.homeTeam, teamSlug: "" },
+        awayTeam: { ...g.awayTeam, teamSlug: "" },
         seriesText: g.seriesText,
         gameLeaders: g.gameLeaders,
       }));

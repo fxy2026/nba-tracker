@@ -1,3 +1,5 @@
+import observedFinalRecords from '@/data/observed-final-games.json';
+import { observedFinalsToSchedule, mergeObservedFinalSchedule } from './observed-final-schedule';
 // NBA Official CDN API — completely free, no key needed
 // Data source: cdn.nba.com
 
@@ -158,9 +160,9 @@ export interface ScheduleGame {
     teamCity: string;
     teamSlug: string;
     score: number;
-    wins: number;
-    losses: number;
-    seed: number;
+    wins?: number;
+    losses?: number;
+    seed?: number;
     periods?: PeriodScore[];
   };
   awayTeam: {
@@ -170,9 +172,9 @@ export interface ScheduleGame {
     teamCity: string;
     teamSlug: string;
     score: number;
-    wins: number;
-    losses: number;
-    seed: number;
+    wins?: number;
+    losses?: number;
+    seed?: number;
     periods?: PeriodScore[];
   };
   seriesText?: string;
@@ -303,16 +305,18 @@ const ARCHIVE_FEED = {
   })),
 };
 
+const OBSERVED_FINAL_DATES = observedFinalsToSchedule(observedFinalRecords);
+
 function mergeWithArchive(live: ScheduleDate[]): ScheduleDate[] {
   const seen = new Set(live.map((d) => d.gameDate.slice(0, 10)));
   const merged = [...live, ...ARCHIVE_FEED.dates.filter((d) => !seen.has(d.gameDate.slice(0, 10)))];
-  return merged.sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate));
+  return mergeObservedFinalSchedule(merged.sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate)), OBSERVED_FINAL_DATES);
 }
 
 function archiveFallbackFeed(): { seasonYear: string; dates: ScheduleDate[] } {
   if (!scheduleCache) {
     console.error("schedule: live sources unavailable — serving baked 2025-26 archive");
-    scheduleCache = { data: ARCHIVE_FEED.dates, ts: Date.now() };
+    scheduleCache = { data: mergeObservedFinalSchedule(ARCHIVE_FEED.dates, OBSERVED_FINAL_DATES), ts: Date.now() };
     scheduleSeasonYear = ARCHIVE_FEED.seasonYear;
   }
   return { seasonYear: scheduleSeasonYear ?? ARCHIVE_FEED.seasonYear, dates: scheduleCache.data };
@@ -494,9 +498,9 @@ async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
     if (!res.ok) return null;
     const body = (await res.json()) as { seasonYear?: string; dates?: ScheduleDate[] };
     if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
-    scheduleCache = { data: body.dates, ts: Date.now() };
+    scheduleCache = { data: mergeObservedFinalSchedule(body.dates, OBSERVED_FINAL_DATES), ts: Date.now() };
     if (body.seasonYear) scheduleSeasonYear = body.seasonYear;
-    return body.dates;
+    return scheduleCache.data;
   } catch {
     return null;
   }

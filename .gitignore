@@ -56,3 +56,6 @@ article-images/frames/
 
 # Generated from verified per-game snapshots.
 /src/data/recovered-player-boxes.json
+
+# Generated validated official final identity index
+/src/data/observed-final-games.json

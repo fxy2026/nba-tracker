@@ -226,10 +226,10 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
               <p className={`font-semibold text-sm ${awayWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
                 {game.awayTeam.teamCity} {game.awayTeam.teamName}
               </p>
-              {game.awayTeam.wins > 0 && (
+              {typeof game.awayTeam.wins === 'number' && typeof game.awayTeam.losses === 'number' && Number.isSafeInteger(game.awayTeam.wins) && Number.isSafeInteger(game.awayTeam.losses) && game.awayTeam.wins >= 0 && game.awayTeam.losses >= 0 && game.awayTeam.wins + game.awayTeam.losses > 0 && (
                 <p className="text-xs text-text-secondary font-mono tabular-nums">
                   {game.awayTeam.wins}-{game.awayTeam.losses}
-                  {game.awayTeam.seed > 0 && ` · #${game.awayTeam.seed}`}
+                  {typeof game.awayTeam.seed === 'number' && Number.isSafeInteger(game.awayTeam.seed) && game.awayTeam.seed > 0 && ` · #${game.awayTeam.seed}`}
                 </p>
               )}
             </div>
@@ -250,10 +250,10 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
               <p className={`font-semibold text-sm ${homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"}`}>
                 {game.homeTeam.teamCity} {game.homeTeam.teamName}
               </p>
-              {game.homeTeam.wins > 0 && (
+              {typeof game.homeTeam.wins === 'number' && typeof game.homeTeam.losses === 'number' && Number.isSafeInteger(game.homeTeam.wins) && Number.isSafeInteger(game.homeTeam.losses) && game.homeTeam.wins >= 0 && game.homeTeam.losses >= 0 && game.homeTeam.wins + game.homeTeam.losses > 0 && (
                 <p className="text-xs text-text-secondary font-mono tabular-nums">
                   {game.homeTeam.wins}-{game.homeTeam.losses}
-                  {game.homeTeam.seed > 0 && ` · #${game.homeTeam.seed}`}
+                  {typeof game.homeTeam.seed === 'number' && Number.isSafeInteger(game.homeTeam.seed) && game.homeTeam.seed > 0 && ` · #${game.homeTeam.seed}`}
                 </p>
               )}
             </div>
