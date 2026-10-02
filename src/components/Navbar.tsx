@@ -181,7 +181,7 @@ export default function Navbar() {
           {primaryLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Link key={href} href={href} prefetch={true}
+              <Link key={href} href={href} prefetch={false}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active ? "bg-accent/15 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
                 }`}>
