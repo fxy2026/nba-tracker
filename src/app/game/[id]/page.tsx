@@ -18,6 +18,7 @@ import { Users, GitCompareArrows, Trophy, Calendar, Crown, Clock } from "lucide-
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
+import OfficialGameReport from "./_components/OfficialGameReport";
 import GameHero from "./_components/GameHero";
 import PreGameHero from "./_components/PreGameHero";
 import GameStickyScore from "./_components/GameStickyScore";
@@ -195,9 +196,10 @@ export default async function GamePage({ params }: PageProps) {
             </div>
             <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
               {isZh
-                ? "本场比赛的详细数据（Box Score、投篮图、回放）暂不可用。"
+                ? "本场比赛的详细数据（Box Score、投篮图、逐回合）暂不可用。"
                 : "Detailed stats for this game (box score, shot chart, play-by-play) are currently unavailable."}
             </p>
+            <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
           <RelatedPages
             eyebrow={isZh ? "继续探索" : "Keep exploring"}
