@@ -322,18 +322,15 @@ function StyleTagsCol({ styles, isZh }: { styles?: PlayStyle[]; isZh: boolean })
   );
 }
 
-// Era-context strip: "X PPG vs Y league avg → +/- N above era".
+// Era-context strip: player PPG alongside the exact-season league team benchmark.
 // Shows for each iconic-season player on their own side; falls back to
-// a quiet line when league era data isn't known for that year.
+// no benchmark when league data is not available for that exact year.
 export function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
   const renderSide = (p: PlayerData) => {
     if (p.seasonYear === undefined) return null;
     const era = getLeagueEra(p.seasonYear);
-    if (!era) return null;
-    const teamPpg = era.ppg;
-    // The league PPG is per team; an individual scoring 30 in a 105 PPG
-    // era is scoring 28.6% of his team's points. Compare relative shares.
-    const sharePct = isCompareStat(p.pts) && isCompareStat(teamPpg) && teamPpg > 0 ? (p.pts / teamPpg) * 100 : null;
+    // The shared lookup may return a nearby year; do not silently substitute it.
+    if (!era || era.year !== p.seasonYear) return null;
     return (
       <div className="bg-bg-card p-3 text-[11px] text-text-secondary leading-relaxed">
         <div className="font-mono tabular-nums">
@@ -341,13 +338,13 @@ export function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; i
           <span className="text-text-secondary/60"> PPG</span>
           <span className="text-text-secondary/40 mx-1.5">·</span>
           <span className="text-text-secondary">
-            {isZh ? "时代均值" : "Era avg"}: {era.ppg.toFixed(1)}
+            {isZh ? "联盟球队场均得分" : "League team PPG"}: {era.ppg.toFixed(1)}
           </span>
         </div>
         <div className="text-[10px] mt-1">
           {isZh
-            ? `占球队得分 ${displayCompareStat(sharePct, 1)}% · ${era.season} 时代节奏 ${era.pace.toFixed(1)} poss`
-            : `${displayCompareStat(sharePct, 1)}% of team output · ${era.season} pace ${era.pace.toFixed(1)} poss`}
+            ? `人工整理的联盟基准 · ${era.season} · 节奏 ${era.pace.toFixed(1)} 回合/48分钟`
+            : `Curated league benchmark · ${era.season} · pace ${era.pace.toFixed(1)} poss/48 min`}
         </div>
       </div>
     );

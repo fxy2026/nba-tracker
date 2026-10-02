@@ -22,7 +22,8 @@ function resolve(id: string): OgPlayer | null {
     const s = ICONIC_SEASONS.find((x) => x.id === id);
     if (s) return { name: s.name, season: s.season, team: s.team, ppg: s.ppg, rpg: s.rpg, apg: s.apg, personId: s.personId, isIconic: true };
   }
-  const numId = parseInt(id, 10);
+  if (!/^[1-9]\d*$/.test(id)) return null;
+  const numId = Number(id);
   if (isNaN(numId)) return null;
   const legend = ALL_TIME_LEADERS.find((p) => p.personId === numId && !p.active);
   if (legend) return { name: legend.name, team: legend.team, ppg: legend.ppg, rpg: legend.rpg, apg: legend.apg, personId: legend.personId, isIconic: false };
@@ -81,7 +82,7 @@ export async function GET(request: Request) {
                 <div style={{ display: "flex", fontSize: 22, fontWeight: 700, marginTop: 10, textAlign: "center", lineHeight: 1.1 }}>
                   {p.name}
                 </div>
-                {p.season && (
+                {(
                   <div style={{
                     display: "flex",
                     marginTop: 6, fontSize: 13, padding: "3px 10px",
@@ -89,7 +90,7 @@ export async function GET(request: Request) {
                     color: i === 0 ? "#60A5FA" : i === 1 ? "#4ADE80" : "#FBBF24",
                     borderRadius: 6,
                   }}>
-                    {p.season}
+                    {p.season ? `${p.season} · season averages` : "Curated career averages"}
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 10, marginTop: 10, fontSize: 11, color: "#94A3B8" }}>
@@ -111,7 +112,7 @@ export async function GET(request: Request) {
           </div>
 
           <div style={{ display: "flex", justifyContent: "center", fontSize: 14, color: "#64748B", marginTop: 12 }}>
-            nba.xpy.me/compare
+            Curated snapshots · nba.xpy.me/compare
           </div>
         </div>
       ),
@@ -120,8 +121,8 @@ export async function GET(request: Request) {
   }
 
   // When either side is missing or unresolved (e.g., active player ID we
-  // don't pre-load), fall back to a generic comparison cover.
-  if (!a || !b) {
+  // don't pre-load), fall back to a generic cover without dropping a requested third player.
+  if (!a || !b || (p3 && !c)) {
     return new ImageResponse(
       (
         <div
@@ -134,7 +135,7 @@ export async function GET(request: Request) {
           }}
         >
           <div style={{ fontSize: 60, fontWeight: 700, letterSpacing: -2 }}>NBA Tracker</div>
-          <div style={{ fontSize: 32, opacity: 0.7, marginTop: 12 }}>Player Comparison</div>
+          <div style={{ fontSize: 32, opacity: 0.7, marginTop: 12 }}>{p3 ? "Three-Player Comparison" : "Player Comparison"}</div>
           <div style={{ fontSize: 18, opacity: 0.5, marginTop: 20 }}>nba.xpy.me/compare</div>
         </div>
       ),
@@ -185,13 +186,13 @@ export async function GET(request: Request) {
             <div style={{ display: "flex", fontSize: 32, fontWeight: 700, marginTop: 16, textAlign: "center" }}>
               {a.name}
             </div>
-            {a.season && (
+            {(
               <div style={{
                 display: "flex",
                 marginTop: 8, fontSize: 16, padding: "4px 12px",
                 background: "rgba(59,130,246,0.2)", color: "#60A5FA", borderRadius: 8,
               }}>
-                {a.season}
+                {a.season ? `${a.season} · season averages` : "Curated career averages"}
               </div>
             )}
             <div style={{ display: "flex", gap: 16, marginTop: 16, fontSize: 14, color: "#94A3B8" }}>
@@ -231,13 +232,13 @@ export async function GET(request: Request) {
             <div style={{ display: "flex", fontSize: 32, fontWeight: 700, marginTop: 16, textAlign: "center" }}>
               {b.name}
             </div>
-            {b.season && (
+            {(
               <div style={{
                 display: "flex",
                 marginTop: 8, fontSize: 16, padding: "4px 12px",
                 background: "rgba(34,197,94,0.2)", color: "#4ADE80", borderRadius: 8,
               }}>
-                {b.season}
+                {b.season ? `${b.season} · season averages` : "Curated career averages"}
               </div>
             )}
             <div style={{ display: "flex", gap: 16, marginTop: 16, fontSize: 14, color: "#94A3B8" }}>
@@ -259,7 +260,7 @@ export async function GET(request: Request) {
 
         {/* Footer */}
         <div style={{ display: "flex", justifyContent: "center", fontSize: 16, color: "#64748B", marginTop: 20 }}>
-          nba.xpy.me/compare
+          Curated snapshots · nba.xpy.me/compare
         </div>
       </div>
     ),

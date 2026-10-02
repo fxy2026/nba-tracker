@@ -13,7 +13,8 @@ function lookupName(id: string | undefined): string | null {
     const s = ICONIC_SEASONS.find((x) => x.id === id);
     return s ? `${s.name} (${s.season})` : null;
   }
-  const numId = parseInt(id, 10);
+  if (!/^[1-9]\d*$/.test(id)) return null;
+  const numId = Number(id);
   if (isNaN(numId)) return null;
   const legend = ALL_TIME_LEADERS.find((p) => p.personId === numId && !p.active);
   if (legend) return legend.name;
@@ -30,17 +31,17 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
   // When both sides resolve, mint a per-comparison OG image so social shares
   // show the players + their numbers. p3 is forwarded as-is — the OG route
-  // falls back to the 2-way card when it can't resolve it. Otherwise the
+  // keeps a generic three-player cover when the third ID cannot resolve. Otherwise the
   // static /api/og/compare fallback (without p1/p2) returns a generic cover.
   const ogUrl = p1 && p2
     ? `/api/og/compare?p1=${encodeURIComponent(p1)}&p2=${encodeURIComponent(p2)}${p3 ? `&p3=${encodeURIComponent(p3)}` : ""}`
-    : `/api/og/compare`;
+    : p3 ? `/api/og/compare?p3=${encodeURIComponent(p3)}` : `/api/og/compare`;
 
-  const matchup = n1 && n2 ? (n3 ? `${n1} vs ${n2} vs ${n3}` : `${n1} vs ${n2}`) : null;
-  const title = matchup ?? "Player Compare";
+  const matchup = n1 && n2 && (!p3 || n3) ? (n3 ? `${n1} vs ${n2} vs ${n3}` : `${n1} vs ${n2}`) : null;
+  const title = matchup ?? (p3 ? "Three-Player Comparison" : "Player Compare");
   const description = matchup
-    ? `Side-by-side career stats, trophies, era context and radar overlay for ${matchup}.`
-    : "Compare any two NBA players — active stars, retired legends, or peak iconic seasons.";
+    ? `Side-by-side statistics for ${matchup}, with each player’s career or single-season period labeled.`
+    : "Compare NBA players — active stars, retired legends, or peak iconic seasons.";
 
   return {
     title,

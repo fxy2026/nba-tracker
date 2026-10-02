@@ -1,0 +1,15 @@
+import { isValidElement, type ReactNode } from 'react';
+import { expect, it, vi } from 'vitest';
+vi.mock('next/og',()=>({ImageResponse:class{constructor(public element:ReactNode,public options:unknown){}}}));
+import { GET } from '@/app/api/og/compare/route';
+import { generateMetadata } from '@/app/compare/page';
+function text(node:ReactNode):string{if(Array.isArray(node))return node.map(text).join('');if(typeof node==='string'||typeof node==='number')return String(node);return isValidElement<{children?:ReactNode}>(node)?text(node.props.children):'';}
+async function content(query:string){return text((await GET(new Request(`https://site.test/api/og/compare?${query}`)) as unknown as {element:ReactNode}).element);}
+it('two retired players show career scope rather than an unspecified season',async()=>{const result=await content('p1=893&p2=977');expect(result.match(/Curated career averages/g)).toHaveLength(2);expect(result).toContain('Michael Jordan');expect(result).toContain('Kobe Bryant');expect(result).toContain('30.1');});
+it('mixed career and iconic single-season values retain separate labels',async()=>{const result=await content('p1=893&p2=2544-2015');expect(result).toContain('Curated career averages');expect(result).toContain('2015-16 · season averages');expect(result).toContain('25.3');});
+it('resolved triple preserves all three distinct periods',async()=>{const result=await content('p1=893&p2=2544-2015&p3=201939-2015');expect(result).toContain('3-Way Compare');expect(result).toContain('Stephen Curry');expect(result.match(/2015-16 · season averages/g)).toHaveLength(2);expect(result).toContain('Curated career averages');});
+it.each(['201939','unknown','893-bad','893junk'])('unresolved third %s cannot silently become a two-player card',async(id)=>{const result=await content(`p1=893&p2=977&p3=${id}`);expect(result).toContain('Three-Player Comparison');expect(result).not.toContain('Michael Jordan');expect(result).not.toContain('30.1');const metadata=await generateMetadata({searchParams:Promise.resolve({p1:'893',p2:'977',p3:id})});expect(metadata.title).toBe('Three-Player Comparison');});
+it('active pair remains generic without fetching a new source or substituting career stats',async()=>{const result=await content('p1=2544&p2=201939');expect(result).toContain('Player Comparison');expect(result).not.toContain('27.0');});
+it('resolved metadata describes both source periods rather than asserting career stats for iconic seasons',async()=>{const metadata=await generateMetadata({searchParams:Promise.resolve({p1:'893',p2:'2544-2015'})});expect(metadata.description).toContain('career or single-season period labeled');});
+
+it('incomplete triple metadata keeps three-player intent without a two-player description',async()=>{const metadata=await generateMetadata({searchParams:Promise.resolve({p3:'201939'})});expect(metadata.title).toBe('Three-Player Comparison');expect(metadata.description).not.toContain('two');expect(metadata.openGraph?.images).toEqual(['/api/og/compare?p3=201939']);});
