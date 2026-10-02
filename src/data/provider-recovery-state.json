@@ -1,11 +1,23 @@
 {
   "version": 1,
-  "cursor": null,
-  "lastRunAt": "2026-10-02T13:27:09.236Z",
+  "cursor": "0042500235",
+  "lastRunAt": "2026-10-02T13:42:29.934Z",
   "lastBatch": {
-    "requests": 1,
-    "accepted": 1,
-    "withheld": []
-  },
-  "retryCursorReason": "retry-metadata-blocked-playoffs-after-player-module-fix"
+    "requests": 46,
+    "accepted": 17,
+    "withheld": [
+      {
+        "gameId": "0042500316",
+        "reason": "inconsistent-rebounds"
+      },
+      {
+        "gameId": "0042500303",
+        "reason": "no-matching-finished-game"
+      },
+      {
+        "gameId": "0042500313",
+        "reason": "no-matching-finished-game"
+      }
+    ]
+  }
 }
