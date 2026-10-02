@@ -1,0 +1,13 @@
+import { renderToStaticMarkup } from 'react-dom/server';
+import { beforeEach, expect, it, vi } from 'vitest';
+import en from '@/locales/en';
+import zh from '@/locales/zh';
+const runtime=vi.hoisted(()=>({cursor:0,slots:[] as unknown[],locale:'en'}));
+vi.mock('react',async original=>({...await original<typeof import('react')>(),useState:(initial:unknown)=>{const i=runtime.cursor++;return [i in runtime.slots?runtime.slots[i]:initial,vi.fn()];},useEffect:()=>{},useRef:()=>({current:null})}));
+vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:runtime.locale,t:runtime.locale==='zh'?zh:en})}));
+import SearchInput from '@/components/SearchInput';
+const row={personId:202681,firstName:'Kyrie',lastName:'Irving',teamAbbr:'DAL',teamId:1,teamName:'Mavericks',teamCity:'Dallas',jersey:'11',position:'G',pts:null,reb:null,ast:null,indexProvenance:{source:'bundled-archive',season:'2025-26',stale:true,retrievedAt:null}};
+beforeEach(()=>{runtime.cursor=0;runtime.locale='en';runtime.slots=['Kyrie',[row],false,true,true];});
+it.each(['en','zh'])('null search stats display unavailable and source context in %s',locale=>{runtime.locale=locale;const result=renderToStaticMarkup(SearchInput({}));expect(result).toContain('—');expect(result).toContain('2025-26');expect(result).toContain(locale==='zh'?'存档快照':'archived snapshot');expect(result).not.toContain('0.0');});
+it('known zero remains zero',()=>{runtime.slots[1]=[{...row,pts:0,reb:0,ast:0}];expect(renderToStaticMarkup(SearchInput({}))).toContain('0.0');});
+it('legacy cached rows without metadata cannot claim a source season',()=>{runtime.slots[1]=[{...row,indexProvenance:undefined}];const result=renderToStaticMarkup(SearchInput({}));expect(result).toContain('Source unspecified');expect(result).not.toContain('2025-26');});

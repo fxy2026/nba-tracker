@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
 import { expandQuery } from "@/lib/playerAliases";
 import { TEAM_META } from "@/lib/teams";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
@@ -89,7 +89,8 @@ export async function GET(request: Request) {
       }
       // Active?
       try {
-        const players = await getPlayerIndex();
+        const snapshot = await getPlayerIndexSnapshot();
+        const players = snapshot.players;
         const active = players.find((p) => p.personId === numId);
         if (active) {
           return NextResponse.json({
@@ -103,6 +104,7 @@ export async function GET(request: Request) {
               teamCity: active.teamCity,
               jersey: active.jersey,
               position: active.position,
+              indexProvenance: snapshot.provenance,
               pts: active.pts,
               reb: active.reb,
               ast: active.ast,
@@ -120,10 +122,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const players = await Promise.race([
-      getPlayerIndex(),
+    const snapshot = await Promise.race([
+      getPlayerIndexSnapshot(),
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 6000)),
     ]);
+
+    const players = snapshot.players;
 
     // Expand colloquial / Chinese nicknames into matchable name fragments.
     const queries = expandQuery(q);
@@ -157,6 +161,7 @@ export async function GET(request: Request) {
         teamCity: p.teamCity,
         jersey: p.jersey,
         position: p.position,
+        indexProvenance: snapshot.provenance,
         pts: p.pts,
         reb: p.reb,
         ast: p.ast,

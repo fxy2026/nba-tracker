@@ -7,6 +7,8 @@ import { Search, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
+import { playerIndexLabel, playerIndexStat, type PlayerIndexProvenance } from "@/lib/player-index-provenance";
+
 interface SearchResult {
   personId: number;
   firstName: string;
@@ -17,9 +19,13 @@ interface SearchResult {
   teamCity: string;
   jersey: string;
   position: string;
-  pts: number;
-  reb: number;
-  ast: number;
+  pts: number | null;
+  reb: number | null;
+  ast: number | null;
+  indexProvenance?: PlayerIndexProvenance;
+  isLegend?: boolean;
+  isIconicSeason?: boolean;
+  season?: string;
 }
 
 const SEARCH_HISTORY_KEY = "nba-search-history";
@@ -41,7 +47,7 @@ function saveSearchHistory(query: string) {
 }
 
 export default function SearchInput({ initialQuery = "" }: { initialQuery?: string }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -107,7 +113,7 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
+        const res = await fetch(`/api/search?context=1&q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
         clearTimeout(timeout);
         if (res.ok) {
           const json = await res.json();
@@ -204,14 +210,15 @@ export default function SearchInput({ initialQuery = "" }: { initialQuery?: stri
                 <p className="text-xs text-text-secondary">
                   {p.teamCity} {p.teamName} &middot; #{p.jersey} {p.position}
                 </p>
+                  <p className="text-[10px] text-text-secondary break-words">{p.indexProvenance ? playerIndexLabel(p.indexProvenance, locale) : p.isIconicSeason ? `${p.season ?? "—"} · ${locale === "zh" ? "经典赛季" : "curated season"}` : p.isLegend ? (locale === "zh" ? "历史生涯场均" : "Curated career averages") : (locale === "zh" ? "数据来源未注明" : "Source unspecified")}</p>
               </div>
               <div className="text-right shrink-0 flex items-center gap-1.5">
-                {p.pts > 25 && (
+                {typeof p.pts === "number" && p.pts > 25 && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold">{t.searchPage.star}</span>
                 )}
                 <div>
-                  <p className="text-xs text-accent font-medium">{p.pts} PPG</p>
-                  <p className="text-xs text-text-secondary">{p.reb} RPG &middot; {p.ast} APG</p>
+                  <p className="text-xs text-accent font-medium">{playerIndexStat(p.pts)} PPG</p>
+                  <p className="text-xs text-text-secondary">{playerIndexStat(p.reb)} RPG &middot; {playerIndexStat(p.ast)} APG</p>
                 </div>
               </div>
             </Link>

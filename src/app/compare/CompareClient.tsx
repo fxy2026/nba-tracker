@@ -14,8 +14,10 @@ import type { PlayerAccolades } from "@/lib/playerAccolades";
 import type { PlayStyle } from "@/lib/iconicSeasons";
 import { PLAY_STYLE_LABEL } from "@/lib/iconicSeasons";
 import { getLeagueEra } from "@/lib/leagueEra";
+import { playerIndexLabel, type PlayerIndexProvenance } from "@/lib/player-index-provenance";
+import { compareStatPair, displayCompareStat, isCompareStat, productionScore, productionShares, uniqueStatLeader, type CompareStat } from "@/lib/compare-stat-values";
 
-interface PlayerData {
+export interface PlayerData {
   personId: number;
   firstName: string;
   lastName: string;
@@ -24,9 +26,9 @@ interface PlayerData {
   teamCity: string;
   jersey: string;
   position: string;
-  pts: number;
-  reb: number;
-  ast: number;
+  pts: CompareStat;
+  reb: CompareStat;
+  ast: CompareStat;
   // Set by /api/search for retired legends — used to badge them in results
   // and skip jersey/position display (which we don't carry for legends).
   isLegend?: boolean;
@@ -41,17 +43,17 @@ interface PlayerData {
   storyZh?: string;
   styles?: PlayStyle[];
   // Shooting splits (decimals 0-1)
-  fgPct?: number;
-  tpPct?: number;
-  ftPct?: number;
+  fgPct?: CompareStat;
+  tpPct?: CompareStat;
+  ftPct?: CompareStat;
   // Single-season defensive stats — only iconic-season + legends carry these
-  spg?: number;
-  bpg?: number;
+  spg?: CompareStat;
+  bpg?: CompareStat;
   // Playoff per-game for the same season
-  playoffPpg?: number;
-  playoffRpg?: number;
-  playoffApg?: number;
-  playoffGp?: number;
+  playoffPpg?: CompareStat;
+  playoffRpg?: CompareStat;
+  playoffApg?: CompareStat;
+  playoffGp?: CompareStat;
   mvp?: boolean;
   champion?: boolean;
   finalsMvp?: boolean;
@@ -60,7 +62,8 @@ interface PlayerData {
   // Career-level accolade counts — populated for any player our static
   // table knows (most legends + ~20 superstars). Drives the trophy strip
   // and the "MVPs/rings/All-Stars" tiles below the radar chart.
-  accolades?: PlayerAccolades;
+  accolades?: Partial<PlayerAccolades> | null;
+  indexProvenance?: PlayerIndexProvenance;
 }
 
 const COMPARE_STATS = [
@@ -69,28 +72,49 @@ const COMPARE_STATS = [
   { key: "ast", label: "APG", color: "text-accent", barColor: "#60a5fa" },
 ] as const;
 
-// Build radar axes from two players. Mode chooses regular-season vs
-// playoff per-game; defensive (SPG/BPG) axes only render when at least one
-// side carries them. Each axis is normalized to max(v1, v2) inside RadarChart.
-function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
+export function comparisonSourceLabel(player: PlayerData, isZh: boolean): string {
+  if (player.isIconicSeason) return isZh ? `${player.season ?? "赛季未注明"} · 人工整理的单赛季数据` : `${player.season ?? "season unspecified"} · curated single-season stats`;
+  if (player.isLegend) return isZh ? "人工整理的生涯场均" : "Curated career averages";
+  return player.indexProvenance
+    ? playerIndexLabel(player.indexProvenance, isZh ? "zh" : "en")
+    : (isZh ? "来源信息暂不可用" : "Source information unavailable");
+}
+
+/** Career averages compare with career averages; season stats need the same declared season. */
+export function comparisonPeriodsCompatible(players: readonly PlayerData[]): boolean {
+  if (players.length < 2) return false;
+  const periods = players.map(player => player.isIconicSeason
+    ? (player.season ? `season:${player.season}` : null)
+    : player.isLegend ? "career"
+    : (player.indexProvenance?.season ? `season:${player.indexProvenance.season}` : null));
+  return periods[0] !== null && periods.every(period => period === periods[0]);
+}
+
+function SourceLabel({ player, isZh }: { player: PlayerData; isZh: boolean }) {
+  return <p className="text-[10px] text-text-secondary mt-1">{comparisonSourceLabel(player, isZh)}</p>;
+}
+
+function honorsSourceLabel(isZh: boolean): string {
+  return isZh ? "人工整理 · 截至 2025-26 赛季开始 · — 表示未知" : "Curated · as of the start of 2025-26 · — means unknown";
+}
+
+// Only complete pairs become radar axes. Real zero remains a known value.
+export function buildRadarStats(p1: PlayerData, p2: PlayerData, mode: "RS" | "PO") {
   const axes: { label: string; home: number; away: number; max: number }[] = [];
-  const push = (label: string, a: number, b: number, max?: number) => {
-    if (a > 0 || b > 0) axes.push({ label, home: a, away: b, max: max ?? Math.max(a, b, 0.001) });
+  const push = (label: string, a: CompareStat, b: CompareStat) => {
+    const pair = compareStatPair(a, b);
+    if (pair) axes.push({ label, home: pair.a, away: pair.b, max: pair.max });
   };
-  if (mode === "PO" && (p1.playoffPpg !== undefined || p2.playoffPpg !== undefined)) {
-    push("PPG", p1.playoffPpg ?? 0, p2.playoffPpg ?? 0);
-    push("RPG", p1.playoffRpg ?? 0, p2.playoffRpg ?? 0);
-    push("APG", p1.playoffApg ?? 0, p2.playoffApg ?? 0);
+  if (mode === "PO") {
+    push("PPG", p1.playoffPpg, p2.playoffPpg);
+    push("RPG", p1.playoffRpg, p2.playoffRpg);
+    push("APG", p1.playoffApg, p2.playoffApg);
   } else {
     push("PPG", p1.pts, p2.pts);
     push("RPG", p1.reb, p2.reb);
     push("APG", p1.ast, p2.ast);
-    if (p1.spg !== undefined && p2.spg !== undefined) {
-      push("SPG", p1.spg, p2.spg);
-    }
-    if (p1.bpg !== undefined && p2.bpg !== undefined) {
-      push("BPG", p1.bpg, p2.bpg);
-    }
+    push("SPG", p1.spg, p2.spg);
+    push("BPG", p1.bpg, p2.bpg);
   }
   return axes;
 }
@@ -102,37 +126,27 @@ type CompareTranslations = {
   comparePage: { samePosition: string; statsComparison: string };
   common: { vs: string };
 };
-function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerData; p3: PlayerData; isZh: boolean; t: CompareTranslations }) {
+export function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerData; p3: PlayerData; isZh: boolean; t: CompareTranslations }) {
   void t;
   const playersArr = [p1, p2, p3];
-  // For each metric, mark the index of the leader (or -1 on tie at top).
-  const leaderIdx = (vals: number[]) => {
-    const max = Math.max(...vals);
-    const tops = vals.filter((v) => v === max);
-    return tops.length > 1 ? -1 : vals.indexOf(max);
-  };
-  const statRows: { label: string; values: number[]; fmt?: (v: number) => string }[] = [
+  const leaderIdx = uniqueStatLeader;
+  const statRows: { label: string; values: CompareStat[]; fmt?: (v: number) => string }[] = [
     { label: "PPG", values: [p1.pts, p2.pts, p3.pts], fmt: (v) => v.toFixed(1) },
     { label: "RPG", values: [p1.reb, p2.reb, p3.reb], fmt: (v) => v.toFixed(1) },
     { label: "APG", values: [p1.ast, p2.ast, p3.ast], fmt: (v) => v.toFixed(1) },
   ];
-  // Optional rows only render when ALL THREE players carry the field —
-  // active-player entries from /api/search lack shooting splits and SPG/BPG,
-  // so coercing those to 0 would mark them false losers and skew the verdict.
-  if (p1.spg !== undefined && p2.spg !== undefined && p3.spg !== undefined) {
-    statRows.push({ label: "SPG", values: [p1.spg, p2.spg, p3.spg], fmt: (v) => v.toFixed(1) });
-  }
-  if (p1.bpg !== undefined && p2.bpg !== undefined && p3.bpg !== undefined) {
-    statRows.push({ label: "BPG", values: [p1.bpg, p2.bpg, p3.bpg], fmt: (v) => v.toFixed(1) });
-  }
-  if (p1.fgPct !== undefined && p2.fgPct !== undefined && p3.fgPct !== undefined) {
-    statRows.push({ label: "FG%", values: [p1.fgPct, p2.fgPct, p3.fgPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
-  }
-  if (p1.tpPct !== undefined && p2.tpPct !== undefined && p3.tpPct !== undefined) {
-    statRows.push({ label: "3P%", values: [p1.tpPct, p2.tpPct, p3.tpPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
-  }
-  if (p1.ftPct !== undefined && p2.ftPct !== undefined && p3.ftPct !== undefined) {
-    statRows.push({ label: "FT%", values: [p1.ftPct, p2.ftPct, p3.ftPct], fmt: (v) => `${(v * 100).toFixed(1)}%` });
+  const optionalRows = [
+    { key: "spg", label: "SPG", percent: false },
+    { key: "bpg", label: "BPG", percent: false },
+    { key: "fgPct", label: "FG%", percent: true },
+    { key: "tpPct", label: "3P%", percent: true },
+    { key: "ftPct", label: "FT%", percent: true },
+  ] as const;
+  for (const { key, label, percent } of optionalRows) {
+    const values = playersArr.map(player => player[key]);
+    if (values.some(value => value !== undefined)) {
+      statRows.push({ label, values, fmt: value => percent ? `${(value * 100).toFixed(1)}%` : value.toFixed(1) });
+    }
   }
 
   // Tally categorical wins (highlight whoever leads the most rows)
@@ -141,7 +155,9 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
     const idx = leaderIdx(row.values);
     if (idx >= 0) wins[idx]++;
   }
-  const overallLeader = leaderIdx(wins);
+  const completeComparison = statRows.every(row => row.values.every(isCompareStat));
+  const samePeriod = comparisonPeriodsCompatible(playersArr);
+  const overallLeader = completeComparison && samePeriod ? leaderIdx(wins) : -1;
 
   const accRows: { label: string; key: keyof PlayerAccolades }[] = [
     { label: isZh ? "总冠军" : "Rings", key: "championships" },
@@ -166,6 +182,7 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
               <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full mt-1 bg-accent-amber/15 text-accent-amber">{isZh ? "传奇" : "Legend"}</span>
             ) : null}
             <p className="text-[10px] text-text-secondary mt-1">{p.teamAbbr}</p>
+            <SourceLabel player={p} isZh={isZh} />
           </div>
         ))}
       </div>
@@ -173,7 +190,7 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
       {/* Stat rows */}
       <div className="divide-y divide-border/40">
         {statRows.map((row) => {
-          const idx = leaderIdx(row.values);
+          const idx = samePeriod ? leaderIdx(row.values) : -1;
           return (
             <div key={row.label} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 px-4 py-2.5">
               <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary w-12">{row.label}</span>
@@ -182,7 +199,7 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
                 const isLeader = idx === i;
                 return (
                   <span key={i} className={`text-center text-sm font-mono tabular-nums ${isLeader ? "text-accent-amber font-bold" : "text-text-primary"}`}>
-                    {fmt(v)}
+                    {isCompareStat(v) ? fmt(v) : "—"}
                   </span>
                 );
               })}
@@ -197,16 +214,17 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
           <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 px-4 pt-3">
             / {isZh ? "生涯成就" : "Career Accolades"}
           </p>
+          <p className="text-[9px] text-text-secondary px-4 mt-1">{honorsSourceLabel(isZh)}</p>
           <div className="divide-y divide-border/40 mt-1">
             {accRows.map((acc) => {
-              const vals = [p1.accolades?.[acc.key] ?? 0, p2.accolades?.[acc.key] ?? 0, p3.accolades?.[acc.key] ?? 0];
+              const vals = [p1.accolades?.[acc.key], p2.accolades?.[acc.key], p3.accolades?.[acc.key]];
               const idx = leaderIdx(vals);
               return (
                 <div key={acc.key} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 px-4 py-2">
                   <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary w-16">{acc.label}</span>
                   {vals.map((v, i) => (
                     <span key={i} className={`text-center text-sm font-light font-mono tabular-nums ${idx === i ? "text-accent-amber font-bold" : "text-text-primary"}`}>
-                      {v}
+                      {displayCompareStat(v)}
                     </span>
                   ))}
                 </div>
@@ -227,7 +245,11 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
           </p>
         ) : (
           <p className="text-sm text-text-secondary">
-            {isZh ? "数据各有千秋——平分秋色" : "Each holds their own"}
+            {!completeComparison
+              ? (isZh ? "数据不完整，无法判定整体领先者" : "Incomplete stats: overall comparison unavailable")
+              : !samePeriod
+                ? (isZh ? "数据时期不同或未知，无法判定整体领先者" : "Different or unknown periods: overall comparison unavailable")
+                : (isZh ? "数据各有千秋——平分秋色" : "Each holds their own")}
           </p>
         )}
       </div>
@@ -237,13 +259,13 @@ function ThreeWayCompare({ p1, p2, p3, isZh, t }: { p1: PlayerData; p2: PlayerDa
 
 // FG% / 3P% / FT% row triplet. Each line shows the two raw percentages
 // flanking a small bar where the winner side is amber.
-function ShootingSplits({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
-  const rows: { label: string; v1?: number; v2?: number }[] = [
+export function ShootingSplits({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
+  const samePeriod = comparisonPeriodsCompatible([p1, p2]);
+  const rows: { label: string; v1: CompareStat; v2: CompareStat }[] = [
     { label: "FG%", v1: p1.fgPct, v2: p2.fgPct },
     { label: "3P%", v1: p1.tpPct, v2: p2.tpPct },
     { label: "FT%", v1: p1.ftPct, v2: p2.ftPct },
   ].filter((r) => r.v1 !== undefined || r.v2 !== undefined);
-
   if (rows.length === 0) return null;
 
   return (
@@ -252,25 +274,25 @@ function ShootingSplits({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh
         / {isZh ? "投篮分布" : "Shooting splits"}
       </p>
       {rows.map((r) => {
-        const a = r.v1 ?? 0;
-        const b = r.v2 ?? 0;
-        const max = Math.max(a, b, 0.001);
-        const fmt = (v: number | undefined) => v === undefined ? "—" : `${(v * 100).toFixed(1)}%`;
+        const pair = compareStatPair(r.v1, r.v2);
+        const fmt = (v: CompareStat) => isCompareStat(v) ? `${(v * 100).toFixed(1)}%` : "—";
         return (
           <div key={r.label}>
             <div className="flex items-center justify-between mb-1 text-xs font-mono tabular-nums">
-              <span className={a >= b && r.v1 !== undefined ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v1)}</span>
+              <span className={samePeriod && pair?.winner === 0 ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v1)}</span>
               <span className="text-text-secondary uppercase tracking-[0.15em]">{r.label}</span>
-              <span className={b >= a && r.v2 !== undefined ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v2)}</span>
+              <span className={samePeriod && pair?.winner === 1 ? "text-accent-amber font-semibold" : "text-text-secondary"}>{fmt(r.v2)}</span>
             </div>
-            <div className="flex gap-1 h-1.5">
-              <div className="flex-1 flex justify-end">
-                <div className={`h-full rounded-l-full ${a >= b ? "bg-accent-amber/70" : "bg-accent/30"}`} style={{ width: `${(a / max) * 100}%` }} />
+            {pair && (
+              <div className="flex gap-1 h-1.5">
+                <div className="flex-1 flex justify-end">
+                  <div className={`h-full rounded-l-full ${samePeriod && pair.winner === 0 ? "bg-accent-amber/70" : "bg-accent/30"}`} style={{ width: `${pair.ratioA * 100}%` }} />
+                </div>
+                <div className="flex-1">
+                  <div className={`h-full rounded-r-full ${samePeriod && pair.winner === 1 ? "bg-accent-amber/70" : "bg-success/30"}`} style={{ width: `${pair.ratioB * 100}%` }} />
+                </div>
               </div>
-              <div className="flex-1">
-                <div className={`h-full rounded-r-full ${b >= a ? "bg-accent-amber/70" : "bg-success/30"}`} style={{ width: `${(b / max) * 100}%` }} />
-              </div>
-            </div>
+            )}
           </div>
         );
       })}
@@ -303,7 +325,7 @@ function StyleTagsCol({ styles, isZh }: { styles?: PlayStyle[]; isZh: boolean })
 // Era-context strip: "X PPG vs Y league avg → +/- N above era".
 // Shows for each iconic-season player on their own side; falls back to
 // a quiet line when league era data isn't known for that year.
-function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
+export function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: boolean }) {
   const renderSide = (p: PlayerData) => {
     if (p.seasonYear === undefined) return null;
     const era = getLeagueEra(p.seasonYear);
@@ -311,11 +333,11 @@ function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: bo
     const teamPpg = era.ppg;
     // The league PPG is per team; an individual scoring 30 in a 105 PPG
     // era is scoring 28.6% of his team's points. Compare relative shares.
-    const sharePct = (p.pts / teamPpg) * 100;
+    const sharePct = isCompareStat(p.pts) && isCompareStat(teamPpg) && teamPpg > 0 ? (p.pts / teamPpg) * 100 : null;
     return (
       <div className="bg-bg-card p-3 text-[11px] text-text-secondary leading-relaxed">
         <div className="font-mono tabular-nums">
-          <span className="text-accent-amber">{p.pts.toFixed(1)}</span>
+          <span className="text-accent-amber">{displayCompareStat(p.pts, 1)}</span>
           <span className="text-text-secondary/60"> PPG</span>
           <span className="text-text-secondary/40 mx-1.5">·</span>
           <span className="text-text-secondary">
@@ -324,8 +346,8 @@ function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: bo
         </div>
         <div className="text-[10px] mt-1">
           {isZh
-            ? `占球队得分 ${sharePct.toFixed(1)}% · ${era.season} 时代节奏 ${era.pace.toFixed(1)} poss`
-            : `${sharePct.toFixed(1)}% of team output · ${era.season} pace ${era.pace.toFixed(1)} poss`}
+            ? `占球队得分 ${displayCompareStat(sharePct, 1)}% · ${era.season} 时代节奏 ${era.pace.toFixed(1)} poss`
+            : `${displayCompareStat(sharePct, 1)}% of team output · ${era.season} pace ${era.pace.toFixed(1)} poss`}
         </div>
       </div>
     );
@@ -343,30 +365,32 @@ function EraContext({ p1, p2, isZh }: { p1: PlayerData; p2: PlayerData; isZh: bo
 
 // One accolade tile: label, both values, mini comparison bar. Winner side
 // gets the accent-amber treatment; ties show in neutral text.
-function AccoladeTile({ label, v1, v2 }: { label: string; v1: number; v2: number }) {
-  const max = Math.max(v1, v2, 1);
-  const winner1 = v1 > v2;
-  const winner2 = v2 > v1;
+export function AccoladeTile({ label, v1, v2 }: { label: string; v1: CompareStat; v2: CompareStat }) {
+  const pair = compareStatPair(v1, v2);
+  const winner1 = pair?.winner === 0;
+  const winner2 = pair?.winner === 1;
   return (
     <div className="glass-tile p-3 text-center">
       <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60">{label}</p>
       <div className="flex items-baseline justify-center gap-2 mt-1">
         <span className={`text-lg font-light font-mono tabular-nums ${winner1 ? "text-accent-amber" : "text-text-primary"}`}>
-          {v1}
+          {displayCompareStat(v1)}
         </span>
         <span className="text-[9px] text-text-secondary/40">vs</span>
         <span className={`text-lg font-light font-mono tabular-nums ${winner2 ? "text-accent-amber" : "text-text-primary"}`}>
-          {v2}
+          {displayCompareStat(v2)}
         </span>
       </div>
-      <div className="flex gap-0.5 mt-1.5 h-1">
-        <div className="flex-1 flex justify-end">
-          <div className={`h-full rounded-l-full ${winner1 ? "bg-accent-amber" : "bg-accent/40"}`} style={{ width: `${(v1 / max) * 100}%` }} />
+      {pair && (
+        <div className="flex gap-0.5 mt-1.5 h-1">
+          <div className="flex-1 flex justify-end">
+            <div className={`h-full rounded-l-full ${winner1 ? "bg-accent-amber" : "bg-accent/40"}`} style={{ width: `${pair.ratioA * 100}%` }} />
+          </div>
+          <div className="flex-1">
+            <div className={`h-full rounded-r-full ${winner2 ? "bg-accent-amber" : "bg-success/40"}`} style={{ width: `${pair.ratioB * 100}%` }} />
+          </div>
         </div>
-        <div className="flex-1">
-          <div className={`h-full rounded-r-full ${winner2 ? "bg-accent-amber" : "bg-success/40"}`} style={{ width: `${(v2 / max) * 100}%` }} />
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -399,7 +423,7 @@ function TrophyRow({ p }: { p: PlayerData }) {
 const search = async (q: string, setter: (r: PlayerData[]) => void) => {
   if (q.length < 2) { setter([]); return; }
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&context=1`);
     if (res.ok) {
       const json = await res.json();
       setter(json.data || []);
@@ -512,7 +536,7 @@ export default function ComparePage() {
     const p3Id = searchParams.get("p3");
     const resolve = async (id: string, setter: (p: PlayerData) => void) => {
       try {
-        const res = await fetch(`/api/search?id=${encodeURIComponent(id)}`);
+        const res = await fetch(`/api/search?id=${encodeURIComponent(id)}&context=1`);
         if (!res.ok) return;
         const json = await res.json();
         if (json.data) setter(json.data);
@@ -614,7 +638,7 @@ export default function ComparePage() {
           {t.comparePage.title}
         </h1>
         <p className="text-xs text-text-secondary mt-2">
-          {isZh ? "数据为各球员最近完整赛季的场均（来自 NBA 球员索引）" : "Stats are last-completed-season per-game averages from the NBA player index"}
+          {isZh ? "各球员分别标注数据来源与赛季；生涯场均与单赛季数据口径不同。— 表示未知。" : "Each player is labeled with their source and season; career averages and single-season stats cover different periods. — means unknown."}
         </p>
       </div>
 
@@ -758,6 +782,7 @@ export default function ComparePage() {
                   {player1.teamCity} {player1.teamName}
                   {player1.jersey && <> &middot; #{player1.jersey}</>}
                 </p>
+                <SourceLabel player={player1} isZh={isZh} />
                 {player1.isIconicSeason && <TrophyRow p={player1} />}
               </div>
             </div>
@@ -784,6 +809,7 @@ export default function ComparePage() {
                   {player2.teamCity} {player2.teamName}
                   {player2.jersey && <> &middot; #{player2.jersey}</>}
                 </p>
+                <SourceLabel player={player2} isZh={isZh} />
                 {player2.isIconicSeason && <TrophyRow p={player2} />}
               </div>
             </div>
@@ -824,9 +850,11 @@ export default function ComparePage() {
           {/* Radar — RS/PO toggle appears only when both players carry
               playoff per-game data (i.e. both are iconic seasons or legends
               with playoff fields curated). */}
-          {player1.pts > 0 && player2.pts > 0 && (() => {
-            const bothHavePlayoffs = player1.playoffPpg !== undefined && player2.playoffPpg !== undefined;
+          {(() => {
+            const bothHavePlayoffs = buildRadarStats(player1, player2, "PO").length === 3;
             const mode = bothHavePlayoffs ? radarMode : "RS";
+            const radarStats = buildRadarStats(player1, player2, mode);
+            if (radarStats.length < 3) return null;
             return (
               <div className="p-6 border-b border-border bg-bg-secondary/20">
                 <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
@@ -868,52 +896,53 @@ export default function ComparePage() {
                 </div>
                 <div className="flex justify-center">
                   <RadarChart
-                    stats={buildRadarStats(player1, player2, mode)}
+                    stats={radarStats}
                     homeLabel={`${player1.firstName} ${player1.lastName}`}
                     awayLabel={`${player2.firstName} ${player2.lastName}`}
                   />
                 </div>
                 <p className="text-[9px] text-text-secondary/60 text-center mt-2 font-mono uppercase tracking-[0.15em]">
                   {isZh
-                    ? `每轴按两人最大值归一 · ${mode === "PO" ? "季后赛场均" : "常规赛场均"}`
-                    : `Each axis normalized · ${mode === "PO" ? "Playoff per-game" : "Regular-season per-game"}`}
+                    ? `仅含双方已知数据的轴 · 每轴按两人最大值归一 · ${mode === "PO" ? "季后赛场均" : "各球员标注时期的场均"}`
+                    : `Complete axes only · Each axis normalized · ${mode === "PO" ? "Playoff per-game" : "Per-game for each labeled period"}`}
                 </p>
               </div>
             );
           })()}
 
           {/* Career-accolades tile grid — only when at least one side has
-              data in PLAYER_ACCOLADES. The 0 vs N gap is part of the story. */}
+              data in PLAYER_ACCOLADES. Unknown entries remain unavailable. */}
           {(player1.accolades || player2.accolades) && (
             <div className="p-6 border-b border-border">
               <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3">
                 / {isZh ? "生涯成就" : "Career Accolades"}
               </h3>
+              <p className="text-[10px] text-text-secondary mb-3">{honorsSourceLabel(isZh)}</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 <AccoladeTile
                   label={isZh ? "总冠军" : "Rings"}
-                  v1={player1.accolades?.championships ?? 0}
-                  v2={player2.accolades?.championships ?? 0}
+                  v1={player1.accolades?.championships}
+                  v2={player2.accolades?.championships}
                 />
                 <AccoladeTile
                   label="MVP"
-                  v1={player1.accolades?.mvps ?? 0}
-                  v2={player2.accolades?.mvps ?? 0}
+                  v1={player1.accolades?.mvps}
+                  v2={player2.accolades?.mvps}
                 />
                 <AccoladeTile
                   label="FMVP"
-                  v1={player1.accolades?.finalsMvps ?? 0}
-                  v2={player2.accolades?.finalsMvps ?? 0}
+                  v1={player1.accolades?.finalsMvps}
+                  v2={player2.accolades?.finalsMvps}
                 />
                 <AccoladeTile
                   label={isZh ? "全明星" : "All-Star"}
-                  v1={player1.accolades?.allStars ?? 0}
-                  v2={player2.accolades?.allStars ?? 0}
+                  v1={player1.accolades?.allStars}
+                  v2={player2.accolades?.allStars}
                 />
                 <AccoladeTile
                   label="All-NBA"
-                  v1={player1.accolades?.allNba ?? 0}
-                  v2={player2.accolades?.allNba ?? 0}
+                  v1={player1.accolades?.allNba}
+                  v2={player2.accolades?.allNba}
                 />
               </div>
             </div>
@@ -975,54 +1004,54 @@ export default function ComparePage() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Stats bars */}
+          {/* Stats bars: unknown pairs have values, but no comparative bars. */}
           <div className="p-6 space-y-5">
             {COMPARE_STATS.map(({ key, label, color }) => {
-              const v1 = player1[key as keyof PlayerData] as number;
-              const v2 = player2[key as keyof PlayerData] as number;
-              const max = Math.max(v1, v2, 0.1);
+              const v1 = player1[key];
+              const v2 = player2[key];
+              const pair = compareStatPair(v1, v2);
+              const comparablePeriod = comparisonPeriodsCompatible([player1, player2]);
               return (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className={`text-lg font-bold ${v1 >= v2 ? color : "text-text-secondary"}`}>{v1}</span>
+                    <span className={`text-lg font-bold ${comparablePeriod && pair?.winner === 0 ? color : "text-text-secondary"}`}>{displayCompareStat(v1)}</span>
                     <span className="text-xs text-text-secondary font-medium uppercase">{label}</span>
-                    <span className={`text-lg font-bold ${v2 >= v1 ? color : "text-text-secondary"}`}>{v2}</span>
+                    <span className={`text-lg font-bold ${comparablePeriod && pair?.winner === 1 ? color : "text-text-secondary"}`}>{displayCompareStat(v2)}</span>
                   </div>
-                  <div className="flex gap-1 h-3">
-                    <div className="flex-1 flex justify-end">
-                      <div className={`h-full rounded-l-full ${v1 >= v2 ? "bg-accent" : "bg-bg-hover"}`}
-                        style={{ width: `${(v1 / max) * 100}%` }} />
+                  {pair && (
+                    <div className="flex gap-1 h-3">
+                      <div className="flex-1 flex justify-end">
+                        <div className={`h-full rounded-l-full ${comparablePeriod && pair.winner === 0 ? "bg-accent" : "bg-bg-hover"}`}
+                          style={{ width: `${pair.ratioA * 100}%` }} />
+                      </div>
+                      <div className="flex-1">
+                        <div className={`h-full rounded-r-full ${comparablePeriod && pair.winner === 1 ? "bg-accent" : "bg-bg-hover"}`}
+                          style={{ width: `${pair.ratioB * 100}%` }} />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <div className={`h-full rounded-r-full ${v2 >= v1 ? "bg-accent" : "bg-bg-hover"}`}
-                        style={{ width: `${(v2 / max) * 100}%` }} />
-                    </div>
-                  </div>
+                  )}
                 </div>
               );
             })}
-            {/* Shooting splits — rendered only when both sides carry the
-                percentage. Active-player rows from BDL don't have these, so
-                this section is iconic-vs-iconic / iconic-vs-legend territory. */}
-            {(player1.fgPct !== undefined && player2.fgPct !== undefined) && (
-              <ShootingSplits p1={player1} p2={player2} isZh={isZh} />
-            )}
+            <ShootingSplits p1={player1} p2={player2} isZh={isZh} />
           </div>
 
-          {/* Winner Summary */}
+          {/* Winner Summary requires the full headline metric set and matching periods. */}
           <div className="px-6 py-3 bg-bg-secondary/50 border-t border-border">
             {(() => {
-              let p1Wins = 0, p2Wins = 0;
-              for (const { key } of COMPARE_STATS) {
-                const v1 = player1[key as keyof PlayerData] as number;
-                const v2 = player2[key as keyof PlayerData] as number;
-                if (v1 > v2) p1Wins++;
-                else if (v2 > v1) p2Wins++;
-              }
-              const winner = p1Wins > p2Wins ? player1 : p2Wins > p1Wins ? player2 : null;
+              const pairs = COMPARE_STATS.map(({ key }) => compareStatPair(player1[key], player2[key]));
+              const complete = pairs.every(pair => pair !== null);
+              const samePeriod = comparisonPeriodsCompatible([player1, player2]);
+              const p1Wins = pairs.filter(pair => pair?.winner === 0).length;
+              const p2Wins = pairs.filter(pair => pair?.winner === 1).length;
+              const winner = complete && samePeriod ? (p1Wins > p2Wins ? player1 : p2Wins > p1Wins ? player2 : null) : null;
               return (
                 <p className="text-center text-sm">
-                  {winner ? (
+                  {!complete ? (
+                    <span className="text-text-secondary">{isZh ? "数据不完整，无法判定整体领先者" : "Incomplete stats: overall comparison unavailable"}</span>
+                  ) : !samePeriod ? (
+                    <span className="text-text-secondary">{isZh ? "数据时期不同或未知，无法判定整体领先者" : "Different or unknown periods: overall comparison unavailable"}</span>
+                  ) : winner ? (
                     <><span className="text-accent font-bold">{winner.firstName} {winner.lastName}</span> <span className="text-text-secondary">{t.comparePage.leads} {p1Wins > p2Wins ? p1Wins : p2Wins}-{p1Wins > p2Wins ? p2Wins : p1Wins} {t.comparePage.categories}</span></>
                   ) : (
                     <span className="text-text-secondary">{t.comparePage.tiedAll}</span>
@@ -1030,19 +1059,18 @@ export default function ComparePage() {
                 </p>
               );
             })()}
-            {/* Per-category advantage */}
             <div className="flex flex-wrap justify-center gap-2 mt-2">
               {COMPARE_STATS.map(({ key, label }) => {
-                const v1 = player1[key as keyof PlayerData] as number;
-                const v2 = player2[key as keyof PlayerData] as number;
-                const advantage = v1 > v2 ? player1 : v2 > v1 ? player2 : null;
+                const pair = compareStatPair(player1[key], player2[key]);
+                const comparable = pair && comparisonPeriodsCompatible([player1, player2]);
+                const advantage = comparable ? (pair.winner === 0 ? player1 : pair.winner === 1 ? player2 : null) : null;
                 return (
                   <span key={key} className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                     advantage === player1 ? "bg-accent/15 text-accent" :
                     advantage === player2 ? "bg-success/15 text-success" :
                     "bg-bg-hover text-text-secondary"
                   }`}>
-                    {label}: {advantage ? `${advantage.lastName}` : t.common.tied}
+                    {label}: {!comparable ? "—" : advantage ? `${advantage.lastName}` : t.common.tied}
                   </span>
                 );
               })}
@@ -1053,12 +1081,11 @@ export default function ComparePage() {
           <div className="px-6 pb-4">
             <h3 className="text-xs text-text-secondary font-medium uppercase mb-2 text-center">{t.comparePage.radarComparison}</h3>
             {(() => {
-              const stats = COMPARE_STATS.map(({ key, label }) => {
-                const v1 = player1[key as keyof PlayerData] as number;
-                const v2 = player2[key as keyof PlayerData] as number;
-                const max = Math.max(v1, v2, 0.1);
-                return { label, v1: v1 / max, v2: v2 / max };
+              const stats = COMPARE_STATS.flatMap(({ key, label }) => {
+                const pair = compareStatPair(player1[key], player2[key]);
+                return pair ? [{ label, v1: pair.ratioA, v2: pair.ratioB }] : [];
               });
+              if (stats.length < 3) return <p className="text-center text-xs text-text-secondary">{isZh ? "雷达图需要双方完整的数据" : "Radar unavailable: complete stats required"}</p>;
               const cx = 100, cy = 100, r = 70;
               const n = stats.length;
               const angleStep = (2 * Math.PI) / n;
@@ -1103,21 +1130,23 @@ export default function ComparePage() {
           <div className="px-6 pb-6">
             <svg viewBox="0 0 300 140" className="w-full max-w-md mx-auto">
               {COMPARE_STATS.map(({ key, label, barColor }, i) => {
-                const v1 = player1[key as keyof PlayerData] as number;
-                const v2 = player2[key as keyof PlayerData] as number;
-                const max = Math.max(v1, v2, 0.1);
+                const v1 = player1[key];
+                const v2 = player2[key];
+                const pair = compareStatPair(v1, v2);
                 const barW = 30;
                 const gap = 100;
                 const baseX = 50 + i * gap;
                 const maxH = 90;
                 return (
                   <g key={key}>
-                    <rect x={baseX - barW / 2 - 2} y={20 + maxH - (v1 / max) * maxH} width={barW} height={(v1 / max) * maxH}
-                      rx={4} fill={barColor} opacity={0.7} />
-                    <rect x={baseX + barW / 2 + 2} y={20 + maxH - (v2 / max) * maxH} width={barW} height={(v2 / max) * maxH}
-                      rx={4} fill={barColor} opacity={0.35} />
-                    <text x={baseX - 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9} fontWeight={600}>{v1}</text>
-                    <text x={baseX + barW + 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9}>{v2}</text>
+                    {pair && <>
+                      <rect x={baseX - barW / 2 - 2} y={20 + maxH - pair.ratioA * maxH} width={barW} height={pair.ratioA * maxH}
+                        rx={4} fill={barColor} opacity={0.7} />
+                      <rect x={baseX + barW / 2 + 2} y={20 + maxH - pair.ratioB * maxH} width={barW} height={pair.ratioB * maxH}
+                        rx={4} fill={barColor} opacity={0.35} />
+                    </>}
+                    <text x={baseX - 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9} fontWeight={600}>{displayCompareStat(v1)}</text>
+                    <text x={baseX + barW + 2} y={16} textAnchor="middle" fill="var(--text-secondary)" fontSize={9}>{displayCompareStat(v2)}</text>
                     <text x={baseX + barW / 4} y={125} textAnchor="middle" fill="var(--text-secondary)" fontSize={10} fontWeight={500}>{label}</text>
                   </g>
                 );
@@ -1130,25 +1159,30 @@ export default function ComparePage() {
       )}
 
       {/* Overall Production Score */}
-      {player1 && player2 && (() => {
+      {player1 && player2 && !player3 && (() => {
         // Simple production score: PTS + 1.2*REB + 1.5*AST
-        const score1 = player1.pts + 1.2 * player1.reb + 1.5 * player1.ast;
-        const score2 = player2.pts + 1.2 * player2.reb + 1.5 * player2.ast;
+        const score1 = productionScore(player1);
+        const score2 = productionScore(player2);
+        const pair = compareStatPair(score1, score2);
+        const samePeriod = comparisonPeriodsCompatible([player1, player2]);
+        const shares = samePeriod ? productionShares(score1, score2) : null;
         return (
           <div className="glass-tile p-4 mt-4">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3 text-center">{t.comparePage.overallScore}</h3>
             <p className="text-[9px] text-text-secondary text-center mb-3">{t.comparePage.scoreFormula}</p>
             <div className="flex items-center gap-4">
               <div className="flex-1 text-right">
-                <span className={`text-lg font-bold ${score1 >= score2 ? "text-accent" : "text-text-secondary"}`}>{score1.toFixed(1)}</span>
+                <span className={`text-lg font-bold ${samePeriod && pair?.winner === 0 ? "text-accent" : "text-text-secondary"}`}>{displayCompareStat(score1, 1)}</span>
                 <p className="text-[10px] text-text-secondary">{player1.lastName}</p>
               </div>
               <div className="w-32 h-3 bg-bg-hover rounded-full overflow-hidden flex">
-                <div className="h-full bg-accent rounded-l-full" style={{ width: `${(score1 / (score1 + score2)) * 100}%` }} />
-                <div className="h-full bg-success rounded-r-full" style={{ width: `${(score2 / (score1 + score2)) * 100}%` }} />
+                {shares && <>
+                  <div className="h-full bg-accent rounded-l-full" style={{ width: `${shares[0] * 100}%` }} />
+                  <div className="h-full bg-success rounded-r-full" style={{ width: `${shares[1] * 100}%` }} />
+                </>}
               </div>
               <div className="flex-1">
-                <span className={`text-lg font-bold ${score2 >= score1 ? "text-success" : "text-text-secondary"}`}>{score2.toFixed(1)}</span>
+                <span className={`text-lg font-bold ${samePeriod && pair?.winner === 1 ? "text-success" : "text-text-secondary"}`}>{displayCompareStat(score2, 1)}</span>
                 <p className="text-[10px] text-text-secondary">{player2.lastName}</p>
               </div>
             </div>
