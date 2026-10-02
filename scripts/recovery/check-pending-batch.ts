@@ -12,7 +12,7 @@ try {
     if (batch.context.runId !== Number(id) || batch.context.baseSha !== process.env.GITHUB_SHA) throw new Error('Mismatched capture context');
     appendFileSync(process.env.GITHUB_OUTPUT, 'ready=true\n');
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-      `Prepared temporary recovery bundle: nba-player-pending-${id}; ${batch.snapshots.length} validated normalized snapshots. If the upload step succeeds, retention is 7 days. Preparation is not proof of upload or permanent publication.\n`);
+      `Prepared temporary recovery bundle: nba-player-pending-${id}; ${batch.snapshots.length} validated player snapshots and ${batch.observations.length} official final identities. If the upload step succeeds, retention is 7 days. Preparation is not proof of upload or permanent publication.\n`);
   }
 } catch {
   console.error('Pending recovery bundle was not safe to upload.');

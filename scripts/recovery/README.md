@@ -16,14 +16,14 @@ The job uses only approved job-level `contents:write` and `actions:read` for the
 
 ## Controlled data flow
 
-1. Generate at most20 explicit targets from canonical, completed2025-26 games in the existing local schedule. Prioritize Finals, conference finals, second-round and first-round playoffs before other games. Skip saved/stronger snapshots; a persisted cursor advances past unavailable targets
+1. In backfill mode only, request the fixed NBA official schedule once. Strictly validate its declared current season and completed game identities. Current unseen finals come first, then previously observed pending finals, then the controlled2025-26 archive in Finals/conference/second/first-round priority. Select at most20 total targets. Saved snapshots are skipped; only the historical portion advances the legacy cursor.
 2. Look up complete date lists using the schedule's calendar date and its UTC date when different. Require a unique finished NBA matchup with matching teams and final score. Reject incomplete lists, duplicate/conflicting identities and ambiguous adjacent-date matches
 3. Fetch the resolved match's stats. Validate shapes, numeric values, shooting arithmetic, rebound splits and combined points. Provider current-roster team fields never establish historical membership
 4. Save generalized rows as **combined, historically unassigned** player tables, clearly attributed to the provider. These consistency checks do not independently establish each row's accuracy
-5. Preserve the two separately verified historical snapshots. Never invent NBA player IDs, DNP rows, coordinates, exact minutes, play-by-play, season averages or career totals
+5. Preserve every separately verified historical snapshot. Never invent NBA player IDs, DNP rows, coordinates, exact minutes, play-by-play, season averages or career totals
 6. Validate saved data, then publish at most one data/cursor commit. If master advanced, withhold the commit. Never force push or overwrite concurrent work
 
-Snapshots are server-only. Minutes remain provider-rounded. Final-game rows are not fetched again automatically once saved. The new provider archive starts empty; publishing this code alone does not establish that ingestion has succeeded.
+Snapshots are server-only. Minutes remain provider-rounded. Final-game rows are not fetched again automatically once saved. Publishing a new adapter does not establish that its current-season source has returned usable data.
 
 ## Offline dry run
 
@@ -71,3 +71,16 @@ The completed one-request sample produced21 rows at data commit1264896d5148caddb
 The20-target replay run37014621758 (immutable source `e25c8e3b9d2587a033a8349b221226070918b15d`) used46 requests and saved17 games/391 player-game rows. Its reviewed code bound is60, not the observed46. Exact successful run/job/source evidence can reserve60; combined with the earlier reviewed bounds and known manual/standalone calls this leaves132 of the230 task limit before the next run. Unknown executions remain conservatively reserved.
 
 A new one-time nonce allows two20-target chunks, one shared120-request ceiling, one shared120-second deadline, one date-page cache and one final data commit. Classified targets and provider UUID ownership carry across chunks; transport/budget interruption stops both chunks without skipping its target. All40 possible rejection codes fit the bounded persisted diagnostics. Scheduled and normal operator backfill continue to use one20-target chunk. The next40 local targets are16 second-round and24 first-round playoff games; they do not overlap saved snapshots. Their18 distinct date pages can be reused, but actual accepted coverage is reported only after the run.
+
+
+## Current-season identity persistence (2026-10-02)
+
+The active source is the fixed `https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json` URL. Only backfill mode requests it, once, with an8-second end-to-end deadline,16MiB response bound, and no redirect, retry or alternate endpoint. Verify, restore and diagnostic modes do not request it. This NBA request is separate from the unchanged BigBallsData230/day gate; there are still at most20 player-game targets per backfill run.
+
+A source result distinguishes ready, successful empty, missing, unavailable, malformed, stale and wrong-season states in the run summary. No fresh result or usable new-season provider coverage is implied by this code. The parser uses the actual `seasonYear`, canonical game ID, official calendar/UTC dates, team IDs/tricodes and unequal final scores. Preseason/All-Star/Cup-final IDs without an approved contract are excluded rather than queried speculatively.
+
+Validated selected identities are immutable per-game records in `src/data/observed-final-games/`. Their source hash and observed timestamp identify the bytes seen and retrieval time, not a source publication timestamp. A missing/empty/failed fresh response never deletes previously stored identities or player data. Previously observed finals remain eligible when the source is pending; classified failures wait48 hours while interrupted transport/budget targets remain retryable. Missing wins/losses/seeds are absent, not fabricated zeroes. The server-generated index fills missing schedule IDs, including missing games on an existing date, so a saved box remains addressable after the upstream schedule rotates.
+
+Before any new files are written, the temporary recovery bundle captures normalized player files plus `official-<NBA game ID>.json` identity records. At most20 of each,40 files and2MB total, are allowed. Matching pairs must agree on season/date/teams/scores; only the two strict projections and fixed manifest metadata may enter it. Upload remains conditional,7-day temporary retention, and does not replace permanent repository publication. The data commit allowlist adds only the observed identity directory; permissions are unchanged.
+
+Existing verified historical tables retain their stronger source and membership evidence. New generic provider data remains explicitly unassigned until game-time team membership is independently established. No automated membership route or2026-27 provider coverage has been demonstrated by these offline tests.

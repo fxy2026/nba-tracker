@@ -65,3 +65,43 @@ it('an interrupted capture without the final manifest is not accepted', () => {
 });
 
 it('refuses stronger or quarantined game IDs before capture',()=>{const dir=setup();expect(()=>writePendingBatch(dir,[sample],context,new Set([sample.game.nbaGameId]))).toThrow();expect(()=>readdirSync(dir)).toThrow();});
+
+import schedule from '../data/schedule-2025-26.json';
+import { OFFICIAL_RECOVERY_SCHEDULE_URL, projectOfficialRecoverySchedule } from './recovery-official-schedule';
+function officialObservation(){
+ const game=schedule.dates.flatMap(day=>day.games).find(game=>game.gameId===sample.game.nbaGameId)!;
+ const observedAt='2026-10-02T00:00:00Z';
+ const result=projectOfficialRecoverySchedule({leagueSchedule:{seasonYear:'2025-26',gameDates:[{games:[game]}]}},{expectedSeason:'2025-26',now:observedAt,source:{url:OFFICIAL_RECOVERY_SCHEDULE_URL,sha256:'a'.repeat(64),observedAt}});
+ if(result.status!=='ready')throw Error('Invalid official fixture');return{version:1 as const,game:result.games[0],source:result.source};
+}
+it('captures distinct typed official identity and player files with matching game identity',()=>{
+ const dir=setup(),observation=officialObservation();writePendingBatch(dir,[sample],context,new Set(),[observation]);
+ expect(readdirSync(dir).sort()).toEqual([`${sample.game.nbaGameId}.json`,'manifest.json',`official-${sample.game.nbaGameId}.json`]);
+ expect(readPendingBatch(dir)).toEqual({context,snapshots:[sample],observations:[observation]});
+ expect(JSON.parse(readFileSync(join(dir,'manifest.json'),'utf8')).version).toBe(2);
+});
+it('preserves a new official identity even when provider has no accepted player rows',()=>{
+ const dir=setup(),observation=officialObservation();writePendingBatch(dir,[],context,new Set(),[observation]);
+ expect(readPendingBatch(dir)).toEqual({context,snapshots:[],observations:[observation]});
+});
+it.each(['mismatch','extra','protected','duplicate','cap'])('rejects unsafe official artifact before any file creation: %s',kind=>{
+ const dir=setup(),observation=officialObservation();
+ if(kind==='mismatch')observation.game.home.score++;
+ if(kind==='extra')Reflect.set(observation.source,'key','DO_NOT_EXPORT');
+ const observations=kind==='duplicate'?[observation,observation]:kind==='cap'?Array(21).fill(observation):[observation];
+ expect(()=>writePendingBatch(dir,[sample],context,new Set(kind==='protected'?[sample.game.nbaGameId]:[]),observations)).toThrow();expect(()=>readdirSync(dir)).toThrow();
+});
+it.each(['prefix','version','mismatch','extra'])('reader rejects retagged or modified official artifact: %s',kind=>{
+ const dir=setup();writePendingBatch(dir,[sample],context,new Set(),[officialObservation()]);
+ const manifestFile=join(dir,'manifest.json'),manifest=JSON.parse(readFileSync(manifestFile,'utf8'));
+ const entry=manifest.files.find((file:{name:string})=>file.name.startsWith('official-'));
+ if(kind==='version')manifest.version=1;
+ else{
+  const file=join(dir,entry.name),raw=JSON.parse(readFileSync(file,'utf8'));
+  if(kind==='prefix'){entry.name='identity-'+sample.game.nbaGameId+'.json';rmSync(file);}
+  if(kind==='mismatch')raw.game.home.score++;
+  if(kind==='extra')raw.source.secret='DO_NOT_EXPORT';
+  const text=JSON.stringify(raw,null,2)+'\n';writeFileSync(join(dir,entry.name),text);entry.sha256=createHash('sha256').update(text).digest('hex');
+ }
+ writeFileSync(manifestFile,JSON.stringify(manifest));expect(()=>readPendingBatch(dir)).toThrow();
+});
