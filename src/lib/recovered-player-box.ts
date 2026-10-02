@@ -26,6 +26,14 @@ export interface RecoveredPlayerLine {
   defensiveRebounds: number | null;
   steals: number | null;
   blocks: number | null;
+  blocksCorrection?: {
+    source: "NBA official final report";
+    originalProviderBlocks: number;
+    officialBlocks: number;
+    reportUrl: string;
+    reportSha256: string;
+    verifiedOn: string;
+  };
   turnovers: number | null;
   fouls: number | null;
   plusMinus: number | null;
@@ -69,6 +77,15 @@ export function validateRecoveredPlayerBox(raw: unknown, game: ScheduleGame): Re
       !(p.starter === null || typeof p.starter === "boolean")) return null;
     if (!(p.providerPlayerId === undefined || p.providerPlayerId === null || (typeof p.providerPlayerId === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(p.providerPlayerId)))) return null;
     names.add(p.name);
+    if (p.blocksCorrection !== undefined) {
+      const correction = p.blocksCorrection;
+      if (!object(correction) || correction.source !== "NBA official final report" ||
+        !count(correction.originalProviderBlocks) || !count(correction.officialBlocks) ||
+        p.blocks !== correction.officialBlocks || correction.reportUrl !== raw.reportUrl ||
+        typeof correction.reportSha256 !== "string" || !/^[0-9a-f]{64}$/.test(correction.reportSha256) ||
+        typeof correction.verifiedOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(correction.verifiedOn) ||
+        !Number.isFinite(Date.parse(correction.verifiedOn))) return null;
+    }
     if (p.minutesCorrection !== undefined) {
       const correction = p.minutesCorrection;
       if (!object(correction) || correction.source !== "NBA official final report" ||
