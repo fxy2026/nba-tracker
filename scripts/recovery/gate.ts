@@ -25,7 +25,8 @@ async function main() {
     if(!eventPath||!validRecoveryKickoff(JSON.parse(readFileSync(eventPath,'utf8')),JSON.parse(readFileSync(RECOVERY_KICKOFF_PATH,'utf8')),{repository,ref:process.env.GITHUB_REF??'',sha:process.env.GITHUB_SHA??'',attempt:runAttempt,now:new Date().toISOString(),priorPushRun:evidence.priorPushRun})){skip();return;}
   }else if(!['schedule','workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME??'')){skip();return;}
   const mode=process.env.RECOVERY_MODE;
-  if(!['verify','backfill','diagnose','restore'].includes(mode??'')){skip();return;}
+  if(!['verify','backfill','diagnose','restore','membership'].includes(mode??'') ||
+    (process.env.GITHUB_EVENT_NAME==='push') !== (mode==='membership')){skip();return;}
   const connection=await readConnectionLedger(get,new Date().toISOString());
   if(!connection.ok){skip();return;}
   if(mode!=='verify'&&!evidence.providerVerified&&!connection.verified){console.log('Backfill waits for a successful verify-only operator run.');skip();return;}
@@ -35,7 +36,9 @@ async function main() {
   // the completed read, without allowing a UTC-day rollover mid-admission.
   const allowance=calculateRecoveryRunBudget({...evidence.input,now:finishedAt});
   if(!allowance.allowed){skip();return;}
-  const maxRequests=Math.min(allowance.maxRequests-connection.reservedRequests,process.env.GITHUB_EVENT_NAME==='push'?120:RECOVERY_DAILY_LIMIT);
+  const available=allowance.maxRequests-connection.reservedRequests;
+  if(mode==='membership'&&available<3){skip();return;}
+  const maxRequests=Math.min(available,mode==='membership'?3:RECOVERY_DAILY_LIMIT);
   if(maxRequests<1){skip();return;}
   // This file contains only public bounds, never tokens or provider responses.
   appendFileSync(output,`allowed=true\nmax_requests=${maxRequests}\nexpires_at=${allowance.expiresAt}\n`);

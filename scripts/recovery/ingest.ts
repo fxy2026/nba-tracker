@@ -7,19 +7,27 @@ import { verifyKnownProviderSnapshots } from '../../src/lib/recovery-verificatio
 import { runPlayoffMetadataDiagnostic } from '../../src/lib/recovery-diagnostic-run';
 import { recoverFinalsSample } from '../../src/lib/recovery-finals-sample';
 import { runRecoveryChunks } from '../../src/lib/recovery-chunks';
+import { createRecoveryMembershipClient } from '../../src/lib/recovery-membership-client';
+import { runMembershipDiagnostic } from '../../src/lib/recovery-membership-run';
 
 async function main(){
   const mode=process.env.RECOVERY_MODE;
-  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose'&&mode!=='restore')throw new Error('Invalid recovery mode');
+  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose'&&mode!=='restore'&&mode!=='membership')throw new Error('Invalid recovery mode');
   const key=process.env.BIGBALLSDATA_API_KEY;
   if(!key){console.log('Provider secret is not configured; no requests made.');if(mode!=='backfill')throw new Error('Verification requires configured secret');return;}
   if(process.env.GITHUB_REPOSITORY!=='fxy2026/nba-tracker'||process.env.GITHUB_REF!=='refs/heads/master'||process.env.GITHUB_RUN_ATTEMPT!=='1')throw new Error('Invalid ingestion context');
   const allowance=Number(process.env.RECOVERY_MAX_REQUESTS),requested=Number(process.env.RECOVERY_REQUEST_LIMIT),expiresAt=process.env.RECOVERY_EXPIRES_AT??'';
   if(!Number.isSafeInteger(allowance)||allowance<1||allowance>RECOVERY_DAILY_LIMIT||!Number.isSafeInteger(requested)||requested<1||requested>RECOVERY_DAILY_LIMIT)throw new Error('Invalid request bound');
-  if(process.env.GITHUB_EVENT_NAME==='push'&&(mode!=='backfill'||requested!==120))throw new Error('Invalid kickoff bounds');
+  if((process.env.GITHUB_EVENT_NAME==='push')!==(mode==='membership') || (mode==='membership'&&(requested!==3||allowance!==3)))throw new Error('Invalid kickoff bounds');
   const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
   const {generic:prior,verified,quarantined}=readStoredArchives();
+  if(mode==='membership'){
+    const client=createRecoveryMembershipClient({apiKey:key,maxRequests,expiresAt});
+    const result=await runMembershipDiagnostic(verified,client);
+    const summary=JSON.stringify(result);
+    console.log(summary);if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');return;
+  }
   if(mode==='verify'){
     const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
     const checked=await verifyKnownProviderSnapshots(verified,client);

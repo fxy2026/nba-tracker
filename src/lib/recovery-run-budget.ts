@@ -12,11 +12,13 @@ export const RECOVERY_FIRST_PILOT = { runId: 37006667059, jobId: 110836575247, s
 export const RECOVERY_METADATA_DIAGNOSTIC = {runId:37011342891,jobId:110851731014,sha:"52fea0688b9629a16a74cf42789a9d4af5f9c2c5",maxRequests:3} as const;
 export const RECOVERY_FINALS_RESTORE = {runId:37012916918,jobId:110856904401,sha:"8ede07e180a38cb665a701f37b430a4fc4f5af6c",maxRequests:1} as const;
 export const RECOVERY_PLAYOFF_BATCH = {runId:37014621758,jobId:110862528475,sha:"e25c8e3b9d2587a033a8349b221226070918b15d",maxRequests:60} as const;
+export const RECOVERY_PLAYOFF_BATCH_40 = {runId:37018021993,jobId:110873833607,sha:"26d0ee3ac5d4f6249ce7e74558b21a5ef2b7b34a",maxRequests:120} as const;
 export const RECOVERY_REVIEWED_RUNS = [
  {...RECOVERY_FIRST_PILOT,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_METADATA_DIAGNOSTIC,stepName:"Diagnose one playoff metadata response"},
  {...RECOVERY_FINALS_RESTORE,stepName:"Restore one validated Finals player table"},
  {...RECOVERY_PLAYOFF_BATCH,stepName:"Fetch and normalize provider data"},
+ {...RECOVERY_PLAYOFF_BATCH_40,stepName:"Fetch and normalize provider data"},
 ] as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -47,7 +49,7 @@ export interface RecoveryRunRecord {
   createdAt: string;
   startedAt: string | null;
   updatedAt: string;
-  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3 | 1 | 60; allJobsFetched: true };
+  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3 | 1 | 60 | 120; allJobsFetched: true };
   ingestionSkippedProof?: RecoveryIngestionSkipProof | null;
 }
 
