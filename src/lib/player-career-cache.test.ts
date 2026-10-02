@@ -46,3 +46,32 @@ it("notifies both mounted career consumers when either triggers recovery",async(
   expect(table).toHaveBeenLastCalledWith({data,unavailable:false,stale:false});expect(advanced).toHaveBeenLastCalledWith({data,unavailable:false,stale:false});
   unsub();await load('/one',true);expect(table).toHaveBeenCalledTimes(2);expect(advanced).toHaveBeenCalledTimes(3);
 });
+it('empty refresh preserves last-good rows for both consumers, cooldown, and later recovery', async () => {
+  const fresh = {careerSeasons:[{...row,PTS:22}]};
+  const fetcher = vi.fn().mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok({careerSeasons:[]})).mockResolvedValue(ok(fresh));
+  const load = createPlayerCareerLoader(fetcher);
+  const table = vi.fn(), advanced = vi.fn(); load.subscribe('/one',table);load.subscribe('/one',advanced);
+  await load('/one'); await vi.advanceTimersByTimeAsync(CAREER_SUCCESS_TTL_MS);
+  const a = load('/one'), b = load('/one',true); expect(a).toBe(b);
+  expect(await a).toEqual({data,unavailable:true,stale:true});
+  expect(table).toHaveBeenLastCalledWith({data,unavailable:true,stale:true});
+  expect(advanced).toHaveBeenLastCalledWith({data,unavailable:true,stale:true});
+  expect(await load('/one',true)).toEqual({data,unavailable:true,stale:true}); expect(fetcher).toHaveBeenCalledTimes(2);
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/one',true)).toEqual({data:fresh,unavailable:false,stale:false});
+  expect(table).toHaveBeenLastCalledWith({data:fresh,unavailable:false,stale:false});
+  expect(advanced).toHaveBeenLastCalledWith({data:fresh,unavailable:false,stale:false});
+});
+it('zero-valued known career rows are retained across empty refresh',async()=>{
+  const zero={careerSeasons:[{...row,GP:0,MIN:0,PTS:0,REB:0,AST:0,STL:0,BLK:0}]};
+  const fetcher=vi.fn().mockResolvedValueOnce(ok(zero)).mockResolvedValue(ok({careerSeasons:[]}));const load=createPlayerCareerLoader(fetcher);
+  await load('/one');expect(await load('/one',true)).toEqual({data:zero,unavailable:true,stale:true});
+});
+it('another player valid empty response cannot borrow retained rows',async()=>{
+  const fetcher=vi.fn().mockResolvedValueOnce(ok()).mockResolvedValue(ok({careerSeasons:[]}));const load=createPlayerCareerLoader(fetcher);
+  await load('/one');expect(await load('/two')).toEqual({data:{careerSeasons:[]},unavailable:false,stale:false});
+});
+it('an initially empty career can recover on explicit retry',async()=>{
+  const fetcher=vi.fn().mockResolvedValueOnce(ok({careerSeasons:[]})).mockResolvedValue(ok());const load=createPlayerCareerLoader(fetcher);
+  await load('/one');expect(await load('/one',true)).toEqual({data,unavailable:false,stale:false});
+});
