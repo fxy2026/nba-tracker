@@ -18,6 +18,8 @@ import { Users, GitCompareArrows, Trophy, Calendar, Crown, Clock } from "lucide-
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 
+import { getRecoveredPlayerBox } from "@/lib/recovered-player-box-archive";
+import RecoveredPlayerBox from "./_components/RecoveredPlayerBox";
 import OfficialGameReport from "./_components/OfficialGameReport";
 import GameHero from "./_components/GameHero";
 import PreGameHero from "./_components/PreGameHero";
@@ -161,6 +163,7 @@ export default async function GamePage({ params }: PageProps) {
       // Finished game known to the (archived) schedule but whose box score is
       // unreachable since the 2026-07 cdn.nba.com block — show the final from
       // schedule data instead of a misleading "hasn't tipped off" state.
+      const recoveredBox = getRecoveredPlayerBox(sg);
       const sgPlayoffs = isPlayoff(sg.gameId);
       const dateCode = sg.gameCode.split("/")[0];
       const sgDate = `${dateCode.slice(0, 4)}-${dateCode.slice(4, 6)}-${dateCode.slice(6, 8)}`;
@@ -195,12 +198,13 @@ export default async function GamePage({ params }: PageProps) {
               <span className="order-2 text-text-secondary/50 text-sm font-mono">@</span>
             </div>
             <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
-              {isZh
-                ? "本场比赛的详细数据（Box Score、投篮图、逐回合）暂不可用。"
-                : "Detailed stats for this game (box score, shot chart, play-by-play) are currently unavailable."}
+              {recoveredBox
+                ? (isZh ? "已恢复本场球员基础技术统计，见下表。投篮图与逐回合暂不可用。" : "Basic player stats have been recovered below. Shot charts and play-by-play remain unavailable.")
+                : (isZh ? "本场比赛的详细数据（Box Score、投篮图、逐回合）暂不可用。" : "Detailed stats for this game (box score, shot chart, play-by-play) are currently unavailable.")}
             </p>
             <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
+          {recoveredBox && <RecoveredPlayerBox box={recoveredBox} isZh={isZh} />}
           <RelatedPages
             eyebrow={isZh ? "继续探索" : "Keep exploring"}
             pages={[
