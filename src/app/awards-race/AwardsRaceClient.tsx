@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy, Star, Shield, Sparkles, TrendingUp, Award, Crown, Target, Activity } from "lucide-react";
-import { rookieCohort, filterRookieRows } from "@/lib/rookie-cohort";
+import { rookieCohort } from "@/lib/rookie-cohort";
+import { parseLeagueLeaders, hasLeagueLeaderNumbers, formatLeagueLeaderValue, type LeagueLeaderRow } from "@/lib/league-leaders";
 import { playerIndexLabel } from "@/lib/player-index-provenance";
 import { CURRENT_SEASON } from "@/lib/constants";
 import PageHeader from "@/components/PageHeader";
@@ -31,22 +32,6 @@ interface PlayerIndexRow {
   draftYear: number | null;
   fromYear: string;
   toYear: string;
-}
-
-interface PlayerRow {
-  PLAYER_ID: number;
-  PLAYER: string;
-  TEAM: string;
-  GP: number;
-  MIN: number;
-  PTS: number;
-  REB: number;
-  AST: number;
-  STL: number;
-  BLK: number;
-  FG_PCT: number;
-  FG3_PCT: number;
-  EFF: number;
 }
 
 type RaceKey = "mvp" | "roy" | "dpoy" | "smoy" | "mip";
@@ -100,32 +85,61 @@ function buildRaces(isZh: boolean): RaceMeta[] {
   ];
 }
 
-function scoreForRace(p: PlayerRow, race: RaceKey): number {
+function scoreForRace(p: LeagueLeaderRow, race: RaceKey): number | null {
+  let score: number;
   switch (race) {
     case "mvp":
       // PTS×1.0 + REB×0.7 + AST×1.0 + STL×1.5 + BLK×1.2 + EFF×0.3 + GP×0.1
-      return p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+      if (!hasLeagueLeaderNumbers(p, ["PTS", "REB", "AST", "STL", "BLK", "EFF", "GP"])) return null;
+      score = p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+      break;
     case "dpoy":
-      return p.STL * 2.5 + p.BLK * 2.5 + p.REB * 0.4 + p.MIN * 0.1;
+      if (!hasLeagueLeaderNumbers(p, ["STL", "BLK", "REB", "MIN"])) return null;
+      score = p.STL * 2.5 + p.BLK * 2.5 + p.REB * 0.4 + p.MIN * 0.1;
+      break;
     case "smoy":
-      return p.PTS * 0.8 + p.AST * 0.6 + p.EFF * 0.4;
+      if (!hasLeagueLeaderNumbers(p, ["PTS", "AST", "EFF"])) return null;
+      score = p.PTS * 0.8 + p.AST * 0.6 + p.EFF * 0.4;
+      break;
     case "mip":
-      return p.EFF * 0.6 + p.PTS * 0.5 + p.FG_PCT * 20;
+      if (!hasLeagueLeaderNumbers(p, ["EFF", "PTS", "FG_PCT"])) return null;
+      score = p.EFF * 0.6 + p.PTS * 0.5 + p.FG_PCT * 20;
+      break;
     case "roy":
-      return p.PTS + p.REB * 0.6 + p.AST * 0.8 + p.GP * 0.1;
+      if (!hasLeagueLeaderNumbers(p, ["PTS", "REB", "AST", "GP"])) return null;
+      score = p.PTS + p.REB * 0.6 + p.AST * 0.8 + p.GP * 0.1;
   }
+  return Number.isFinite(score) ? score : null;
 }
 
 export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason[] }) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
+  const [allPlayers, setAllPlayers] = useState<LeagueLeaderRow[]>([]);
   const [rookieIndex, setRookieIndex] = useState<{ players: PlayerIndexRow[]; provenance: unknown } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeRace, setActiveRace] = useState<RaceKey>("mvp");
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const [indexRetryKey, setIndexRetryKey] = useState(0);
+  const [rejectedRows, setRejectedRows] = useState(0);
+  const statsRequestRef = useRef<AbortController | null>(null);
+  const indexRequestRef = useRef<AbortController | null>(null);
+  const retry = () => { statsRequestRef.current?.abort(); setRetryKey(key => key + 1); };
+  const retryIndex = () => { indexRequestRef.current?.abort(); setIndexRetryKey(key => key + 1); };
 
   useEffect(() => {
     const controller = new AbortController();
+    statsRequestRef.current = controller;
+    let active = true;
+    const current = () => active && !controller.signal.aborted;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- an explicit retry owns a new request
+    setLoading(true);
+    setError(false);
+    const timeout = setTimeout(() => {
+      if (!current()) return;
+      controller.abort(); setError(true); setLoading(false);
+    }, 12000);
     (async () => {
       try {
         const qs = new URLSearchParams({
@@ -139,31 +153,39 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
           limit: "100",
         });
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
+        if (!current()) return;
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
-        const rs = data.resultSet;
-        if (!rs) throw new Error("No data");
-        const headers: string[] = rs.headers;
-        const parsed = rs.rowSet.slice(0, 100).map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((h, i) => { obj[h] = row[i]; });
-          return obj;
-        }) as unknown as PlayerRow[];
-        if (!controller.signal.aborted) setAllPlayers(parsed);
-      } catch { /* ignore */ }
-      if (!controller.signal.aborted) setLoading(false);
+        if (!current()) return;
+        const parsed = parseLeagueLeaders(data);
+        if (!parsed || (!parsed.rows.length && parsed.rejectedRows > 0)) throw new Error("No usable data");
+        setAllPlayers(parsed.rows.slice(0, 100));
+        setRejectedRows(parsed.rejectedRows);
+      } catch { if (current()) setError(true); }
+      finally { clearTimeout(timeout); if (current()) setLoading(false); }
     })();
-    return () => controller.abort();
-  }, []);
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [retryKey]);
 
   // Fetch player index for ROY rookie filter — only the fields we need
   useEffect(() => {
     const controller = new AbortController();
+    indexRequestRef.current = controller;
+    let active = true;
+    const current = () => active && !controller.signal.aborted;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the independently retried cohort request
+    setRookieIndex(null);
+    const timeout = setTimeout(() => {
+      if (!current()) return;
+      controller.abort(); setRookieIndex({ players: [], provenance: null });
+    }, 12000);
     (async () => {
       try {
         const res = await fetch("/api/player-index", { signal: controller.signal });
+        if (!current()) return;
         if (!res.ok) throw new Error("Index unavailable");
         const json = await res.json();
+        if (!current()) return;
         const players = Array.isArray(json.data) ? json.data : [];
         const trimmed: PlayerIndexRow[] = players.map((p: PlayerIndexRow) => ({
           personId: p.personId,
@@ -173,26 +195,35 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
           fromYear: p.fromYear,
           toYear: p.toYear,
         }));
-        if (!controller.signal.aborted) setRookieIndex({ players: trimmed, provenance: json.provenance });
-      } catch { if (!controller.signal.aborted) setRookieIndex({ players: [], provenance: null }); }
+        setRookieIndex({ players: trimmed, provenance: json.provenance });
+      } catch { if (current()) setRookieIndex({ players: [], provenance: null }); }
+      finally { clearTimeout(timeout); }
     })();
-    return () => controller.abort();
-  }, []);
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [indexRetryKey]);
 
   const cohort = useMemo(() => rookieCohort(rookieIndex?.players ?? [], rookieIndex?.provenance, CURRENT_SEASON), [rookieIndex]);
 
   // Compute scored leaders for active race
-  const ranked = useMemo(() => {
-    if (allPlayers.length === 0) return [];
-    let pool = allPlayers.filter((p) => p.GP >= 20);
-    if (activeRace === "smoy") {
-      // Sixth Man: heuristic — high PTS but lower minutes (suggesting bench role)
-      pool = pool.filter((p) => p.MIN < 28);
+  const { ranked, incomplete } = useMemo(() => {
+    const scored: (LeagueLeaderRow & { _score: number })[] = [];
+    const rookieIds = new Set(cohort.available ? cohort.rookieIds : []);
+    let incomplete = false;
+    for (const p of allPlayers) {
+      if (activeRace === "roy" && !rookieIds.has(p.PLAYER_ID)) continue;
+      if (!hasLeagueLeaderNumbers(p, ["GP"])) { incomplete = true; continue; }
+      if (p.GP < 20) continue;
+      if (activeRace === "smoy") {
+        // Preserve the existing minutes heuristic; unknown minutes cannot pass it.
+        if (!hasLeagueLeaderNumbers(p, ["MIN"])) { incomplete = true; continue; }
+        if (p.MIN >= 28) continue;
+      }
+      const score = scoreForRace(p, activeRace);
+      if (score === null) { incomplete = true; continue; }
+      scored.push({ ...p, _score: score });
     }
-    if (activeRace === "roy") pool = filterRookieRows(pool, cohort);
-    const scored = pool.map((p) => ({ ...p, _score: scoreForRace(p, activeRace) }));
     scored.sort((a, b) => b._score - a._score);
-    return scored.slice(0, 10);
+    return { ranked: scored.slice(0, 10), incomplete };
   }, [allPlayers, activeRace, cohort]);
 
   const topScore = ranked[0]?._score || 1;
@@ -255,13 +286,18 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
           title={isZh ? "本赛季新秀名单暂不可用" : "Current-season rookie cohort unavailable"}
           description={isZh
             ? `无法核实本赛季一年级球员名单，暂不生成 ROY 排名。索引赛季：${cohort.sourceSeason ?? "未注明"}。`
-            : `ROY ranking is unavailable without a supported current-season first-year cohort. Index season: ${cohort.sourceSeason ?? "unspecified"}.`} />
+            : `ROY ranking is unavailable without a supported current-season first-year cohort. Index season: ${cohort.sourceSeason ?? "unspecified"}.`}
+          action={{ label: t.common.retry, onClick: retryIndex }} />
       ) : loading || (activeRace === "roy" && rookieIndex === null) ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="glass-tile h-16 skeleton-shimmer" />
           ))}
         </div>
+      ) : error || (ranked.length === 0 && (incomplete || rejectedRows > 0)) ? (
+        <EmptyState icon={Award} tone="danger" title={t.statsPage.failedToLoad}
+          description={isZh ? "此排名所需统计暂不可用，请重试。" : "Statistics required for this ranking are unavailable. Please try again."}
+          action={{ label: t.common.retry, onClick: retry }} />
       ) : ranked.length === 0 ? (
         <EmptyState
           icon={Award}
@@ -270,6 +306,9 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         />
       ) : (
         <div className="space-y-2">
+          {(incomplete || rejectedRows > 0) && <p role="status" className="text-xs text-text-secondary mb-3">
+            {isZh ? "部分记录或所需统计不可用；此排名仅基于可用记录。" : "Partial data: this ranking is based on available records; some records or required statistics are unavailable."}
+          </p>}
           {ranked.map((p, i) => {
             const isTop3 = i < 3;
             const medalBg = i === 0
@@ -305,7 +344,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.PLAYER}</p>
-                    <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{p.TEAM}</p>
+                    <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">{p.TEAM ?? "—"}</p>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
                     <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[280px]">
@@ -317,11 +356,11 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
                   </div>
                 </div>
                 <div className="hidden sm:flex items-center gap-3 text-xs text-text-secondary font-mono tabular-nums shrink-0">
-                  <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> <span className="text-[9px]">PPG</span></span>
-                  <span>{p.REB.toFixed(1)} <span className="text-[9px]">RPG</span></span>
-                  <span>{p.AST.toFixed(1)} <span className="text-[9px]">APG</span></span>
-                  {activeRace === "dpoy" && <span>{p.STL.toFixed(1)} <span className="text-[9px]">STL</span></span>}
-                  {activeRace === "dpoy" && <span>{p.BLK.toFixed(1)} <span className="text-[9px]">BLK</span></span>}
+                  <span><span className="font-bold text-text-primary">{formatLeagueLeaderValue(p.PTS)}</span> <span className="text-[9px]">PPG</span></span>
+                  <span>{formatLeagueLeaderValue(p.REB)} <span className="text-[9px]">RPG</span></span>
+                  <span>{formatLeagueLeaderValue(p.AST)} <span className="text-[9px]">APG</span></span>
+                  {activeRace === "dpoy" && <span>{formatLeagueLeaderValue(p.STL)} <span className="text-[9px]">STL</span></span>}
+                  {activeRace === "dpoy" && <span>{formatLeagueLeaderValue(p.BLK)} <span className="text-[9px]">BLK</span></span>}
                 </div>
               </Link>
             );

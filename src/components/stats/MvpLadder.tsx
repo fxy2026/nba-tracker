@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
@@ -8,33 +8,37 @@ import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
 import EmptyState from "@/components/EmptyState";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
+import { parseLeagueLeaders, hasLeagueLeaderNumbers, formatLeagueLeaderValue, type LeagueLeaderRow } from "@/lib/league-leaders";
 
-interface LeaderRow {
-  PLAYER_ID: number;
-  PLAYER: string;
-  TEAM: string;
-  GP: number;
-  MIN: number;
-  PTS: number;
-  REB: number;
-  AST: number;
-  STL: number;
-  BLK: number;
-  EFF: number;
-}
-
-function mvpScore(p: LeaderRow): number {
+function mvpScore(p: LeagueLeaderRow): number | null {
   // Custom MVP formula: PTS*1.0 + REB*0.7 + AST*1.0 + STL*1.5 + BLK*1.2 + EFF*0.3 + GP*0.1
-  return p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+  if (!hasLeagueLeaderNumbers(p, ["PTS", "REB", "AST", "STL", "BLK", "EFF", "GP"])) return null;
+  const score = p.PTS * 1.0 + p.REB * 0.7 + p.AST * 1.0 + p.STL * 1.5 + p.BLK * 1.2 + p.EFF * 0.3 + p.GP * 0.1;
+  return Number.isFinite(score) ? score : null;
 }
 
 export default function MvpLadder() {
-  const { t } = useLocale();
-  const [players, setPlayers] = useState<LeaderRow[]>([]);
+  const { t, locale } = useLocale();
+  const [players, setPlayers] = useState<LeagueLeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const [rejectedRows, setRejectedRows] = useState(0);
+  const requestRef = useRef<AbortController | null>(null);
+  const retry = () => { requestRef.current?.abort(); setRetryKey(key => key + 1); };
 
   useEffect(() => {
     const controller = new AbortController();
+    requestRef.current = controller;
+    let active = true;
+    const current = () => active && !controller.signal.aborted;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a retry owns a new request
+    setLoading(true);
+    setError(false);
+    const timeout = setTimeout(() => {
+      if (!current()) return;
+      controller.abort(); setError(true); setLoading(false);
+    }, 12000);
     (async () => {
       try {
         const qs = new URLSearchParams({
@@ -48,31 +52,32 @@ export default function MvpLadder() {
           limit: "50",
         });
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
+        if (!current()) return;
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
-        const rs = data.resultSet;
-        if (!rs) throw new Error("No data");
-        const headers: string[] = rs.headers;
-        const parsed = rs.rowSet.slice(0, 50).map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((h, i) => { obj[h] = row[i]; });
-          return obj;
-        }) as unknown as LeaderRow[];
-        if (!controller.signal.aborted) setPlayers(parsed);
-      } catch { /* ignore */ }
-      if (!controller.signal.aborted) setLoading(false);
+        if (!current()) return;
+        const parsed = parseLeagueLeaders(data);
+        if (!parsed || (!parsed.rows.length && parsed.rejectedRows > 0)) throw new Error("No usable data");
+        setPlayers(parsed.rows.slice(0, 50));
+        setRejectedRows(parsed.rejectedRows);
+      } catch { if (current()) setError(true); }
+      finally { clearTimeout(timeout); if (current()) setLoading(false); }
     })();
-    return () => controller.abort();
-  }, []);
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [retryKey]);
 
-  const ranked = useMemo(() => {
-    const scored: (LeaderRow & { _score: number })[] = [];
+  const { ranked, incomplete } = useMemo(() => {
+    const scored: (LeagueLeaderRow & { _score: number })[] = [];
+    let incomplete = false;
     for (const p of players) {
+      if (!hasLeagueLeaderNumbers(p, ["GP"])) { incomplete = true; continue; }
       if (p.GP < 40) continue;
-      scored.push({ ...p, _score: mvpScore(p) });
+      const score = mvpScore(p);
+      if (score === null) { incomplete = true; continue; }
+      scored.push({ ...p, _score: score });
     }
     scored.sort((a, b) => b._score - a._score);
-    return scored.slice(0, 15);
+    return { ranked: scored.slice(0, 15), incomplete };
   }, [players]);
 
   if (loading) {
@@ -84,6 +89,12 @@ export default function MvpLadder() {
       </div>
     );
   }
+
+  if (error || (ranked.length === 0 && (incomplete || rejectedRows > 0))) return (
+    <EmptyState icon={Trophy} tone="danger" title={t.statsPage.failedToLoad}
+      description={locale === "zh" ? "MVP 排名所需统计暂不可用，请重试。" : "Statistics required for the MVP ladder are unavailable. Please try again."}
+      action={{ label: t.common.retry, onClick: retry }} />
+  );
 
   if (ranked.length === 0) return (
     <EmptyState
@@ -97,6 +108,9 @@ export default function MvpLadder() {
 
   return (
     <div>
+      {(incomplete || rejectedRows > 0) && <p role="status" className="text-xs text-text-secondary mb-3">
+        {locale === "zh" ? "部分记录或所需统计不可用；此排名仅基于可用记录。" : "Partial data: this ranking is based on available records; some records or required statistics are unavailable."}
+      </p>}
       <p className="text-xs text-text-secondary mb-4">
         {t.statsPage.mvpRankingNote}
         <span className="text-text-secondary/60 ml-1">{t.statsPage.minGpRequired}</span>
@@ -104,7 +118,7 @@ export default function MvpLadder() {
       <div className="space-y-2">
         {ranked.map((p, i) => {
           const score = p._score;
-          const barPct = (score / topScore) * 100;
+          const barPct = topScore > 0 ? (score / topScore) * 100 : 0;
           const isTop3 = i < 3;
           const medalBg = i === 0 ? "bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700]"
             : i === 1 ? "bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0]"
@@ -134,7 +148,7 @@ export default function MvpLadder() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">{p.PLAYER}</span>
-                  <span className="text-[10px] text-text-secondary font-mono">{p.TEAM}</span>
+                  <span className="text-[10px] text-text-secondary font-mono">{p.TEAM ?? "—"}</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="flex-1 h-1.5 bg-bg-hover rounded-full overflow-hidden max-w-[200px]">
@@ -144,9 +158,9 @@ export default function MvpLadder() {
                 </div>
               </div>
               <div className="flex items-center gap-3 text-xs text-text-secondary shrink-0 font-mono tabular-nums">
-                <span><span className="font-bold text-text-primary">{p.PTS.toFixed(1)}</span> <span className="text-[9px]">PPG</span></span>
-                <span>{p.REB.toFixed(1)} <span className="text-[9px]">RPG</span></span>
-                <span>{p.AST.toFixed(1)} <span className="text-[9px]">APG</span></span>
+                <span><span className="font-bold text-text-primary">{formatLeagueLeaderValue(p.PTS)}</span> <span className="text-[9px]">PPG</span></span>
+                <span>{formatLeagueLeaderValue(p.REB)} <span className="text-[9px]">RPG</span></span>
+                <span>{formatLeagueLeaderValue(p.AST)} <span className="text-[9px]">APG</span></span>
               </div>
             </Link>
           );

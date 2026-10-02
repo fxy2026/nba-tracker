@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import { Activity, ArrowRight, Flame } from "lucide-react";
 import { getBoxScore, getFullSchedule, getScheduleAge, toBeijingTime, type ScheduleGame } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
+import { getGamePlayByPlay } from "@/lib/game-play-by-play";
+import { takeoverActionPoints as actionPoints, validatedTakeoverActions } from "@/lib/takeover-actions";
 import { TEAM_META } from "@/lib/teams";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -15,41 +17,7 @@ const ChartPlaceholder = () => <div className="h-80 glass-tile skeleton-shimmer"
 const TakeoverChart = dynamic(() => import("./TakeoverChart"), { loading: ChartPlaceholder });
 
 interface PageProps {
-  searchParams: Promise<{ id?: string }>;
-}
-
-// ---- raw play-by-play -------------------------------------------------------
-// The shot-only getPlayByPlay() drops free throws and per-action scores, both
-// of which we need for cumulative points. Mirror the game page and read the
-// raw CDN action list directly. One scoring action per made shot / free throw.
-interface RawAction {
-  actionNumber: number;
-  period: number;
-  clock: string;
-  actionType: string;
-  shotResult?: string;
-  personId: number;
-  playerNameI: string;
-  teamTricode: string;
-}
-
-async function fetchRawActions(gameId: string): Promise<RawAction[]> {
-  return fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`, {
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
-    next: { revalidate: 60 },
-  })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((d) => (d?.game?.actions as RawAction[]) || [])
-    .catch(() => []);
-}
-
-// Points a single scoring action is worth (0 = not a scoring action).
-function actionPoints(a: RawAction): number {
-  if (a.shotResult !== "Made") return 0;
-  if (a.actionType === "3pt") return 3;
-  if (a.actionType === "2pt") return 2;
-  if (a.actionType === "freethrow") return 1;
-  return 0;
+  searchParams: Promise<{ id?: string | string[] }>;
 }
 
 // Most recent FINISHED game across the full schedule, by UTC tip time.
@@ -85,7 +53,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const locale = await getLocale();
   const isZh = locale === "zh";
   let matchup = "";
-  const box = id ? await getBoxScore(id).catch(() => null) : null;
+  const box = typeof id === "string" && /^\d{10}$/.test(id) ? await getBoxScore(id).catch(() => null) : null;
   if (box) matchup = ` — ${box.awayTeam.teamTricode} ${box.awayTeam.score} @ ${box.homeTeam.teamTricode} ${box.homeTeam.score}`;
   return {
     title: isZh ? `比赛得分接管曲线${matchup}` : `Game Takeover Curve${matchup}`,
@@ -100,11 +68,12 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
   const locale = await getLocale();
   const isZh = locale === "zh";
 
-  const schedule = await getFullSchedule().catch(() => []);
+  const invalidId = rawId !== undefined && (typeof rawId !== "string" || !/^\d{10}$/.test(rawId.trim()));
+  const schedule = invalidId ? [] : await getFullSchedule().catch(() => []);
 
   // Resolve the target game: explicit ?id, else most recent finished game.
-  let gameId = rawId?.trim() || "";
-  if (!gameId) {
+  let gameId = typeof rawId === "string" && /^\d{10}$/.test(rawId.trim()) ? rawId.trim() : "";
+  if (!gameId && rawId === undefined) {
     const latest = findLatestFinished(schedule);
     gameId = latest?.gameId || "";
   }
@@ -125,15 +94,15 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
         <PageHeader eyebrow={isZh ? "数据实验室" : "Data Lab"} icon={Activity} title={isZh ? "比赛得分接管曲线" : "Game Takeover Curve"} />
         <EmptyState
           icon={Activity}
-          title={isZh ? "暂无已结束的比赛" : "No finished games yet"}
-          description={isZh ? "等有比赛打完后，这里会自动选取最近一场。" : "Once a game finishes, the latest one is picked automatically."}
+          title={invalidId ? (isZh ? "比赛编号无效" : "Invalid game ID") : (isZh ? "暂无已结束的比赛" : "No finished games yet")}
+          description={invalidId ? (isZh ? "请从比赛页面打开得分曲线。" : "Open the scoring curve from a game page.") : (isZh ? "等有比赛打完后，这里会自动选取最近一场。" : "Once a game finishes, the latest one is picked automatically.")}
           action={{ href: "/", label: isZh ? "查看比赛" : "Browse games" }}
         />
       </div>
     );
   }
 
-  const [box, actions] = await Promise.all([getBoxScore(gameId).catch(() => null), fetchRawActions(gameId)]);
+  const box = await getBoxScore(gameId).catch(() => null);
 
   if (!box) {
     return (
@@ -143,14 +112,16 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
         <EmptyState
           icon={Activity}
           tone="danger"
-          title={isZh ? "找不到这场比赛" : "Game not found"}
-          description={isZh ? `没有 ID 为 ${gameId} 的比赛数据。` : `No data for game ID ${gameId}.`}
-          action={{ href: "/lab/game-impact", label: isZh ? "改看最近一场" : "Show the latest game" }}
+          title={isZh ? "本场详细数据暂不可用" : "Detailed game data unavailable"}
+          description={isZh ? "目前无法核验完整得分曲线；比赛详情可能仍有基础技术统计。" : "A complete scoring curve cannot be verified right now; the game page may still have basic player stats."}
+          action={{ href: `/game/${gameId}`, label: isZh ? "查看本场比赛" : "Open game details" }}
         />
       </div>
     );
   }
 
+  const feed = await getGamePlayByPlay(gameId);
+  const actions = validatedTakeoverActions(feed.actions, box);
   const away = box.awayTeam;
   const home = box.homeTeam;
   const others = recentFinished(schedule, gameId, 8);

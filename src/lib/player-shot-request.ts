@@ -17,3 +17,29 @@ export function normalizePlayerShotData(raw: unknown): PlayerShotData | null {
   if (!r.shots.every(s => s && typeof s === "object" && [s.x, s.y, s.shotDistance].every(n => typeof n === "number" && Number.isFinite(n)) && s.shotDistance >= 0 && ["Made", "Missed"].includes(s.shotResult))) return null;
   return r as unknown as PlayerShotData;
 }
+
+// Route bound: at most2 gamelog calls (or16s schedule fallback), followed by
+// six batches of5 PBP calls, each bounded at8s:64s nominal upstream work.
+// Leave11s for transport/body overhead rather than aborting valid aggregation.
+export const PLAYER_SHOT_REQUEST_TIMEOUT_MS = 75_000;
+export async function requestPlayerShotData(url:string,signal:AbortSignal):Promise<PlayerShotData>{
+ if(signal.aborted)throw new DOMException('Cancelled','AbortError');
+ const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
+ let onAbort=()=>{};
+ const stopped=new Promise<never>((_,reject)=>{
+  onAbort=()=>{controller.abort();reject(new DOMException('Cancelled','AbortError'));};
+  signal.addEventListener('abort',onAbort,{once:true});
+  timer=setTimeout(()=>{controller.abort();reject(new Error('Shot request deadline exceeded'));},PLAYER_SHOT_REQUEST_TIMEOUT_MS);
+ });
+ try{
+  const work=(async()=>{
+   const response=await fetch(url,{signal:controller.signal});
+   if(!response.ok)throw new Error('Shot data unavailable');
+   const raw:unknown=await response.json();
+   if(controller.signal.aborted)throw new DOMException('Cancelled','AbortError');
+   const data=normalizePlayerShotData(raw);if(!data)throw new Error('Invalid shot response');
+   return data;
+  })();
+  return await Promise.race([work,stopped]);
+ }finally{clearTimeout(timer);signal.removeEventListener('abort',onAbort);}
+}

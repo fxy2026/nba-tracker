@@ -72,14 +72,22 @@ export function normalizeGamePlayByPlay(payload: unknown, gameId: string): GameP
 }
 
 export async function getGamePlayByPlay(gameId: string): Promise<GamePlayByPlay> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const response = await fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`, {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
-      next: { revalidate: 60 }, signal: AbortSignal.timeout(8000),
+    const stopped = new Promise<GamePlayByPlay>((resolve) => {
+      timer = setTimeout(() => { controller.abort(); resolve(EMPTY_PLAY_BY_PLAY); }, 8000);
     });
-    if (!response.ok) return EMPTY_PLAY_BY_PLAY;
-    return normalizeGamePlayByPlay(await response.json(), gameId);
-  } catch {
-    return EMPTY_PLAY_BY_PLAY;
-  }
+    const work = (async () => {
+      const response = await fetch(`https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_${gameId}.json`, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", Referer: "https://www.nba.com/" },
+        next: { revalidate: 60 }, signal: controller.signal,
+      });
+      if (!response.ok) return EMPTY_PLAY_BY_PLAY;
+      const raw: unknown = await response.json();
+      return controller.signal.aborted ? EMPTY_PLAY_BY_PLAY : normalizeGamePlayByPlay(raw, gameId);
+    })();
+    return await Promise.race([work, stopped]);
+  } catch { return EMPTY_PLAY_BY_PLAY; }
+  finally { clearTimeout(timer); }
 }

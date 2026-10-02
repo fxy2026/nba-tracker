@@ -105,6 +105,7 @@ export default async function CareerArcPage({ searchParams }: PageProps) {
       />
 
       <CareerArc
+        key={player.personId}
         playerId={player.personId}
         playerName={player.name}
         teamTricode={player.teamAbbr}

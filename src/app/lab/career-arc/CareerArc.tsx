@@ -10,7 +10,9 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
-import { CURRENT_SEASON } from "@/lib/constants";
+import { usePlayerCareer } from "@/lib/usePlayerCareer";
+import { playerShotRequestUrl, requestPlayerShotData } from "@/lib/player-shot-request";
+import { createLatestRequestGate } from "@/lib/latest-request";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 import { aggregateZoneStats } from "@/lib/shot-zones";
@@ -60,55 +62,22 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   const isZh = locale === "zh";
 
   // ---- Career rows ----
-  const [seasons, setSeasons] = useState<CareerSeason[] | null>(null);
-  const [careerLoading, setCareerLoading] = useState(true);
-  const [careerError, setCareerError] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
+  const { data: career, loading: careerLoading, error: careerError, stale: careerStale, retry: retryCareer } = usePlayerCareer(playerId, playerName, teamTricode);
+  const seasons = useMemo(() => dedupeSeasons(career?.careerSeasons ?? []), [career]);
 
   // ---- UI state ----
   const [metric, setMetric] = useState<MetricKey>("PTS");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selection, setSelection] = useState<number | null>(null);
+  const selectedIndex = Math.min(selection ?? Math.max(0, seasons.length - 1), Math.max(0, seasons.length - 1));
+  const setSelectedIndex = (value: number) => setSelection(value);
 
   // ---- Shots for the selected season ----
-  const [shots, setShots] = useState<ShotRow[]>([]);
+  const [rawShots, setShots] = useState<ShotRow[]>([]);
+  const [shotContext, setShotContext] = useState("");
   const [shotLoading, setShotLoading] = useState(false);
   const [shotError, setShotError] = useState("");
   const [shotGames, setShotGames] = useState({ loaded: 0, total: 0 });
-  const shotReqId = useRef(0);
-
-  // Fetch career rows whenever the player (or a manual retry) changes.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCareerLoading(true);
-    setCareerError(false);
-    setSeasons(null);
-    const controller = new AbortController();
-    let timedOut = false;
-    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 9000);
-
-    (async () => {
-      try {
-        const qs = new URLSearchParams({ id: String(playerId) });
-        if (playerName) qs.set("name", playerName);
-        if (teamTricode) qs.set("team", teamTricode);
-        const res = await fetch(`/api/player?${qs}`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) { if (timedOut || !controller.signal.aborted) { setCareerError(true); setCareerLoading(false); } return; }
-        const data = await res.json();
-        if (!controller.signal.aborted) {
-          const rows = dedupeSeasons((data.careerSeasons || []) as CareerSeason[]);
-          setSeasons(rows);
-          // Default the scrubber to the most recent season.
-          setSelectedIndex(rows.length > 0 ? rows.length - 1 : 0);
-        }
-      } catch {
-        if (timedOut || !controller.signal.aborted) setCareerError(true);
-      }
-      if (timedOut || !controller.signal.aborted) setCareerLoading(false);
-    })();
-
-    return () => { controller.abort(); clearTimeout(timeout); };
-  }, [playerId, playerName, teamTricode, retryKey]);
+  const shotGate = useRef(createLatestRequestGate());
 
   const selectedSeason = seasons && seasons[selectedIndex] ? seasons[selectedIndex] : null;
   const seasonId = selectedSeason?.SEASON_ID ?? "";
@@ -116,43 +85,42 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   // "TOT" (traded) has no single team for the shot API — fall back to the
   // player's current tricode so we at least try the current season.
   const shotTeam = seasonTeam && seasonTeam !== "TOT" ? seasonTeam : teamTricode;
+  const shotKey = `${playerId}:${seasonId}:${shotTeam}`;
+  const shots = useMemo(() => shotContext === shotKey ? rawShots : [], [shotContext, shotKey, rawShots]);
+  const displayShotLoading = shotLoading || (!!seasonId && shotContext !== shotKey);
+  const displayShotError = shotContext === shotKey ? shotError : "";
 
   const fetchShots = useCallback(async () => {
+    setShotContext(shotKey);
+    setShots([]);
     if (!seasonId || !shotTeam) {
+      shotGate.current.cancel();
+      setShotLoading(false);
       setShots([]);
       setShotError(isZh ? "该赛季无投篮数据" : "No shot data for this season");
       return;
     }
-    const reqId = ++shotReqId.current;
+    const request = shotGate.current.begin();
     setShotLoading(true);
     setShotError("");
     setShotGames({ loaded: 0, total: 0 });
     try {
-      const params = new URLSearchParams({ playerId: String(playerId), team: shotTeam, seasonType: "regular" });
-      // Current season → omit season (fast CDN schedule path). Exception: a
-      // current-season TOT (mid-season trade) needs the team-agnostic
-      // playerId+season path, else the CDN scan only sees the current team's
-      // games and drops the pre-trade stint.
-      if (seasonId !== CURRENT_SEASON || seasonTeam === "TOT") params.set("season", seasonId);
-      const res = await fetch(`/api/player-shots?${params}`);
-      if (reqId !== shotReqId.current) return; // a newer scrub superseded us
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      if (reqId !== shotReqId.current) return;
-      const list = (data.shots || []) as ShotRow[];
+      const data = await requestPlayerShotData(playerShotRequestUrl(playerId, seasonTeam === "TOT" ? "TOT" : shotTeam, seasonId, "regular"), request.signal);
+      if (!request.isCurrent()) return;
+      const list = data.shots;
       setShots(list);
-      setShotGames({ loaded: data.gamesLoaded || 0, total: data.totalGames || 0 });
+      setShotGames({ loaded: data.gamesLoaded, total: data.totalGames });
       if (list.length === 0) {
-        setShotError(isZh ? "该赛季无投篮数据（年代较早或无逐球记录）" : "No shot data for this season (too old or no play-by-play)");
+        setShotError(isZh ? "可用比赛中没有该球员的投篮出手记录。" : "No field-goal shot records for this player in the available games.");
       }
     } catch {
-      if (reqId !== shotReqId.current) return;
+      if (!request.isCurrent()) return;
       setShots([]);
       setShotError(isZh ? "加载投篮数据失败" : "Failed to load shot data");
     } finally {
-      if (reqId === shotReqId.current) setShotLoading(false);
+      if (request.isCurrent()) setShotLoading(false);
     }
-  }, [playerId, shotTeam, seasonTeam, seasonId, isZh]);
+  }, [playerId, shotTeam, seasonTeam, seasonId, shotKey, isZh]);
 
   useEffect(() => {
     if (!seasonId) return;
@@ -161,6 +129,8 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     // loading state — intentional dep-change refetch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchShots();
+    const gate = shotGate.current;
+    return () => gate.cancel();
   }, [fetchShots, seasonId]);
 
   const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
@@ -173,7 +143,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     typeof v === "number" && Number.isFinite(v) ? v.toFixed(1) : "—";
 
   // ---- Render guards ----
-  if (careerLoading) {
+  if (careerLoading && seasons.length === 0) {
     return (
       <div className="space-y-4">
         <PlayerPicker isZh={isZh} currentName={playerName} />
@@ -185,14 +155,14 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     );
   }
 
-  if (careerError || !seasons || seasons.length === 0) {
+  if (seasons.length === 0) {
     const encodedName = encodeURIComponent(playerName || "");
     return (
       <div className="space-y-4">
         <PlayerPicker isZh={isZh} currentName={playerName} />
         <div className="glass-tile p-6 text-center space-y-3">
           <p className="text-sm text-text-secondary">
-            {isZh ? "暂时无法加载该球员的生涯数据。" : "Couldn't load this player's career data right now."}
+            {careerError ? (isZh ? "暂时无法加载该球员的生涯数据。" : "Couldn't load this player's career data right now.") : (isZh ? "数据源已响应，但没有可用的生涯赛季记录。" : "The source responded without any available career season records.")}
           </p>
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <a
@@ -214,7 +184,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
               </a>
             )}
             <button
-              onClick={() => setRetryKey((k) => k + 1)}
+              onClick={retryCareer}
               className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors cursor-pointer"
             >
               {isZh ? "重试" : "Retry"}
@@ -231,6 +201,10 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
 
   return (
     <div className="space-y-5">
+      {(careerStale || careerError) && <div role="status" className="glass-tile p-3 text-sm text-text-secondary">
+        <p>{isZh ? "保留上次成功加载的生涯数据，可能已过时。" : "Showing the last successfully loaded career data; it may be stale."}</p>
+        <button type="button" disabled={careerLoading} onClick={retryCareer} className="text-accent hover:underline">{isZh ? "重试" : "Retry"}</button>
+      </div>}
       {/* Picker + identity */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-3 min-w-0">
@@ -307,7 +281,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
           </div>
           <div className="mt-2 flex items-center justify-center gap-2 text-sm">
             <button
-              onClick={() => setSelectedIndex((i) => Math.max(0, i - 1))}
+              onClick={() => setSelectedIndex(Math.max(0, selectedIndex - 1))}
               disabled={selectedIndex === 0}
               aria-label={isZh ? "上一个赛季" : "Previous season"}
               className="px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
@@ -317,7 +291,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
             <span className="font-mono text-sm font-bold text-accent tabular-nums">{seasonId}</span>
             <span className="text-xs text-text-secondary">· {seasonTeam}</span>
             <button
-              onClick={() => setSelectedIndex((i) => Math.min(seasons.length - 1, i + 1))}
+              onClick={() => setSelectedIndex(Math.min(seasons.length - 1, selectedIndex + 1))}
               disabled={selectedIndex === seasons.length - 1}
               aria-label={isZh ? "下一个赛季" : "Next season"}
               className="px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
@@ -330,14 +304,15 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(200px,260px)] gap-4 items-start">
           {/* Court */}
           <div className="relative min-h-[260px]">
-            {shotLoading && (
+            {displayShotLoading && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-card/60 rounded-lg text-text-secondary text-sm">
                 {isZh ? "加载投篮数据…" : "Loading shots…"}
               </div>
             )}
-            {!shotLoading && shots.length === 0 ? (
+            {!displayShotLoading && shots.length === 0 ? (
               <div className="h-[300px] flex flex-col items-center justify-center text-center gap-2 border border-dashed border-border rounded-lg">
-                <p className="text-text-secondary text-sm">{shotError || (isZh ? "该赛季无投篮数据" : "No shot data for this season")}</p>
+                <p className="text-text-secondary text-sm">{displayShotError || (isZh ? "该赛季无投篮数据" : "No shot data for this season")}</p>
+                {displayShotError && <button type="button" onClick={() => void fetchShots()} className="text-accent text-xs hover:underline">{isZh ? "重试投篮数据" : "Retry shot data"}</button>}
                 <p className="text-text-secondary/60 text-xs max-w-[280px]">
                   {isZh
                     ? "逐球投篮记录仅覆盖近年的赛季；早期赛季无数据时此处留空。"
