@@ -16,7 +16,7 @@ The job uses only approved job-level `contents:write` and `actions:read` for the
 
 ## Controlled data flow
 
-1. Generate at most20 explicit targets from canonical, completed2025-26 games in the existing local schedule. Skip saved/stronger snapshots; a persisted cursor advances past unavailable targets
+1. Generate at most20 explicit targets from canonical, completed2025-26 games in the existing local schedule. Prioritize Finals, conference finals, second-round and first-round playoffs before other games. Skip saved/stronger snapshots; a persisted cursor advances past unavailable targets
 2. Look up complete date lists using the schedule's calendar date and its UTC date when different. Require a unique finished NBA matchup with matching teams and final score. Reject incomplete lists, duplicate/conflicting identities and ambiguous adjacent-date matches
 3. Fetch the resolved match's stats. Validate shapes, numeric values, shooting arithmetic, rebound splits and combined points. Provider current-roster team fields never establish historical membership
 4. Save generalized rows as **combined, historically unassigned** player tables, clearly attributed to the provider. These consistency checks do not independently establish each row's accuracy
