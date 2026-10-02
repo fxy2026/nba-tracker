@@ -1,3 +1,4 @@
+import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Since the 2026-07 cdn.nba.com block, the schedule/player-index pipelines
@@ -16,7 +17,7 @@ const goodPlayerRow: (string | number | null)[] = [
   1629029, "Doncic", "Luka", "luka-doncic", 1610612747, null, null,
   "Los Angeles", "Lakers", "LAL", "77", "F-G", "6-6", "230",
   "Real Madrid", "Slovenia", 2018, 1, 3, null, "2018", "2025",
-  28.2, 8.3, 7.8,
+  28.2, 8.3, 7.8, "Season",
 ];
 
 function jsonResponse(payload: unknown): Response {
@@ -215,7 +216,7 @@ describe("player index degradation guards", () => {
   });
 
   it("prefers a normal live payload over the snapshot and caches it", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ resultSets: [{ rowSet: [goodPlayerRow] }] }));
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ resultSets: [{ headers: archivePlayerIndex.resultSets[0].headers, rowSet: [goodPlayerRow] }] }));
     vi.stubGlobal("fetch", fetchMock);
     const api = await loadApi();
 

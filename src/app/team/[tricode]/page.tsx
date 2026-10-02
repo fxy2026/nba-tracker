@@ -1,6 +1,7 @@
+import { playerIndexLabel } from "@/lib/player-index-provenance";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentSeasonSchedule, getPlayerIndex, formatDate, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getPlayerIndexSnapshot, formatDate, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
@@ -54,7 +55,7 @@ export default async function TeamPage({ params }: PageProps) {
 
   const [schedule, playerIndex] = await Promise.all([
     getCurrentSeasonSchedule().catch(() => []),
-    getPlayerIndex().catch(() => []),
+    getPlayerIndexSnapshot(),
   ]);
 
   // Compute team record and games
@@ -176,7 +177,7 @@ export default async function TeamPage({ params }: PageProps) {
     .slice(0, 5);
 
   // Roster (sorted by PPG desc)
-  const roster = playerIndex
+  const roster = playerIndex.players
     .filter((p) => p.teamAbbr === team.tricode)
     .sort((a, b) => b.pts - a.pts);
 
@@ -287,6 +288,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       <TeamTrendsPanel t={t} recentGames={recentGames} rivalries={rivalries} />
 
+      <p className="mt-6 text-xs text-text-secondary">{playerIndexLabel(playerIndex.provenance, locale)} · {isZh ? "名单与场均数据来自该快照" : "Roster and averages reflect this snapshot"}</p>
       <TeamRoster roster={roster} t={t} />
 
       <TeamDraftPicks tricode={team.tricode} isZh={isZh} />

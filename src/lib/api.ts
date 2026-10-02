@@ -5,6 +5,7 @@ import archiveSchedule from "@/data/schedule-2025-26.json";
 import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { currentSeason } from "@/lib/constants";
 import { scheduleForSeason } from "@/lib/games";
+import type { PlayerIndexProvenance } from "./player-index-provenance";
 import { isValidBoxScore } from "./box-score-validation";
 
 const CDN_BASE = "https://cdn.nba.com/static/json";
@@ -690,18 +691,31 @@ export interface PlayerInfo {
   ast: number;
 }
 
-// Get player index (all active players with basic info) — cached permanently until server restart
-let playerIndexCache: PlayerInfo[] | null = null;
-let playerIndexInflight: Promise<PlayerInfo[]> | null = null;
+export interface PlayerIndexSnapshot {
+  players: PlayerInfo[];
+  provenance: PlayerIndexProvenance;
+}
+const PLAYER_INDEX_TTL = 6 * 60 * 60 * 1000;
+const PLAYER_INDEX_RETRY = 15 * 60 * 1000;
+let playerIndexCache: PlayerIndexSnapshot | null = null;
+let playerIndexRetryAt = 0;
+let playerIndexInflight: Promise<PlayerIndexSnapshot> | null = null;
 
-export async function getPlayerIndex(): Promise<PlayerInfo[]> {
-  if (playerIndexCache && playerIndexCache.length > 0) return playerIndexCache;
-  // Deduplicate: if a fetch is already in-flight, all callers share the same promise
+export async function getPlayerIndexSnapshot(): Promise<PlayerIndexSnapshot> {
+  if (playerIndexCache && Date.now() < playerIndexRetryAt) return playerIndexCache;
   if (playerIndexInflight) return playerIndexInflight;
-  playerIndexInflight = fetchPlayerIndex();
-  return playerIndexInflight;
+  playerIndexInflight = fetchPlayerIndexSnapshot();
+  try { return await playerIndexInflight; }
+  finally { playerIndexInflight = null; }
 }
 
+/** Compatibility accessor for consumers that only need player identities/data. */
+export async function getPlayerIndex(): Promise<PlayerInfo[]> {
+  return (await getPlayerIndexSnapshot()).players;
+}
+
+// Keep nullable source cells unchanged for legacy consumers; these historical
+// PlayerInfo assertions predate provenance metadata. Never manufacture zero stats.
 function mapPlayerIndexRows(data: { resultSets?: { rowSet?: (string | number | null)[][] }[] }): PlayerInfo[] {
   const rs = data.resultSets?.[0];
   if (!rs?.rowSet) return [];
@@ -731,28 +745,56 @@ function mapPlayerIndexRows(data: { resultSets?: { rowSet?: (string | number | n
   }));
 }
 
-async function fetchPlayerIndex(): Promise<PlayerInfo[]> {
+function validPlayerIndexPayload(data: unknown): data is Parameters<typeof mapPlayerIndexRows>[0] & { parameters?: { Season?: unknown } } {
+  if (!data || typeof data !== "object") return false;
+  const sets = (data as { resultSets?: unknown }).resultSets;
+  if (!Array.isArray(sets) || !sets[0] || typeof sets[0] !== "object") return false;
+  const { headers, rowSet } = sets[0];
+  const expected = archivePlayerIndex.resultSets[0].headers;
+  if (!Array.isArray(headers) || !expected.every((h, i) => headers[i] === h)) return false;
+  return Array.isArray(rowSet) && rowSet.length > 0 && rowSet.every((r: unknown) =>
+    Array.isArray(r) && r.length >= expected.length &&
+    Number.isSafeInteger(r[0]) && r[0] > 0 &&
+    [1, 2, 3, 11, 12, 14, 15, 20, 21].every(i => typeof r[i] === "string") &&
+    [7, 8, 9, 10, 13].every(i => r[i] === null || typeof r[i] === "string") &&
+    [4, 16, 17, 18, 22, 23, 24].every(i => r[i] === null || (typeof r[i] === "number" && Number.isFinite(r[i])))
+  );
+}
+
+function playerIndexSeason(data: { parameters?: { Season?: unknown } }): string | null {
+  const season = data.parameters?.Season;
+  return typeof season === "string" && /^\d{4}-\d{2}$/.test(season) ? season : null;
+}
+
+async function fetchPlayerIndexSnapshot(): Promise<PlayerIndexSnapshot> {
   try {
-    let players: PlayerInfo[] = [];
-    try {
-      const res = await fetch(
-        `${CDN_BASE}/staticData/playerIndex.json`,
-        { headers: HEADERS, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) }
-      );
-      if (res.ok) players = mapPlayerIndexRows(await res.json());
-    } catch {
-      // network/timeout — fall through to the baked snapshot
+    const res = await fetch(`${CDN_BASE}/staticData/playerIndex.json`, {
+      headers: HEADERS,
+      // Bound framework caching too: a cached failed/invalid body must not defeat
+      // the 15-minute recovery policy in this process.
+      next: { revalidate: 900 },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) throw new Error("Player index unavailable");
+    const data: unknown = await res.json();
+    if (!validPlayerIndexPayload(data)) throw new Error("Invalid player index");
+    playerIndexCache = {
+      players: mapPlayerIndexRows(data),
+      provenance: { source: "nba-cdn", season: playerIndexSeason(data), stale: false, retrievedAt: new Date().toISOString() },
+    };
+    playerIndexRetryAt = Date.now() + PLAYER_INDEX_TTL;
+  } catch {
+    if (playerIndexCache) {
+      playerIndexCache = { ...playerIndexCache, provenance: { ...playerIndexCache.provenance, stale: true } };
+    } else {
+      playerIndexCache = {
+        players: mapPlayerIndexRows(archivePlayerIndex),
+        provenance: { source: "bundled-archive", season: playerIndexSeason(archivePlayerIndex), stale: true, retrievedAt: null },
+      };
     }
-    // 2026-07 cdn.nba.com block: serve the baked April-2026 snapshot when the
-    // live index is unreachable (see ARCHIVE_FEED note above).
-    if (players.length === 0) {
-      players = mapPlayerIndexRows(archivePlayerIndex as unknown as Parameters<typeof mapPlayerIndexRows>[0]);
-    }
-    if (players.length > 0) playerIndexCache = players;
-    return players;
-  } finally {
-    playerIndexInflight = null;
+    playerIndexRetryAt = Date.now() + PLAYER_INDEX_RETRY;
   }
+  return playerIndexCache;
 }
 
 export async function getPlayerInfo(personId: number): Promise<PlayerInfo | null> {

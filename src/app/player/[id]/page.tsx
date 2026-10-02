@@ -1,7 +1,9 @@
+import { currentSeason } from "@/lib/constants";
+import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getPlayerInfo, getPlayerIndex, getPlayerHeadshotUrl } from "@/lib/api";
+import { getPlayerIndexSnapshot, getPlayerHeadshotUrl } from "@/lib/api";
 import { formatGameDate } from "@/lib/dates";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
@@ -39,19 +41,21 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const [player, locale] = await Promise.all([getPlayerInfo(parseInt(id, 10)), getLocale()]);
+  const [snapshot, locale] = await Promise.all([getPlayerIndexSnapshot(), getLocale()]);
+  const player = snapshot.players.find(p => p.personId === parseInt(id, 10));
   if (!player) return {};
   const name = `${player.firstName} ${player.lastName}`;
+  const provenanceLabel = playerIndexLabel(snapshot.provenance, locale);
   const desc = locale === "zh"
-    ? `${name} 球员档案：${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`
-    : `${name} player profile: ${player.pts} PPG / ${player.reb} RPG / ${player.ast} APG | ${player.position} | ${player.teamCity} ${player.teamName}`;
+    ? `${name} 球员档案（${provenanceLabel}）：${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${player.teamCity} ${player.teamName}`
+    : `${name} player profile (${provenanceLabel}): ${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${player.teamCity} ${player.teamName}`;
   return {
     title: `${name} — ${player.teamCity} ${player.teamName}`,
     description: desc,
     alternates: { canonical: `/player/${id}` },
     openGraph: {
       title: name,
-      description: `${player.pts} PPG · ${player.reb} RPG · ${player.ast} APG`,
+      description: `${provenanceLabel} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG`,
       images: [getPlayerHeadshotUrl(player.personId)],
     },
   };
@@ -64,11 +68,12 @@ export default async function PlayerPage({ params }: PageProps) {
 
   // Player info + league index in parallel — the index is large and was
   // previously serialized after getPlayerInfo, adding ~100-300ms of TTFB.
-  const [player, allPlayers, locale] = await Promise.all([
-    getPlayerInfo(personId),
-    getPlayerIndex().catch(() => []),
+  const [snapshot, locale] = await Promise.all([
+    getPlayerIndexSnapshot(),
     getLocale(),
   ]);
+  const allPlayers = snapshot.players;
+  const player = allPlayers.find(p => p.personId === personId);
   if (!player) notFound();
 
   const t = getTranslations(locale);
@@ -156,7 +161,7 @@ export default async function PlayerPage({ params }: PageProps) {
     givenName: player.firstName,
     familyName: player.lastName,
     jobTitle: "Professional basketball player",
-    affiliation: player.teamAbbr && TEAM_META[player.teamAbbr] ? {
+    affiliation: snapshot.provenance.source === "nba-cdn" && !snapshot.provenance.stale && snapshot.provenance.season === currentSeason() && player.teamAbbr && TEAM_META[player.teamAbbr] ? {
       "@type": "SportsTeam",
       name: `${player.teamCity} ${player.teamName}`,
       url: `https://nba.xpy.me/team/${player.teamAbbr}`,
@@ -182,6 +187,8 @@ export default async function PlayerPage({ params }: PageProps) {
           { label: fullName },
         ]}
       />
+
+      <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
 
       {/* Quick-action row — one-click into /compare with this player primed */}
       <div className="mt-2 flex flex-wrap gap-2">
@@ -257,7 +264,7 @@ export default async function PlayerPage({ params }: PageProps) {
               URL inside the text body so the link travels with the payload. */}
           <div className="absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg">
             <FavoriteButton type="player" id={personId} />
-            <ShareButton text={`${fullName} — ${ppg} PPG · ${rpg} RPG · ${apg} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
+            <ShareButton text={`${fullName} — ${playerIndexLabel(snapshot.provenance, locale)} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
           </div>
         </div>
 

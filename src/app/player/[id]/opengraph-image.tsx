@@ -1,6 +1,7 @@
+import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
 /* eslint-disable @next/next/no-img-element -- ImageResponse template requires raw <img> */
 import { ImageResponse } from "next/og";
-import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
+import { getPlayerIndexSnapshot, getPlayerHeadshotUrl } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 
@@ -13,7 +14,8 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const personId = parseInt(id, 10);
-  const player = !isNaN(personId) ? await getPlayerInfo(personId).catch(() => null) : null;
+  const snapshot = !isNaN(personId) ? await getPlayerIndexSnapshot().catch(() => null) : null;
+  const player = snapshot?.players.find(p => p.personId === personId);
 
   if (!player) {
     return new ImageResponse(
@@ -117,6 +119,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         >
           {/* Left: name + stats */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+            <div style={{ display: "flex", fontSize: 18, color: "#DDD" }}>{snapshot ? playerIndexLabel(snapshot.provenance, "en") : ""}</div>
             {player.jersey && (
               <div
                 style={{
@@ -146,9 +149,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
             {/* PPG / RPG / APG stat row */}
             <div style={{ display: "flex", gap: 36, marginTop: 28 }}>
-              <StatBlock value={player.pts.toFixed(1)} label="PPG" />
-              <StatBlock value={player.reb.toFixed(1)} label="RPG" />
-              <StatBlock value={player.ast.toFixed(1)} label="APG" />
+              <StatBlock value={playerIndexStat(player.pts)} label="PPG" />
+              <StatBlock value={playerIndexStat(player.reb)} label="RPG" />
+              <StatBlock value={playerIndexStat(player.ast)} label="APG" />
             </div>
           </div>
 
