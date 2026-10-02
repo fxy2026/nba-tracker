@@ -79,6 +79,7 @@ vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: runt
 import PlayerLeaders from '@/components/stats/PlayerLeaders';
 import MvpLadder from '@/components/stats/MvpLadder';
 import AwardsRaceClient from '@/app/awards-race/AwardsRaceClient';
+import { metadata as awardsMetadata } from '@/app/awards-race/layout';
 
 type Props = Record<string, unknown>;
 type Row = { PLAYER_ID: number; RANK: number; PLAYER: string; TEAM: string; GP: number; MIN: number; PTS: number; REB: number; AST: number; STL: number; BLK: number; FG_PCT: number; FG3_PCT: number; EFF: number };
@@ -242,8 +243,8 @@ describe('formula inputs and rookie eligibility', () => {
     mount(MvpLadder); await settle(); expect(destination(1)).toBe(true); expect(hasText('0.0')).toBe(true);
     expect(nodes(tree).every(n => !/NaN|Infinity/.test(String((n.props.style as { width?: string })?.width)))).toBe(true);
   });
-  it.each(['MVP', 'DPOY', '6MOY', 'MIP', 'ROY'])('each race excludes unavailable required values before scoring: %s', async label => {
-    const field: Record<string, keyof Row> = { MVP: 'EFF', DPOY: 'BLK', '6MOY': 'MIN', MIP: 'FG_PCT', ROY: 'AST' };
+  it.each(['MVP', 'DPOY', 'ROY'])('each supported race excludes unavailable required values before scoring: %s', async label => {
+    const field: Record<string, keyof Row> = { MVP: 'EFF', DPOY: 'BLK', ROY: 'AST' };
     const invalid = { ...base, MIN: 25, [field[label]]: null } as unknown as Row;
     fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : response([invalid]));
     mount(awards); await settle(); race(label); expect(destination(1)).toBe(false); expect(hasText(en.statsPage.failedToLoad)).toBe(true); expect(hasText('NaN')).toBe(false);
@@ -261,6 +262,111 @@ describe('formula inputs and rookie eligibility', () => {
     fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? ++indexCalls === 1 ? { ok: false } : currentIndex() : response([base]));
     mount(awards); await settle(); race('ROY'); expect(hasText('Current-season rookie cohort unavailable')).toBe(true); expect(destination(1)).toBe(false);
     retry(); await settle(); expect(destination(1)).toBe(true); expect(fetcher.mock.calls.filter(c => c[0].includes('/api/stats?'))).toHaveLength(1); expect(indexCalls).toBe(2);
+  });
+});
+
+describe('Awards prerequisites and supported heuristic scope', () => {
+  const unavailableTitle = (label: string) => runtime.locale === 'zh'
+    ? label === '6MOY' ? '第六人排名暂不可用' : '进步最快球员排名暂不可用'
+    : `${label} ranking unavailable`;
+  function expectPrerequisite(label: string) {
+    const message = nodes(tree).find(n => n.props.title === unavailableTitle(label));
+    expect(message).toBeDefined();
+    expect(message?.props.tone).toBe('neutral');
+    expect(message?.props.action).toBeUndefined();
+    expect(nodes(tree).some(n => n.props.action)).toBe(false);
+    expect(nodes(tree).some(n => typeof n.props.href === 'string' && n.props.href.startsWith('/player/'))).toBe(false);
+    expect(loading()).toBe(false);
+    expect(hasText(en.statsPage.failedToLoad)).toBe(false);
+    expect(hasText('No qualifying players yet')).toBe(false);
+    expect(nodes(tree).some(n => typeof n.props.children === 'string' && n.props.children.includes('Site heuristic based on'))).toBe(false);
+    return message!.props.description;
+  }
+
+  it.each([
+    ['6MOY', 'en'], ['MIP', 'en'], ['6MOY', 'zh'], ['MIP', 'zh'],
+  ])('keeps %s selectable with a specific %s explanation and no score or retry', async (label, locale) => {
+    runtime.locale = locale;
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : response([{ ...base, MIN: 25 }]));
+    mount(awards); await settle(); race(label);
+    const description = expectPrerequisite(label);
+    expect(description).toBe(locale === 'zh'
+      ? label === '6MOY'
+        ? '此视图缺少已核实的本赛季首发场次，无法结合出场场次确定替补球员范围。场均上场时间无法证明替补身份。'
+        : '此视图缺少同一球员可比较的本赛季与上一赛季统计。仅凭本赛季表现无法衡量进步。'
+      : label === '6MOY'
+        ? 'Verified current-season start counts are unavailable for comparison with games played. Minutes per game cannot establish a bench-player role.'
+        : 'This view lacks comparable current- and previous-season statistics for the same players. Current-season production alone cannot measure improvement.');
+    const selected = nodes(tree).find(n => n.type === 'button' && Array.isArray(n.props.children) && n.props.children.includes(label));
+    expect(selected?.props['aria-pressed']).toBe(true); expect(selected?.props.disabled).not.toBe(true);
+    expect(hasText('47.0')).toBe(false); expect(hasText('47.4')).toBe(false);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['6MOY', 'MIP'])('shows %s prerequisites before a pending body and after its late success', async label => {
+    const body = deferred<ReturnType<typeof payload>>();
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : { ok: true, json: () => body.promise });
+    mount(awards); await settle(); expect(loading()).toBe(true);
+    race(label); expectPrerequisite(label);
+    body.resolve(payload([{ ...base, MIN: 25 }])); await settle(); expectPrerequisite(label);
+    race('MVP'); expect(destination(1)).toBe(true); expect(hasText('65.0')).toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['6MOY', 'MIP'])('shows %s prerequisites after timeout and ignores a noncooperative late body', async label => {
+    const body = deferred<ReturnType<typeof payload>>();
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : { ok: true, json: () => body.promise });
+    mount(awards); await settle(); race(label); await advance(12000); expectPrerequisite(label);
+    body.resolve(payload([base])); await settle(); expectPrerequisite(label);
+    race('MVP'); expect(hasText(en.statsPage.failedToLoad)).toBe(true); expect(destination(1)).toBe(false);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['6MOY', 'MIP'].flatMap(label => ['failed', 'malformed', 'empty', 'rejected'].map(state => [label, state])))('preserves %s prerequisites with a %s response', async (label, state) => {
+    const results = {
+      failed: { ok: false },
+      malformed: { ok: true, json: async () => ({ resultSet: null }) },
+      empty: response([]),
+      rejected: response([{ ...base, PLAYER_ID: 0 }]),
+    };
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : results[state as keyof typeof results]);
+    mount(awards); await settle(); race(label); expectPrerequisite(label);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['6MOY', 'MIP'])('does not enable %s from low minutes, extreme production or unvalidated extra fields', async label => {
+    const rows = [0, 27.9, 28, 48].map((MIN, index) => ({ ...base, PLAYER_ID: index + 1, MIN, PTS: 100, EFF: 999 }));
+    const valid = payload(rows);
+    const raw = { resultSet: {
+      headers: [...valid.resultSet.headers, 'GS', 'PREVIOUS_SEASON_EFF'],
+      rowSet: valid.resultSet.rowSet.map(row => [...row, 0, 0]),
+    } };
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : { ok: true, json: async () => raw });
+    mount(awards); await settle(); race(label); expectPrerequisite(label);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['en', 'zh'])('keeps MVP/DPOY as disclosed site heuristics in %s without tab requests', async locale => {
+    runtime.locale = locale;
+    fetcher.mockImplementation(async (url: string) => url.includes('/api/player-index') ? currentIndex() : response([base]));
+    mount(awards); await settle(); expect(destination(1)).toBe(true); expect(hasText('65.0')).toBe(true);
+    const methodology = locale === 'zh'
+      ? '本站启发式排名，基于本赛季可用常规赛样本（按 EFF 最多取 100 名球员）。此视图要求至少出场 20 场。分数不代表官方投票或 NBA 奖项资格。'
+      : 'Site heuristic based on the available current-season regular-season sample (up to 100 players by EFF). At least 20 games are required by this view. Scores are not official voting or NBA award eligibility.';
+    expect(hasText(methodology)).toBe(true);
+    race('6MOY'); expectPrerequisite('6MOY'); expect(hasText(methodology)).toBe(false);
+    race('MIP'); expectPrerequisite('MIP'); expect(hasText(methodology)).toBe(false);
+    race('DPOY'); expect(destination(1)).toBe(true); expect(hasText('7.7')).toBe(true); expect(hasText(methodology)).toBe(true);
+    race('ROY'); expect(destination(1)).toBe(true);
+    race('MVP'); expect(destination(1)).toBe(true); expect(hasText('65.0')).toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('metadata distinguishes supported site rankings from unavailable prerequisites', () => {
+    expect(awardsMetadata.description).toContain('Site-computed MVP, DPOY and ROY');
+    expect(awardsMetadata.description).toContain('Sixth Man and Most Improved rankings remain unavailable');
+    expect(awardsMetadata.openGraph?.description).toContain('6MOY and MIP data requirements');
+    expect(JSON.stringify(awardsMetadata)).not.toMatch(/Live tracking of every|auto-updated leaderboards|derived from the official NBA player index/);
   });
 });
 

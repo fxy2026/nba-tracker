@@ -35,6 +35,7 @@ interface PlayerIndexRow {
 }
 
 type RaceKey = "mvp" | "roy" | "dpoy" | "smoy" | "mip";
+type ScoredRaceKey = Exclude<RaceKey, "smoy" | "mip">;
 
 type RaceMeta = { key: RaceKey; label: string; icon: typeof Trophy; eyebrow: string; description: string; color: string };
 
@@ -46,8 +47,8 @@ function buildRaces(isZh: boolean): RaceMeta[] {
       icon: Trophy,
       eyebrow: isZh ? "最有价值球员" : "Most Valuable",
       description: isZh
-        ? "综合最佳 — 得分、组织与影响力的综合衡量"
-        : "Best overall — composite of scoring, playmaking, and impact",
+        ? "本站启发式排名：综合得分、组织与各项产出"
+        : "Site heuristic combining scoring, playmaking, and production",
       color: "#FFD700",
     },
     {
@@ -63,7 +64,7 @@ function buildRaces(isZh: boolean): RaceMeta[] {
       label: "DPOY",
       icon: Shield,
       eyebrow: isZh ? "年度最佳防守球员" : "Defensive POY",
-      description: isZh ? "抢断 + 盖帽 + 上场时间加权" : "Steals + blocks + minutes weighted",
+      description: isZh ? "本站防守启发式排名：抢断、盖帽、篮板与上场时间" : "Site defensive heuristic: steals, blocks, rebounds, and minutes",
       color: "#22C55E",
     },
     {
@@ -71,7 +72,7 @@ function buildRaces(isZh: boolean): RaceMeta[] {
       label: "6MOY",
       icon: Star,
       eyebrow: isZh ? "年度最佳第六人" : "Sixth Man",
-      description: isZh ? "最佳替补 (首发少、影响大)" : "Best off the bench (low GS, high impact)",
+      description: isZh ? "需要可与出场场次对照的已核实首发场次" : "Requires verified starts alongside games played",
       color: "#A855F7",
     },
     {
@@ -79,13 +80,13 @@ function buildRaces(isZh: boolean): RaceMeta[] {
       label: "MIP",
       icon: TrendingUp,
       eyebrow: isZh ? "进步最快球员" : "Most Improved",
-      description: isZh ? "每分钟效率超出预期最多" : "Highest PER/min above expected",
+      description: isZh ? "需要可比较的本赛季与上一赛季数据" : "Requires comparable current- and previous-season data",
       color: "#F59E0B",
     },
   ];
 }
 
-function scoreForRace(p: LeagueLeaderRow, race: RaceKey): number | null {
+function scoreForRace(p: LeagueLeaderRow, race: ScoredRaceKey): number | null {
   let score: number;
   switch (race) {
     case "mvp":
@@ -96,14 +97,6 @@ function scoreForRace(p: LeagueLeaderRow, race: RaceKey): number | null {
     case "dpoy":
       if (!hasLeagueLeaderNumbers(p, ["STL", "BLK", "REB", "MIN"])) return null;
       score = p.STL * 2.5 + p.BLK * 2.5 + p.REB * 0.4 + p.MIN * 0.1;
-      break;
-    case "smoy":
-      if (!hasLeagueLeaderNumbers(p, ["PTS", "AST", "EFF"])) return null;
-      score = p.PTS * 0.8 + p.AST * 0.6 + p.EFF * 0.4;
-      break;
-    case "mip":
-      if (!hasLeagueLeaderNumbers(p, ["EFF", "PTS", "FG_PCT"])) return null;
-      score = p.EFF * 0.6 + p.PTS * 0.5 + p.FG_PCT * 20;
       break;
     case "roy":
       if (!hasLeagueLeaderNumbers(p, ["PTS", "REB", "AST", "GP"])) return null;
@@ -207,17 +200,15 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
   // Compute scored leaders for active race
   const { ranked, incomplete } = useMemo(() => {
     const scored: (LeagueLeaderRow & { _score: number })[] = [];
+    // Current leaders contain neither verified starts nor a prior-season
+    // comparison. These races cannot be scored from this dataset.
+    if (activeRace === "smoy" || activeRace === "mip") return { ranked: scored, incomplete: false };
     const rookieIds = new Set(cohort.available ? cohort.rookieIds : []);
     let incomplete = false;
     for (const p of allPlayers) {
       if (activeRace === "roy" && !rookieIds.has(p.PLAYER_ID)) continue;
       if (!hasLeagueLeaderNumbers(p, ["GP"])) { incomplete = true; continue; }
       if (p.GP < 20) continue;
-      if (activeRace === "smoy") {
-        // Preserve the existing minutes heuristic; unknown minutes cannot pass it.
-        if (!hasLeagueLeaderNumbers(p, ["MIN"])) { incomplete = true; continue; }
-        if (p.MIN >= 28) continue;
-      }
       const score = scoreForRace(p, activeRace);
       if (score === null) { incomplete = true; continue; }
       scored.push({ ...p, _score: score });
@@ -229,6 +220,17 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
   const topScore = ranked[0]?._score || 1;
   const races = useMemo(() => buildRaces(isZh), [isZh]);
   const activeRaceMeta = races.find((r) => r.key === activeRace)!;
+  const prerequisite = activeRace === "smoy" ? {
+    title: isZh ? "第六人排名暂不可用" : "6MOY ranking unavailable",
+    description: isZh
+      ? "此视图缺少已核实的本赛季首发场次，无法结合出场场次确定替补球员范围。场均上场时间无法证明替补身份。"
+      : "Verified current-season start counts are unavailable for comparison with games played. Minutes per game cannot establish a bench-player role.",
+  } : activeRace === "mip" ? {
+    title: isZh ? "进步最快球员排名暂不可用" : "MIP ranking unavailable",
+    description: isZh
+      ? "此视图缺少同一球员可比较的本赛季与上一赛季统计。仅凭本赛季表现无法衡量进步。"
+      : "This view lacks comparable current- and previous-season statistics for the same players. Current-season production alone cannot measure improvement.",
+  } : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -236,7 +238,7 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         eyebrow={isZh ? `${CURRENT_SEASON} 赛季` : `${CURRENT_SEASON} Season`}
         icon={Award}
         title={isZh ? "奖项竞争" : "Awards Race"}
-        subtitle={isZh ? "MVP · ROY · DPOY · 6MOY · MIP — 一站式呈现" : "MVP · ROY · DPOY · 6MOY · MIP — all in one place"}
+        subtitle={isZh ? "MVP、DPOY、ROY 本站排名；6MOY 与 MIP 所需数据" : "MVP, DPOY and ROY site rankings; 6MOY and MIP data requirements"}
       />
 
       {/* Race selector tabs — glass pill bar */}
@@ -281,7 +283,11 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
         </div>
       </div>
 
-      {activeRace === "roy" && rookieIndex !== null && !cohort.available ? (
+      {prerequisite ? (
+        <EmptyState icon={activeRaceMeta.icon} tone="neutral"
+          eyebrow={isZh ? "/ 所需数据" : "/ Data required"}
+          title={prerequisite.title} description={prerequisite.description} />
+      ) : activeRace === "roy" && rookieIndex !== null && !cohort.available ? (
         <EmptyState icon={Sparkles}
           title={isZh ? "本赛季新秀名单暂不可用" : "Current-season rookie cohort unavailable"}
           description={isZh
@@ -372,19 +378,14 @@ export default function AwardsRaceClient({ mvpSeasons }: { mvpSeasons: MvpSeason
       <PastMvpWall isZh={isZh} mvps={mvpSeasons} />
 
       {/* Formula footer */}
-      <div className="mt-8 glass-tile p-4">
+      {!prerequisite && <div className="mt-8 glass-tile p-4">
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法论" : "Methodology"}</p>
         <p className="text-xs text-text-secondary leading-relaxed">
-          {t.statsPage.mvpRankingNote || (isZh
-            ? "自定义综合排名 — 按类别加权场均产出。最少 20 场出场要求。数据来源于 NBA 官方统计。"
-            : "Custom composite ranking — combines per-game production weighted by category. Minimum 20 GP required. Refreshed from official NBA stats.")}
-        </p>
-        <p className="text-[10px] text-text-secondary/50 mt-2 font-mono">
           {isZh
-            ? "注: 这些为计算预测，并非官方投票。真实奖项受投票者倾向与球队故事影响。"
-            : "Note: These are computed projections, not official voting. Real awards involve voter sentiment and team narrative."}
+            ? "本站启发式排名，基于本赛季可用常规赛样本（按 EFF 最多取 100 名球员）。此视图要求至少出场 20 场。分数不代表官方投票或 NBA 奖项资格。"
+            : "Site heuristic based on the available current-season regular-season sample (up to 100 players by EFF). At least 20 games are required by this view. Scores are not official voting or NBA award eligibility."}
         </p>
-      </div>
+      </div>}
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
