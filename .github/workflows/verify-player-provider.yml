@@ -1,0 +1,97 @@
+name: Verify player data connection
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: nba-provider-first-connectivity
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'fxy2026/nba-tracker' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check the saved secret against two known games
+        shell: bash
+        env:
+          BIGBALLSDATA_API_KEY: ${{ secrets.BIGBALLSDATA_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+          
+          SAMPLES = [
+              ("MEM-DET", "5ce3b301-7023-433a-b8d1-ce8ee1b306be", 22, "Jalen Duren", {"points": "30", "rebounds": "13"}),
+              ("DEN-ATL", "a8da9b0f-573e-4b78-9cf4-7f2838449969", 19, "Nikola Jokic", {"points": "40", "rebounds": "9", "assists": "8"}),
+          ]
+          
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+          
+          def validate(payload, expected_count, name, expected_stats):
+              if not isinstance(payload, dict):
+                  return False, 0
+              data = payload.get("data")
+              players = data.get("players") if isinstance(data, dict) else None
+              if not isinstance(players, list):
+                  return False, 0
+              hits = [p for p in players if isinstance(p, dict) and p.get("name") == name]
+              if len(players) != expected_count or len(hits) != 1:
+                  return False, len(players)
+              stats = hits[0].get("stats")
+              if not isinstance(stats, dict):
+                  return False, len(players)
+              for field, expected in expected_stats.items():
+                  cell = stats.get(field)
+                  if not isinstance(cell, dict) or str(cell.get("value")) != expected:
+                      return False, len(players)
+              return True, len(players)
+          
+          def main():
+              if os.environ.get("GITHUB_RUN_ATTEMPT") != "1":
+                  print("Refusing a rerun. This workflow is for a single first connectivity check.")
+                  return 1
+              key = os.environ.get("BIGBALLSDATA_API_KEY", "").strip()
+              if not key:
+                  print("Missing repository secret BIGBALLSDATA_API_KEY. No provider request made.")
+                  return 1
+              if len(key) < 30 or not key.startswith("bbs_"):
+                  print("Secret looks incomplete or has an unexpected format. No provider request made.")
+                  return 1
+              opener = urllib.request.build_opener(NoRedirect())
+              for label, match_id, count, name, expected in SAMPLES:
+                  url = "https://api.bigballsdata.com/v1/stored/matches/" + match_id + "/stats"
+                  request = urllib.request.Request(url, headers={"x-api-key": key, "Accept": "application/json"}, method="GET")
+                  try:
+                      with opener.open(request, timeout=10) as response:
+                          status = response.status
+                          raw = response.read(2_000_001)
+                      print(label + ": HTTP " + str(status))
+                      if status != 200 or len(raw) > 2_000_000:
+                          print("Unexpected status or oversized response; stopping.")
+                          return 1
+                      payload = json.loads(raw)
+                      valid, rows = validate(payload, count, name, expected)
+                      print(label + ": player rows=" + str(rows) + "; expected sample=" + ("PASS" if valid else "FAIL"))
+                      if not valid:
+                          print("Authentication responded, but the expected data did not match. No data written.")
+                          return 1
+                  except urllib.error.HTTPError as error:
+                      print(label + ": HTTP " + str(error.code) + "; stopping without retry.")
+                      return 1
+                  except (urllib.error.URLError, TimeoutError, OSError):
+                      print(label + ": network or timeout failure; stopping without retry.")
+                      return 1
+                  except (ValueError, TypeError):
+                      print(label + ": invalid response structure; stopping without retry.")
+                      return 1
+              print("PASS: GitHub Actions secret authenticated and both known samples matched. Two provider requests; no repository data writes.")
+              return 0
+          
+          if __name__ == "__main__":
+              sys.exit(main())
+          PY
