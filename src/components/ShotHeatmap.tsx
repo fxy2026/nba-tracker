@@ -4,7 +4,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { createLatestRequestGate } from "@/lib/latest-request";
 import { playerShotRequestUrl, requestPlayerShotData, type PlayerShotData } from "@/lib/player-shot-request";
 import { useLocale } from "@/components/LocaleProvider";
-import { aggregateZoneStats, getZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
+import { aggregateZoneStats, getAbsoluteZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
+
+import { AbsoluteShotLegend, ShotSampleCoverage } from "@/components/ShotSampleContext";
 
 interface Props {
   playerId: number;
@@ -317,7 +319,6 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
     return m;
   }, [zoneStats]);
 
-  const leagueAvg = 46;
   const overallMade = shots.filter((s) => s.shotResult === "Made").length;
   const overallPct = shots.length > 0 ? (overallMade / shots.length) * 100 : 0;
   const hoveredStat = hoveredZone ? statsMap.get(hoveredZone) : null;
@@ -357,17 +358,19 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
         )}
       </div>
 
+      <ShotSampleCoverage
+        requestUrl={playerShotRequestUrl(playerId, teamTricode, season, seasonType)}
+        games={result?.key === requestKey ? gamesInfo : undefined}
+        isZh={locale === "zh"}
+      />
+
       {loading && <div className="h-64 flex items-center justify-center text-text-secondary text-sm">{locale === "zh" ? "加载中..." : "Loading..."}</div>}
       {error && <div className="h-32 flex flex-col items-center justify-center gap-2 text-danger text-sm">{error}<button onClick={() => void fetchShots(season, seasonType)} className="text-accent hover:underline">{t.common.retry}</button></div>}
       {!loading && !error && shots.length === 0 && <div className="h-32 flex items-center justify-center text-text-secondary text-sm">{locale === "zh" ? "当前选择暂无可用投篮数据" : "No shot data is available for this selection"}</div>}
 
       {!loading && shots.length > 0 && (
         <>
-          <div className="flex items-center justify-center gap-3 mb-2 text-[10px] text-text-secondary">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: getZoneColor(25, leagueAvg) }} />{t.shotHeatmap.belowAvg}</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: getZoneColor(leagueAvg, leagueAvg) }} />{t.shotHeatmap.avg}</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: getZoneColor(65, leagueAvg) }} />{t.shotHeatmap.aboveAvg}</span>
-          </div>
+          <AbsoluteShotLegend isZh={locale === "zh"} />
 
           <div className="relative">
             <svg
@@ -376,15 +379,15 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
               style={{ maxHeight: 480 }}
               role="img"
               aria-label={locale === "zh"
-                ? `球员投篮热图，按球场区域 — ${season} 赛季，命中率 ${overallPct.toFixed(1)}%`
-                : `Player shot heatmap by court zone — ${season} season, ${overallPct.toFixed(1)}% FG`}
+                ? `球员可用比赛样本投篮热图，按球场区域 — ${season} 赛季，命中率 ${overallPct.toFixed(1)}%`
+                : `Player available-game sample heatmap by court zone — ${season} season, ${overallPct.toFixed(1)}% FG`}
             >
               <rect x="0" y="0" width={W} height={H} fill="var(--court-bg)" rx="8" />
 
               {RENDER_ORDER.map((zone) => {
                 const stat = statsMap.get(zone);
                 const isHover = hoveredZone === zone;
-                const color = stat ? getZoneColor(stat.pct, leagueAvg) : "#1e1e1e";
+                const color = stat ? getAbsoluteZoneColor(stat.pct) : "#1e1e1e";
                 const opacity = stat ? (isHover ? 0.9 : 0.6) : 0.15;
                 return (
                   <path key={zone} d={ZONE_PATHS[zone]} fill={color} fillOpacity={opacity}
@@ -418,8 +421,8 @@ export default function ShotHeatmap({ playerId, teamTricode, fromYear, toYear }:
                 <p className="font-bold text-text-primary">{hoveredZone}</p>
                 <p className="text-accent text-lg font-bold">{hoveredStat.pct.toFixed(1)}%</p>
                 <p className="text-text-secondary">{hoveredStat.made}/{hoveredStat.total} FG</p>
-                <p className={`text-[10px] mt-1 ${hoveredStat.pct > leagueAvg ? "text-danger" : hoveredStat.pct < leagueAvg - 5 ? "text-accent" : "text-accent-amber"}`}>
-                  {hoveredStat.pct > leagueAvg ? "+" : ""}{(hoveredStat.pct - leagueAvg).toFixed(1)}% vs {locale === "zh" ? "联盟均值" : "league avg"}
+                <p className="text-[10px] mt-1 text-text-secondary">
+                  {locale === "zh" ? "可用比赛样本命中率" : "Available-game sample FG%"}
                 </p>
               </div>
             )}

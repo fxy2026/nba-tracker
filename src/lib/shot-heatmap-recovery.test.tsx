@@ -14,8 +14,9 @@ vi.mock('react',async original=>({...await original<typeof import('react')>(),
 }));
 vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:hooks.locale,t:hooks.locale==='zh'?zh:en})}));
 import ShotHeatmap from '@/components/ShotHeatmap';
+import { AbsoluteShotLegend, ShotSampleCoverage } from '@/components/ShotSampleContext';
 function draw(){hooks.index=0;const node=ShotHeatmap({playerId:2544,teamTricode:'LAL',fromYear:'2024',toYear:'2025'});hooks.effects.splice(0).forEach(f=>f());return node;}
-function find(node:ReactNode,type:string):Record<string,unknown>[] {if(Array.isArray(node))return node.flatMap(n=>find(n,type));if(!isValidElement<Record<string,unknown>>(node))return[];return[...(node.type===type?[node.props]:[]),...find(node.props.children as ReactNode,type)];}
+function find(node:ReactNode,type:unknown):Record<string,unknown>[] {if(Array.isArray(node))return node.flatMap(n=>find(n,type));if(!isValidElement<Record<string,unknown>>(node))return[];return[...(node.type===type?[node.props]:[]),...find(node.props.children as ReactNode,type)];}
 const shots=(made:boolean)=>({shots:[{x:0,y:5,shotDistance:5,shotResult:made?'Made':'Missed'}],gamesLoaded:1,totalGames:1});
 const response=(data:unknown)=>({ok:true,json:async()=>data});
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
@@ -76,4 +77,11 @@ it.each(['fetch','body'])('unmount settles and clears a noncooperative %s deadli
  expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);expect(vi.getTimerCount()).toBe(0);
  finish(stage==='fetch'?response(shots(true)):shots(true));await flush();await vi.advanceTimersByTimeAsync(PLAYER_SHOT_REQUEST_TIMEOUT_MS);
  expect(hooks.slots).toEqual(before);expect(fetcher).toHaveBeenCalledTimes(1);expect(vi.getTimerCount()).toBe(0);
+});
+
+it('the actual heatmap uses the numeric sample legend and exact request coverage, even at30/30',async()=>{
+ const fetcher=vi.fn().mockResolvedValue(response({...shots(true),gamesLoaded:30,totalGames:30}));vi.stubGlobal('fetch',fetcher);draw();await flush();
+ const tree=draw();expect(find(tree,AbsoluteShotLegend)).toHaveLength(1);
+ const coverage=find(tree,ShotSampleCoverage)[0];expect(coverage.requestUrl).toBe(fetcher.mock.calls[0][0]);expect(coverage.games).toEqual({loaded:30,total:30});
+ const svg=find(tree,'svg').find(p=>p.role==='img')!;expect(svg['aria-label']).toContain('available-game sample');expect(svg['aria-label']).toContain('100.0%');
 });

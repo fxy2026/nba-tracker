@@ -18,6 +18,7 @@ import { playerHeadshotUrl } from "@/lib/teamUrls";
 import { aggregateZoneStats } from "@/lib/shot-zones";
 import CareerTrendChart, { type MetricKey } from "./CareerTrendChart";
 import CareerCourt from "./CareerCourt";
+import { AbsoluteShotLegend, ShotSampleCoverage } from "@/components/ShotSampleContext";
 import PlayerPicker from "./PlayerPicker";
 import type { CareerSeason } from "./types";
 
@@ -55,8 +56,6 @@ function dedupeSeasons(rows: CareerSeason[]): CareerSeason[] {
   return order.map((s) => bySeason.get(s)!);
 }
 
-const LEAGUE_AVG = 46; // league-average FG% baseline for the zone color scale
-
 export default function CareerArc({ playerId, playerName, teamTricode }: Props) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
@@ -76,7 +75,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   const [shotContext, setShotContext] = useState("");
   const [shotLoading, setShotLoading] = useState(false);
   const [shotError, setShotError] = useState("");
-  const [shotGames, setShotGames] = useState({ loaded: 0, total: 0 });
+  const [shotGames, setShotGames] = useState<{ loaded: number; total: number } | null>(null);
   const shotGate = useRef(createLatestRequestGate());
 
   const selectedSeason = seasons && seasons[selectedIndex] ? seasons[selectedIndex] : null;
@@ -93,6 +92,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   const fetchShots = useCallback(async () => {
     setShotContext(shotKey);
     setShots([]);
+    setShotGames(null);
     if (!seasonId || !shotTeam) {
       shotGate.current.cancel();
       setShotLoading(false);
@@ -103,7 +103,6 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
     const request = shotGate.current.begin();
     setShotLoading(true);
     setShotError("");
-    setShotGames({ loaded: 0, total: 0 });
     try {
       const data = await requestPlayerShotData(playerShotRequestUrl(playerId, seasonTeam === "TOT" ? "TOT" : shotTeam, seasonId, "regular"), request.signal);
       if (!request.isCurrent()) return;
@@ -253,7 +252,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
           {shots.length > 0 && (
             <span className="text-xs text-text-secondary">
               {overallMade}/{shots.length} FG ({overallPct.toFixed(1)}%)
-              {shotGames.loaded > 0 && (
+              {shotGames && shotGames.loaded > 0 && (
                 <span className="text-text-secondary/60 ml-1">
                   · {shotGames.loaded}/{shotGames.total} {isZh ? "场" : "games"}
                 </span>
@@ -301,6 +300,12 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
           </div>
         </div>
 
+        <ShotSampleCoverage
+          requestUrl={playerShotRequestUrl(playerId, seasonTeam === "TOT" ? "TOT" : shotTeam, seasonId, "regular")}
+          games={shotContext === shotKey && !shotLoading ? shotGames ?? undefined : undefined}
+          isZh={isZh}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(200px,260px)] gap-4 items-start">
           {/* Court */}
           <div className="relative min-h-[260px]">
@@ -315,30 +320,16 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
                 {displayShotError && <button type="button" onClick={() => void fetchShots()} className="text-accent text-xs hover:underline">{isZh ? "重试投篮数据" : "Retry shot data"}</button>}
                 <p className="text-text-secondary/60 text-xs max-w-[280px]">
                   {isZh
-                    ? "逐球投篮记录仅覆盖近年的赛季；早期赛季无数据时此处留空。"
-                    : "Shot-by-shot data only covers recent seasons; older seasons show no zones."}
+                    ? "投篮覆盖取决于可用的比赛数据；图表留空不表示没有出手。"
+                    : "Shot coverage depends on available game feeds; an empty chart does not mean zero attempts."}
                 </p>
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-center gap-3 mb-2 text-[10px] text-text-secondary">
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-sm" style={{ background: "rgb(59,130,246)" }} />
-                    {isZh ? "低于均值" : "Below avg"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-sm" style={{ background: "rgb(245,158,11)" }} />
-                    {isZh ? "联盟均值" : "League avg"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-sm" style={{ background: "rgb(239,68,68)" }} />
-                    {isZh ? "高于均值" : "Above avg"}
-                  </span>
-                </div>
+                <AbsoluteShotLegend isZh={isZh} />
                 <CareerCourt
                   zoneStats={zoneStats}
                   overallPct={overallPct}
-                  leagueAvg={LEAGUE_AVG}
                   isZh={isZh}
                   seasonLabel={seasonId}
                 />
@@ -371,7 +362,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
             {shots.length > 0 && (
               <div className="bg-accent/5 border border-accent/15 rounded-lg px-2.5 py-2 mt-2">
                 <p className="text-[9px] font-mono uppercase tracking-wider text-text-secondary/70">
-                  {isZh ? "本赛季逐球命中率" : "Tracked FG this season"}
+                  {isZh ? "可用样本命中率" : "Available-sample FG"}
                 </p>
                 <p className="text-sm font-bold font-mono tabular-nums text-accent">
                   {overallPct.toFixed(1)}% <span className="text-text-secondary font-normal">({overallMade}/{shots.length})</span>

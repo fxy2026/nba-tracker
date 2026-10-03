@@ -66,6 +66,7 @@ vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:'en',t:en})})
 import CareerArc from '@/app/lab/career-arc/CareerArc';
 import CareerTrendChart from '@/app/lab/career-arc/CareerTrendChart';
 import CareerCourt from '@/app/lab/career-arc/CareerCourt';
+import { AbsoluteShotLegend, ShotSampleCoverage } from '@/components/ShotSampleContext';
 let tree:ReactNode;let fetcher:ReturnType<typeof vi.fn>;
 const row={SEASON_ID:'2025-26',TEAM_ABBREVIATION:'LAL',GP:70,MIN:30,PTS:20,REB:5,AST:6,STL:1,BLK:0,FG_PCT:.5,FG3_PCT:null,FT_PCT:.8};
 function nodes(node:ReactNode):ReactElement<Record<string,unknown>>[]{if(Array.isArray(node))return node.flatMap(nodes);if(!isValidElement<{children?:ReactNode}>(node))return[];return[node as ReactElement<Record<string,unknown>>,...nodes(node.props.children)];}
@@ -87,3 +88,22 @@ it('unmount cancels shots and suppresses noncooperative late response',async()=>
 
 it('75-secondshotdeadline clears loading, permits retry, and ignores late old body',async()=>{let oldBody!:(value:unknown)=>void;fetcher.mockResolvedValueOnce({ok:true,json:()=>new Promise(resolve=>oldBody=resolve)});flush();await settle();await vi.advanceTimersByTimeAsync(75000);await settle();expect(text(tree)).toContain('Failed to load shot data');expect(text(tree)).not.toContain('Loading shots');const retry=nodes(tree).find(n=>n.type==='button'&&text(n)==='Retry shot data')!;(retry.props.onClick as()=>void)();await settle();oldBody({shots:[{...made[0],shotResult:'Missed'}],gamesLoaded:1,totalGames:1});await settle();expect(nodes(tree).find(n=>n.type===CareerCourt)?.props.overallPct).toBe(100);expect(vi.getTimerCount()).toBe(0);});
 it('missing team cancels pending shot work and settles loading instead of hanging',async()=>{fetcher.mockImplementation(()=>new Promise(()=>{}));flush();await settle();const signal=fetcher.mock.calls[0][1].signal;runtime.props.teamTricode='';runtime.career={...runtime.career,data:{careerSeasons:[{...row,TEAM_ABBREVIATION:''}]}};runtime.dirty=true;flush();await settle();expect(signal.aborted).toBe(true);expect(text(tree)).not.toContain('Loading shots');expect(text(tree)).toContain('No shot data for this season');expect(vi.getTimerCount()).toBe(0);});
+
+it('the actual Career Arc discloses exact sample coverage and never passes an invented league benchmark',async()=>{
+ fetcher.mockResolvedValue({ok:true,json:async()=>({shots:made,gamesLoaded:30,totalGames:82})});flush();await settle();
+ expect(nodes(tree).some(n=>n.type===AbsoluteShotLegend)).toBe(true);
+ const coverage=nodes(tree).find(n=>n.type===ShotSampleCoverage)!;expect(coverage.props.requestUrl).toBe(fetcher.mock.calls[0][0]);expect(coverage.props.games).toEqual({loaded:30,total:82});
+ expect(nodes(tree).find(n=>n.type===CareerCourt)?.props.leagueAvg).toBeUndefined();
+ expect(text(tree)).toContain('Available-sample FG');expect(text(tree)).not.toContain('Tracked FG this season');expect(text(tree)).not.toContain('League avg');
+});
+
+it.each([{loaded:30,total:82},{loaded:0,total:0}])('a successful empty Career Arc response retains validated coverage %o',async games=>{
+ fetcher.mockResolvedValue({ok:true,json:async()=>({shots:[],gamesLoaded:games.loaded,totalGames:games.total})});flush();await settle();
+ expect(text(tree)).toContain('No field-goal shot records');expect(nodes(tree).find(n=>n.type===CareerCourt)).toBeUndefined();
+ const coverage=nodes(tree).find(n=>n.type===ShotSampleCoverage)!;expect(coverage.props.games).toEqual(games);
+});
+it('failed Career Arc request never preserves previous selection coverage',async()=>{
+ flush();await settle();expect(nodes(tree).find(n=>n.type===ShotSampleCoverage)?.props.games).toEqual({loaded:1,total:1});
+ fetcher.mockRejectedValueOnce(new Error('unavailable'));select(0);await settle();
+ expect(nodes(tree).find(n=>n.type===ShotSampleCoverage)?.props.games).toBeUndefined();expect(text(tree)).toContain('Failed to load shot data');
+});

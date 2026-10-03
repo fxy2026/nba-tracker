@@ -8,7 +8,7 @@
 // the sibling component's own season<select>/fetch machinery.
 
 import { useMemo, useState } from "react";
-import { getZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
+import { getAbsoluteZoneColor, type ShotZone, type ZoneStats } from "@/lib/shot-zones";
 
 // ---- Court constants (px) ----
 const W = 470;
@@ -232,13 +232,14 @@ function CourtLines() {
 interface Props {
   zoneStats: ZoneStats[];
   overallPct: number;
-  leagueAvg: number;
+  /** @deprecated Ignored: no matching league benchmark is verified. */
+  leagueAvg?: number;
   isZh: boolean;
   /** Label drawn into the aria text (e.g. the season string). */
   seasonLabel: string;
 }
 
-export default function CareerCourt({ zoneStats, overallPct, leagueAvg, isZh, seasonLabel }: Props) {
+export default function CareerCourt({ zoneStats, overallPct, isZh, seasonLabel }: Props) {
   const [hoveredZone, setHoveredZone] = useState<ShotZone | null>(null);
 
   const statsMap = useMemo(() => {
@@ -259,8 +260,8 @@ export default function CareerCourt({ zoneStats, overallPct, leagueAvg, isZh, se
         role="img"
         aria-label={
           isZh
-            ? `${seasonLabel} 赛季投篮热区图，命中率 ${overallPct.toFixed(1)}%`
-            : `Shot-zone heatmap for ${seasonLabel}, ${overallPct.toFixed(1)}% FG`
+            ? `${seasonLabel} 赛季可用比赛样本投篮热区图，命中率 ${overallPct.toFixed(1)}%`
+            : `Available-game sample shot-zone heatmap for ${seasonLabel}, ${overallPct.toFixed(1)}% FG`
         }
       >
         <rect x="0" y="0" width={W} height={H} fill="var(--court-bg)" rx="8" />
@@ -268,7 +269,7 @@ export default function CareerCourt({ zoneStats, overallPct, leagueAvg, isZh, se
         {RENDER_ORDER.map((zone) => {
           const stat = statsMap.get(zone);
           const isHover = hoveredZone === zone;
-          const color = stat ? getZoneColor(stat.pct, leagueAvg) : "#1e1e1e";
+          const color = stat ? getAbsoluteZoneColor(stat.pct) : "#1e1e1e";
           const opacity = stat ? (isHover ? 0.9 : 0.6) : 0.15;
           return (
             <path
@@ -308,8 +309,8 @@ export default function CareerCourt({ zoneStats, overallPct, leagueAvg, isZh, se
           <p className="font-bold text-text-primary">{zoneName(hoveredZone)}</p>
           <p className="text-accent text-lg font-bold">{hoveredStat.pct.toFixed(1)}%</p>
           <p className="text-text-secondary">{hoveredStat.made}/{hoveredStat.total} FG</p>
-          <p className={`text-[10px] mt-1 ${hoveredStat.pct > leagueAvg ? "text-danger" : hoveredStat.pct < leagueAvg - 5 ? "text-accent" : "text-accent-amber"}`}>
-            {hoveredStat.pct > leagueAvg ? "+" : ""}{(hoveredStat.pct - leagueAvg).toFixed(1)}% vs {isZh ? "联盟均值" : "league avg"}
+          <p className="text-[10px] mt-1 text-text-secondary">
+            {isZh ? "可用比赛样本命中率" : "Available-game sample FG%"}
           </p>
         </div>
       )}

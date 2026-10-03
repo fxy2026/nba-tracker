@@ -112,7 +112,15 @@ export function aggregateZoneStats(
   return out;
 }
 
-// Map a shooting percentage to a color relative to league average
+// Absolute sample FG%, with no league benchmark or inferred comparison.
+export function getAbsoluteZoneColor(pct: number): string {
+  const t = Math.max(0, Math.min(100, Number.isFinite(pct) ? pct : 0)) / 100;
+  return `rgb(${Math.round(71 + 25 * t)},${Math.round(85 + 80 * t)},${Math.round(105 + 145 * t)})`;
+}
+
+// Map a shooting percentage to a color relative to a supplied benchmark.
+// Legacy utility only: a real, matching league benchmark must be sourced by
+// the caller. Player heatmap surfaces use getAbsoluteZoneColor instead.
 // Blue (cold, below avg) → Orange (neutral, at avg) → Red (hot, above avg)
 export function getZoneColor(pct: number, leagueAvg: number): string {
   const diff = pct - leagueAvg;
