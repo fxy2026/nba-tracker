@@ -89,7 +89,8 @@ const GROUPS: PosGroup[] = [
   },
 ];
 
-export default async function ByPositionPage({ searchParams }: DirectoryPageProps = {}) {
+export default async function ByPositionPage(props: DirectoryPageProps) {
+  const { searchParams } = props === undefined ? {} : props;
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);

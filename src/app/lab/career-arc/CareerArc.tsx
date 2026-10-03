@@ -5,7 +5,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import PlayerCareerSource from "@/components/player/PlayerCareerSource";
+import CareerArchiveNotice from "./CareerArchiveNotice";
 import type { PlayerCareerData } from "@/lib/player-career-data";
 import { usePlayerCareer } from "@/lib/usePlayerCareer";
 import { useLocale } from "@/components/LocaleProvider";
@@ -125,10 +125,8 @@ export default function CareerArc({ playerId, playerName, teamTricode, initialCa
 
   return (
     <div className="space-y-5">
-      {(careerStale || careerError) && <div role="status" className="glass-tile p-3 text-sm text-text-secondary">
-        {career?.provenance?.source === "nba-com"
-          ? <PlayerCareerSource provenance={career.provenance} isZh={isZh} checkingLive={careerLoading} />
-          : <p>{isZh ? "保留上次成功加载的生涯数据，可能已过时。" : "Showing the last successfully loaded career data; it may be stale."}</p>}
+      {(careerStale || careerError) && career?.provenance?.source !== "nba-com" && <div role="status" className="glass-tile p-3 text-sm text-text-secondary">
+        <p>{isZh ? "保留上次成功加载的生涯数据，可能已过时。" : "Showing the last successfully loaded career data; it may be stale."}</p>
         <button type="button" disabled={careerLoading} onClick={retryCareer} className="text-accent hover:underline">{isZh ? "重试" : "Retry"}</button>
       </div>}
       {/* Picker + identity */}
@@ -158,6 +156,13 @@ export default function CareerArc({ playerId, playerName, teamTricode, initialCa
           <PlayerPicker isZh={isZh} currentName={playerName} />
         </div>
       </div>
+
+      {career?.provenance?.source === "nba-com" && <CareerArchiveNotice
+        provenance={career.provenance}
+        isZh={isZh}
+        checkingLive={careerLoading}
+        onRetry={retryCareer}
+      />}
 
       {/* (1) Career trend */}
       <CareerTrendChart

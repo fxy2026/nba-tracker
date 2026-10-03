@@ -105,7 +105,8 @@ const FLAGS: Record<string, string> = {
   "Portugal": "🇵🇹",
 };
 
-export default async function ByCountryPage({ searchParams }: DirectoryPageProps = {}) {
+export default async function ByCountryPage(props: DirectoryPageProps) {
+  const { searchParams } = props === undefined ? {} : props;
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);

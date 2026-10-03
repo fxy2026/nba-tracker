@@ -40,7 +40,8 @@ interface ClassGroup {
   unranked: ClassPlayer[];
 }
 
-export default async function DraftClassesPage({ searchParams }: DirectoryPageProps = {}) {
+export default async function DraftClassesPage(props: DirectoryPageProps) {
+  const { searchParams } = props === undefined ? {} : props;
   const locale = await getLocale();
   const isZh = locale === "zh";
   const snapshot = await getPlayerIndexSnapshot().catch(() => null);
