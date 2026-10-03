@@ -376,7 +376,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             const facts = [
               "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",
               "The NBA three-point line was introduced in the 1979-80 season.",
-              "Kareem Abdul-Jabbar holds the all-time regular season scoring record with 38,387 points (surpassed by LeBron in 2023).",
+              "Kareem Abdul-Jabbar held the all-time regular season scoring record with 38,387 points (surpassed by LeBron in 2023).",
               "The longest NBA game lasted 6 overtimes — Indianapolis vs Rochester in 1951.",
               "The NBA has had 30 teams since the 2004-05 season.",
               "Michael Jordan has 6 NBA Finals MVP awards — the most in history.",

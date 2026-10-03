@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
 import { teamLogoUrl } from "@/lib/teamUrls";
+import { currentSeason } from "@/lib/constants";
 import { computeStandingsRows, gamesBehind, type StandingsRow } from "@/lib/standings-splits";
 import ExportStandings from "@/components/ExportStandings";
 import PageHeader from "@/components/PageHeader";
@@ -223,33 +224,42 @@ function ConferenceTable({ title, teams, t, isZh }: { title: string; teams: Stan
 }
 
 export default async function StandingsPage() {
+  const season = currentSeason();
   const [schedule, locale] = await Promise.all([
-    getCurrentSeasonSchedule().catch(() => []),
+    getCurrentSeasonSchedule(season).catch(() => null),
     getLocale(),
   ]);
-  const standings = computeStandingsRows(schedule);
+  const standings = computeStandingsRows(schedule ?? []);
   const t = getTranslations(locale);
   const isZh = locale === "zh";
 
-  // Cold schedule cache or an offseason rollover with no finished regular-season
-  // games yields no rows — show an empty state instead of header-only tables.
+  const seasonLabel = `${season} · ${isZh ? "常规赛" : "Regular season"}`;
+
+  // Missing usable records do not establish whether the season has started.
+  // Preserve a rejected request separately from a resolved empty sample.
   if (standings.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Breadcrumbs items={[{ label: isZh ? "排名" : "Standings" }]} />
         <PageHeader
-          eyebrow="League"
+          eyebrow={seasonLabel}
           icon={ListOrdered}
           title={t.standingsPage.divisionStandings}
           subtitle={t.standingsPage.top6Hint}
         />
         <EmptyState
           icon={ListOrdered}
-          title={isZh ? "暂无数据" : "No data yet"}
-          description={
-            isZh
-              ? "记录已结束比赛后，排名会显示在这里。"
-              : "Standings will populate once finished games are recorded."
+          tone={schedule === null ? "danger" : "amber"}
+          title={schedule === null
+            ? (isZh ? "暂时无法加载排名" : "Unable to load standings")
+            : (isZh ? "暂无可用排名数据" : "No standings data available")}
+          description={schedule === null
+            ? (isZh
+              ? `未能加载 ${season} 赛季赛程，请稍后重试。`
+              : `We couldn't load the schedule for ${season}. Try again later.`)
+            : (isZh
+              ? `当前没有可用于计算 ${season} 赛季排名的已结束常规赛记录。`
+              : `No usable completed regular-season records are available for ${season}.`)
           }
         />
       </div>
@@ -286,7 +296,7 @@ export default async function StandingsPage() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <Breadcrumbs items={[{ label: isZh ? "排名" : "Standings" }]} />
       <PageHeader
-        eyebrow="League"
+        eyebrow={seasonLabel}
         icon={ListOrdered}
         title={t.standingsPage.divisionStandings}
         subtitle={t.standingsPage.top6Hint}
