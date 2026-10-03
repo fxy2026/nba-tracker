@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import DateNav from "./DateNav";
@@ -19,13 +19,15 @@ import type { ScheduleGame } from "@/lib/api";
 interface HomeClientProps {
   initialDate: string;
   initialGames?: ScheduleGame[];
+  // Server-rendered supplemental content stays after the selected games.
+  afterGames?: ReactNode;
   // Whether initialDate was the server's ET-today. Used as the server-stable
   // first-paint value for isToday so the SSR HTML and the client's pre-effect
   // render agree (the real local-tz "today" is unknowable until mount).
   initialIsToday: boolean;
 }
 
-export default function HomeClient({ initialDate, initialGames, initialIsToday }: HomeClientProps) {
+export default function HomeClient({ initialDate, initialGames, initialIsToday, afterGames }: HomeClientProps) {
   const { t } = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -90,6 +92,8 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday }
         initialGames={!chosenTimeZone && selectedDate === initialDate ? initialGames : undefined}
         isToday={isToday}
       />
+
+      {afterGames}
 
       {/* User's recent visits — only renders when localStorage has data */}
       <RecentlyViewed />

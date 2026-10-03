@@ -95,13 +95,19 @@ export default async function HomePage({ searchParams }: PageProps) {
       />
       <h1 className="sr-only">{t.meta.siteTitle}</h1>
       <HomePlayerSearch />
-      {/* Offseason-only hero. Self-guards to null in-season BEFORE any await, so
-          the in-season home layout is byte-identical to before. Streams in above
-          the scoreboard so its ESPN transaction/news fetches never block TTFB. */}
-      <Suspense fallback={null}>
-        <OffseasonHero />
-      </Suspense>
-      <HomeClient initialDate={initialDate} initialGames={initialGames} initialIsToday={initialDate === today} />
+      <HomeClient
+        initialDate={initialDate}
+        initialGames={initialGames}
+        initialIsToday={initialDate === today}
+        afterGames={
+          // Keep the selected games first in the DOM on every date/timezone.
+          // The server-only hero still self-guards to null in-season and streams
+          // without blocking the shell on transaction/news fetches.
+          <Suspense fallback={null}>
+            <OffseasonHero />
+          </Suspense>
+        }
+      />
       {/* Daily-changing "best of last night" precedes the evergreen iconic pick
           so the top of the page stays fresh content a returner checks daily.
           Streams in after the shell — schedule/box-score fetches never block. */}
