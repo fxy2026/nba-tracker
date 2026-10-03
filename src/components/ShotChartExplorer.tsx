@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, List, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, List, SlidersHorizontal, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { summarizeCourtShots, type VerifiedShotChart } from "@/lib/court-shots";
 import CourtView from "./shot-chart/CourtView";
@@ -14,6 +14,7 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
   const [filters,setFilters]=useState<ShotFilters>(EMPTY_FILTERS);
   const [selectedId,setSelectedId]=useState<number|null>(null);
   const [showList,setShowList]=useState(false);
+  const [showFilters,setShowFilters]=useState(false);
   const shots=useMemo(()=>filterCourtShots(data.shots,filters),[data.shots,filters]);
   const summary=summarizeCourtShots(shots);
   const selected=shots.find(s=>s.eventId===selectedId);
@@ -26,18 +27,25 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
   function clear(){setFilters(EMPTY_FILTERS);setSelectedId(null);}
   const active=Object.values(filters).some(v=>v!=="all");
   return <div className={styles.explorer}>
-    <div className={styles.filters}>
-      <label>{copy.team}<select value={filters.teamId} onChange={e=>changeFilter("teamId",e.target.value)}><option value="all">{copy.allTeams}</option>{[data.away,data.home].map(t=><option key={t.teamId} value={t.teamId}>{t.teamTricode}</option>)}</select></label>
-      <label>{copy.player}<select value={filters.personId} onChange={e=>changeFilter("personId",e.target.value)}><option value="all">{copy.allPlayers}</option>{players.map(p=><option key={p.personId} value={p.personId}>{p.playerName}</option>)}</select></label>
+    <div className={styles.explorerHeader}>
+      <div className={styles.teamTabs} role="group" aria-label={copy.team}>
+        <button type="button" aria-pressed={filters.teamId==="all"} onClick={()=>changeFilter("teamId","all")}>{copy.allTeams}</button>
+        {[data.away,data.home].map(t=><button key={t.teamId} type="button" aria-pressed={filters.teamId===String(t.teamId)} onClick={()=>changeFilter("teamId",String(t.teamId))}>{t.teamTricode}</button>)}
+      </div>
+      <button className={styles.filterToggle} type="button" aria-expanded={showFilters} onClick={()=>setShowFilters(!showFilters)}><SlidersHorizontal size={15}/>{showFilters?copy.hideFilters:copy.filters}{active&&<span className={styles.filterActive}/>}</button>
+    </div>
+    <div className={styles.playerRow}>
+      <label className={styles.playerSelect}><span className={styles.srOnly}>{copy.player}</span><select aria-label={copy.player} value={filters.personId} onChange={e=>changeFilter("personId",e.target.value)}><option value="all">{copy.allPlayers}</option>{players.map(p=><option key={p.personId} value={p.personId}>{p.playerName}</option>)}</select></label>
+      <div className={styles.summary} aria-label={copy.summary} aria-live="polite"><strong>{summary.made}<span>/</span>{summary.attempted}</strong><span>{summary.attempted?`${(summary.made/summary.attempted*100).toFixed(1)}%`:"—"} {copy.fg}</span></div>
+    </div>
+    {showFilters&&<div className={styles.filters}>
       <label>{copy.period}<select value={filters.period} onChange={e=>changeFilter("period",e.target.value)}><option value="all">{copy.allPeriods}</option>{periods.map(p=><option key={p} value={p}>{periodLabel(p)}</option>)}</select></label>
       <label>{copy.outcome}<select value={filters.result} onChange={e=>changeFilter("result",e.target.value)}><option value="all">{copy.allResults}</option><option value="Made">{copy.made}</option><option value="Missed">{copy.missed}</option></select></label>
-    </div>
-    <div className={styles.summary} aria-label={copy.summary} aria-live="polite">
-      <div><strong>{summary.attempted}</strong> {copy.attempts}<span className={styles.divider}>/</span><strong>{summary.made}</strong> {copy.madeOf}<span className={styles.divider}>/</span><strong>{summary.attempted?`${(summary.made/summary.attempted*100).toFixed(1)}%`:"—"}</strong> {copy.fg}</div>
-      <div className={styles.legend}><span><i className={styles.madeDot}/> {copy.made}</span><span><i className={styles.missCross}>×</i> {copy.missed}</span>{active&&<button type="button" onClick={clear}>{copy.clear}</button>}</div>
-    </div>
+      {active&&<button type="button" className={styles.clearFilters} onClick={clear}>{copy.clear}</button>}
+    </div>}
+    <div className={styles.legend}><span><i className={styles.madeDot}/> {copy.made}</span><span><i className={styles.missCross}>×</i> {copy.missed}</span><span className={styles.filteredCount}>{shots.length} {copy.shotsLabel}{filters.period!=="all"?` · ${periodLabel(Number(filters.period))}`:""}{filters.result!=="all"?` · ${filters.result==="Made"?copy.made:copy.missed}`:""}</span></div>
     <CourtView shots={shots} selectedId={selected?.eventId??null} onSelect={setSelectedId} copy={copy}/>
-    <div className={styles.selection} aria-live="polite" aria-atomic="true">
+    <div className={`${styles.selection} ${selected?styles.hasSelection:""}`} aria-live="polite" aria-atomic="true">
       {selected?<>
         <div className={styles.selectionMain}>
           <span className={selected.result==="Made"?styles.resultMade:styles.resultMissed}>{selected.result==="Made"?"●":"×"} {selected.result==="Made"?copy.made:copy.missed}</span>

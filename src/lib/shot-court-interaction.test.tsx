@@ -36,11 +36,11 @@ describe("3D shot court geometry and interaction",()=>{
   it("formats the source ISO game clock without claiming wall time",()=>{
     expect(formatCourtClock("PT11M11.00S")).toBe("11:11");expect(formatCourtClock("PT00M03.50S")).toBe("0:03.5");expect(formatCourtClock("0:05")).toBe("0:05");expect(formatCourtClock("PT00M03.95S")).toBe("0:03.95");
   });
-  it("server-renders useful filters, source, coverage, and top-down points before WebGL",()=>{
+  it("server-renders useful filters, source, coverage, and top-down points without loading WebGL",()=>{
     const html=renderToStaticMarkup(<LocaleProvider initialLocale="en"><ShotChartExplorer data={chart}/></LocaleProvider>);
     expect(html).toContain("Both teams");expect(html).toContain("All players");expect(html).toContain("2/2");expect(html).toContain("NBA official game charts");
-    expect(html).toContain("not ball flight");expect(html).toContain("Browse every shot");expect(html).toContain("data-court-state=\"loading\"");expect(html).toContain("Solid circles: made. Crosses: missed.");
-    expect(html).not.toContain("PT11M");
+    expect(html).toContain("not ball flight");expect(html).toContain("Browse every shot");expect(html).toContain("data-court-state=\"flat\"");expect(html).toContain("Solid circles: made. Crosses: missed.");
+    expect(html).not.toContain("PT11M");expect(html).not.toContain("<canvas");expect(html).not.toContain("Loading the 3D court");
   });
   it("provides Chinese controls and explicit normalization copy",()=>{
     const html=renderToStaticMarkup(<LocaleProvider initialLocale="zh"><ShotChartExplorer data={chart}/></LocaleProvider>);
@@ -49,7 +49,7 @@ describe("3D shot court geometry and interaction",()=>{
   it("keeps server archives outside client imports and lazy-loads Three",()=>{
     const view=fs.readFileSync(path.resolve("src/components/shot-chart/CourtView.tsx"),"utf8");
     const renderer=fs.readFileSync(path.resolve("src/components/shot-chart/court-renderer.ts"),"utf8");
-    expect(view).toContain('import("./court-renderer")');expect(view).toContain('webglcontextlost');expect(view).toContain('}).catch(()=>{cleanup();');expect(view).toContain('new ResizeObserver');
+    expect(view).toContain('import("./court-renderer")');expect(view.indexOf("if(!enable3D)return")).toBeLessThan(view.indexOf('import("./court-renderer")'));expect(view).toContain("useState(false)");expect(view).toContain('webglcontextlost');expect(view).toContain('}).catch(()=>{cleanup();');expect(view).toContain('new ResizeObserver');
     expect(renderer).toContain('powerPreference:"low-power"');expect(renderer).toContain('window.devicePixelRatio || 1,1.5');
     expect(renderer).not.toContain('setAnimationLoop');expect(renderer).not.toContain('https://');
     for(const file of [view,renderer,fs.readFileSync(path.resolve("src/components/ShotChartExplorer.tsx"),"utf8")]) expect(file).not.toMatch(/from ["'][^"']*(?:archive|src\/data)/);

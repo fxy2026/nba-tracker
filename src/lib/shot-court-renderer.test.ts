@@ -25,7 +25,7 @@ beforeEach(()=>{
   vi.stubGlobal("window",{devicePixelRatio:3});
   vi.stubGlobal("requestAnimationFrame",(cb:FrameRequestCallback)=>{const id=nextId++;callbacks.set(id,cb);return id;});
   vi.stubGlobal("cancelAnimationFrame",(id:number)=>callbacks.delete(id));
-  vi.stubGlobal("document",{createElement:()=>({width:0,height:0,getContext:()=>new Proxy({},{get:()=>()=>{},set:()=>true})})});
+  vi.stubGlobal("document",{createElement:()=>({width:0,height:0,getContext:()=>new Proxy({},{get:(_,key)=>key==="createLinearGradient"||key==="createRadialGradient"?()=>({addColorStop:()=>{}}):()=>{},set:()=>true})})});
 });
 afterEach(()=>vi.unstubAllGlobals());
 describe("Three court renderer lifecycle and projection (GPU stubbed)",()=>{

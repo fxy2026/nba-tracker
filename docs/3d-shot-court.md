@@ -1,4 +1,4 @@
-# 3D shot court
+# Shot court: top-down first, optional 3D
 
 ## Product and rendering contract
 
@@ -9,15 +9,19 @@ The rendering never clamps, mirrors, jitters, fabricates, or converts shot
 locations using distance. A marker represents a recorded location on the floor,
 not a measured release height or ball trajectory. No flight arcs are generated.
 
-- Actual Three.js perspective scene: parquet floor, dimensional court slab,
+- Default: a full-resolution SVG half court with original parquet, restrained paint,
+  clear regulation linework, all verified points, and hover/tap/list selection.
+  No canvas, WebGL probe, renderer import or animation frame is created on default mount.
+- Optional Three.js perspective scene: parquet floor, dimensional court slab,
   regulation markings, raised rim, net, and glass backboard.
-- Default oblique view; explicit rotate, zoom, top-down and reset buttons.
+- Explicit 3D entry only; its oblique view has rotate, zoom, top-down and reset
+  controls. Re-selecting active 3D is a no-op, and leaving it disposes resources.
 - SVG overlay markers are projected through the **same Three.js camera** after
   every render. Color and shape both distinguish made/missed shots.
 - Team, player, period and result filters, selected-shot details, previous/next
   selection and a keyboard-operable list of every filtered shot.
 - Source, coverage and one-basket normalization visible in EN and ZH.
-- Three.js is dynamically imported only inside the mounted client renderer.
+- Three.js is dynamically imported only after the user explicitly selects 3D.
   There is no runtime CDN, downloaded model, branded floor image, or texture URL.
 - Draw-on-demand RAF invalidation coalesces changes; no idle animation loop,
   automatic camera motion, real-time shadows, or postprocessing. DPR is capped
@@ -27,7 +31,8 @@ not a measured release height or ball trajectory. No flight arcs are generated.
   Camera buttons provide a non-gesture alternative.
 - WebGL creation errors and context loss show a top-down SVG with the same
   coordinates, filters, selected details and list. Retry creates a fresh canvas.
-  SSR already renders that useful 2D view while the 3D chunk loads.
+  SSR renders the primary 2D view directly. An optional 3D failure never removes
+  the vector court or the shot records.
 - Camera changes are immediate. No movement animation is required, and the
   component also honors reduced-motion CSS.
 
@@ -85,8 +90,32 @@ installed package.
 ## Verification boundary
 
 Focused tests cover source-preserving geometry, combined filters, selection
-hit-testing, real clock formatting, bilingual SSR fallback, lazy-loading and
-client/server boundaries. The final integrated release owns full typecheck,
+hit-testing including narrow/letterboxed client coordinates, real clock formatting,
+bilingual SSR, explicit-only 3D loading, no-op repeated entry, interrupted pointer
+flows, resource cleanup, and client/server boundaries. The static surface,
+projected points and base marker layer are memoized; hover state is unchanged
+while the nearest shot remains the same. SVG regulation-line vertices use two
+decimal places to reduce markup, without rounding any shot coordinate. The final integrated release owns full typecheck,
 lint, test and production-build gates. Browser visual quality, actual touch
 behavior, WebGL context loss and mobile frame time must be checked on an allowed
 live preview. They are not proven by structural tests or source inspection.
+
+## Top-down visual revision (2026-10-03)
+
+The user preferred excellent top-down presentation, function and performance over
+3D for its own sake. The default is now a near-square, court-dominant vector view,
+with compact team tabs, one player selector, secondary period/result filters on
+demand, restrained unselected marks and a clear selection card. All source shots
+remain present, including coincident points (which can be cycled explicitly).
+
+Static geometry measurements: the original oblique sphere-fit floor occupied
+31.7% of a 343×350 viewport. The new default floor occupies approximately 95% of
+its intrinsic 540×528 plot, sized responsively and capped at 620 CSS px wide.
+These are geometry/layout measures, not device GPU or FPS benchmarks. An SVG
+export from the actual component was visually inspected with all 181 real points.
+The optional 3D camera now fits and centers projected floor/backboard bounds,
+while retaining real source coordinates and the same camera for every marker.
+
+No local browser restrictions were bypassed. A post-publication browser check
+must still verify actual mobile layout, touch interaction, light/dark appearance
+and that initial network resources exclude the optional engine.

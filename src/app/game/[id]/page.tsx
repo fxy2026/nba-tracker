@@ -218,7 +218,7 @@ export default async function GamePage({ params }: PageProps) {
             </div>
             <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
               {verifiedShots
-                ? (isZh ? `已恢复本场 ${verifiedShots.coverage.total} 次真实出手坐标，见下方 3D 球场。逐回合暂不可用。` : `${verifiedShots.coverage.total} verified shot locations have been recovered for the 3D court below. Play-by-play remains unavailable.`)
+                ? (isZh ? `已恢复本场 ${verifiedShots.coverage.total} 次真实出手坐标，见下方投篮分布图。逐回合暂不可用。` : `${verifiedShots.coverage.total} verified shot locations have been recovered for the shot chart below. Play-by-play remains unavailable.`)
                 : quarantined && !recoveredBox && !providerBox
                 ? (isZh ? "本场补充球员数据存在身份核验问题，已暂停展示。可查看下方 NBA 官方赛后报告。" : "Supplemental player data is withheld while a player identity issue is reviewed. The NBA official final report is linked below.")
                 : (recoveredBox || providerBox)

@@ -58,6 +58,7 @@ describe("verified court archive routing", () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(text(tree)).toContain(locale === "zh" ? "181 次真实出手坐标" : "181 verified shot locations");
     expect(text(tree)).not.toContain("Shot charts and play-by-play remain unavailable.");
+    expect(text(tree)).not.toContain("3D court below");expect(text(tree)).not.toContain("下方 3D 球场");
     expect(text(tree)).not.toContain("投篮图与逐回合暂不可用。");
   });
   it("gives other recovered games an honest unavailable section, never MEM–DET points", async () => {
