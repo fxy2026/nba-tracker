@@ -41,33 +41,35 @@ describe("official gamebook reported score sequence rendering", () => {
   it.each([false, true])("uses the bilingual heading and clear limited-scope copy (zh=%s)", (isZh) => {
     const html = render(isZh);
     expect(html).toContain(isZh
-      ? "官方赛后报告记载的比分序列"
-      : "Reported score sequence from the official gamebook");
+      ? "比分走势"
+      : "Score trend");
     expect(textContent(html)).toContain(isZh
       ? "124 行原文明确印有时间与比分的记录，其中包括 3 行球权记录"
       : "124 explicitly printed timed score rows, including 3 possession rows");
     expect(textContent(html)).toContain(isZh
-      ? "不是完整逐回合或实时事件数据"
+      ? "不代表完整逐回合或实时事件"
       : "not a complete play-by-play or live event feed");
-    expect(textContent(html)).toContain(isZh
-      ? "本节不提供球员动作、投篮、回放、领先变化或连续得分分析"
-      : "does not provide player actions, shots, replay, lead-change or scoring-run analysis");
+    expect(textContent(html)).toContain(isZh ? "虚线仅连接记录" : "Dashed lines only connect records");
+    expect(html.indexOf("data-reported-score-chart")).toBeLessThan(html.indexOf("<details"));
     expect(html).toContain("2026-03-13");
     expect(html).toContain(`href="${sourceUrl}#page=9"`);
   });
 
-  it.each([false, true])("renders four native, initially collapsed quarter disclosures (zh=%s)", (isZh) => {
+  it.each([false, true])("keeps exact quarter tables behind one initially collapsed disclosure (zh=%s)", (isZh) => {
     const html = render(isZh);
     const details = [...html.matchAll(/<details\b[^>]*>/g)].map((match) => match[0]);
-    expect(details).toHaveLength(4);
+    expect(details).toHaveLength(1);
     expect(details.every((tag) => !/\sopen(?:\s|=|>)/.test(tag))).toBe(true);
     const summaries = [...html.matchAll(/<summary\b[^>]*>([\s\S]*?)<\/summary>/g)]
       .map((match) => textContent(match[1]));
-    expect(summaries).toEqual([33, 30, 29, 32].map((count, index) => isZh
-      ? `第 ${index + 1} 节 · ${count} 行带时间的比分记录`
-      : `Q${index + 1} · ${count} printed timed score rows`));
+    expect(summaries).toEqual([isZh ? "查看原始记录与来源" : "View exact records and sources"]);
+    for (const [index, count] of [33, 30, 29, 32].entries()) {
+      expect(textContent(html)).toContain(isZh
+        ? `第 ${index + 1} 节 · ${count} 行带时间的比分记录`
+        : `Q${index + 1} · ${count} printed timed score rows`);
+    }
     expect(html.match(/<table\b/g)).toHaveLength(4);
-    expect(html).not.toMatch(/<(?:button|script|video|canvas)\b/);
+    expect(html).not.toMatch(/<(?:script|video|canvas)\b/);
   });
 
   it.each([false, true])("preserves every timed row, team column, printed clock, and source page in original order (zh=%s)", (isZh) => {
@@ -137,7 +139,7 @@ describe("official gamebook reported score sequence rendering", () => {
   it.each([false, true])("identifies every source as an external official PDF without adding player or event links (zh=%s)", (isZh) => {
     const html = render(isZh);
     const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map((match) => match[0]);
-    expect(anchors).toHaveLength(129); // 124 timed rows, 4 endpoints, 1 source overview.
+    expect(anchors).toHaveLength(130); // 124 rows, 4 endpoints, source overview, selected record.
     for (const anchor of anchors) {
       expect(anchor).toContain(`href="${sourceUrl}#page=`);
       expect(anchor).toContain('target="_blank"');

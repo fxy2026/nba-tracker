@@ -48,8 +48,9 @@ alter the live PBP path, synthesize a box score, or enable shot/replay/metric
 widgets. It makes no additional source/provider requests and has no API route.
 The Finals period-score module remains independent and unchanged.
 
-The EN/ZH server component uses four native, initially collapsed `<details>`
-tables. Every row retains source order and printed clock spelling, including all
+The EN/ZH section leads with a responsive cumulative-score chart and keeps four
+exact quarter tables behind one native, initially collapsed disclosure. Every row
+retains source order and printed clock spelling, including all
 12 decimal-clock rows and 17 repeated-clock groups. Keys are local array indexes,
 never NBA event IDs. No artificial 0–0 opening row is added. Three opening
 possession rows at Q2/Q3/Q4 12:00 remain genuine score-unchanged observations.
@@ -61,3 +62,34 @@ All 87 recovered player boxes and four career archives retain their exact bytes.
 Tests pin the 91-file preservation manifest, approved facts, PDF hash, canonical
 identity, counts/order/decimal clocks, endpoints, strict scope, plausible-content
 tampering, live-vs-archive separation and both localized renderings.
+
+## Score trend chart
+
+The client receives only the five reviewed facts per timed row, two tricodes, the
+source PDF URL and locale. Archive metadata, hashes, identities, evidence and
+untimed endpoints remain outside the client component. No new requests or
+dependencies are introduced. The server still gates this chart through the
+existing reviewed, identity-bound loader.
+
+The pure transform maps each printed clock onto elapsed regulation seconds. It
+never sorts, rounds, deduplicates, inserts a 0–0 opening observation, assigns a
+clock to an endpoint, or fills missing events. All 124 observations appear as
+blue circles (home) and amber squares (away); faint dashed connectors are
+explicitly identified as visual guides rather than continuous event data. The
+chart does not derive lead changes, runs, shots, or play-by-play.
+
+The full-game view has quarter dividers and four quarter zoom buttons. Pointer
+inspection selects a real observation; a native range control and previous/next
+buttons traverse source rows, including exact overlaps and repeated clocks. A
+persistent readout shows the unchanged printed clock, both scores, record index
+and source-page link. SVG description, live readout, shape-plus-color legend,
+44-pixel controls, keyboard navigation, theme tokens and a server-rendered exact
+table provide accessible alternatives. The static table remains usable without
+JavaScript. Four untimed period-end summaries are still separate from its rows.
+
+Reference research checked Hupu's official desktop game pages, which expose a
+large scoreboard, compact quarter summary and chronological text-record table:
+https://nba.hupu.com/games/boxscore/168859 and
+https://nba.hupu.com/games/playbyplay/168859. No public score curve or touch
+scrubbing design was verified there; this chart is an independent presentation,
+not a claimed replica of an unseen Hupu visualization.
