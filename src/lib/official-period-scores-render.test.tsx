@@ -1,5 +1,5 @@
 import { isValidElement, type ComponentProps, type ReactNode } from "react";
-import QuarterBars from "@/components/QuarterBars";
+import ScoreSummaryTable from "@/app/game/[id]/_components/ScoreSummaryTable";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import OfficialPeriodScores from "@/app/game/[id]/_components/OfficialPeriodScores";
@@ -98,22 +98,6 @@ const fixtures = [
   { id: "0042500404", date: "20260610", away: "SAS", home: "NYK", awayPoints: [41, 35, 14, 16], homePoints: [22, 27, 26, 32] },
   { id: "0042500405", date: "20260613", away: "NYK", home: "SAS", awayPoints: [13, 24, 28, 29], homePoints: [23, 19, 30, 18] },
 ];
-const periodMetadata = [
-  { period: 1, periodType: "REGULAR" },
-  { period: 2, periodType: "REGULAR" },
-  { period: 3, periodType: "REGULAR" },
-  { period: 4, periodType: "REGULAR" },
-  { period: 5, periodType: "OVERTIME" },
-  { period: 6, periodType: "OVERTIME" },
-];
-const displayLabels = ["Q1", "Q2", "Q3", "Q4", "OT1", "OT2"];
-function quarterProps(node: ReactNode): ComponentProps<typeof QuarterBars>[] {
-  if (Array.isArray(node)) return node.flatMap(quarterProps);
-  if (!isValidElement<{ children?: ReactNode }>(node)) return [];
-  if (node.type === QuarterBars) return [node.props as ComponentProps<typeof QuarterBars>];
-  return quarterProps(node.props.children);
-}
-
 it("covers the complete 87-game approval with four single-OT and one double-OT report", () => {
   expect(fixtures).toHaveLength(87);
   expect(new Set(fixtures.map(fixture => fixture.id)).size).toBe(87);
@@ -124,22 +108,19 @@ it("covers the complete 87-game approval with four single-OT and one double-OT r
 });
 
 describe.each(["en", "zh"] as const)("all approved official period-score renders in %s", (locale) => {
-  it.each(fixtures)("renders $id with the actual QuarterBars and localized attribution", (fixture) => {
+  it.each(fixtures)("renders $id with exact compact quarter/total table and localized attribution", (fixture) => {
     const game = schedule.dates.flatMap((date) => date.games).find((game) => game.gameId === fixture.id)!;
     const scores = getOfficialPeriodScores(game);
     expect(scores).not.toBeNull();
     if (!scores) throw new Error(`Missing verified quarter scores for ${fixture.id}`);
 
-    // Invoke the real wrapper, then assert the actual chart's complete input
-    // contract. Rendering alone would miss a wrongly tagged overtime period.
-    const chart = quarterProps(OfficialPeriodScores({ scores, isZh: locale === "zh" }));
-    expect(chart).toHaveLength(1);
-    expect(chart[0]).toEqual({
-      awayTricode: fixture.away,
-      homeTricode: fixture.home,
-      awayPeriods: fixture.awayPoints.map((score, index) => ({ ...periodMetadata[index], score })),
-      homePeriods: fixture.homePoints.map((score, index) => ({ ...periodMetadata[index], score })),
-    });
+    // Archive content remains on the server; the table receives the validated object.
+    function tableProps(node: ReactNode): ComponentProps<typeof ScoreSummaryTable>[] {
+      if (Array.isArray(node)) return node.flatMap(tableProps);
+      if (!isValidElement<{ children?: ReactNode }>(node)) return [];
+      return node.type === ScoreSummaryTable ? [node.props as ComponentProps<typeof ScoreSummaryTable>] : tableProps(node.props.children);
+    }
+    expect(tableProps(OfficialPeriodScores({ scores, isZh: locale === "zh" }))).toEqual([{ scores, isZh: locale === "zh" }]);
     expect(scores.source.periodLabelsAsPrinted).toEqual(["1", "2", "3", "4", "OT1", "OT2"].slice(0, fixture.homePoints.length));
 
     const html = renderToStaticMarkup(
@@ -147,28 +128,24 @@ describe.each(["en", "zh"] as const)("all approved official period-score renders
         <OfficialPeriodScores scores={scores} isZh={locale === "zh"} />
       </LocaleProvider>,
     );
-    const summary = fixture.homePoints.map((points, index) =>
-      `${displayLabels[index]}: ${fixture.away} ${fixture.awayPoints[index]} ${fixture.home} ${points}`,
-    ).join("; ");
-    expect(html).toContain(`aria-label="By quarter — ${summary}"`);
-    expect(html.match(/role="group"/g)).toHaveLength(1);
-    expect(html).toContain(locale === "zh" ? "每节得分</h3>" : "Points by Quarter</h3>");
-
-    // Check visible scores as well as the accessible summary. The chart prints
-    // away then home for every regulation and overtime period.
-    const visiblePoints = [...html.matchAll(/<span\b[^>]*>(\d+)<\/span>/g)].map((match) => Number(match[1]));
-    expect(visiblePoints).toEqual(fixture.awayPoints.flatMap((points, index) => [points, fixture.homePoints[index]]));
-    for (const label of displayLabels.slice(0, fixture.homePoints.length)) expect(html).toContain(`>${label}</span>`);
-    for (const label of displayLabels.slice(fixture.homePoints.length)) expect(html).not.toContain(`>${label}</span>`);
-    expect(html).not.toContain(">Q5</span>");
-    expect(html).not.toContain(">Q6</span>");
-    expect(html).not.toContain(">OT3</span>");
-    expect(html).toContain(`>${fixture.away}</span>`);
-    expect(html).toContain(`>${fixture.home}</span>`);
-
-    const attribution = locale === "zh"
-      ? "每节得分：NBA 官方赛后报告 · 第 1 页 · 核验于 2026-10-03（外部 PDF）"
-      : "Quarter scores: NBA official final report · page 1 · verified 2026-10-03 (external PDF)";
+    expect(html).toContain(locale === "zh" ? "每节得分</h2>" : "Points by quarter</h2>");
+    expect(html.match(/<table\b/g)).toHaveLength(1);
+    const header = html.match(/<thead>([\s\S]*?)<\/thead>/)![1];
+    const labels = [...header.matchAll(/<th\b[^>]*>(.*?)<\/th>/g)].map(match => match[1]);
+    expect(labels).toEqual([
+      locale === "zh" ? "球队" : "Team",
+      ...fixture.homePoints.map((_, index) => index < 4 ? (locale === "zh" ? `${index + 1}节` : `Q${index + 1}`) : `OT${index - 3}`),
+      locale === "zh" ? "总分" : "Total",
+    ]);
+    const rows = [...html.matchAll(/<tr data-score-team="([^"]+)">([\s\S]*?)<\/tr>/g)];
+    expect(rows.map(row => row[1])).toEqual([fixture.away, fixture.home]);
+    rows.forEach((row, index) => {
+      expect(row[2]).toContain('scope="row"');
+      const points = index === 0 ? fixture.awayPoints : fixture.homePoints;
+      expect([...row[2].matchAll(/<td\b[^>]*>(\d+)<\/td>/g)].map(match => Number(match[1])))
+        .toEqual([...points, points.reduce((sum, score) => sum + score, 0)]);
+    });
+    const attribution = locale === "zh" ? "NBA 官方赛后报告" : "Official NBA final report";
     const reportUrl = `https://statsdmz.nba.com/pdfs/${fixture.date}/${fixture.date}_${fixture.away}${fixture.home}${fixture.id === "0022500961" ? "_book" : ""}.pdf`;
     const links = [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
     expect(links).toHaveLength(1);
@@ -181,6 +158,6 @@ describe.each(["en", "zh"] as const)("all approved official period-score renders
     expect(html).not.toContain("originalPdf");
     expect(html).not.toContain("verifiedAt");
     expect(html).not.toMatch(/play.by.play|逐回合|event clock|estimated/i);
-    expect(html).not.toMatch(/<(?:iframe|script|table)\b/);
+    expect(html).not.toMatch(/<(?:iframe|script)\b/);
   });
 });

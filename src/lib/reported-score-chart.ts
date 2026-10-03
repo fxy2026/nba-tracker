@@ -60,3 +60,13 @@ export function moveReportedScoreSelection(points: readonly ReportedScorePoint[]
   const current = Math.max(0, points.findIndex(point => point.sourceIndex === sourceIndex));
   return points[Math.max(0, Math.min(points.length - 1, current + delta))].sourceIndex;
 }
+
+/** A visual step connector through real observations only; not a reconstructed event feed. */
+export function reportedScoreStepPath(
+  points: readonly ReportedScorePoint[], team: "homeScore" | "awayScore",
+  x: (seconds: number) => number, y: (score: number) => number,
+): string {
+  return points.map((point, index) => index
+    ? `H${x(point.elapsedSeconds)} V${y(point[team])}`
+    : `M${x(point.elapsedSeconds)},${y(point[team])}`).join(" ");
+}

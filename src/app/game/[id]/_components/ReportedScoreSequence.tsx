@@ -1,8 +1,10 @@
 import type { ReportedScoreSequence as ScoreSequence } from "@/lib/reported-score-sequence";
+import type { OfficialPeriodScores } from "@/lib/official-period-score-validation";
+import ScoreSummaryTable from "./ScoreSummaryTable";
 import ReportedScoreChart from "./ReportedScoreChart";
 
 /** Native disclosures retain source order without a client-side replay/feed. */
-export default function ReportedScoreSequence({ sequence, isZh }: { sequence: ScoreSequence; isZh: boolean }) {
+export default function ReportedScoreSequence({ sequence, periodScores, isZh }: { sequence: ScoreSequence; periodScores?: OfficialPeriodScores | null; isZh: boolean }) {
   const sourceLink = (page: number) => (
     <a href={`${sequence.source.url}#page=${page}`} target="_blank" rel="noopener noreferrer"
       className="text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
@@ -23,24 +25,33 @@ export default function ReportedScoreSequence({ sequence, isZh }: { sequence: Sc
         </div>
         <span className="rounded-full border border-border px-2.5 py-1 text-[10px] text-text-secondary">{sequence.gameDate}</span>
       </div>
+      {periodScores && <div className="mt-4">
+        <ScoreSummaryTable scores={periodScores} isZh={isZh} />
+        <p className="mt-1 text-right text-[10px] text-text-secondary">
+          <a href={`${periodScores.source.reportUrl}#page=${periodScores.source.page}`} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline focus-visible:outline-2"
+            aria-label={isZh ? `NBA 官方赛后报告 PDF 第 ${periodScores.source.page} 页（外部链接）` : `NBA official gamebook PDF page ${periodScores.source.page} (external link)`}>
+            {isZh ? "每节得分 · 官方报告" : "Quarter totals · Official report"} ↗
+          </a>
+        </p>
+      </div>}
       <ReportedScoreChart
         rows={sequence.reportedScoreRows.map(({ period, clockAsPrinted, homeScore, awayScore, sourcePage }) => ({ period, clockAsPrinted, homeScore, awayScore, sourcePage }))}
         homeTricode={sequence.home.teamTricode} awayTricode={sequence.away.teamTricode}
         sourceUrl={sequence.source.url} isZh={isZh}
       />
-      <p className="mt-3 text-xs leading-relaxed text-text-secondary">
+      <p className="mt-1 text-[11px] leading-relaxed text-text-secondary">
         {isZh
-          ? "点标记为报告中的比分记录，虚线仅连接记录，不代表完整逐回合或实时事件。"
-          : "Markers are printed score observations. Dashed lines only connect records; this is not a complete play-by-play or live event feed."}
+          ? "阶梯线连接官方比分记录，非完整逐回合。"
+          : "Steps connect official score observations, not a complete play-by-play."}
       </p>
-      <details className="mt-4 border-t border-border pt-1">
-        <summary className="min-h-11 cursor-pointer content-center py-3 text-sm font-medium text-text-primary">
+      <details className="mt-3 border-t border-border">
+        <summary className="min-h-11 cursor-pointer content-center py-3 text-xs font-medium text-text-secondary">
           {isZh ? "查看原始记录与来源" : "View exact records and sources"}
         </summary>
         <p className="mb-3 text-xs leading-relaxed text-text-secondary">
           {isZh
-            ? "124 行原文明确印有时间与比分的记录，其中包括 3 行球权记录。重复时间与小数秒按原文顺序保留；未补全缺失事件。节末摘要原文未印时间，单独列出，不补写 00:00。"
-            : "124 explicitly printed timed score rows, including 3 possession rows. Repeated clocks and decimal precision stay in source order; missing events are not filled in. Period-end summaries have no printed clock and remain separate, without an invented 00:00."}
+            ? "124 行原文明确印有时间与比分的记录，其中包括 3 行球权记录。重复时间与小数秒按原文顺序保留；未补全缺失事件，不代表完整逐回合或实时事件。节末摘要原文未印时间，单独列出，不补写 00:00。"
+            : "124 explicitly printed timed score rows, including 3 possession rows. Repeated clocks and decimal precision stay in source order; missing events are not filled in. This is not a complete play-by-play or live event feed. Period-end summaries have no printed clock and remain separate, without an invented 00:00."}
         </p>
         <p className="mb-4 text-xs text-text-secondary">
           {isZh ? "来源：NBA 官方赛后报告，PDF 第 9–19 页。" : "Source: NBA official gamebook, PDF pages 9–19."} {sourceLink(9)}

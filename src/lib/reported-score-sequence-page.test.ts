@@ -148,6 +148,7 @@ describe("reported score sequence game-page isolation", () => {
     expect(sequences[0].props).toMatchObject({
       isZh: locale === "zh",
       sequence: { gameId, reportedScoreRows: expect.any(Array) },
+      periodScores: { gameId, home: { periodPoints: [37, 31, 30, 28] }, away: { periodPoints: [35, 26, 23, 26] } },
     });
     expect(elementsOf(tree, RecoveredPlayerBox)).toHaveLength(1);
     expect(elementsOf(tree, RecoveredPlayerBox)[0].props.box).toMatchObject({ gameId, provider: "BigBallsData" });

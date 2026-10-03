@@ -227,9 +227,9 @@ export default async function GamePage({ params }: PageProps) {
             </p>
             <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
-          {officialPeriods && <OfficialPeriodScores scores={officialPeriods} isZh={isZh} />}
+          {officialPeriods && !reportedSequence && <OfficialPeriodScores scores={officialPeriods} isZh={isZh} />}
           <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />
-          {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} isZh={isZh} />}
+          {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} periodScores={officialPeriods} isZh={isZh} />}
           {recoveredBox && <RecoveredPlayerBox box={recoveredBox} isZh={isZh} />}
           {providerBox && <ProviderPlayerBox box={providerBox} isZh={isZh} />}
           <RelatedPages

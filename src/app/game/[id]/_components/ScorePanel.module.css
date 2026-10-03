@@ -1,0 +1,31 @@
+.colors {
+  --score-home: var(--score-home-dark);
+  --score-away: var(--score-away-dark);
+  --score-band: rgba(122, 138, 176, 0.10);
+}
+:global([data-theme="light"]) .colors {
+  --score-home: var(--score-home-base);
+  --score-away: var(--score-away-base);
+  --score-band: rgba(71, 85, 105, 0.06);
+}
+.home { color: var(--score-home); }
+.away { color: var(--score-away); }
+.table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.table th, .table td { text-align: center; padding: 10px 3px; }
+.table thead th { background: var(--bg-secondary); color: var(--text-secondary); font-weight: 500; font-size: 11px; }
+.table thead th:first-child { border-radius: 8px 0 0 0; }
+.table thead th:last-child { border-radius: 0 8px 0 0; }
+.table tbody tr:last-child { background: var(--score-band); }
+.table tbody tr:last-child th { border-radius: 0 0 0 8px; }
+.table tbody tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+.table tbody th { text-align: left; font-size: 12px; padding-left: 10px; }
+.table td { font-size: 14px; font-weight: 600; }
+.table .total { width: 44px; border-left: 1px solid var(--border); font-weight: 750; color: var(--text-primary); }
+.table td.total { font-size: 17px; }
+.table .teamColumn { width: 84px; text-align: left; padding-left: 10px; }
+.plot { height: clamp(184px, 50vw, 260px); }
+@media (min-width: 640px) {
+  .table th, .table td { padding: 11px 6px; }
+  .table td { font-size: 16px; }
+  .table .teamColumn { width: 124px; }
+}

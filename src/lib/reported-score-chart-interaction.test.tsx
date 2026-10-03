@@ -46,6 +46,8 @@ function render(isZh = false) {
     button: (label: string) => nodes.find(node => node.type === "button" && (node.props["aria-label"] === label || node.props.children === label))!.props,
     svg: nodes.find(node => node.type === "svg" && node.props.onPointerDown)!.props,
     observations: nodes.filter(node => Object.hasOwn(node.props, "data-score-observation")).length,
+    circles: nodes.filter(node => node.type === "circle").length,
+    selectedSquares: nodes.filter(node => node.type === "rect" && !Object.hasOwn(node.props, "data-quarter-band")).length,
   };
 }
 beforeEach(() => { hooks.values = []; hooks.cursor = 0; });
@@ -71,7 +73,7 @@ describe("reported chart component handlers", () => {
       const view = render();
       expect(view.slider.value).toBe(0);
       expect(view.slider.max).toBe(count - 1);
-      expect(view.observations).toBe(count);
+      expect(view.observations).toBe(1);
       expect(view.button(`Q${period + 1}`)["aria-pressed"]).toBe(true);
     }
     render().button("Next record").onClick!();
@@ -79,7 +81,7 @@ describe("reported chart component handlers", () => {
     render().button("Q4").onClick!();
     expect(render().slider["aria-valuetext"]).toBe(sameQuarter);
     render().button("Game").onClick!();
-    expect(render().observations).toBe(124);
+    expect(render().observations).toBe(1);
     expect(render().slider.max).toBe(123);
     expect(render().slider["aria-valuetext"]).toBe(sameQuarter);
   });
@@ -99,6 +101,9 @@ describe("reported chart component handlers", () => {
     expect(render().slider.value).toBe(123);
     render().svg.onPointerDown!(event);
     expect(render().slider.value).toBe(0);
+    expect(render().observations).toBe(1);
+    expect(render().circles).toBe(1);
+    expect(render().selectedSquares).toBe(1);
     expect(render(true).slider["aria-valuetext"]).toContain("第 1 / 124 条记录, 第 1 节, 11:11, DET 0, MEM 2");
     render().slider.onChange!({ currentTarget: { value: "123" } });
     render().svg.onPointerMove!({ ...event, pointerType: "mouse" });

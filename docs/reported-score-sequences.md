@@ -46,7 +46,7 @@ The game page uses this separate representation only in its no-box,
 schedule-known-final branch. It does not convert observations to `PlayAction`,
 alter the live PBP path, synthesize a box score, or enable shot/replay/metric
 widgets. It makes no additional source/provider requests and has no API route.
-The Finals period-score module remains independent and unchanged.
+The 87-game period-score archive stays independent; its server-rendered quarter/total table shares the score panel presentation.
 
 The EN/ZH section leads with a responsive cumulative-score chart and keeps four
 exact quarter tables behind one native, initially collapsed disclosure. Every row
@@ -73,23 +73,33 @@ existing reviewed, identity-bound loader.
 
 The pure transform maps each printed clock onto elapsed regulation seconds. It
 never sorts, rounds, deduplicates, inserts a 0–0 opening observation, assigns a
-clock to an endpoint, or fills missing events. All 124 observations appear as
-blue circles (home) and amber squares (away); faint dashed connectors are
-explicitly identified as visual guides rather than continuous event data. The
+clock to an endpoint, or fills missing events. All 124 observations are joined by solid stair-step
+connectors, labeled as reported score observations. The path begins and ends at
+the first and last real observations, never at invented quarter-boundary events.
+Only an actively selected record receives a cursor and two point markers: a home circle and an away square, matching the labelled legend. The
 chart does not derive lead changes, runs, shots, or play-by-play.
 
-The full-game view has quarter dividers and four quarter zoom buttons. Pointer
-inspection selects a real observation; a native range control and previous/next
-buttons traverse source rows, including exact overlaps and repeated clocks. A
-persistent readout shows the unchanged printed clock, both scores, record index
-and source-page link. SVG description, live readout, shape-plus-color legend,
-44-pixel controls, keyboard navigation, theme tokens and a server-rendered exact
-table provide accessible alternatives. The static table remains usable without
-JavaScript. Four untimed period-end summaries are still separate from its rows.
+The full-game view has alternating quarter bands and four quarter zoom buttons.
+Pointer inspection selects a real observation; a native range control and
+previous/next buttons traverse source rows, including exact overlaps and repeated
+clocks. A compact selected-record card shows the unchanged printed clock, both
+scores and source-page link. Team colors are consistent across table, legend,
+line and readout; both light and dark themes retain readable line contrast.
+SVG description, live readout, 44-pixel controls, keyboard navigation and a
+server-rendered exact table provide accessible alternatives. Four untimed
+period-end summaries remain separate from timed rows.
 
-Reference research checked Hupu's official desktop game pages, which expose a
-large scoreboard, compact quarter summary and chronological text-record table:
-https://nba.hupu.com/games/boxscore/168859 and
-https://nba.hupu.com/games/playbyplay/168859. No public score curve or touch
-scrubbing design was verified there; this chart is an independent presentation,
-not a claimed replica of an unseen Hupu visualization.
+The 87 approved quarter-score archives render as compact, semantic tables with
+away/home rows, all regulation and overtime periods, and explicit final totals.
+For MEM–DET, the already validated quarter table appears directly above the
+chart in one panel; the separate quarter panel is suppressed. No quarter or
+endpoint facts cross into the interactive chart, whose prop contract is
+unchanged. Other games do not receive a fabricated score trend.
+
+The user supplied a Hupu mobile screenshot to illustrate score-chart legibility,
+then clarified the goal is a more polished original NBA Tracker experience.
+The table/step-line/quarter-band structure is used for clarity, with independent
+typography, spacing, colors, controls and record inspection. No Hupu assets are
+copied. The separately captured 499 NBA HANA actions have not been independently
+certified as a complete ordered score feed; this chart does not silently adopt
+that source or claim full play-by-play coverage.

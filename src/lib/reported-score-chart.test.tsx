@@ -7,7 +7,7 @@ import type { ScheduleGame } from "./api";
 import { getReportedScoreSequence } from "./reported-score-sequence-archive";
 import {
   moveReportedScoreSelection, nearestReportedScorePoint, reportedScorePoints,
-  scoreChartDomain, scoreChartPointsForPeriod, type ReportedScoreChartProps,
+  scoreChartDomain, scoreChartPointsForPeriod, reportedScoreStepPath, type ReportedScoreChartProps,
 } from "./reported-score-chart";
 import ReportedScoreChart from "@/app/game/[id]/_components/ReportedScoreChart";
 import ReportedScoreSequence from "@/app/game/[id]/_components/ReportedScoreSequence";
@@ -34,6 +34,16 @@ describe("printed score chart transform", () => {
     expect(points[0].elapsedSeconds).toBe(49);
     expect(points.at(-1)?.elapsedSeconds).toBeCloseTo(2846.9);
     expect(points.some(point => point.elapsedSeconds === 0 || point.elapsedSeconds === 2880)).toBe(false);
+  });
+
+  it("draws step connectors only through original source coordinates, without invented start/end observations", () => {
+    const path = reportedScoreStepPath(points, "homeScore", x => x, y => y);
+    expect(path.startsWith("M49,0 H")).toBe(true);
+    expect(path).toContain("H688.3 V35 H688.3 V35 H688.3 V35");
+    expect(path.endsWith("H2846.9 V126")).toBe(true);
+    expect(path.match(/H/g)).toHaveLength(123);
+    expect(path.match(/V/g)).toHaveLength(123);
+    expect(path).not.toMatch(/L|H2880|M0,/);
   });
 
   it("retains repeated decimal clocks as distinct observations at the same exact x coordinate", () => {
@@ -100,9 +110,13 @@ describe("source-row inspection", () => {
 describe("score chart rendering and archive boundary", () => {
   it.each([false, true])("renders every factual observation with accessible controls and a concise source label (zh=%s)", isZh => {
     const html = renderToStaticMarkup(createElement(ReportedScoreChart, { ...props, isZh }));
-    expect([...html.matchAll(/data-score-observation="(\d+)"/g)].map(match => Number(match[1]))).toEqual(points.map(point => point.sourceIndex));
+    expect(html).not.toContain("data-score-observation");
+    expect(html.match(/data-quarter-band=/g)).toHaveLength(4);
     expect(html.match(/data-score-connector=/g)).toHaveLength(2);
-    expect(html).toContain('stroke-dasharray="4 4"');
+    for (const path of html.matchAll(/<path[^>]*data-score-connector[^>]*>/g)) {
+      expect(path[0]).not.toContain("stroke-dasharray");
+      expect(path[0]).toContain('stroke-width="2.5"');
+    }
     expect(html).toContain('type="range"');
     expect(html).toContain('min="0" max="123"');
     expect(html).toContain('value="123"');

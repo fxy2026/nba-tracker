@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import schedule from "@/data/schedule-2025-26.json";
 import type { ScheduleGame } from "./api";
 import { getReportedScoreSequence } from "./reported-score-sequence-archive";
+import { getOfficialPeriodScores } from "./official-period-score-archive";
 import ReportedScoreSequence from "@/app/game/[id]/_components/ReportedScoreSequence";
 
 const game = schedule.dates.flatMap((date) => date.games)
@@ -49,7 +50,7 @@ describe("official gamebook reported score sequence rendering", () => {
     expect(textContent(html)).toContain(isZh
       ? "不代表完整逐回合或实时事件"
       : "not a complete play-by-play or live event feed");
-    expect(textContent(html)).toContain(isZh ? "虚线仅连接记录" : "Dashed lines only connect records");
+    expect(textContent(html)).toContain(isZh ? "阶梯线连接官方比分记录" : "Steps connect official score observations");
     expect(html.indexOf("data-reported-score-chart")).toBeLessThan(html.indexOf("<details"));
     expect(html).toContain("2026-03-13");
     expect(html).toContain(`href="${sourceUrl}#page=9"`);
@@ -150,4 +151,17 @@ describe("official gamebook reported score sequence rendering", () => {
     expect(html).not.toMatch(/href="[^\"]*(?:\/player\/|\/replay\/)/);
     expect(html).not.toContain("NaN");
   });
+});
+
+
+it.each([false, true])("unifies the approved quarter table and chart without duplicating panels (zh=%s)", isZh => {
+  const periodScores = getOfficialPeriodScores(game)!;
+  const html = renderToStaticMarkup(createElement(ReportedScoreSequence, { sequence, periodScores, isZh }));
+  expect(html.match(/data-score-summary/g)).toHaveLength(1);
+  expect(html.indexOf("data-score-summary")).toBeLessThan(html.indexOf("data-reported-score-chart"));
+  expect(html.match(/<table\b/g)).toHaveLength(5);
+  const summary = html.match(/<table[^>]*data-score-summary[^>]*>([\s\S]*?)<\/table>/)![1];
+  expect([...summary.matchAll(/<td\b[^>]*>(\d+)<\/td>/g)].map(match => Number(match[1])))
+    .toEqual([35, 26, 23, 26, 110, 37, 31, 30, 28, 126]);
+  expect(summary).not.toMatch(/12:00|00:00/);
 });

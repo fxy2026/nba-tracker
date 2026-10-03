@@ -1,6 +1,7 @@
 import { isValidElement, type ComponentProps, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import OfficialPeriodScores from "@/app/game/[id]/_components/OfficialPeriodScores";
+import ReportedScoreSequence from "@/app/game/[id]/_components/ReportedScoreSequence";
 import QuarterBars from "@/components/QuarterBars";
 import schedule from "@/data/schedule-2025-26.json";
 import finalsEvidence from "../../docs/evidence/game-period-scores/finals-2025-26.json";
@@ -40,7 +41,10 @@ function findProps<Props>(node: ReactNode, component: unknown): Props[] {
   if (!isValidElement<{ children?: ReactNode }>(node)) return [];
   return node.type === component ? [node.props as Props] : findProps<Props>(node.props.children, component);
 }
-const archived = (node: ReactNode) => findProps<ComponentProps<typeof OfficialPeriodScores>>(node, OfficialPeriodScores);
+const archived = (node: ReactNode) => [
+  ...findProps<ComponentProps<typeof OfficialPeriodScores>>(node, OfficialPeriodScores),
+  ...findProps<ComponentProps<typeof ReportedScoreSequence>>(node, ReportedScoreSequence).flatMap(({ periodScores, isZh }) => periodScores ? [{ scores: periodScores, isZh }] : []),
+];
 function visibleText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(visibleText).join(" ");
@@ -88,6 +92,8 @@ describe.each(["en", "zh"] as const)("actual game page archive selection in %s",
     mocks.locale.mockResolvedValue(locale);
     const result = await Page(params(id));
     const restored = archived(result);
+    expect(findProps(result, OfficialPeriodScores)).toHaveLength(id === "0022500961" ? 0 : 1);
+    expect(findProps(result, ReportedScoreSequence)).toHaveLength(id === "0022500961" ? 1 : 0);
     expect(restored).toHaveLength(1);
     expect(restored[0]).toMatchObject({
       scores: { gameId: id, kind: "official-reported-period-scores", source: { publisher: "NBA" } },
