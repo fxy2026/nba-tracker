@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500152",
+  "gameCode": "20260421/PORSAS",
+  "gameDate": "2026-04-21",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260421/20260421_PORSAS.pdf",
+    "reportSha256": "103b575143ceb6aede7846441a3e978784918cbfdf7bb59ad50c75d193f4ee7a",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": "2026-10-03T01:27:10.897549+00:00",
+    "originalPdfCaptureTimestampStatus": "explicit-original-download-capture-record"
+  },
+  "away": {
+    "teamId": 1610612757,
+    "teamTricode": "POR",
+    "periodPoints": [
+      27,
+      30,
+      22,
+      27
+    ],
+    "reportedFinalScore": 106
+  },
+  "home": {
+    "teamId": 1610612759,
+    "teamTricode": "SAS",
+    "periodPoints": [
+      28,
+      29,
+      23,
+      23
+    ],
+    "reportedFinalScore": 103
+  }
+}

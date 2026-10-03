@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500205",
+  "gameCode": "20260513/CLEDET",
+  "gameDate": "2026-05-13",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260513/20260513_CLEDET.pdf",
+    "reportSha256": "e5d2677f55e610719941c8e64e7f5de5372450969a6a1e9d61bb267e5e2a6290",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "OT1"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      27,
+      25,
+      32,
+      19,
+      14
+    ],
+    "reportedFinalScore": 117
+  },
+  "home": {
+    "teamId": 1610612765,
+    "teamTricode": "DET",
+    "periodPoints": [
+      29,
+      31,
+      20,
+      23,
+      10
+    ],
+    "reportedFinalScore": 113
+  }
+}

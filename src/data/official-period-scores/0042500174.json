@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500174",
+  "gameCode": "20260426/LALHOU",
+  "gameDate": "2026-04-26",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_LALHOU.pdf",
+    "reportSha256": "d5300b0fdaf89060663c8b5134722d483c7fd5e56f5b473930a4f6691702e01a",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612747,
+    "teamTricode": "LAL",
+    "periodPoints": [
+      21,
+      26,
+      18,
+      31
+    ],
+    "reportedFinalScore": 96
+  },
+  "home": {
+    "teamId": 1610612745,
+    "teamTricode": "HOU",
+    "periodPoints": [
+      26,
+      30,
+      34,
+      25
+    ],
+    "reportedFinalScore": 115
+  }
+}

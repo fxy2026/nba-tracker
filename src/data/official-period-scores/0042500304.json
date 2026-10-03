@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500304",
+  "gameCode": "20260525/NYKCLE",
+  "gameDate": "2026-05-25",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260525/20260525_NYKCLE.pdf",
+    "reportSha256": "b6bfbf7375a7df91a4fdcfcf7a1af2bf890ca5c9b518fb7e8d9590bec517a9e2",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      38,
+      30,
+      30,
+      32
+    ],
+    "reportedFinalScore": 130
+  },
+  "home": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      26,
+      23,
+      22,
+      22
+    ],
+    "reportedFinalScore": 93
+  }
+}

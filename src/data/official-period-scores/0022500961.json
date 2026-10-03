@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0022500961",
+  "gameCode": "20260313/MEMDET",
+  "gameDate": "2026-03-13",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260313/20260313_MEMDET_book.pdf",
+    "reportSha256": "e798bb1ce8dd0d5e035f53af522567c8f5a038577ba3ba27be1bb3afb3afe55e",
+    "page": 1,
+    "pageCount": 19,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612763,
+    "teamTricode": "MEM",
+    "periodPoints": [
+      35,
+      26,
+      23,
+      26
+    ],
+    "reportedFinalScore": 110
+  },
+  "home": {
+    "teamId": 1610612765,
+    "teamTricode": "DET",
+    "periodPoints": [
+      37,
+      31,
+      30,
+      28
+    ],
+    "reportedFinalScore": 126
+  }
+}

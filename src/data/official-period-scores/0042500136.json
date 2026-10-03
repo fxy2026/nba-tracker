@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500136",
+  "gameCode": "20260501/CLETOR",
+  "gameDate": "2026-05-01",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260501/20260501_CLETOR.pdf",
+    "reportSha256": "1ba0978e8b3c6cca592b222f8c2461d2faf347b0b4ae6b2233c2bbd33ea6f476",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "OT1"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      32,
+      19,
+      30,
+      23,
+      6
+    ],
+    "reportedFinalScore": 110
+  },
+  "home": {
+    "teamId": 1610612761,
+    "teamTricode": "TOR",
+    "periodPoints": [
+      32,
+      29,
+      31,
+      12,
+      8
+    ],
+    "reportedFinalScore": 112
+  }
+}

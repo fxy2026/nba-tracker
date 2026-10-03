@@ -5,8 +5,8 @@ export default function OfficialPeriodScores({ scores, isZh }: { scores: PeriodS
   return (
     <section aria-label={isZh ? "官方报告每节得分" : "Official report quarter scores"}>
       <QuarterBars
-        homePeriods={scores.home.periodPoints.map((score, index) => ({ period: index + 1, periodType: "REGULAR", score }))}
-        awayPeriods={scores.away.periodPoints.map((score, index) => ({ period: index + 1, periodType: "REGULAR", score }))}
+        homePeriods={scores.home.periodPoints.map((score, index) => ({ period: index + 1, periodType: index < 4 ? "REGULAR" : "OVERTIME", score }))}
+        awayPeriods={scores.away.periodPoints.map((score, index) => ({ period: index + 1, periodType: index < 4 ? "REGULAR" : "OVERTIME", score }))}
         homeTricode={scores.home.teamTricode}
         awayTricode={scores.away.teamTricode}
       />

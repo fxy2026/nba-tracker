@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500235",
+  "gameCode": "20260512/MINSAS",
+  "gameDate": "2026-05-12",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260512/20260512_MINSAS.pdf",
+    "reportSha256": "bbe1c257040d4274d9f065da292b00b406c1378c588adb403e64bcca5f147f29",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612750,
+    "teamTricode": "MIN",
+    "periodPoints": [
+      30,
+      17,
+      26,
+      24
+    ],
+    "reportedFinalScore": 97
+  },
+  "home": {
+    "teamId": 1610612759,
+    "teamTricode": "SAS",
+    "periodPoints": [
+      34,
+      25,
+      32,
+      35
+    ],
+    "reportedFinalScore": 126
+  }
+}

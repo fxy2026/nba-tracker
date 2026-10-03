@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500135",
+  "gameCode": "20260429/TORCLE",
+  "gameDate": "2026-04-29",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_TORCLE.pdf",
+    "reportSha256": "186cbb246e7eaa9a3238c267059093c2c3668628a03b21ad615bdd697fcca17e",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612761,
+    "teamTricode": "TOR",
+    "periodPoints": [
+      34,
+      40,
+      29,
+      17
+    ],
+    "reportedFinalScore": 120
+  },
+  "home": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      38,
+      29,
+      33,
+      25
+    ],
+    "reportedFinalScore": 125
+  }
+}

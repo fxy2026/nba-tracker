@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500102",
+  "gameCode": "20260422/ORLDET",
+  "gameDate": "2026-04-22",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260422/20260422_ORLDET.pdf",
+    "reportSha256": "8d094c7fda4a79c1a4bc84e59262df48211200c56f10e2d6a793b1d8db6788c6",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "retrieval-or-reverification-ambiguous"
+  },
+  "away": {
+    "teamId": 1610612753,
+    "teamTricode": "ORL",
+    "periodPoints": [
+      21,
+      25,
+      16,
+      21
+    ],
+    "reportedFinalScore": 83
+  },
+  "home": {
+    "teamId": 1610612765,
+    "teamTricode": "DET",
+    "periodPoints": [
+      25,
+      21,
+      38,
+      14
+    ],
+    "reportedFinalScore": 98
+  }
+}

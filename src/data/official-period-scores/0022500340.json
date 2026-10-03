@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0022500340",
+  "gameCode": "20251205/DENATL",
+  "gameDate": "2025-12-05",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20251205/20251205_DENATL.pdf",
+    "reportSha256": "00a297e48175b46f060ddd72907eafe23aa297983501bf452b283f8d26945917",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612743,
+    "teamTricode": "DEN",
+    "periodPoints": [
+      23,
+      31,
+      40,
+      40
+    ],
+    "reportedFinalScore": 134
+  },
+  "home": {
+    "teamId": 1610612737,
+    "teamTricode": "ATL",
+    "periodPoints": [
+      41,
+      32,
+      30,
+      30
+    ],
+    "reportedFinalScore": 133
+  }
+}

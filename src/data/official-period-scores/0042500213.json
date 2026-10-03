@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500213",
+  "gameCode": "20260508/NYKPHI",
+  "gameDate": "2026-05-08",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260508/20260508_NYKPHI.pdf",
+    "reportSha256": "0755167ff97de169275a85c4f5bb41219bbf4700a62cda7cf16d46d6cab15b82",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      27,
+      33,
+      25,
+      23
+    ],
+    "reportedFinalScore": 108
+  },
+  "home": {
+    "teamId": 1610612755,
+    "teamTricode": "PHI",
+    "periodPoints": [
+      31,
+      21,
+      24,
+      18
+    ],
+    "reportedFinalScore": 94
+  }
+}

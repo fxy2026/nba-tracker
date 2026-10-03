@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500115",
+  "gameCode": "20260428/PHIBOS",
+  "gameDate": "2026-04-28",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PHIBOS.pdf",
+    "reportSha256": "c8bc6f40e19e3a508842eea9b63bcc235ea78332254339fd23fcebcd5a543660",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612755,
+    "teamTricode": "PHI",
+    "periodPoints": [
+      21,
+      29,
+      35,
+      28
+    ],
+    "reportedFinalScore": 113
+  },
+  "home": {
+    "teamId": 1610612738,
+    "teamTricode": "BOS",
+    "periodPoints": [
+      23,
+      34,
+      29,
+      11
+    ],
+    "reportedFinalScore": 97
+  }
+}

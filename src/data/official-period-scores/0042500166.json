@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500166",
+  "gameCode": "20260430/DENMIN",
+  "gameDate": "2026-04-30",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260430/20260430_DENMIN.pdf",
+    "reportSha256": "eec8b1b29b8f46692040f1a3a9de09d34bb5a5b49f90e1560f3fae4ac9e3cc5f",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": "2026-10-03T01:27:22.810175+00:00",
+    "originalPdfCaptureTimestampStatus": "explicit-original-download-capture-record"
+  },
+  "away": {
+    "teamId": 1610612743,
+    "teamTricode": "DEN",
+    "periodPoints": [
+      30,
+      20,
+      24,
+      24
+    ],
+    "reportedFinalScore": 98
+  },
+  "home": {
+    "teamId": 1610612750,
+    "teamTricode": "MIN",
+    "periodPoints": [
+      29,
+      28,
+      25,
+      28
+    ],
+    "reportedFinalScore": 110
+  }
+}

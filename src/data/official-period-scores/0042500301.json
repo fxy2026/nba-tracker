@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500301",
+  "gameCode": "20260519/CLENYK",
+  "gameDate": "2026-05-19",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260519/20260519_CLENYK.pdf",
+    "reportSha256": "33935e7feeb3ee16b77d46539846d7a205d875e754b68cb562c8d2885f799555",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "OT1"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      16,
+      32,
+      35,
+      18,
+      3
+    ],
+    "reportedFinalScore": 104
+  },
+  "home": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      23,
+      23,
+      23,
+      32,
+      14
+    ],
+    "reportedFinalScore": 115
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500233",
+  "gameCode": "20260508/SASMIN",
+  "gameDate": "2026-05-08",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260508/20260508_SASMIN.pdf",
+    "reportSha256": "e81df68aafc2f9864651269609336ce26f922863511a3195860c1cb2d7f98221",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612759,
+    "teamTricode": "SAS",
+    "periodPoints": [
+      23,
+      28,
+      35,
+      29
+    ],
+    "reportedFinalScore": 115
+  },
+  "home": {
+    "teamId": 1610612750,
+    "teamTricode": "MIN",
+    "periodPoints": [
+      22,
+      29,
+      28,
+      29
+    ],
+    "reportedFinalScore": 108
+  }
+}

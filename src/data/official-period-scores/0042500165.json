@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500165",
+  "gameCode": "20260427/MINDEN",
+  "gameDate": "2026-04-27",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260427/20260427_MINDEN.pdf",
+    "reportSha256": "844b8597eb983cc9d80d56e82904e3b00b380fcd4853c2e2fbb786e7bcb3ef8c",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": "2026-10-03T01:27:16.881558+00:00",
+    "originalPdfCaptureTimestampStatus": "explicit-original-download-capture-record"
+  },
+  "away": {
+    "teamId": 1610612750,
+    "teamTricode": "MIN",
+    "periodPoints": [
+      29,
+      22,
+      24,
+      38
+    ],
+    "reportedFinalScore": 113
+  },
+  "home": {
+    "teamId": 1610612743,
+    "teamTricode": "DEN",
+    "periodPoints": [
+      34,
+      26,
+      37,
+      28
+    ],
+    "reportedFinalScore": 125
+  }
+}

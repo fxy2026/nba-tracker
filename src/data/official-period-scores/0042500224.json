@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500224",
+  "gameCode": "20260511/OKCLAL",
+  "gameDate": "2026-05-11",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260511/20260511_OKCLAL.pdf",
+    "reportSha256": "8997a17fa098ec4623d9ce2512d996827c47c02ba2463a280b8271e32c8a444d",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612760,
+    "teamTricode": "OKC",
+    "periodPoints": [
+      21,
+      28,
+      31,
+      35
+    ],
+    "reportedFinalScore": 115
+  },
+  "home": {
+    "teamId": 1610612747,
+    "teamTricode": "LAL",
+    "periodPoints": [
+      26,
+      19,
+      39,
+      26
+    ],
+    "reportedFinalScore": 110
+  }
+}

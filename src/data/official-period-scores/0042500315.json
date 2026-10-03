@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500315",
+  "gameCode": "20260526/SASOKC",
+  "gameDate": "2026-05-26",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260526/20260526_SASOKC.pdf",
+    "reportSha256": "e28b68723acfa90d605ff1bc13571409136b3793562f04ce93689020c83d9a36",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612759,
+    "teamTricode": "SAS",
+    "periodPoints": [
+      27,
+      31,
+      33,
+      23
+    ],
+    "reportedFinalScore": 114
+  },
+  "home": {
+    "teamId": 1610612760,
+    "teamTricode": "OKC",
+    "periodPoints": [
+      29,
+      40,
+      32,
+      26
+    ],
+    "reportedFinalScore": 127
+  }
+}

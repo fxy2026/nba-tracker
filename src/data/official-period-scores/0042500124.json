@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500124",
+  "gameCode": "20260425/NYKATL",
+  "gameDate": "2026-04-25",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_NYKATL.pdf",
+    "reportSha256": "64727d5dffc6a907ad45e40baff090e7fce05506749143a8ba68331d972d11c6",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "retrieval-or-reverification-ambiguous"
+  },
+  "away": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      27,
+      31,
+      28,
+      28
+    ],
+    "reportedFinalScore": 114
+  },
+  "home": {
+    "teamId": 1610612737,
+    "teamTricode": "ATL",
+    "periodPoints": [
+      20,
+      24,
+      21,
+      33
+    ],
+    "reportedFinalScore": 98
+  }
+}

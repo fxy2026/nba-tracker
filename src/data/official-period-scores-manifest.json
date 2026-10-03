@@ -1,0 +1,2534 @@
+{
+  "schemaVersion": 1,
+  "games": {
+    "0022500340": {
+      "gameCode": "20251205/DENATL",
+      "gameDate": "2025-12-05",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20251205/20251205_DENATL.pdf",
+        "reportSha256": "00a297e48175b46f060ddd72907eafe23aa297983501bf452b283f8d26945917",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 134
+      },
+      "home": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 133
+      },
+      "recordSha256": "5dc6fd82b23e2813cfd51fe9effa8e60f6d4579bb592d119f4c6404461db7923"
+    },
+    "0022500961": {
+      "gameCode": "20260313/MEMDET",
+      "gameDate": "2026-03-13",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260313/20260313_MEMDET_book.pdf",
+        "reportSha256": "e798bb1ce8dd0d5e035f53af522567c8f5a038577ba3ba27be1bb3afb3afe55e",
+        "page": 1,
+        "pageCount": 19,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612763,
+        "teamTricode": "MEM",
+        "reportedFinalScore": 110
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 126
+      },
+      "recordSha256": "cbce5bea1542cd56989d114df8f81f409b8570e798526deadbdb67dce36bbe46"
+    },
+    "0042500101": {
+      "gameCode": "20260419/ORLDET",
+      "gameDate": "2026-04-19",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260419/20260419_ORLDET.pdf",
+        "reportSha256": "03d8b544159fff98a93ddf1bdcd81bb47b6d9a3730bc5f93d6b3f0cf71c058f0",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 112
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 101
+      },
+      "recordSha256": "2da62b336cad3ce479da1d4a61a9de8d06c7e002d8acd411e74538fd8b33e356"
+    },
+    "0042500102": {
+      "gameCode": "20260422/ORLDET",
+      "gameDate": "2026-04-22",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260422/20260422_ORLDET.pdf",
+        "reportSha256": "8d094c7fda4a79c1a4bc84e59262df48211200c56f10e2d6a793b1d8db6788c6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 83
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 98
+      },
+      "recordSha256": "d7c9ccd05daf4a6554123697f651c1d0c3e46df406cbee5c377843852f29f657"
+    },
+    "0042500103": {
+      "gameCode": "20260425/DETORL",
+      "gameDate": "2026-04-25",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DETORL.pdf",
+        "reportSha256": "d00022c551efd1174b93564fbfc6edac00f4658f354e6bbc0c7baa493c0e90a8",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 105
+      },
+      "home": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 113
+      },
+      "recordSha256": "2fef970bc2dc972d30d3dd4d00857143be470f113c17361582d0ec6e17a20b9f"
+    },
+    "0042500104": {
+      "gameCode": "20260427/DETORL",
+      "gameDate": "2026-04-27",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260427/20260427_DETORL.pdf",
+        "reportSha256": "e15e2ede5781f8d4edddba01c87ff87e6ea5743bd5c5207e7620918d61cf19d8",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 88
+      },
+      "home": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 94
+      },
+      "recordSha256": "74272adca8793c713b106b41d50147e5474fb4ea1a0463bf20663478c8afddb0"
+    },
+    "0042500105": {
+      "gameCode": "20260429/ORLDET",
+      "gameDate": "2026-04-29",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_ORLDET.pdf",
+        "reportSha256": "8e9e388544851b63670c04ea1d3900df61c727f7a4a94e38682c868f74cb3be7",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 109
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 116
+      },
+      "recordSha256": "277e944ea7e4828daf1caf81fee66203062a61a79cd11985da11c5f35451848e"
+    },
+    "0042500106": {
+      "gameCode": "20260501/DETORL",
+      "gameDate": "2026-05-01",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260501/20260501_DETORL.pdf",
+        "reportSha256": "67fe5d6cfdc658013e51a120760c82435cde936a6ee3afe1d580d98cdd706687",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 93
+      },
+      "home": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 79
+      },
+      "recordSha256": "1499ea238bb22ea84cbd5a941d621d0f0d47c3b26ac24c3c7b87b28d97b71edc"
+    },
+    "0042500107": {
+      "gameCode": "20260503/ORLDET",
+      "gameDate": "2026-05-03",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260503/20260503_ORLDET.pdf",
+        "reportSha256": "012754a49b82c323afc58c397a4cccb85a20313a3e202fc55373a9c682c3edf6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612753,
+        "teamTricode": "ORL",
+        "reportedFinalScore": 94
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 116
+      },
+      "recordSha256": "65ea94e0858eaf4d4e5a598245196a77548cdd08bcf1197d30ec6db2f59caddf"
+    },
+    "0042500111": {
+      "gameCode": "20260419/PHIBOS",
+      "gameDate": "2026-04-19",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260419/20260419_PHIBOS.pdf",
+        "reportSha256": "b7c9ce871283f1063a124f337509c8c8857394d000a6cca750774c6b09a54f24",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 91
+      },
+      "home": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 123
+      },
+      "recordSha256": "aca373d0607c2ae63767cd68f28ea74f54135617f24f8dcb6af924c36fd50eae"
+    },
+    "0042500112": {
+      "gameCode": "20260421/PHIBOS",
+      "gameDate": "2026-04-21",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260421/20260421_PHIBOS.pdf",
+        "reportSha256": "01ea2bf886e349658f121baa12340cc462f6fb9ab1de070cebf614e9ae7dc2f0",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 111
+      },
+      "home": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 97
+      },
+      "recordSha256": "2155d16e707f0865bd7ca28e3d8e97e9e7b05006a486ce7480426a8469d56627"
+    },
+    "0042500113": {
+      "gameCode": "20260424/BOSPHI",
+      "gameDate": "2026-04-24",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260424/20260424_BOSPHI.pdf",
+        "reportSha256": "756d69b94867dc7c3c70c2fe0cfa4089b0a93e671ba0d537728ee2149c005721",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 108
+      },
+      "home": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 100
+      },
+      "recordSha256": "369653f86b234ec1c23cb411dbcb2a020ba6fd4a0bff84db0c070c79f82c9516"
+    },
+    "0042500114": {
+      "gameCode": "20260426/BOSPHI",
+      "gameDate": "2026-04-26",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_BOSPHI.pdf",
+        "reportSha256": "f6ea634fb5d4deb9082388a5da54da65a2bfb2ec3b7b5323bd011d224d021ade",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 128
+      },
+      "home": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 96
+      },
+      "recordSha256": "dd18481c2413910441fd4ec7480e43ac215da7dbe6f552b9f4501b70a0c6e117"
+    },
+    "0042500115": {
+      "gameCode": "20260428/PHIBOS",
+      "gameDate": "2026-04-28",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PHIBOS.pdf",
+        "reportSha256": "c8bc6f40e19e3a508842eea9b63bcc235ea78332254339fd23fcebcd5a543660",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 113
+      },
+      "home": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 97
+      },
+      "recordSha256": "ff0d38f4e953e17d0ef11cde5f0db20a73b2c7b858c352ac4db6f5cb34959165"
+    },
+    "0042500116": {
+      "gameCode": "20260430/BOSPHI",
+      "gameDate": "2026-04-30",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260430/20260430_BOSPHI.pdf",
+        "reportSha256": "14b260d18ba6be42adfe4c1c6fe9f466c576aa1d5c1d4a1e60672d95725b7b22",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 93
+      },
+      "home": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 106
+      },
+      "recordSha256": "ede511b960ce99eb2fa8c39818507e1c2d000fc0fe1676ad8a6803c4e0bf86cd"
+    },
+    "0042500117": {
+      "gameCode": "20260502/PHIBOS",
+      "gameDate": "2026-05-02",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260502/20260502_PHIBOS.pdf",
+        "reportSha256": "f983188ae911cd1d9d41ccaea9bdd507d4e8be7e10307735851bec312895afda",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 109
+      },
+      "home": {
+        "teamId": 1610612738,
+        "teamTricode": "BOS",
+        "reportedFinalScore": 100
+      },
+      "recordSha256": "4867eff42242e79a5431f5c1096d1e12cdb8c498c0cf505524c9c5c8375405da"
+    },
+    "0042500121": {
+      "gameCode": "20260418/ATLNYK",
+      "gameDate": "2026-04-18",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260418/20260418_ATLNYK.pdf",
+        "reportSha256": "083fe02dd9c09d30b4a616885bb9cd7f236e3cc8d3d69be2bb8e91457e427deb",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 102
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 113
+      },
+      "recordSha256": "30c897b2287b7477a22df307cff31c252e9624747bf07b7a69fa0284c8bdd81f"
+    },
+    "0042500122": {
+      "gameCode": "20260420/ATLNYK",
+      "gameDate": "2026-04-20",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260420/20260420_ATLNYK.pdf",
+        "reportSha256": "f690ae7e085348a4dbb5773322b0001dc9e7aa842be050a835e3a084cbe543f8",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 107
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 106
+      },
+      "recordSha256": "1d9c7f4ce84f5e62a56da38e4c01676e7cd9451199a557424381dba0be7ac8b5"
+    },
+    "0042500123": {
+      "gameCode": "20260423/NYKATL",
+      "gameDate": "2026-04-23",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260423/20260423_NYKATL.pdf",
+        "reportSha256": "4e1f21c7b53f76018746e70dbf6229b16b24f1883f84da751a1d0c52e3267bdf",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 108
+      },
+      "home": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 109
+      },
+      "recordSha256": "513de2342a44ae6042c01429c403b5e557ec6a710ecc453fd97b4b54267f7ed3"
+    },
+    "0042500124": {
+      "gameCode": "20260425/NYKATL",
+      "gameDate": "2026-04-25",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_NYKATL.pdf",
+        "reportSha256": "64727d5dffc6a907ad45e40baff090e7fce05506749143a8ba68331d972d11c6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 114
+      },
+      "home": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 98
+      },
+      "recordSha256": "461337d3e0d89c7471e427ad2dde4f0591c1926c0ffb6f39c8b8ab13ab528c12"
+    },
+    "0042500125": {
+      "gameCode": "20260428/ATLNYK",
+      "gameDate": "2026-04-28",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_ATLNYK.pdf",
+        "reportSha256": "142a149e34eaeeaf9668e6b19507e02bac32391faa61703ab7df3b279de82f58",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 97
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 126
+      },
+      "recordSha256": "c0364bc25a6311c809c851e7c9a41071381e14eda6338cb5b49c78ce5a570dc4"
+    },
+    "0042500126": {
+      "gameCode": "20260430/NYKATL",
+      "gameDate": "2026-04-30",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260430/20260430_NYKATL.pdf",
+        "reportSha256": "6adfca283a0ad1bbf33e0188e09da056ad3134ff18ba0378a0245dd9ca85ebc9",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 140
+      },
+      "home": {
+        "teamId": 1610612737,
+        "teamTricode": "ATL",
+        "reportedFinalScore": 89
+      },
+      "recordSha256": "30e4769e64b9d5186489995dcdb5f58e5dc18c6d41a0c80420bd9258a8b0de7b"
+    },
+    "0042500131": {
+      "gameCode": "20260418/TORCLE",
+      "gameDate": "2026-04-18",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260418/20260418_TORCLE.pdf",
+        "reportSha256": "a623623fd66bcffa42c4c585323446dca6f282069f56845f4e50a829e3871cd6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 113
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 126
+      },
+      "recordSha256": "02c2bac5128f01d4b76905fad13c59a4765d7f5b73c8d399039fa7dc3a07666b"
+    },
+    "0042500132": {
+      "gameCode": "20260420/TORCLE",
+      "gameDate": "2026-04-20",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260420/20260420_TORCLE.pdf",
+        "reportSha256": "586e9f5a4708455b6234a8bfc83522b64ec69827ffc2b058c62ff6af0d18c0b0",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 105
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 115
+      },
+      "recordSha256": "6ca6ee5b1a62ce4b2cfed49c8fdba9aa8bcfbdd524d3fef54d84e1fa06860d66"
+    },
+    "0042500133": {
+      "gameCode": "20260423/CLETOR",
+      "gameDate": "2026-04-23",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260423/20260423_CLETOR.pdf",
+        "reportSha256": "7a5fac9f013ec963cbfddbb9dbc6e34110c3f0ee3d56df3140e8da935b9000c1",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 104
+      },
+      "home": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 126
+      },
+      "recordSha256": "c0eec211014408ab371f3c17743ee9328efb8e64f2dc3f1226384ae69cec9ae0"
+    },
+    "0042500134": {
+      "gameCode": "20260426/CLETOR",
+      "gameDate": "2026-04-26",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_CLETOR.pdf",
+        "reportSha256": "9466e623c58d025a8e30a8a1faddd324039b9a6d07b7e25c6d650b3a44142500",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 89
+      },
+      "home": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 93
+      },
+      "recordSha256": "a68c56453d11380873d8cd88dd1fa7051c09c5120bb3ab126675ce1459b11222"
+    },
+    "0042500135": {
+      "gameCode": "20260429/TORCLE",
+      "gameDate": "2026-04-29",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_TORCLE.pdf",
+        "reportSha256": "186cbb246e7eaa9a3238c267059093c2c3668628a03b21ad615bdd697fcca17e",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 120
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 125
+      },
+      "recordSha256": "212df8532a591dfe65553537fa628e628e3687e5b2369087f6f9a1516613212f"
+    },
+    "0042500136": {
+      "gameCode": "20260501/CLETOR",
+      "gameDate": "2026-05-01",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260501/20260501_CLETOR.pdf",
+        "reportSha256": "1ba0978e8b3c6cca592b222f8c2461d2faf347b0b4ae6b2233c2bbd33ea6f476",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "OT1"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 110
+      },
+      "home": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 112
+      },
+      "recordSha256": "55274ba6d5b79220b8daa8d18677d32fedf89d6f06680639b86d3255ebdb927b"
+    },
+    "0042500137": {
+      "gameCode": "20260503/TORCLE",
+      "gameDate": "2026-05-03",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260503/20260503_TORCLE.pdf",
+        "reportSha256": "410555bbda5e852300098b792599bf2906d9eb524a336c5eb54ca710c40089e1",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612761,
+        "teamTricode": "TOR",
+        "reportedFinalScore": 102
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 114
+      },
+      "recordSha256": "ee9ff2fb049b5305702b22a24b6aec2b38eb222bc99bd384b59ceb4686f27436"
+    },
+    "0042500141": {
+      "gameCode": "20260419/PHXOKC",
+      "gameDate": "2026-04-19",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260419/20260419_PHXOKC.pdf",
+        "reportSha256": "d854c09bed5cd7fe48a0cc74b7151b1514186367b887c4502414b842c82f5506",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612756,
+        "teamTricode": "PHX",
+        "reportedFinalScore": 84
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 119
+      },
+      "recordSha256": "dea08843bcea6dd4126cf3772df17fdfbe5c940f132bc5dfc9ed87c1cf5215e3"
+    },
+    "0042500142": {
+      "gameCode": "20260422/PHXOKC",
+      "gameDate": "2026-04-22",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260422/20260422_PHXOKC.pdf",
+        "reportSha256": "1e6f8437dd30532be79abf2c176fac0ff5518275146f75ef9ef411f488a4d796",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612756,
+        "teamTricode": "PHX",
+        "reportedFinalScore": 107
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 120
+      },
+      "recordSha256": "92edef8bb4bf0e490ecf84838ef5fe2368f3c90817a523ec7eee04269b928e87"
+    },
+    "0042500143": {
+      "gameCode": "20260425/OKCPHX",
+      "gameDate": "2026-04-25",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_OKCPHX.pdf",
+        "reportSha256": "2c5e0aee6eff278ee4728c6a8dee9417427b9665304dfa51051cecfaeb5ff45c",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 121
+      },
+      "home": {
+        "teamId": 1610612756,
+        "teamTricode": "PHX",
+        "reportedFinalScore": 109
+      },
+      "recordSha256": "b4f6c93270d5da741385c7c2d422aa746dcca6e7e3ae5e6ff843b53b10f98fa5"
+    },
+    "0042500144": {
+      "gameCode": "20260427/OKCPHX",
+      "gameDate": "2026-04-27",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260427/20260427_OKCPHX.pdf",
+        "reportSha256": "e321d2368e0144af8532f41f4854acc38ca8c3ad94352bcb7adf5312bb727fce",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 131
+      },
+      "home": {
+        "teamId": 1610612756,
+        "teamTricode": "PHX",
+        "reportedFinalScore": 122
+      },
+      "recordSha256": "d236afadf4f640564136f44ff2d75ee406c7d6edb9bb14bff4f3283b7b967cb2"
+    },
+    "0042500151": {
+      "gameCode": "20260419/PORSAS",
+      "gameDate": "2026-04-19",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260419/20260419_PORSAS.pdf",
+        "reportSha256": "4d4fdf4488c2dd6ed63ef23042c69b0a9c542bf163439cf45e14946af96cd514",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612757,
+        "teamTricode": "POR",
+        "reportedFinalScore": 98
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 111
+      },
+      "recordSha256": "f70d93aa9deb0bae44448329bfc924093d00fd87d323a5d36dc6cb7eceba1ac5"
+    },
+    "0042500152": {
+      "gameCode": "20260421/PORSAS",
+      "gameDate": "2026-04-21",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260421/20260421_PORSAS.pdf",
+        "reportSha256": "103b575143ceb6aede7846441a3e978784918cbfdf7bb59ad50c75d193f4ee7a",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612757,
+        "teamTricode": "POR",
+        "reportedFinalScore": 106
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 103
+      },
+      "recordSha256": "bf1db3c15b5bca4a92004c91970664cd544cf5a5df36e5f754af393780b2310a"
+    },
+    "0042500153": {
+      "gameCode": "20260424/SASPOR",
+      "gameDate": "2026-04-24",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260424/20260424_SASPOR.pdf",
+        "reportSha256": "1929afa996384de68db421d95327a87cc9445d3e77bc23d093e76426e9ff2269",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 120
+      },
+      "home": {
+        "teamId": 1610612757,
+        "teamTricode": "POR",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "407e467d0c2285049ffddfdfad47db8c7673208b4d3d4429fb13dd39f74bb6e7"
+    },
+    "0042500154": {
+      "gameCode": "20260426/SASPOR",
+      "gameDate": "2026-04-26",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_SASPOR.pdf",
+        "reportSha256": "1726d393c4aa462dfec5f7e680231b1200609d81e0109f1e76cccb72d84529aa",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 114
+      },
+      "home": {
+        "teamId": 1610612757,
+        "teamTricode": "POR",
+        "reportedFinalScore": 93
+      },
+      "recordSha256": "d865dd5499e195b49283fb8183e4c135a96e91cd5f3aa1f61dde21ac2e1ac089"
+    },
+    "0042500155": {
+      "gameCode": "20260428/PORSAS",
+      "gameDate": "2026-04-28",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_PORSAS.pdf",
+        "reportSha256": "00d3fb660ff38ccb2f6f019f787e1fbf41ef3e966600e735aeb6e7c278322a7b",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612757,
+        "teamTricode": "POR",
+        "reportedFinalScore": 95
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 114
+      },
+      "recordSha256": "6e5392b35411c1f00d12986cf015af3b404bcb0a61a8fbc4e9c31ac119c70a95"
+    },
+    "0042500161": {
+      "gameCode": "20260418/MINDEN",
+      "gameDate": "2026-04-18",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260418/20260418_MINDEN.pdf",
+        "reportSha256": "f63ccfc3e7d9975dfbb8bdb841776c0cda93b25fee551ac7b9f2a5264ba6ab93",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 105
+      },
+      "home": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 116
+      },
+      "recordSha256": "837cce3ddce30faf272453581709c9cbc51a3c275231b9272abf0d2185ddef86"
+    },
+    "0042500162": {
+      "gameCode": "20260420/MINDEN",
+      "gameDate": "2026-04-20",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260420/20260420_MINDEN.pdf",
+        "reportSha256": "92894363693e8eba845214bc4e7ec4c13bb2a1124e4bbda24649f86f04fcc45f",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 119
+      },
+      "home": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 114
+      },
+      "recordSha256": "ed85fa82ca447fd6d26023503c39454ed7db96109cda1ef0898eaa16a7ada3c6"
+    },
+    "0042500163": {
+      "gameCode": "20260423/DENMIN",
+      "gameDate": "2026-04-23",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260423/20260423_DENMIN.pdf",
+        "reportSha256": "749d89e3c65eaec69d3c9d454443690ea4c71cea15f6e0683ff3fd2d65b97d96",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 96
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 113
+      },
+      "recordSha256": "f857ef3545b31b03e8970f3e9d2cfd6ed749b39fbf83c42daf5b2fb37acce18d"
+    },
+    "0042500164": {
+      "gameCode": "20260425/DENMIN",
+      "gameDate": "2026-04-25",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_DENMIN.pdf",
+        "reportSha256": "419dd85d21a450f06b6b9c6201bd0b4a0fdb7cbd5c3c2e7236c3e41f9a404fb7",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 96
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 112
+      },
+      "recordSha256": "b7792ad2d3017758985b69513e9c8e70c1352e1cc5e50f4bce237c6307d3349e"
+    },
+    "0042500165": {
+      "gameCode": "20260427/MINDEN",
+      "gameDate": "2026-04-27",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260427/20260427_MINDEN.pdf",
+        "reportSha256": "844b8597eb983cc9d80d56e82904e3b00b380fcd4853c2e2fbb786e7bcb3ef8c",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 113
+      },
+      "home": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 125
+      },
+      "recordSha256": "5356e54ee93ebd4afddf1319176a3f1b037f69eefb63e9c2486fd9fd28edd6e6"
+    },
+    "0042500166": {
+      "gameCode": "20260430/DENMIN",
+      "gameDate": "2026-04-30",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260430/20260430_DENMIN.pdf",
+        "reportSha256": "eec8b1b29b8f46692040f1a3a9de09d34bb5a5b49f90e1560f3fae4ac9e3cc5f",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612743,
+        "teamTricode": "DEN",
+        "reportedFinalScore": 98
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 110
+      },
+      "recordSha256": "933bc72610234d8e22ef9a4b023b00a7fa4c48a5527bce1b056b85d6839e3ec5"
+    },
+    "0042500171": {
+      "gameCode": "20260418/HOULAL",
+      "gameDate": "2026-04-18",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260418/20260418_HOULAL.pdf",
+        "reportSha256": "3a47901170802d7b5d6e5e286af6332cd98e97c88320605cb4bd3096628fe3c4",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 98
+      },
+      "home": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 107
+      },
+      "recordSha256": "961d2b903828f1883e502a38e443443468c79a1c6c995651f8836ad2ec298e51"
+    },
+    "0042500172": {
+      "gameCode": "20260421/HOULAL",
+      "gameDate": "2026-04-21",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260421/20260421_HOULAL.pdf",
+        "reportSha256": "7cc53ae8c2fc55f67400a1d2dfed6effad7192356ae9c09008bc1cdaf8b4ee7d",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 94
+      },
+      "home": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 101
+      },
+      "recordSha256": "baa9ba20cf02c5258ee5db9aacaad538665bedadd78bead4632914ad553e41d1"
+    },
+    "0042500173": {
+      "gameCode": "20260424/LALHOU",
+      "gameDate": "2026-04-24",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260424/20260424_LALHOU.pdf",
+        "reportSha256": "c1daf7edf233f2a6d61c3c6ff22cc482ca56a9d227fc5ddb0bf152f67f3ba7b2",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "OT1"
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 112
+      },
+      "home": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "68ffddbdccac602988108cb56446be95f1d8baed372a327ef4939cf086cdfcaa"
+    },
+    "0042500174": {
+      "gameCode": "20260426/LALHOU",
+      "gameDate": "2026-04-26",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260426/20260426_LALHOU.pdf",
+        "reportSha256": "d5300b0fdaf89060663c8b5134722d483c7fd5e56f5b473930a4f6691702e01a",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 96
+      },
+      "home": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 115
+      },
+      "recordSha256": "9ad07d0e3915502513527fb93dd27560250f0ab536230070d1874daf2ea59090"
+    },
+    "0042500175": {
+      "gameCode": "20260429/HOULAL",
+      "gameDate": "2026-04-29",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_HOULAL.pdf",
+        "reportSha256": "80b8138dc7024f22fc9ab7255c3ea4d47372b4a657a98a4b45f1d7710eb59419",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 99
+      },
+      "home": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 93
+      },
+      "recordSha256": "c568ef96b3f66533957e7cedc5ae7a85b33f0dfd8e8a31ad9a3c3aa1cd722f3a"
+    },
+    "0042500176": {
+      "gameCode": "20260501/LALHOU",
+      "gameDate": "2026-05-01",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260501/20260501_LALHOU.pdf",
+        "reportSha256": "8eedc4042d834434dc3b3cbc6322958445c8a8c345da1f8a2354a0fa7c6025e4",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 98
+      },
+      "home": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "reportedFinalScore": 78
+      },
+      "recordSha256": "61672d3f81ef585d1f0d286c97fb02d9c0fe0e33c75fa0593c0be1ce6529151b"
+    },
+    "0042500201": {
+      "gameCode": "20260505/CLEDET",
+      "gameDate": "2026-05-05",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260505/20260505_CLEDET.pdf",
+        "reportSha256": "585f9f6d4435d3d7c9f249d8d5e1490aa3b2875e37995bfb389a97a3660a25f6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 101
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 111
+      },
+      "recordSha256": "f93c1c8c669448336b98b2e8355cfc60975c9d017509d93c259b6e12f7e615c3"
+    },
+    "0042500202": {
+      "gameCode": "20260507/CLEDET",
+      "gameDate": "2026-05-07",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260507/20260507_CLEDET.pdf",
+        "reportSha256": "1666d63c35fd5e2ed4081c1ed89a328268a5f7ab50fe01bcfc1ee6dbb7ff38d6",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 97
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 107
+      },
+      "recordSha256": "82cb8491741055b881b97b17c0c0e5b8a50aaee39c08247edeb19c14caa34d6b"
+    },
+    "0042500203": {
+      "gameCode": "20260509/DETCLE",
+      "gameDate": "2026-05-09",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260509/20260509_DETCLE.pdf",
+        "reportSha256": "78fa522d18c27a6f4fe188344949e0f286608cf167521541c598030497254c99",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 109
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 116
+      },
+      "recordSha256": "ce8b88da75d9646e5a35ef72417a6f0d3cc59b470a7f60bf851ba5138785d49e"
+    },
+    "0042500204": {
+      "gameCode": "20260511/DETCLE",
+      "gameDate": "2026-05-11",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260511/20260511_DETCLE.pdf",
+        "reportSha256": "dda9d45416688bdfaa8f91f10617b4aa5b577e511b084650518fcc01271601a9",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 103
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 112
+      },
+      "recordSha256": "d5cc2ad011759cbeb90d9722d224fa6d03f255d0790e145e5e54513248e894e3"
+    },
+    "0042500205": {
+      "gameCode": "20260513/CLEDET",
+      "gameDate": "2026-05-13",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260513/20260513_CLEDET.pdf",
+        "reportSha256": "e5d2677f55e610719941c8e64e7f5de5372450969a6a1e9d61bb267e5e2a6290",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "OT1"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 117
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 113
+      },
+      "recordSha256": "38ac833c61991ba00029c56cbdf9e2771d9b7fd27ea2bde34d6e0e3f74ddc725"
+    },
+    "0042500206": {
+      "gameCode": "20260515/DETCLE",
+      "gameDate": "2026-05-15",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260515/20260515_DETCLE.pdf",
+        "reportSha256": "d57c0d564d263f5a244107db1b5e9d108668f468986eddb3ba9b671fcde54d25",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 115
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 94
+      },
+      "recordSha256": "6da7784c53b80977bfbd012b085280a4cf746ad3e81eb40ff70309adeb9a3a30"
+    },
+    "0042500207": {
+      "gameCode": "20260517/CLEDET",
+      "gameDate": "2026-05-17",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260517/20260517_CLEDET.pdf",
+        "reportSha256": "bea243ad3210aad99277a42845ab0a9c0daadb08bc20d79f609af85081286641",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 125
+      },
+      "home": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "reportedFinalScore": 94
+      },
+      "recordSha256": "f133806ea46db4e548354ff11c666cb4bf7477b997df851c51e6b5c598f3754c"
+    },
+    "0042500211": {
+      "gameCode": "20260504/PHINYK",
+      "gameDate": "2026-05-04",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260504/20260504_PHINYK.pdf",
+        "reportSha256": "7f49105b4e8c47e61c759114ecc93e2bffceeff8d2ca527d3dc88709fe72cef5",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 98
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 137
+      },
+      "recordSha256": "4b2e2c7485dbc3a82ba720cc67248fe86551e8f18a187f6d75c18cbf0fe7921c"
+    },
+    "0042500212": {
+      "gameCode": "20260506/PHINYK",
+      "gameDate": "2026-05-06",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260506/20260506_PHINYK.pdf",
+        "reportSha256": "4b65b4de3e9bfb80842b7a319d5d2b8ad3c81f0b1fe2ff553496545c7a8c9233",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 102
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "643f14c8b2b621b20db886c5aeaa2190b49cb6c01ae45b85a63a58b5980537b6"
+    },
+    "0042500213": {
+      "gameCode": "20260508/NYKPHI",
+      "gameDate": "2026-05-08",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260508/20260508_NYKPHI.pdf",
+        "reportSha256": "0755167ff97de169275a85c4f5bb41219bbf4700a62cda7cf16d46d6cab15b82",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 108
+      },
+      "home": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 94
+      },
+      "recordSha256": "674ef21e8b30ff50150186526eac4835bf22f59e3468f905aa3c517da696fa3c"
+    },
+    "0042500214": {
+      "gameCode": "20260510/NYKPHI",
+      "gameDate": "2026-05-10",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260510/20260510_NYKPHI.pdf",
+        "reportSha256": "3e6b618d3aa7ca014f85d77c0280d956966a9ef26b77aa0c328d6198ef278548",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 144
+      },
+      "home": {
+        "teamId": 1610612755,
+        "teamTricode": "PHI",
+        "reportedFinalScore": 114
+      },
+      "recordSha256": "90d64e79447420b09a92d267c6c2013d715d35abb4237fcb6303f066fc432be5"
+    },
+    "0042500221": {
+      "gameCode": "20260505/LALOKC",
+      "gameDate": "2026-05-05",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260505/20260505_LALOKC.pdf",
+        "reportSha256": "8a99c071aaf0dca0e9821e031c8746a69cf132f4f62a06f38d822f5da6f56df9",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 90
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "a5a8394b1e6dde5f2757406193c91c7a509aba379a069da8264a9031bd744e92"
+    },
+    "0042500222": {
+      "gameCode": "20260507/LALOKC",
+      "gameDate": "2026-05-07",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260507/20260507_LALOKC.pdf",
+        "reportSha256": "6fc9b4b8873d672d5d39c4145c6df7cfdd0741bdbfa38d11c426c3dd6483e4e3",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 107
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 125
+      },
+      "recordSha256": "e2ef5fdd0fc162faab0ea20e9679b674318947f27fec4315359fbe7240539828"
+    },
+    "0042500223": {
+      "gameCode": "20260509/OKCLAL",
+      "gameDate": "2026-05-09",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260509/20260509_OKCLAL.pdf",
+        "reportSha256": "6aff9547406e782f1c88836bd191f8e01356f177fac6cc8f828a66863387795e",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 131
+      },
+      "home": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "c4f5508179f1d066f53ede72e1a2e4ffad4aad897f862d769253bb6902a7f38f"
+    },
+    "0042500224": {
+      "gameCode": "20260511/OKCLAL",
+      "gameDate": "2026-05-11",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260511/20260511_OKCLAL.pdf",
+        "reportSha256": "8997a17fa098ec4623d9ce2512d996827c47c02ba2463a280b8271e32c8a444d",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 115
+      },
+      "home": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "reportedFinalScore": 110
+      },
+      "recordSha256": "b9c583799a328660a7b34b05b13306edb5f3afcd9e1843674dd86f6db0104cff"
+    },
+    "0042500231": {
+      "gameCode": "20260504/MINSAS",
+      "gameDate": "2026-05-04",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260504/20260504_MINSAS.pdf",
+        "reportSha256": "ce1506b399a7a39172fa4bd75106c1366b8927e4d117df911660b1a191d59923",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 104
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 102
+      },
+      "recordSha256": "f4957ae093dcbbbfd2f78b6426076baaafc4c96f7f30dfe5e3f8b9b2edef5762"
+    },
+    "0042500232": {
+      "gameCode": "20260506/MINSAS",
+      "gameDate": "2026-05-06",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260506/20260506_MINSAS.pdf",
+        "reportSha256": "db5261c210ef2566218a3e771b21d86c64fd18aa3c7701f40dd1183baa9a92b3",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 95
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 133
+      },
+      "recordSha256": "78fb77cb6053aed032f9e3201c658270249d10a93c86d90e7814f9bc36f328b2"
+    },
+    "0042500233": {
+      "gameCode": "20260508/SASMIN",
+      "gameDate": "2026-05-08",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260508/20260508_SASMIN.pdf",
+        "reportSha256": "e81df68aafc2f9864651269609336ce26f922863511a3195860c1cb2d7f98221",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 115
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "ea815ae7a2f52baedcffa0a74dfd06e92eeee6d9584550ed96e782473e9b0e4e"
+    },
+    "0042500234": {
+      "gameCode": "20260510/SASMIN",
+      "gameDate": "2026-05-10",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260510/20260510_SASMIN.pdf",
+        "reportSha256": "adfdd76ae219fb05454ec462565b8bc5511b523c8ab1873eef006abc74fbe5b7",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 109
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 114
+      },
+      "recordSha256": "c6193390b53e1b07f87dd1ac58fe560b6fe8aa2e31f147f1631d0c5ab081f5ad"
+    },
+    "0042500235": {
+      "gameCode": "20260512/MINSAS",
+      "gameDate": "2026-05-12",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260512/20260512_MINSAS.pdf",
+        "reportSha256": "bbe1c257040d4274d9f065da292b00b406c1378c588adb403e64bcca5f147f29",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 97
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 126
+      },
+      "recordSha256": "0f317b13fc95cfe6c62ce2540d1dfeb4e24ac860c88b49d367bf2511b0ebdd86"
+    },
+    "0042500236": {
+      "gameCode": "20260515/SASMIN",
+      "gameDate": "2026-05-15",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260515/20260515_SASMIN.pdf",
+        "reportSha256": "14d153bd5dc07d743b44462769604d2e824b24c01b4791709d28e0c4b7e861e2",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 139
+      },
+      "home": {
+        "teamId": 1610612750,
+        "teamTricode": "MIN",
+        "reportedFinalScore": 109
+      },
+      "recordSha256": "093a2d73d63688a000a90a192d2334d0ecaf6deb96dbab93b2d0f3cd7f0dc3f7"
+    },
+    "0042500301": {
+      "gameCode": "20260519/CLENYK",
+      "gameDate": "2026-05-19",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260519/20260519_CLENYK.pdf",
+        "reportSha256": "33935e7feeb3ee16b77d46539846d7a205d875e754b68cb562c8d2885f799555",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "OT1"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 104
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 115
+      },
+      "recordSha256": "26e7ea471b7f3f9938b7c9943410892941670d0449451dd17a8a0f220e3629d1"
+    },
+    "0042500302": {
+      "gameCode": "20260521/CLENYK",
+      "gameDate": "2026-05-21",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260521/20260521_CLENYK.pdf",
+        "reportSha256": "91e7d8761fdaea1a188771ef8903a7b9a20ede8a34402cf9c91437fb7d1fa139",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 93
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 109
+      },
+      "recordSha256": "b7902b83f9bea964da37f31c18ca9c9d6e5a48f951ffff59970d1e40db78339f"
+    },
+    "0042500303": {
+      "gameCode": "20260523/NYKCLE",
+      "gameDate": "2026-05-23",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260523/20260523_NYKCLE.pdf",
+        "reportSha256": "dc9744aae47434bf2b5a069838318506d9f965295577985afd9ecd6bbc6e49be",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 121
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "91459382a0a29dfbafde84cc08dca4e376ca9446df3aa38d28ffa0450e44199c"
+    },
+    "0042500304": {
+      "gameCode": "20260525/NYKCLE",
+      "gameDate": "2026-05-25",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260525/20260525_NYKCLE.pdf",
+        "reportSha256": "b6bfbf7375a7df91a4fdcfcf7a1af2bf890ca5c9b518fb7e8d9590bec517a9e2",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 130
+      },
+      "home": {
+        "teamId": 1610612739,
+        "teamTricode": "CLE",
+        "reportedFinalScore": 93
+      },
+      "recordSha256": "84c43ce9eb08c94c05ace0ca132e27044f84e7da09d7aac48e5622f0ba4d34e1"
+    },
+    "0042500311": {
+      "gameCode": "20260518/SASOKC",
+      "gameDate": "2026-05-18",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260518/20260518_SASOKC.pdf",
+        "reportSha256": "119785fdcc5eb3c7985d3ee1e2d2ee30c6bbbb0b144506bef76ef007f34a2b0a",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "OT1",
+          "OT2"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 122
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 115
+      },
+      "recordSha256": "fe89608edce9de029b73c8868aefb39d6cae99efe18d5eaf37f305239588fccf"
+    },
+    "0042500312": {
+      "gameCode": "20260520/SASOKC",
+      "gameDate": "2026-05-20",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260520/20260520_SASOKC.pdf",
+        "reportSha256": "ae5f3573435ba52244c898426159774c98305e4397d8e845b716be04a378a73e",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 113
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 122
+      },
+      "recordSha256": "fb3792f2647b77e74a0b971982ece643dc61eb82ce803cd62982f7fec6464f43"
+    },
+    "0042500313": {
+      "gameCode": "20260522/OKCSAS",
+      "gameDate": "2026-05-22",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260522/20260522_OKCSAS.pdf",
+        "reportSha256": "6b773671d391dcdad16069f71b4addb50c960dd97499626d6d383e85f2327feb",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 123
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 108
+      },
+      "recordSha256": "e9f640137af95febf542faaf092a475c24423f6360154bd21f3d7fddb16e56be"
+    },
+    "0042500314": {
+      "gameCode": "20260524/OKCSAS",
+      "gameDate": "2026-05-24",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260524/20260524_OKCSAS.pdf",
+        "reportSha256": "1c29bceb373b558071bf9cf8d4cf911516b79a294bd45d6260f08cca5bab8385",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 82
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 103
+      },
+      "recordSha256": "905097437903f9dba4d860541d0b1014e166b895f3d900aa71d2eedff3934624"
+    },
+    "0042500315": {
+      "gameCode": "20260526/SASOKC",
+      "gameDate": "2026-05-26",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260526/20260526_SASOKC.pdf",
+        "reportSha256": "e28b68723acfa90d605ff1bc13571409136b3793562f04ce93689020c83d9a36",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 114
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 127
+      },
+      "recordSha256": "f3bbb2770434f88a0f414cbca247ab954d82f7ea2d441601ac05011951130076"
+    },
+    "0042500316": {
+      "gameCode": "20260528/OKCSAS",
+      "gameDate": "2026-05-28",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260528/20260528_OKCSAS.pdf",
+        "reportSha256": "e15dfb72ac970cc05d58e806a1444a81e55903205a9900d5b0ca23b8d73ca55f",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 91
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 118
+      },
+      "recordSha256": "a54b03feeba01d1c034f6f66cab9a349c101d999ca152412da7871090f88eaf2"
+    },
+    "0042500317": {
+      "gameCode": "20260530/SASOKC",
+      "gameDate": "2026-05-30",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260530/20260530_SASOKC.pdf",
+        "reportSha256": "333d86bd772d7d03f139536306f8e77f2913866d154d778bf598f6a8e9d5878e",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 111
+      },
+      "home": {
+        "teamId": 1610612760,
+        "teamTricode": "OKC",
+        "reportedFinalScore": 103
+      },
+      "recordSha256": "587a96072ad8e25df23ce70c000225f5ebf4ef8360834132e174e90ef736384d"
+    },
+    "0042500401": {
+      "gameCode": "20260603/NYKSAS",
+      "gameDate": "2026-06-03",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260603/20260603_NYKSAS.pdf",
+        "reportSha256": "e7444a30715d765f9481dae2246321f41001819fa877384f893b2e95ca2be2db",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 105
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 95
+      },
+      "recordSha256": "460924c8d23e36bbefc0da6f76078076967e85a8cd2a2e047a2dbb165dc1950f"
+    },
+    "0042500402": {
+      "gameCode": "20260605/NYKSAS",
+      "gameDate": "2026-06-05",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260605/20260605_NYKSAS.pdf",
+        "reportSha256": "fd3044b322edc0a558edf53ac0d041752ba81fbcc62f520f4488c0d983a754f1",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 105
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 104
+      },
+      "recordSha256": "7d1c44301e9133f8a76211b3e84a53b7f4723a07657665e6dba244ff4fdb847d"
+    },
+    "0042500403": {
+      "gameCode": "20260608/SASNYK",
+      "gameDate": "2026-06-08",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260608/20260608_SASNYK.pdf",
+        "reportSha256": "0dbbf20f8ba3a87e1fdf6cedfa3126b8bae9ed5e4bb10e72cff25b39a7a7fa47",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 115
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 111
+      },
+      "recordSha256": "04784e0c129669349592d38ac9fb15fd6b6fec5fe14ae580a8499732459ac80b"
+    },
+    "0042500404": {
+      "gameCode": "20260610/SASNYK",
+      "gameDate": "2026-06-10",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260610/20260610_SASNYK.pdf",
+        "reportSha256": "abcd52155641d16613146a0f51cd17c71296811baecfdf2a46cddc7da9749327",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 106
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 107
+      },
+      "recordSha256": "f3f4ada88a14fa98b061c248d1ddf70049ef2984a2813db2149f4507ce8b6ae8"
+    },
+    "0042500405": {
+      "gameCode": "20260613/NYKSAS",
+      "gameDate": "2026-06-13",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260613/20260613_NYKSAS.pdf",
+        "reportSha256": "f75b932ecc949348a467e6aa0900b09dc9af07d387506e793c2b38522c1c632b",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedFinalScore": 94
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedFinalScore": 90
+      },
+      "recordSha256": "244a7f8c08416df1f34db176d949ff94005fca14608d861ff29c76d9c9a32b26"
+    }
+  }
+}

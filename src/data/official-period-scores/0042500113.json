@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500113",
+  "gameCode": "20260424/BOSPHI",
+  "gameDate": "2026-04-24",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260424/20260424_BOSPHI.pdf",
+    "reportSha256": "756d69b94867dc7c3c70c2fe0cfa4089b0a93e671ba0d537728ee2149c005721",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "retrieval-or-reverification-ambiguous"
+  },
+  "away": {
+    "teamId": 1610612738,
+    "teamTricode": "BOS",
+    "periodPoints": [
+      29,
+      25,
+      25,
+      29
+    ],
+    "reportedFinalScore": 108
+  },
+  "home": {
+    "teamId": 1610612755,
+    "teamTricode": "PHI",
+    "periodPoints": [
+      24,
+      23,
+      27,
+      26
+    ],
+    "reportedFinalScore": 100
+  }
+}

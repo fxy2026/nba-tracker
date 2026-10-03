@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500222",
+  "gameCode": "20260507/LALOKC",
+  "gameDate": "2026-05-07",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260507/20260507_LALOKC.pdf",
+    "reportSha256": "6fc9b4b8873d672d5d39c4145c6df7cfdd0741bdbfa38d11c426c3dd6483e4e3",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612747,
+    "teamTricode": "LAL",
+    "periodPoints": [
+      23,
+      35,
+      22,
+      27
+    ],
+    "reportedFinalScore": 107
+  },
+  "home": {
+    "teamId": 1610612760,
+    "teamTricode": "OKC",
+    "periodPoints": [
+      27,
+      30,
+      36,
+      32
+    ],
+    "reportedFinalScore": 125
+  }
+}

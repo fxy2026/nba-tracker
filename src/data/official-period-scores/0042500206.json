@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500206",
+  "gameCode": "20260515/DETCLE",
+  "gameDate": "2026-05-15",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260515/20260515_DETCLE.pdf",
+    "reportSha256": "d57c0d564d263f5a244107db1b5e9d108668f468986eddb3ba9b671fcde54d25",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612765,
+    "teamTricode": "DET",
+    "periodPoints": [
+      27,
+      27,
+      30,
+      31
+    ],
+    "reportedFinalScore": 115
+  },
+  "home": {
+    "teamId": 1610612739,
+    "teamTricode": "CLE",
+    "periodPoints": [
+      25,
+      26,
+      19,
+      24
+    ],
+    "reportedFinalScore": 94
+  }
+}

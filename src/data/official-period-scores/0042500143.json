@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500143",
+  "gameCode": "20260425/OKCPHX",
+  "gameDate": "2026-04-25",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260425/20260425_OKCPHX.pdf",
+    "reportSha256": "2c5e0aee6eff278ee4728c6a8dee9417427b9665304dfa51051cecfaeb5ff45c",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612760,
+    "teamTricode": "OKC",
+    "periodPoints": [
+      33,
+      29,
+      25,
+      34
+    ],
+    "reportedFinalScore": 121
+  },
+  "home": {
+    "teamId": 1610612756,
+    "teamTricode": "PHX",
+    "periodPoints": [
+      28,
+      25,
+      26,
+      30
+    ],
+    "reportedFinalScore": 109
+  }
+}

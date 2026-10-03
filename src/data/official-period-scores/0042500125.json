@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500125",
+  "gameCode": "20260428/ATLNYK",
+  "gameDate": "2026-04-28",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260428/20260428_ATLNYK.pdf",
+    "reportSha256": "142a149e34eaeeaf9668e6b19507e02bac32391faa61703ab7df3b279de82f58",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612737,
+    "teamTricode": "ATL",
+    "periodPoints": [
+      22,
+      26,
+      24,
+      25
+    ],
+    "reportedFinalScore": 97
+  },
+  "home": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      35,
+      29,
+      26,
+      36
+    ],
+    "reportedFinalScore": 126
+  }
+}

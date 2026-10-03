@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500175",
+  "gameCode": "20260429/HOULAL",
+  "gameDate": "2026-04-29",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260429/20260429_HOULAL.pdf",
+    "reportSha256": "80b8138dc7024f22fc9ab7255c3ea4d47372b4a657a98a4b45f1d7710eb59419",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03",
+    "verifiedAt": "2026-10-03T04:47:39Z",
+    "originalPdfCapturedAt": null,
+    "originalPdfCaptureTimestampStatus": "not-recorded-in-reviewed-local-evidence"
+  },
+  "away": {
+    "teamId": 1610612745,
+    "teamTricode": "HOU",
+    "periodPoints": [
+      21,
+      30,
+      25,
+      23
+    ],
+    "reportedFinalScore": 99
+  },
+  "home": {
+    "teamId": 1610612747,
+    "teamTricode": "LAL",
+    "periodPoints": [
+      28,
+      19,
+      20,
+      26
+    ],
+    "reportedFinalScore": 93
+  }
+}
