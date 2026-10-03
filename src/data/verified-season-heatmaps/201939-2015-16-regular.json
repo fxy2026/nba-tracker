@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "kind": "verified-player-season-advanced14-aggregate",
+  "playerId": 201939,
+  "season": "2015-16",
+  "seasonType": "Regular Season",
+  "geometryVersion": "nba-advanced14-svg-v1",
+  "classificationVersion": "nba-advanced14-source-labels-v1",
+  "source": {
+    "url": "https://www.nba.com/stats/events?CFID=&CFPARAMS=&ContextMeasure=FGA&GameID=&PlayerID=201939&Season=2015-16&SeasonType=Regular%20Season&TeamID=&flag=3&sct=plot&section=game",
+    "capturedAtUtc": null,
+    "observedAtWindowUtc": [
+      "2026-10-03T09:19:38Z",
+      "2026-10-03T09:19:48Z"
+    ]
+  },
+  "zones": [
+    {
+      "id": "center-under-8",
+      "sourceZoneId": "Center(C) | Less Than 8 ft.",
+      "sourceOrder": 0,
+      "fgm": 288,
+      "fga": 461,
+      "fgPctDisplay": "62.5",
+      "distributionPctDisplay": "28.8",
+      "leagueAveragePctDisplay": "55.5"
+    },
+    {
+      "id": "left-center-24-plus",
+      "sourceZoneId": "Left Side Center(LC) | 24+ ft.",
+      "sourceOrder": 1,
+      "fgm": 131,
+      "fga": 268,
+      "fgPctDisplay": "48.9",
+      "distributionPctDisplay": "16.8",
+      "leagueAveragePctDisplay": "34.9"
+    },
+    {
+      "id": "center-24-plus",
+      "sourceZoneId": "Center(C) | 24+ ft.",
+      "sourceOrder": 2,
+      "fgm": 92,
+      "fga": 204,
+      "fgPctDisplay": "45.1",
+      "distributionPctDisplay": "12.8",
+      "leagueAveragePctDisplay": "34.4"
+    },
+    {
+      "id": "left-center-16-24",
+      "sourceZoneId": "Left Side Center(LC) | 16-24 ft.",
+      "sourceOrder": 3,
+      "fgm": 8,
+      "fga": 22,
+      "fgPctDisplay": "36.4",
+      "distributionPctDisplay": "1.4",
+      "leagueAveragePctDisplay": "39.5"
+    },
+    {
+      "id": "right-center-24-plus",
+      "sourceZoneId": "Right Side Center(RC) | 24+ ft.",
+      "sourceOrder": 4,
+      "fgm": 118,
+      "fga": 284,
+      "fgPctDisplay": "41.5",
+      "distributionPctDisplay": "17.8",
+      "leagueAveragePctDisplay": "35.3"
+    },
+    {
+      "id": "left-8-16",
+      "sourceZoneId": "Left Side(L) | 8-16 ft.",
+      "sourceOrder": 5,
+      "fgm": 9,
+      "fga": 27,
+      "fgPctDisplay": "33.3",
+      "distributionPctDisplay": "1.7",
+      "leagueAveragePctDisplay": "39.5"
+    },
+    {
+      "id": "right-24-plus",
+      "sourceZoneId": "Right Side(R) | 24+ ft.",
+      "sourceOrder": 6,
+      "fgm": 27,
+      "fga": 53,
+      "fgPctDisplay": "50.9",
+      "distributionPctDisplay": "3.3",
+      "leagueAveragePctDisplay": "38.1"
+    },
+    {
+      "id": "left-24-plus",
+      "sourceZoneId": "Left Side(L) | 24+ ft.",
+      "sourceOrder": 7,
+      "fgm": 30,
+      "fga": 63,
+      "fgPctDisplay": "47.6",
+      "distributionPctDisplay": "3.9",
+      "leagueAveragePctDisplay": "37.4"
+    },
+    {
+      "id": "center-8-16",
+      "sourceZoneId": "Center(C) | 8-16 ft.",
+      "sourceOrder": 8,
+      "fgm": 32,
+      "fga": 50,
+      "fgPctDisplay": "64.0",
+      "distributionPctDisplay": "3.1",
+      "leagueAveragePctDisplay": "42.5"
+    },
+    {
+      "id": "center-16-24",
+      "sourceZoneId": "Center(C) | 16-24 ft.",
+      "sourceOrder": 9,
+      "fgm": 9,
+      "fga": 16,
+      "fgPctDisplay": "56.3",
+      "distributionPctDisplay": "1.0",
+      "leagueAveragePctDisplay": "39.6"
+    },
+    {
+      "id": "right-8-16",
+      "sourceZoneId": "Right Side(R) | 8-16 ft.",
+      "sourceOrder": 10,
+      "fgm": 12,
+      "fga": 32,
+      "fgPctDisplay": "37.5",
+      "distributionPctDisplay": "2.0",
+      "leagueAveragePctDisplay": "39.8"
+    },
+    {
+      "id": "left-16-24",
+      "sourceZoneId": "Left Side(L) | 16-24 ft.",
+      "sourceOrder": 11,
+      "fgm": 13,
+      "fga": 26,
+      "fgPctDisplay": "50.0",
+      "distributionPctDisplay": "1.6",
+      "leagueAveragePctDisplay": "39.9"
+    },
+    {
+      "id": "right-16-24",
+      "sourceZoneId": "Right Side(R) | 16-24 ft.",
+      "sourceOrder": 12,
+      "fgm": 8,
+      "fga": 22,
+      "fgPctDisplay": "36.4",
+      "distributionPctDisplay": "1.4",
+      "leagueAveragePctDisplay": "40.5"
+    },
+    {
+      "id": "right-center-16-24",
+      "sourceZoneId": "Right Side Center(RC) | 16-24 ft.",
+      "sourceOrder": 13,
+      "fgm": 24,
+      "fga": 56,
+      "fgPctDisplay": "42.9",
+      "distributionPctDisplay": "3.5",
+      "leagueAveragePctDisplay": "39.9"
+    }
+  ],
+  "residuals": [
+    {
+      "id": "backcourt",
+      "sourceZoneId": "Back Court(BC) | Back Court Shot",
+      "sourceOrder": 14,
+      "fgm": 3,
+      "fga": 12,
+      "fgPctDisplay": "25.0",
+      "distributionPctDisplay": "0.8",
+      "leagueAveragePctDisplay": "4.2",
+      "shotType": "unknown"
+    },
+    {
+      "id": "unclassified",
+      "sourceZoneId": "null | null",
+      "sourceOrder": 15,
+      "fgm": 1,
+      "fga": 2,
+      "fgPctDisplay": "50.0",
+      "distributionPctDisplay": "0.1",
+      "leagueAveragePctDisplay": "30.8",
+      "shotType": "unknown"
+    }
+  ],
+  "sourceOverall": {
+    "fgm": 805,
+    "fga": 1598,
+    "fg3m": null,
+    "fg3a": null,
+    "fgPctDisplay": "50.4",
+    "source": {
+      "url": "https://www.nba.com/stats/events?CFID=&CFPARAMS=&ContextMeasure=FGA&GameID=&PlayerID=201939&Season=2015-16&SeasonType=Regular%20Season&TeamID=&flag=3&sct=plot&section=game",
+      "capturedAtUtc": null,
+      "observedAtWindowUtc": [
+        "2026-10-03T09:19:16Z",
+        "2026-10-03T09:19:22Z"
+      ]
+    }
+  },
+  "independentCareerTotals": {
+    "fgm": 805,
+    "fga": 1598,
+    "fg3m": 402,
+    "fg3a": 886,
+    "fgPctDisplay": "50.4",
+    "source": {
+      "url": "https://www.nba.com/stats/player/201939/career?PerMode=Totals",
+      "capturedAtUtc": "2026-10-03T03:19:20.166Z",
+      "observedAtWindowUtc": null
+    }
+  },
+  "benchmark": {
+    "kind": "nba-chart-displayed-la",
+    "sourceLabel": "LA - League Average",
+    "chartSeason": "2015-16",
+    "chartSeasonType": "Regular Season",
+    "independentlyVerifiedScope": null,
+    "leagueFgm": null,
+    "leagueFga": null,
+    "methodology": null,
+    "recomputed": false
+  },
+  "rawPoints": "not-captured"
+}

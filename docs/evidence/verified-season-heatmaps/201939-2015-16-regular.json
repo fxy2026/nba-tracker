@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "playerId": 201939,
+  "playerName": "Stephen Curry",
+  "season": "2015-16",
+  "seasonType": "Regular Season",
+  "chartSource": {
+    "url": "https://www.nba.com/stats/events?CFID=&CFPARAMS=&ContextMeasure=FGA&GameID=&PlayerID=201939&Season=2015-16&SeasonType=Regular%20Season&TeamID=&flag=3&sct=plot&section=game",
+    "capturedAtUtc": null,
+    "observedAtWindowUtc": [
+      "2026-10-03T09:19:38Z",
+      "2026-10-03T09:19:48Z"
+    ],
+    "evidenceSha256": "c422b463ea1ff809e625694605c81af8c6a6762ec02f9f89f7dfc17d13e0d904"
+  },
+  "sourceOverall": {
+    "fgm": 805,
+    "fga": 1598,
+    "fg3m": null,
+    "fg3a": null,
+    "fgPctDisplay": "50.4",
+    "source": {
+      "url": "https://www.nba.com/stats/events?CFID=&CFPARAMS=&ContextMeasure=FGA&GameID=&PlayerID=201939&Season=2015-16&SeasonType=Regular%20Season&TeamID=&flag=3&sct=plot&section=game",
+      "capturedAtUtc": null,
+      "observedAtWindowUtc": [
+        "2026-10-03T09:19:16Z",
+        "2026-10-03T09:19:22Z"
+      ],
+      "evidenceSha256": "c422b463ea1ff809e625694605c81af8c6a6762ec02f9f89f7dfc17d13e0d904"
+    }
+  },
+  "independentCareerTotals": {
+    "fgm": 805,
+    "fga": 1598,
+    "fg3m": 402,
+    "fg3a": 886,
+    "fgPctDisplay": "50.4",
+    "source": {
+      "url": "https://www.nba.com/stats/player/201939/career?PerMode=Totals",
+      "capturedAtUtc": "2026-10-03T03:19:20.166Z",
+      "observedAtWindowUtc": null,
+      "evidenceSha256": "431c1dfc580e7832df3902c3cb27e7b9afd56a7e2624d7ef7d26ebf95d82d0c8"
+    }
+  },
+  "normal14Totals": {
+    "fgm": 801,
+    "fga": 1584
+  },
+  "residuals": [
+    {
+      "id": "backcourt",
+      "sourceZoneId": "Back Court(BC) | Back Court Shot",
+      "fgm": 3,
+      "fga": 12,
+      "fgPctDisplay": "25.0",
+      "distributionPctDisplay": "0.8",
+      "shotType": "unknown"
+    },
+    {
+      "id": "unclassified",
+      "sourceZoneId": "null | null",
+      "fgm": 1,
+      "fga": 2,
+      "fgPctDisplay": "50.0",
+      "distributionPctDisplay": "0.1",
+      "shotType": "unknown"
+    }
+  ],
+  "seasonAttemptDenominator": 1598,
+  "runtimeFactsCanonicalSha256": "3ca96608cdec2f646ab54e7871af8018ba557c4ee1255331b6379cb82a5709dc",
+  "precision": {
+    "playerPercentages": "Source-displayed one decimal percentage point; verified with integer half-up rounding.",
+    "attemptShares": "Full-season FGA denominator includes residuals; displayed one-decimal shares may not sum to 100.0.",
+    "timestamps": "Exact capture time remains null where only an observation window is known.",
+    "leagueAverage": "NBA chart-displayed LA references retain verified chart-season context. The benchmark own exact filtering, league numerator/denominator, methodology and rounding inputs are not independently established; no exact weighted league baseline is claimed."
+  },
+  "rawPoints": "not-captured"
+}

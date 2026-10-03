@@ -1,3 +1,5 @@
+// Server-component tests run outside the Next.js server-only resolver.
+vi.mock("server-only", () => ({}));
 import { currentSeason } from "./constants";
 import { beforeEach, expect, it, vi } from "vitest";
 import { isValidElement, type ReactNode } from "react";

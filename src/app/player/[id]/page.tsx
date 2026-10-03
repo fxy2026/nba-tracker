@@ -24,6 +24,7 @@ import { getAccolades } from "@/lib/playerAccolades";
 import nextDynamic from "next/dynamic";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
+import { getSeasonHeatmapCatalog, loadSeasonHeatmapArchive } from "@/lib/verified-season-heatmap-archive";
 
 // Heavy player subcomponents are code-split — each ships its own chunk
 // instead of bloating the player page bundle. They all fetch on mount,
@@ -34,6 +35,7 @@ const PlayerSalary = nextDynamic(() => import("@/components/player/PlayerSalary"
 const PlayerNews = nextDynamic(() => import("@/components/player/PlayerNews"));
 const PlayerStatsBundle = nextDynamic(() => import("@/components/player/PlayerStatsBundle"));
 const PlayerAdvancedStats = nextDynamic(() => import("@/components/player/PlayerAdvancedStats"));
+const PlayerSeasonHeatmap = nextDynamic(() => import("@/components/player/PlayerSeasonHeatmap"));
 const ShotHeatmap = nextDynamic(() => import("@/components/ShotHeatmap"));
 
 interface PageProps {
@@ -86,6 +88,10 @@ export default async function PlayerPage({ params }: PageProps) {
   // enters the browser bundle.
   const accolades = getAccolades(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
+  const heatmapCatalog = getSeasonHeatmapCatalog(personId);
+  const heatmapEntry = heatmapCatalog[0];
+  const heatmapSelection = heatmapEntry ? { playerId: heatmapEntry.playerId, season: heatmapEntry.season, seasonType: heatmapEntry.seasonType } : null;
+  const heatmapResource = heatmapSelection ? loadSeasonHeatmapArchive(heatmapSelection) : null;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
@@ -422,7 +428,10 @@ export default async function PlayerPage({ params }: PageProps) {
         <SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" />
         <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-        <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />
+        {heatmapSelection && heatmapResource ? <PlayerSeasonHeatmap
+          player={{ id: personId, name: fullName }} locale={locale}
+          datasets={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource}
+        /> : <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />}
         <PlayerMeasurements draftYear={player.draftYear} />
         <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
         <PlayerNews playerName={fullName} />

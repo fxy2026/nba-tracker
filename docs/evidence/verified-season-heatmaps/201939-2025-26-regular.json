@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "playerId": 201939,
+  "playerName": "Stephen Curry",
+  "season": "2025-26",
+  "seasonType": "Regular Season",
+  "chartSource": {
+    "url": "https://www.nba.com/stats/events?CFID=&CFPARAMS=&ContextMeasure=FGA&GameID=&PlayerID=201939&Season=2025-26&SeasonType=Regular%20Season&TeamID=&flag=3&sct=plot&section=game",
+    "capturedAtUtc": null,
+    "observedAtWindowUtc": [
+      "2026-10-03T09:11:55Z",
+      "2026-10-03T09:12:31Z"
+    ],
+    "evidenceSha256": "b9cfabd7baeafcfff595216e7fbe7985812c4ab50707602e50142e647ff680c3"
+  },
+  "sourceOverall": {
+    "fgm": 374,
+    "fga": 799,
+    "fg3m": 190,
+    "fg3a": 484,
+    "fgPctDisplay": "46.8",
+    "source": {
+      "url": "https://www.nba.com/stats/player/201939/shooting?Season=2025-26&SeasonType=Regular+Season",
+      "capturedAtUtc": null,
+      "observedAtWindowUtc": [
+        "2026-10-03T08:30:58Z",
+        "2026-10-03T08:31:11Z"
+      ],
+      "evidenceSha256": "7a59a52ebe0738392694856296fdeea3b0707bc7169ed9973b228af140aaa3c1"
+    }
+  },
+  "independentCareerTotals": {
+    "fgm": 374,
+    "fga": 799,
+    "fg3m": 190,
+    "fg3a": 484,
+    "fgPctDisplay": "46.8",
+    "source": {
+      "url": "https://www.nba.com/stats/player/201939/career?PerMode=Totals",
+      "capturedAtUtc": "2026-10-03T03:19:20.166Z",
+      "observedAtWindowUtc": null,
+      "evidenceSha256": "431c1dfc580e7832df3902c3cb27e7b9afd56a7e2624d7ef7d26ebf95d82d0c8"
+    }
+  },
+  "normal14Totals": {
+    "fgm": 374,
+    "fga": 799
+  },
+  "residuals": [],
+  "seasonAttemptDenominator": 799,
+  "runtimeFactsCanonicalSha256": "e0b0a43cca260faf547cd834dc15788bc6379838523b6dead8ec8e60bd6b2a22",
+  "precision": {
+    "playerPercentages": "Source-displayed one decimal percentage point; verified with integer half-up rounding.",
+    "attemptShares": "Full-season FGA denominator includes residuals; displayed one-decimal shares may not sum to 100.0.",
+    "timestamps": "Exact capture time remains null where only an observation window is known.",
+    "leagueAverage": "NBA chart-displayed LA references retain verified chart-season context. The benchmark own exact filtering, league numerator/denominator, methodology and rounding inputs are not independently established; no exact weighted league baseline is claimed."
+  },
+  "rawPoints": "not-captured"
+}
