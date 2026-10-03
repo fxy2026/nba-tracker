@@ -32,8 +32,8 @@ it("keeps failure as default and enters archive only after an explicit request, 
   expect(nodes(render()).some(n => n.type === "svg")).toBe(false);
   clickText("View 2025-26 archive");
   const html = renderToStaticMarkup(render());
-  expect(html).toContain("Failed to load data"); expect(html).toContain("2025-26 archived index averages");
-  expect(html).toContain("2 of 3 indexed players plotted; 1 missing");
+  expect(html).toContain("2026-27 current data unavailable"); expect(html).not.toContain("Failed to load data"); expect(html).toContain("2025-26 archived index averages");
+  expect(html).toContain("2 of 3 indexed players plotted · 1 missing");
   expect(html).not.toContain("Min MPG"); expect(html).not.toContain("True Shooting %");
   const pickers = nodes(render()).filter(n => Array.isArray(n.props.axes));
   expect(pickers).toHaveLength(2); for (const p of pickers) expect((p.props.axes as {key: string}[]).map(a => a.key)).toEqual(["PTS", "REB", "AST"]);
@@ -43,13 +43,13 @@ it("keeps failure as default and enters archive only after an explicit request, 
 it("retains archive and original failure while retrying and after another failure", async () => {
   clickText("View 2025-26 archive");
   const pending = clickText("Retry 2026-27 current data");
-  expect(renderToStaticMarkup(render())).toContain("Failed to load data");
+  expect(renderToStaticMarkup(render())).toContain("2026-27 current data unavailable");
   expect(renderToStaticMarkup(render())).toContain("Retrying current data");
   expect(nodes(render()).filter(n => n.props.action)).toHaveLength(0);
   expect(nodes(render()).filter(n => n.type === "button" && n.props.disabled === true)).toHaveLength(1);
   await pending;
   expect(renderToStaticMarkup(render())).toContain("2025-26 archived index averages");
-  expect(renderToStaticMarkup(render())).toContain("Failed to load data");
+  expect(renderToStaticMarkup(render())).toContain("2026-27 current data unavailable");
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 it("successful explicit retry returns clearly to current mode and the unchanged current query", async () => {
@@ -100,7 +100,7 @@ it("empty current response retains the selected archive and displays failure", a
   clickText("View 2025-26 archive");
   vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ resultSet: {headers: response.resultSet.headers, rowSet: []} }) } as Response);
   await clickText("Retry 2026-27 current data");
-  const html = renderToStaticMarkup(render()); expect(html).toContain("2025-26 archived index averages"); expect(html).toContain("Failed to load data");
+  const html = renderToStaticMarkup(render()); expect(html).toContain("2025-26 archived index averages"); expect(html).toContain("2026-27 current data unavailable");
   expect(nodes(render()).filter(n => n.props.action)).toHaveLength(0);
 });
 
@@ -115,5 +115,35 @@ it("uses one chart tab stop, wraps keyboard selection and resets on axis/filter/
   key("ArrowRight"); expect(runtime.slots[8]).toBe(0);
   for (const [slot, value] of [[5,"REB"], [7,0], [0,false]] as const) {
     runtime.slots[8] = 1; runtime.slots[slot] = value; render(); runtime.effects[1](); expect(runtime.slots[8]).toBe(null);
+  }
+});
+
+it("keeps coverage visible outside the collapsed source disclosure and uses pixel-sized mobile labels", () => {
+  clickText("View 2025-26 archive"); runtime.slots[10] = 261;
+  const tree = render(); const all = nodes(tree); const disclosure = all.find(n => n.type === "details")!;
+  expect(disclosure.props.open).toBeUndefined();
+  expect(renderToStaticMarkup(disclosure as never)).not.toContain("2 of 3 indexed players plotted");
+  expect(all.filter(n => n.type === "svg")[0].props.viewBox).toBe("0 0 261 320");
+  expect(all.filter(n => n.type === "text").every(n => [11, 12].includes(n.props.fontSize as number))).toBe(true);
+  expect(all.filter(n => n.type === "circle")).toHaveLength(2);
+  runtime.slots[10] = 900;
+  expect(nodes(render()).find(n => n.type === "svg")!.props.viewBox).toBe("0 0 640 460");
+});
+it("disconnects the resize observer and preserves normalized point positions and tick ranges", () => {
+  clickText("View 2025-26 archive");
+  const observe = vi.fn(); const disconnect = vi.fn();
+  let resize!: (entries: {contentRect:{width:number}}[]) => void;
+  vi.stubGlobal("ResizeObserver", class { constructor(fn: typeof resize) { resize = fn; } observe = observe; disconnect = disconnect; });
+  const svg = {}; runtime.slots[9] = {current:svg}; render();
+  const cleanup = runtime.effects[2]() as () => void; expect(observe).toHaveBeenCalledWith(svg);
+  resize([{contentRect:{width:261}}]); expect(runtime.slots[10]).toBe(261);
+  const mobile = nodes(render()); cleanup(); expect(disconnect).toHaveBeenCalledOnce();
+  runtime.slots[9] = {current:null}; render(); expect(runtime.effects[2]()).toBeUndefined(); expect(observe).toHaveBeenCalledOnce();
+  runtime.slots[10] = 900; const desktop = nodes(render());
+  expect(mobile.filter(n => n.type === "text").map(n => n.props.children)).toEqual(desktop.filter(n => n.type === "text").map(n => n.props.children));
+  const m = mobile.filter(n => n.type === "circle"); const d = desktop.filter(n => n.type === "circle");
+  for (let i = 0; i < m.length; i++) {
+    expect(((m[i].props.cx as number) - 44) / (261 - 44 - 16)).toBeCloseTo(((d[i].props.cx as number) - 56) / (640 - 56 - 24));
+    expect(((m[i].props.cy as number) - 16) / (320 - 16 - 44)).toBeCloseTo(((d[i].props.cy as number) - 20) / (460 - 20 - 52));
   }
 });

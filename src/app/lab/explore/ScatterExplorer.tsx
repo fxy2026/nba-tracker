@@ -166,6 +166,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
   // active hovered/tapped dot index into the *filtered* list
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const [chartWidth, setChartWidth] = useState(640);
 
   const load = useCallback(async () => {
     requestRef.current?.abort();
@@ -265,9 +266,23 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
     setActiveIdx(null);
   }, [xKey, yKey, minMpg, archiveMode]);
 
+  // Keep mobile SVG units at CSS-pixel size so ticks stay readable. Desktop
+  // retains its original 640 × 460 viewBox and point projection.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0]?.contentRect.width;
+      if (width && width > 0) setChartWidth(width);
+    });
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, [loading, archiveMode, rows.length, xKey, yKey, minMpg]);
+
   // ── SVG geometry ────────────────────────────────────────────────────────
-  const w = 640, h = 460;
-  const pad = { top: 20, right: 24, bottom: 52, left: 56 };
+  const mobileChart = chartWidth < 480;
+  const w = mobileChart ? chartWidth : 640, h = mobileChart ? 320 : 460;
+  const pad = mobileChart ? { top: 16, right: 16, bottom: 44, left: 44 } : { top: 20, right: 24, bottom: 52, left: 56 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
 
@@ -306,7 +321,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
     // Preserve the desktop radius and a 44px-diameter touch target on narrow screens.
     const captureRadius = Math.max(26, (22 / rect.width) * w);
     setActiveIdx(bestD <= captureRadius * captureRadius ? best : null);
-  }, [projected]);
+  }, [projected, w, h]);
 
   const active = activeIdx != null ? projected[activeIdx] : null;
 
@@ -342,17 +357,28 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
 
   return (
     <div className="space-y-5" onKeyDown={e => { if (e.key === "Escape") { setActiveIdx(null); svgRef.current?.focus(); } }}>
-      {failure}
+      {!archiveMode && failure}
+      {archiveMode && <div className="glass-tile px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs" role="status">
+        <span className="text-text-secondary">{error || rows.length === 0
+          ? (isZh ? `${CURRENT_SEASON} 当前数据暂不可用` : `${CURRENT_SEASON} current data unavailable`)
+          : (isZh ? `${CURRENT_SEASON} 当前数据可重试` : `${CURRENT_SEASON} current data can be refreshed`)}</span>
+        <button type="button" disabled={loading} className="min-h-11 px-3 py-2 rounded-lg text-accent font-semibold disabled:opacity-50" onClick={() => load()}>{loading ? (isZh ? "正在重试当前数据…" : "Retrying current data…") : (isZh ? `重试 ${CURRENT_SEASON} 当前数据` : `Retry ${CURRENT_SEASON} current data`)}</button>
+      </div>}
       <section className="glass-tile p-4 space-y-2 text-sm" aria-live="polite">
         <h2 className="font-semibold">{archiveMode
           ? (isZh ? `${archive.season} 存档索引场均数据` : `${archive.season} archived index averages`)
           : (isZh ? `${CURRENT_SEASON} 常规赛 · 当前数据` : `${CURRENT_SEASON} regular season · Current data`)}</h2>
         {archiveMode && <>
           <p className="text-text-secondary">{isZh
-            ? `${archive.rows.length} / ${archive.total} 名球员可绘制；${archive.omitted} 名缺少得分、篮板或助攻。仅支持这三项指标。存档未提供出场数、分钟及投篮数据，不应用出场门槛。`
-            : `${archive.rows.length} of ${archive.total} indexed players plotted; ${archive.omitted} missing points, rebounds or assists. Only these three metrics are available. No games/minutes qualification is applied; games, minutes and shooting data are unavailable.`}</p>
-          <p className="text-text-secondary">{isZh ? "球队归属来自存档索引，并非当前名单；未知球队使用中性色。存档未注明更新时间或 PerMode；场均解释沿用现有索引约定。" : "Team attribution is from the archived index, not the current roster. Unknown teams use a neutral color. The source supplies no retrieval timestamp or explicit PerMode; averages follow the existing index convention."}</p>
-          <button type="button" disabled={loading} className="min-h-11 px-3 py-2 rounded-lg glass-tile disabled:opacity-50" onClick={() => load()}>{loading ? (isZh ? "正在重试当前数据…" : "Retrying current data…") : (isZh ? `重试 ${CURRENT_SEASON} 当前数据` : `Retry ${CURRENT_SEASON} current data`)}</button>
+            ? `${archive.rows.length} / ${archive.total} 名索引球员可绘制 · ${archive.omitted} 名缺少数据 · 得分 / 篮板 / 助攻`
+            : `${archive.rows.length} of ${archive.total} indexed players plotted · ${archive.omitted} missing stats · PTS / REB / AST`}</p>
+          <details className="text-xs text-text-secondary">
+            <summary className="min-h-11 flex items-center cursor-pointer text-accent">{isZh ? "数据来源与限制 ▾" : "Source and limitations ▾"}</summary>
+            <div className="space-y-2 pb-2">
+              <p>{isZh ? "缺少得分、篮板或助攻的球员未绘制。仅支持这三项指标。存档未提供出场数、分钟及投篮数据，不应用出场门槛。" : "Players missing points, rebounds or assists are omitted. Only these three metrics are available. No games/minutes qualification is applied; games, minutes and shooting data are unavailable."}</p>
+              <p>{isZh ? "球队归属来自存档索引，并非当前名单；未知球队使用中性色。存档未注明更新时间或 PerMode；场均解释沿用现有索引约定。" : "Team attribution is from the archived index, not the current roster. Unknown teams use a neutral color. The source supplies no retrieval timestamp or explicit PerMode; averages follow the existing index convention."}</p>
+            </div>
+          </details>
         </>}
         {archiveButton}
       </section>
@@ -439,7 +465,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
                 return (
                   <g key={`y${tv}`}>
                     <line x1={pad.left} y1={cy} x2={w - pad.right} y2={cy} stroke="var(--border)" strokeWidth={0.4} />
-                    <text x={pad.left - 6} y={cy} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={8}>
+                    <text x={pad.left - 6} y={cy} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={mobileChart ? 11 : 8}>
                       {yMeta.pct ? (tv * 100).toFixed(0) : Number.isInteger(tv) ? tv : tv.toFixed(1)}
                     </text>
                   </g>
@@ -453,7 +479,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
                 return (
                   <g key={`x${tv}`}>
                     <line x1={cx} y1={pad.top} x2={cx} y2={pad.top + plotH} stroke="var(--border)" strokeWidth={0.4} />
-                    <text x={cx} y={pad.top + plotH + 14} textAnchor="middle" fill="var(--text-secondary)" fontSize={8}>
+                    <text x={cx} y={pad.top + plotH + 14} textAnchor="middle" fill="var(--text-secondary)" fontSize={mobileChart ? 11 : 8}>
                       {xMeta.pct ? (tv * 100).toFixed(0) : Number.isInteger(tv) ? tv : tv.toFixed(1)}
                     </text>
                   </g>
@@ -465,7 +491,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
               <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH} stroke="var(--text-secondary)" strokeWidth={0.8} />
 
               {/* Axis labels */}
-              <text x={pad.left + plotW / 2} y={h - 6} textAnchor="middle" fill="var(--text-primary)" fontSize={10} fontWeight={600}>
+              <text x={pad.left + plotW / 2} y={h - 6} textAnchor="middle" fill="var(--text-primary)" fontSize={mobileChart ? 12 : 10} fontWeight={600}>
                 {isZh ? `${xMeta.zh}（${xMeta.en}）` : xMeta.en}
               </text>
               <text
@@ -473,7 +499,7 @@ export default function ScatterExplorer({ archive }: { archive: ScatterArchive }
                 y={pad.top + plotH / 2}
                 textAnchor="middle"
                 fill="var(--text-primary)"
-                fontSize={10}
+                fontSize={mobileChart ? 12 : 10}
                 fontWeight={600}
                 transform={`rotate(-90 14 ${pad.top + plotH / 2})`}
               >
