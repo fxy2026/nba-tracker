@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { CURRENT_SEASON } from "@/lib/constants";
@@ -10,33 +10,48 @@ import RelatedPages from "@/components/RelatedPages";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
-interface PlayerRow {
-  PLAYER_ID: number;
-  PLAYER: string;
-  TEAM: string;
-  GP: number;
-  PTS: number;
-  FG_PCT: number;
-  FG3_PCT: number;
-  FT_PCT: number;
-  AST: number;
-  STL: number;
-  EFF: number;
-}
+import { parseLeagueLeaders, formatLeagueLeaderValue, type LeagueLeaderRow } from "@/lib/league-leaders";
+import { TEAM_META } from "@/lib/teams";
+
+type Category = "EFF" | "PTS" | "AST" | "STL" | "FG_PCT";
+type Query = { category: Category; attempt: number };
+type Result =
+  | { query: Query; status: "success"; rows: LeagueLeaderRow[]; rejectedRows: number }
+  | { query: Query; status: "error" };
 
 export default function ClutchPage() {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const [players, setPlayers] = useState<PlayerRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [category, setCategory] = useState("EFF");
+  const [query, setQuery] = useState<Query>({ category: "EFF", attempt: 0 });
+  const [result, setResult] = useState<Result | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const category = query.category;
+  // Query identity also hides the old result during the render before effect cleanup.
+  const loading = result?.query !== query;
+  const error = !loading && result?.status === "error";
+  const success = !loading && result?.status === "success" ? result : null;
+  const players = success?.rows ?? [];
+  const partial = !!success && (success.rejectedRows > 0 || players.some(player =>
+    player.RANK === 0 || [player.RANK, player.GP, player[category], player.PTS, player.AST, player.STL].some(value => value === null)));
+  const topVal = Math.max(0, ...players.flatMap(player => player[category] === null ? [] : [player[category]]));
+  const retry = () => {
+    requestRef.current?.abort();
+    setQuery(current => ({ ...current, attempt: current.attempt + 1 }));
+  };
 
   useEffect(() => {
     const controller = new AbortController();
+    requestRef.current = controller;
+    let active = true;
+    const current = () => active && !controller.signal.aborted;
+    // Keep the deadline through JSON decoding. Even an abort-ignoring fetch/body
+    // must leave loading; only the currently owned request may publish a result.
+    const timeout = setTimeout(() => {
+      if (!current()) return;
+      controller.abort();
+      setResult({ query, status: "error" });
+    }, 12000);
     (async () => {
-      setLoading(true);
-      setError(false);
       try {
         const params = new URLSearchParams({
           endpoint: "leagueleaders",
@@ -45,36 +60,25 @@ export default function ClutchPage() {
           SeasonType: "Playoffs",
           PerMode: "PerGame",
           Scope: "S",
-          StatCategory: category,
+          StatCategory: query.category,
           limit: "25",
         });
         const res = await fetch(`/api/stats?${params}`, { signal: controller.signal });
+        if (!current()) return;
         if (!res.ok) throw new Error("Failed");
-        const data = await res.json();
-        const rs = data.resultSet;
-        if (!rs) throw new Error("No data");
-        const headers: string[] = rs.headers;
-        const parsed = rs.rowSet.slice(0, 25).map((row: unknown[]) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((h, i) => { obj[h] = row[i]; });
-          return obj;
-        }) as unknown as PlayerRow[];
-        if (!controller.signal.aborted) setPlayers(parsed);
+        const data: unknown = await res.json();
+        if (!current()) return;
+        const parsed = parseLeagueLeaders(data);
+        if (!parsed || (!parsed.rows.length && parsed.rejectedRows > 0)) throw new Error("No usable data");
+        setResult({ query, status: "success", rows: parsed.rows.slice(0, 25), rejectedRows: parsed.rejectedRows });
       } catch {
-        if (!controller.signal.aborted) setError(true);
+        if (current()) setResult({ query, status: "error" });
+      } finally {
+        clearTimeout(timeout);
       }
-      if (!controller.signal.aborted) setLoading(false);
     })();
-    return () => controller.abort();
-  }, [category]);
-
-  const overviewStats = useMemo(() => {
-    if (players.length === 0) return null;
-    const topScorer = [...players].sort((a, b) => (b.PTS || 0) - (a.PTS || 0))[0];
-    const topAssist = [...players].sort((a, b) => (b.AST || 0) - (a.AST || 0))[0];
-    const mostGP = [...players].sort((a, b) => (b.GP || 0) - (a.GP || 0))[0];
-    return { topScorer, topAssist, mostGP };
-  }, [players]);
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [query]);
 
   const categories = [
     { key: "EFF", label: t.clutchPage.efficiency },
@@ -82,16 +86,7 @@ export default function ClutchPage() {
     { key: "AST", label: t.clutchPage.playmaking },
     { key: "STL", label: t.clutchPage.steals },
     { key: "FG_PCT", label: t.clutchPage.fgPct },
-  ];
-
-  const fmtVal = (p: PlayerRow) => {
-    if (category === "FG_PCT" || category === "FG3_PCT" || category === "FT_PCT") {
-      const v = p[category as keyof PlayerRow] as number;
-      return v != null ? (v * 100).toFixed(1) + "%" : "-";
-    }
-    const v = p[category as keyof PlayerRow] as number;
-    return v?.toFixed(1) ?? "-";
-  };
+  ] satisfies { key: Category; label: string }[];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -107,34 +102,19 @@ export default function ClutchPage() {
         <p className="leading-relaxed">{t.clutchPage.aboutNote}</p>
       </div>
 
-      {/* Quick Stats Overview */}
-      {!loading && overviewStats && (
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="glass-tile p-3 text-center">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.topScorer}</p>
-            <p className="text-sm font-bold text-accent-amber mt-1">{overviewStats.topScorer.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.topScorer.PTS?.toFixed(1)} <span className="text-[9px]">PPG</span></p>
-          </div>
-          <div className="glass-tile p-3 text-center">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.topPlaymaker}</p>
-            <p className="text-sm font-bold text-accent mt-1">{overviewStats.topAssist.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.topAssist.AST?.toFixed(1)} <span className="text-[9px]">APG</span></p>
-          </div>
-          <div className="glass-tile p-3 text-center">
-            <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{t.clutchPage.mostGames}</p>
-            <p className="text-sm font-bold text-text-primary mt-1">{overviewStats.mostGP.PLAYER?.split(" ").pop()}</p>
-            <p className="text-xs text-text-secondary font-mono tabular-nums mt-0.5">{overviewStats.mostGP.GP}{t.clutchPage.gp}</p>
-          </div>
-        </div>
-      )}
-
       {/* Category tabs — glass pill bar */}
       <div className="flex flex-wrap gap-1 mb-4">
         <div className="glass-tile flex flex-wrap overflow-hidden p-1">
           {categories.map((c) => (
             <button
               key={c.key}
-              onClick={() => setCategory(c.key)}
+              onClick={() => {
+                if (c.key !== category) {
+                  requestRef.current?.abort();
+                  setQuery(current => ({ category: c.key, attempt: current.attempt }));
+                }
+              }}
+              aria-pressed={category === c.key}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
                 category === c.key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}
@@ -146,33 +126,29 @@ export default function ClutchPage() {
       </div>
 
       {loading && (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 size={32} className="animate-spin text-accent" />
+        <div role="status" aria-label={t.common.loading} className="flex items-center justify-center py-24">
+          <Loader2 size={32} className="animate-spin text-accent" aria-hidden="true" />
         </div>
       )}
 
       {error && !loading && (
-        <div className="glass-tile p-12 text-center">
+        <div role="alert" className="glass-tile p-12 text-center">
           <p className="text-text-secondary">{t.clutchPage.failedToLoad}</p>
+          <button onClick={retry} className="mt-4 px-4 py-2 rounded-md bg-accent text-white text-sm cursor-pointer">{t.common.retry}</button>
         </div>
       )}
 
       {!loading && !error && players.length === 0 && (
-        <div className="glass-tile p-12 text-center">
+        <div role="status" className="glass-tile p-12 text-center">
           <p className="text-text-secondary">{t.clutchPage.noData}</p>
+          <button onClick={retry} className="mt-4 px-4 py-2 rounded-md bg-accent text-white text-sm cursor-pointer">{t.common.retry}</button>
         </div>
       )}
 
-      {!loading && players.length > 0 && (() => {
-        // Compute max value for the selected category to use for bar widths
-        const getStatVal = (p: PlayerRow) => {
-          const v = p[category as keyof PlayerRow] as number;
-          return v ?? 0;
-        };
-        const topVal = Math.max(...players.map(getStatVal), 0.1);
-
-        return (
+      {success && players.length > 0 && (
         <div className="glass-tile overflow-hidden">
+          <p className="px-4 py-3 text-xs text-text-secondary border-b border-border">{t.clutchPage.scopeNote}</p>
+          {partial && <p role="status" className="px-4 py-3 text-xs text-accent-amber border-b border-border">{t.clutchPage.partialData}</p>}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-bg-card">
@@ -188,20 +164,22 @@ export default function ClutchPage() {
                 </tr>
               </thead>
               <tbody>
-                {players.map((p, i) => {
-                  const statVal = getStatVal(p);
-                  const barPct = topVal > 0 ? (statVal / topVal) * 100 : 0;
+                {players.map((p) => {
+                  const statVal = p[category];
+                  const barPct = statVal !== null && statVal >= 0 && topVal > 0 ? Math.min(100, (statVal / topVal) * 100) : null;
+                  const rank = p.RANK !== null && p.RANK > 0 ? p.RANK : null;
+                  const topThree = rank !== null && rank <= 3;
                   return (
-                  <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i < 3 ? "bg-accent-amber/[0.03]" : ""}`}>
+                  <tr key={p.PLAYER_ID} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${topThree ? "bg-accent-amber/[0.03]" : ""}`}>
                     <td className="text-center py-2.5 px-2">
-                      {i === 0 ? (
-                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700] font-bold font-mono tabular-nums text-[11px]">1</span>
-                      ) : i === 1 ? (
-                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0] font-bold font-mono tabular-nums text-[11px]">2</span>
-                      ) : i === 2 ? (
-                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32] font-bold font-mono tabular-nums text-[11px]">3</span>
+                      {rank === 1 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#FFD700]/15 ring-1 ring-[#FFD700]/40 text-[#FFD700] font-bold font-mono tabular-nums text-[11px]">{rank}</span>
+                      ) : rank === 2 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#C0C0C0]/15 ring-1 ring-[#C0C0C0]/40 text-[#C0C0C0] font-bold font-mono tabular-nums text-[11px]">{rank}</span>
+                      ) : rank === 3 ? (
+                        <span className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-[#CD7F32]/20 ring-1 ring-[#CD7F32]/40 text-[#CD7F32] font-bold font-mono tabular-nums text-[11px]">{rank}</span>
                       ) : (
-                        <span className="text-text-secondary font-mono tabular-nums text-xs">{i + 1}</span>
+                        <span className="text-text-secondary font-mono tabular-nums text-xs">{rank ?? "—"}</span>
                       )}
                     </td>
                     <td className="py-2.5 px-3">
@@ -221,20 +199,22 @@ export default function ClutchPage() {
                       </Link>
                     </td>
                     <td className="text-center py-2.5 px-2">
-                      <Link href={`/team/${p.TEAM}`} className="text-text-secondary hover:text-accent transition-colors">{p.TEAM}</Link>
+                      {p.TEAM && Object.hasOwn(TEAM_META, p.TEAM) ? (
+                        <Link href={`/team/${p.TEAM}`} className="text-text-secondary hover:text-accent transition-colors">{p.TEAM}</Link>
+                      ) : <span className="text-text-secondary">{p.TEAM ?? "—"}</span>}
                     </td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.GP}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.GP ?? "—"}</td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-accent font-mono tabular-nums min-w-[40px] text-center">{fmtVal(p)}</span>
-                        <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
+                        <span className="font-bold text-accent font-mono tabular-nums min-w-[40px] text-center">{formatLeagueLeaderValue(statVal, category === "FG_PCT")}</span>
+                        {barPct !== null && <div aria-hidden="true" className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden max-w-[60px]">
                           <div className="h-full bg-accent/60 rounded-full" style={{ width: `${barPct}%` }} />
-                        </div>
+                        </div>}
                       </div>
                     </td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.PTS?.toFixed(1)}</td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.AST?.toFixed(1)}</td>
-                    <td className="text-center py-2.5 px-2 text-text-secondary">{p.STL?.toFixed(1)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{formatLeagueLeaderValue(p.PTS)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{formatLeagueLeaderValue(p.AST)}</td>
+                    <td className="text-center py-2.5 px-2 text-text-secondary">{formatLeagueLeaderValue(p.STL)}</td>
                   </tr>
                   );
                 })}
@@ -242,8 +222,7 @@ export default function ClutchPage() {
             </table>
           </div>
         </div>
-        );
-      })()}
+      )}
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}

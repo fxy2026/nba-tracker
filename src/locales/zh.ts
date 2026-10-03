@@ -374,6 +374,8 @@ const zh: Translations = {
     subtitle: "季后赛球员场均数据排行 · 按类别筛选",
     eyebrowSuffix: "季后赛",
     aboutNote: "本页面展示球员的季后赛场均数据 — 不是\"末节关键时刻 (clutch-time)\"的特殊统计。URL 是 /clutch 是历史遗留。",
+    scopeNote: "NBA Stats · 季后赛场均数据与投篮命中率。展示所选类别最多 25 条来源记录，保留来源顺序及原始排名。",
+    partialData: "部分数据不可用：缺失的记录或数值未作补全，缺失数值显示为 —。",
     topScorer: "得分王",
     topPlaymaker: "助攻王",
     mostGames: "最多出场",

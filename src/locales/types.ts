@@ -394,6 +394,8 @@ export interface Translations {
     subtitle: string;
     eyebrowSuffix: string;
     aboutNote: string;
+    scopeNote: string;
+    partialData: string;
     topScorer: string;
     topPlaymaker: string;
     mostGames: string;
