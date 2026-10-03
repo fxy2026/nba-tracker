@@ -24,3 +24,23 @@ it('genuine all-zero pair remains numeric and never divides by zero',()=>{runtim
 it('third-slot pick and remove callbacks return safely between real pair and triple layouts',()=>{let slot=nodes(tree()).find(n=>n.props.compact===true);expect(slot).toBeDefined();(slot!.props.onPick as (p:unknown)=>void)(curry);expect(runtime.slots[6]).toEqual(curry);expect(()=>html()).not.toThrow();slot=nodes(tree()).find(n=>n.props.compact===true);(slot!.props.onClear as ()=>void)();expect(runtime.slots[6]).toBeNull();expect(html()).toContain('Irving');});
 it('normal complete records retain calculations and explicit-zero honors',()=>{runtime.slots[4]={...player,accolades:{championships:0,mvps:0,finalsMvps:0,allStars:0,allNba:0}};runtime.slots[5]=curry;const result=html();expect(result).toContain('39.0');expect(result).not.toContain('NaN');});
 it('mixed declared seasons keep values but cannot claim a categorical winner',()=>{runtime.slots[4]={...player,indexProvenance:{...archive,season:'2024-25'}};runtime.slots[5]=curry;const result=html();expect(result).toContain('2024-25');expect(result).toContain('2025-26');expect(result).not.toContain('leads');expect(result).not.toContain('NaN');});
+it.each(['en','zh'])('radar mobile controls retain real RS/PO switching and accessible labels in %s',locale=>{
+ runtime.locale=locale;
+ runtime.slots[4]={...player,playoffPpg:30,playoffRpg:10,playoffApg:8};
+ runtime.slots[5]={...curry,playoffPpg:28,playoffRpg:5,playoffApg:6};
+ const controls=nodes(tree()).filter(n=>n.type==='button');
+ const regular=controls.find(n=>n.props['aria-label']===(locale==='zh'?'RS · 常规赛':'RS · Regular season'))!;
+ const playoffs=controls.find(n=>n.props['aria-label']===(locale==='zh'?'PO · 季后赛':'PO · Playoffs'))!;
+ const share=controls.find(n=>n.props['aria-label']===(locale==='zh'?'分享对比':'Share comparison'))!;
+ for(const button of [regular,playoffs,share]){
+  expect(button).toBeDefined();expect(button.props.className).toContain('min-h-[44px]');expect(button.props.className).toContain('min-w-[44px]');
+ }
+ expect(regular.props['aria-pressed']).toBe(true);
+ expect(html()).toContain('PPG 20.9-25');
+ (playoffs.props.onClick as ()=>void)();
+ expect(html()).toContain('PPG 30-28');
+ expect(nodes(tree()).find(n=>n.props['aria-label']===(locale==='zh'?'PO · 季后赛':'PO · Playoffs'))?.props['aria-pressed']).toBe(true);
+ (regular.props.onClick as ()=>void)();
+ expect(html()).toContain('PPG 20.9-25');
+ expect(html()).toContain('text-[14px] sm:text-[10px]');
+});

@@ -4,9 +4,10 @@ interface RadarChartProps {
   stats: { label: string; home: number; away: number; max: number }[];
   homeLabel: string;
   awayLabel: string;
+  mobileReadable?: boolean;
 }
 
-export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarChartProps) {
+export default memo(function RadarChart({ stats, homeLabel, awayLabel, mobileReadable = false }: RadarChartProps) {
   const cx = 150, cy = 150, r = 110;
   const n = stats.length;
 
@@ -75,20 +76,21 @@ export default memo(function RadarChart({ stats, homeLabel, awayLabel }: RadarCh
         {/* Labels */}
         {stats.map((s, i) => (
           <text key={i} x={labelPoints[i].x} y={labelPoints[i].y} textAnchor="middle" dominantBaseline="central"
-            fill="var(--text-secondary)" fontSize={10} fontWeight={500}>
+            fill="var(--text-secondary)" fontSize={10} fontWeight={500}
+            className={mobileReadable ? "text-[14px] sm:text-[10px]" : undefined}>
             {s.label}
           </text>
         ))}
       </svg>
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-2 text-xs">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-accent" />
-          <span className="text-text-secondary">{homeLabel}</span>
+      <div className={mobileReadable ? "grid grid-cols-2 gap-3 mt-2 text-xs sm:flex sm:items-center sm:justify-center sm:gap-6" : "flex items-center justify-center gap-6 mt-2 text-xs"}>
+        <div className={mobileReadable ? "flex min-w-0 items-start gap-1.5 sm:items-center" : "flex items-center gap-1.5"}>
+          <span className={`w-3 h-3 rounded-full bg-accent${mobileReadable ? " shrink-0 mt-0.5 sm:mt-0" : ""}`} />
+          <span className={`text-text-secondary${mobileReadable ? " min-w-0 break-words" : ""}`}>{homeLabel}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-success" />
-          <span className="text-text-secondary">{awayLabel}</span>
+        <div className={mobileReadable ? "flex min-w-0 items-start gap-1.5 sm:items-center" : "flex items-center gap-1.5"}>
+          <span className={`w-3 h-3 rounded-full bg-success${mobileReadable ? " shrink-0 mt-0.5 sm:mt-0" : ""}`} />
+          <span className={`text-text-secondary${mobileReadable ? " min-w-0 break-words" : ""}`}>{awayLabel}</span>
         </div>
       </div>
     </div>

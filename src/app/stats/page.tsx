@@ -51,16 +51,17 @@ export default function StatsPage() {
         title={isZh ? "数据与排行" : "Stats & Rankings"}
         action={<span className="chip font-mono">{CURRENT_SEASON} {isZh ? "赛季" : "Season"}</span>}
       />
-      <div className="flex gap-1 mb-6 glass-tile p-1 w-fit">
+      <div className="grid grid-cols-2 gap-1 mb-6 glass-tile p-1 w-full sm:flex sm:w-fit">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            aria-pressed={tab === key}
+            className={`flex min-h-[44px] min-w-0 items-center justify-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-[13px] sm:text-sm whitespace-nowrap font-medium transition-colors cursor-pointer ${
               tab === key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
             }`}
           >
-            <Icon size={15} />
+            <Icon size={15} className="shrink-0" aria-hidden="true" />
             {label}
           </button>
         ))}

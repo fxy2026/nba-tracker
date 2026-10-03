@@ -828,7 +828,7 @@ export default function ComparePage() {
           <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-bg-secondary/20">
             <button
               onClick={sharePair}
-              className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-md text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors cursor-pointer"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 rounded-md text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors cursor-pointer"
               aria-label={isZh ? "分享对比" : "Share comparison"}
             >
               <Share2 size={13} />
@@ -932,7 +932,7 @@ export default function ComparePage() {
             const radarStats = buildRadarStats(player1, player2, mode);
             if (radarStats.length < 3) return null;
             return (
-              <div className="p-6 border-b border-border bg-bg-secondary/20">
+              <div className="px-3 py-4 sm:p-6 border-b border-border bg-bg-secondary/20">
                 <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
                   <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary">
                     / {isZh ? "雷达对比" : "Stat Radar"}
@@ -947,7 +947,9 @@ export default function ComparePage() {
                           <button
                             key={m}
                             onClick={() => setRadarMode(m)}
-                            className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                            aria-pressed={radarMode === m}
+                            aria-label={m === "RS" ? (isZh ? "RS · 常规赛" : "RS · Regular season") : (isZh ? "PO · 季后赛" : "PO · Playoffs")}
+                            className={`min-h-[44px] min-w-[44px] px-2 py-1 rounded transition-colors cursor-pointer ${
                               radarMode === m
                                 ? "bg-accent text-white"
                                 : "text-text-secondary hover:text-text-primary"
@@ -958,7 +960,7 @@ export default function ComparePage() {
                         ))}
                       </div>
                     )}
-                    <div className="flex items-center gap-3 text-[10px]">
+                    <div className="hidden sm:flex items-center gap-3 text-[10px]">
                       <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-sm bg-accent" />
                         <span className="text-text-secondary">{player1.firstName} {player1.lastName}</span>
@@ -972,6 +974,7 @@ export default function ComparePage() {
                 </div>
                 <div className="flex justify-center">
                   <RadarChart
+                    mobileReadable
                     stats={radarStats}
                     homeLabel={`${player1.firstName} ${player1.lastName}`}
                     awayLabel={`${player2.firstName} ${player2.lastName}`}

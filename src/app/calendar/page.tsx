@@ -137,18 +137,20 @@ export default function CalendarPage() {
         icon={CalendarDays}
         title={t.calendarPage.seasonCalendar}
         action={
-          <div className="flex items-center gap-2">
-            <button aria-label={isZh ? "上个月" : "Previous month"} onClick={goToPrevMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
-              <ChevronLeft size={18} />
-            </button>
-            <span className="text-sm font-medium font-mono tabular-nums min-w-[140px] text-center">{monthLabel}</span>
-            <button aria-label={isZh ? "下个月" : "Next month"} onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center">
-              <ChevronRight size={18} />
-            </button>
+          <div className="flex max-w-full flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button aria-label={isZh ? "上个月" : "Previous month"} onClick={goToPrevMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] shrink-0 flex items-center justify-center">
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-sm font-medium font-mono tabular-nums min-w-[140px] text-center">{monthLabel}</span>
+              <button aria-label={isZh ? "下个月" : "Next month"} onClick={goToNextMonth} className="p-2 rounded-lg glass-tile hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] shrink-0 flex items-center justify-center">
+                <ChevronRight size={18} />
+              </button>
+            </div>
             {(year !== et.year || month !== et.month) && (
               <button
                 onClick={() => { setYear(et.year); setMonth(et.month); }}
-                className="chip chip-active cursor-pointer"
+                className="chip chip-active min-h-[44px] shrink-0 cursor-pointer"
               >
                 {t.common.today}
               </button>
@@ -178,6 +180,10 @@ export default function CalendarPage() {
           </div>
         );
       })()}
+
+      <p className="mb-3 text-xs text-text-secondary sm:hidden">
+        {isZh ? "点击日期查看当天全部比赛，数字为比赛场数。" : "Tap a date for all games. Counts show games that day."}
+      </p>
 
       {/* Calendar Grid */}
       <div className="glass-tile overflow-hidden">
@@ -213,7 +219,7 @@ export default function CalendarPage() {
                   prefetch={false}
                   aria-label={`${cell.date} · ${error ? (isZh ? "赛程数据不可用" : "Schedule unavailable") : `${cell.calDay?.gameCount ?? 0} ${isZh ? "场已列比赛" : "listed games"}`}`}
                   key={i}
-                  className={`border-b border-r border-border/50 p-2 min-h-[80px] transition-colors ${
+                  className={`border-b border-r border-border/50 min-w-0 px-1 py-2 sm:p-2 min-h-[80px] text-center sm:text-left transition-colors ${
                     cell.day ? "cursor-pointer hover:bg-bg-hover" : ""
                   } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-success/15" : cell.calDay!.gameCount >= 4 ? "bg-success/10" : "bg-success/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
 
@@ -225,47 +231,52 @@ export default function CalendarPage() {
                       </span>
                       {hasGames && (
                         <div className="mt-1">
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
+                          <span aria-hidden="true" className="inline-block max-w-full whitespace-nowrap rounded-full bg-accent/15 px-1 py-0.5 text-[10px] font-medium leading-tight text-accent sm:hidden">
+                            {cell.calDay!.gameCount}{isZh ? "场" : ""}
+                          </span>
+                          <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
                             {cell.calDay!.gameCount} {cell.calDay!.gameCount === 1 ? t.common.game : t.common.games}
                           </span>
-                          {(() => {
-                            const completedGames = cell.calDay!.games.filter(g => g.gameStatus === 3);
-                            if (completedGames.length === 0) return null;
-                            const totalPts = completedGames.reduce((s, g) => s + g.homeScore + g.awayScore, 0);
-                            return (
-                              <span className="block text-[8px] text-text-secondary mt-0.5">
-                                {totalPts} {t.common.points}
-                              </span>
-                            );
-                          })()}
-                          <div className="mt-1 space-y-0.5">
-                            {cell.calDay!.games.slice(0, 2).map((g) => (
-                              <div key={g.gameId} className="text-[9px] text-text-secondary truncate flex items-center gap-0.5">
-                                {TEAM_META[g.awayTricode] && (
-                                  <Image src={teamLogoUrl(TEAM_META[g.awayTricode].teamId)} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
-                                )}
-                                {g.awayTricode} @{" "}
-                                {TEAM_META[g.homeTricode] && (
-                                  <Image src={teamLogoUrl(TEAM_META[g.homeTricode].teamId)} alt={g.homeTricode} width={10} height={10} unoptimized className="inline-block" />
-                                )}
-                                {g.homeTricode}
-                                {g.gameStatus === 3 && (
-                                  <span className={`ml-1 font-medium ${g.awayScore > g.homeScore ? "text-text-secondary" : "text-text-secondary"}`}>
-                                    {g.awayScore}-{g.homeScore}
-                                  </span>
-                                )}
-                                {g.gameStatus === 3 && (
-                                  <span className={`ml-0.5 font-bold ${g.homeScore > g.awayScore ? "text-success" : "text-danger"}`}>
-                                    {g.homeScore > g.awayScore ? "W" : "L"}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                            {cell.calDay!.games.length > 2 && (
-                              <div className="text-[9px] text-text-secondary/60">
-                                +{cell.calDay!.games.length - 2} {t.calendarPage.more}
-                              </div>
-                            )}
+                          <div className="hidden sm:block">
+                            {(() => {
+                              const completedGames = cell.calDay!.games.filter(g => g.gameStatus === 3);
+                              if (completedGames.length === 0) return null;
+                              const totalPts = completedGames.reduce((s, g) => s + g.homeScore + g.awayScore, 0);
+                              return (
+                                <span className="block text-[8px] text-text-secondary mt-0.5">
+                                  {totalPts} {t.common.points}
+                                </span>
+                              );
+                            })()}
+                            <div className="mt-1 space-y-0.5">
+                              {cell.calDay!.games.slice(0, 2).map((g) => (
+                                <div key={g.gameId} className="text-[9px] text-text-secondary truncate flex items-center gap-0.5">
+                                  {TEAM_META[g.awayTricode] && (
+                                    <Image src={teamLogoUrl(TEAM_META[g.awayTricode].teamId)} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
+                                  )}
+                                  {g.awayTricode} @{" "}
+                                  {TEAM_META[g.homeTricode] && (
+                                    <Image src={teamLogoUrl(TEAM_META[g.homeTricode].teamId)} alt={g.homeTricode} width={10} height={10} unoptimized className="inline-block" />
+                                  )}
+                                  {g.homeTricode}
+                                  {g.gameStatus === 3 && (
+                                    <span className={`ml-1 font-medium ${g.awayScore > g.homeScore ? "text-text-secondary" : "text-text-secondary"}`}>
+                                      {g.awayScore}-{g.homeScore}
+                                    </span>
+                                  )}
+                                  {g.gameStatus === 3 && (
+                                    <span className={`ml-0.5 font-bold ${g.homeScore > g.awayScore ? "text-success" : "text-danger"}`}>
+                                      {g.homeScore > g.awayScore ? "W" : "L"}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                              {cell.calDay!.games.length > 2 && (
+                                <div className="text-[9px] text-text-secondary/60">
+                                  +{cell.calDay!.games.length - 2} {t.calendarPage.more}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
