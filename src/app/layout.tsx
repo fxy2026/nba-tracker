@@ -170,9 +170,9 @@ export default async function RootLayout({
             />
             {children}
           </main>
+          <BackToTop />
           <SiteFooter />
           <MobileNav />
-          <BackToTop />
           <InstallPrompt />
           <OnlineStatus />
           <WebVitalsReporter />
