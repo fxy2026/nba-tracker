@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import lebron from "@/data/player-career-archives/2544-2026-10-03.json";
 import jokic from "@/data/player-career-archives/203999-2026-10-03.json";
+import curry from "@/data/player-career-archives/201939-2026-10-03.json";
+import giannis from "@/data/player-career-archives/203507-2026-10-03.json";
 import { getReviewedCareerArchive, validateReviewedCareerArchive } from "./player-career-archive";
 import { validateCareerArchive } from "./player-career-archive-validation";
 import { normalizePlayerCareerData } from "./player-career-data";
@@ -12,7 +14,7 @@ const hash = (raw: unknown) => createHash("sha256").update(JSON.stringify(raw)).
 const edited = (change: (value: typeof lebron) => void) => { const copy = structuredClone(lebron); change(copy); return copy; };
 
 describe("independently reviewed official career archives", () => {
-  it.each([["2544", lebron, 23, "2003-04"], ["203999", jokic, 11, "2015-16"]] as const)("loads complete dated %s snapshot locally", async (id, raw, seasons, first) => {
+  it.each([["2544", lebron, 23, "2003-04"], ["203999", jokic, 11, "2015-16"], ["201939", curry, 17, "2009-10"], ["203507", giannis, 13, "2013-14"]] as const)("loads complete dated %s snapshot locally", async (id, raw, seasons, first) => {
     const archive = await getReviewedCareerArchive(id);
     expect(archive?.data).toEqual(raw.data);
     expect(archive?.data.careerSeasons).toHaveLength(seasons);
@@ -29,6 +31,33 @@ describe("independently reviewed official career archives", () => {
     expect(lebron.data.careerAverage).toMatchObject({ GP: 1622, MIN: 37.6, PTS: 26.8, REB: 7.5 });
     expect(jokic.data.careerAverage).toMatchObject({ GP: 810, MIN: 32, PTS: 22.2, AST: 7.5 });
     expect(jokic.data.careerShooting).toEqual({ source: "nba-browser-overall", FG_PCT: .561, FG3_PCT: .362, FT_PCT: .825 });
+    expect(curry.data.careerAverage).toMatchObject({ GP: 1069, MIN: 34, PTS: 24.8, AST: 6.3 });
+    expect(giannis.data.careerAverage).toMatchObject({ GP: 895, MIN: 32.7, PTS: 24.1, AST: 5 });
+    expect(curry.data.careerShooting).toEqual({ source: "nba-browser-overall", FG_PCT: .471, FG3_PCT: .422, FT_PCT: .912 });
+    expect(giannis.data.careerShooting).toEqual({ source: "nba-browser-overall", FG_PCT: .554, FG3_PCT: .285, FT_PCT: .691 });
+  });
+
+  it.each([[curry, "GSW"], [giannis, "MIL"]] as const)("preserves the reviewed historical teams for $0.player.name", (raw, team) => {
+    expect(new Set(raw.data.careerSeasons.map(row => row.TEAM_ABBREVIATION))).toEqual(new Set([team]));
+    const evidence = JSON.parse(readFileSync(raw.evidence.path, "utf8"));
+    const minutes = evidence.totals.columns.indexOf("MIN");
+    const summedMinutes = evidence.totals.seasonRows.reduce((sum: number, row: string[]) => sum + Number(row[minutes]), 0);
+    const overallMinutes = Number(evidence.totals.overall[minutes]);
+    // Preserve the captured Overall value even when source rounding differs.
+    expect(summedMinutes - overallMinutes).toBe(raw.player.nbaId === "201939" ? 1 : 0);
+    if (raw.player.nbaId === "201939") expect(overallMinutes).toBe(36305);
+  });
+
+  it.each([
+    [curry, "201939", "280e3340ab86bf6f998e8d448dabcdd6706439efbca6979f7438348af731560c"],
+    [giannis, "203507", "8270f47fe4bf8af14c9ed810337c31ed204838bd7dff750b30fd7458713e01fb"],
+  ] as const)("pins the independently approved bytes for $1", (raw, id, approvedHash) => {
+    expect(hash(raw)).toBe(approvedHash);
+    expect(validateReviewedCareerArchive(raw, id, approvedHash)?.data).toEqual(raw.data);
+    const changed = structuredClone(raw);
+    changed.data.careerSeasons[0].PTS += .1;
+    expect(validateReviewedCareerArchive(changed, id, approvedHash)).toBeNull();
+    expect(validateReviewedCareerArchive(raw, id === "201939" ? "203507" : "201939", approvedHash)).toBeNull();
   });
 
   it.each(["0002544", "2544/other", "203999", "1", "__proto__"])("does not lend a LeBron archive to identity %s", id => {

@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import lebron from "@/data/player-career-archives/2544-2026-10-03.json";
 import jokic from "@/data/player-career-archives/203999-2026-10-03.json";
+import curry from "@/data/player-career-archives/201939-2026-10-03.json";
+import giannis from "@/data/player-career-archives/203507-2026-10-03.json";
 import { getReviewedCareerArchive } from "./player-career-archive";
 const providers = vi.hoisted(() => ({ nba: vi.fn(), roster: vi.fn(), espn: vi.fn() }));
 vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStats: providers.nba }));
@@ -15,7 +17,7 @@ const nba = (rows = lebron.data.careerSeasons, id = 2544) => {
     rowSet: rows.map(row => [...headers.slice(0, -1).map(k => (row as Record<string, unknown>)[k]), id]) }] }) };
 };
 beforeEach(async () => {
-  await Promise.all([getReviewedCareerArchive("2544"), getReviewedCareerArchive("203999")]);
+  await Promise.all(["2544", "203999", "201939", "203507"].map(getReviewedCareerArchive));
   vi.useFakeTimers(); vi.setSystemTime(now);
   providers.nba.mockReset().mockResolvedValue(null);
   providers.roster.mockReset().mockResolvedValue(null);
@@ -24,7 +26,7 @@ beforeEach(async () => {
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
 describe("reviewed dated fallback after the bounded live chain", () => {
-  it.each([["2544", lebron], ["203999", jokic]] as const)("returns %s archive on provider failure without adding calls or updating capture time", async (id, record) => {
+  it.each([["2544", lebron], ["203999", jokic], ["201939", curry], ["203507", giannis]] as const)("returns %s archive on provider failure without adding calls or updating capture time", async (id, record) => {
     const res = await GET(request(id));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ...record.data, recentGames: null });
@@ -32,6 +34,51 @@ describe("reviewed dated fallback after the bounded live chain", () => {
     expect(providers.nba).toHaveBeenCalledTimes(1);
     expect(providers.roster).not.toHaveBeenCalled(); expect(providers.espn).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  describe.each([["201939", curry, "GSW", "3975"], ["203507", giannis, "MIL", "3032977"]] as const)("newly reviewed player %s", (id, record, team, espnId) => {
+    it.each(["truncated", "empty", "older-games", "wrong-player"])("retains complete archived coverage for %s live data", async scenario => {
+      const rows = scenario === "empty" ? [] : scenario === "truncated" ? record.data.careerSeasons.slice(1)
+        : record.data.careerSeasons.map((row, index) => scenario === "older-games" && index === 0 ? { ...row, GP: row.GP - 1 } : row);
+      providers.nba.mockResolvedValue(nba(rows, scenario === "wrong-player" ? 2544 : Number(id)));
+      const res = await GET(request(id));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ...record.data, recentGames: null });
+      expect(providers.nba).toHaveBeenCalledTimes(1);
+      expect(providers.roster).not.toHaveBeenCalled(); expect(providers.espn).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("allows complete live NBA history to replace the archive wholesale", async () => {
+      const updated = record.data.careerSeasons.map(row => ({ ...row, PTS: row.PTS + .1 }));
+      providers.nba.mockResolvedValue(nba(updated, Number(id)));
+      const res = await GET(request(id)); const body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.careerSeasons).toEqual(updated.map(row => ({ ...row, PLAYER_ID: Number(id) })));
+      expect(body.provenance).toEqual({ source: "nba-stats", providerPlayerId: id, scope: "regular-season", retrievalKind: "api-response", retrievedAt: now });
+      expect(body).not.toHaveProperty("stale"); expect(body).not.toHaveProperty("careerAverage"); expect(body).not.toHaveProperty("careerShooting");
+      expect(providers.nba).toHaveBeenCalledTimes(1); expect(providers.roster).not.toHaveBeenCalled();
+    });
+
+    it("uses the reviewed canonical name and accepts complete ESPN coverage", async () => {
+      providers.nba.mockResolvedValue(nba([], Number(id)));
+      providers.roster.mockResolvedValue(espnId);
+      providers.espn.mockResolvedValue({ careerSeasons: record.data.careerSeasons });
+      const res = await GET(request(id, `&name=Unrelated+Player&team=${team}`)); const body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.careerSeasons).toEqual(record.data.careerSeasons);
+      expect(body.provenance).toEqual({ source: "espn", providerPlayerId: espnId, scope: "regular-season", retrievalKind: "api-response", retrievedAt: now });
+      expect(body).not.toHaveProperty("stale"); expect(body).not.toHaveProperty("careerAverage"); expect(body).not.toHaveProperty("careerShooting");
+      expect(providers.roster).toHaveBeenCalledWith(record.player.name, team, expect.any(AbortSignal));
+      expect(providers.nba).toHaveBeenCalledTimes(1); expect(providers.roster).toHaveBeenCalledTimes(1); expect(providers.espn).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not enable ESPN requests when only the archive supplies the name", async () => {
+      const res = await GET(request(id, `&team=${team}`));
+      expect(await res.json()).toEqual({ ...record.data, recentGames: null });
+      expect(providers.nba).toHaveBeenCalledTimes(1);
+      expect(providers.roster).not.toHaveBeenCalled(); expect(providers.espn).not.toHaveBeenCalled();
+    });
   });
 
   it("prefers complete live NBA history and keeps archived aggregates out of it", async () => {
@@ -97,6 +144,7 @@ describe("reviewed dated fallback after the bounded live chain", () => {
   });
 
   it("keeps valid-empty success and unavailable 503 behavior for unarchived IDs", async () => {
+    expect(await getReviewedCareerArchive("1")).toBeNull();
     providers.nba.mockResolvedValueOnce(nba([], 1));
     const empty = await GET(request("1"));
     expect(empty.status).toBe(200); expect((await empty.json()).careerSeasons).toEqual([]);

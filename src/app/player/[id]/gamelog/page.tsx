@@ -3,8 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, GitCompareArrows, User, Users } from "lucide-react";
-import { getPlayerInfo, getPlayerHeadshotUrl } from "@/lib/api";
+import { getPlayerIndexSnapshot, getPlayerHeadshotUrl } from "@/lib/api";
 import { CURRENT_SEASON } from "@/lib/constants";
+import { playerIndexLabel } from "@/lib/player-index-provenance";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
@@ -20,7 +21,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const personId = parseInt(id, 10);
   if (isNaN(personId)) return {};
-  const [player, locale] = await Promise.all([getPlayerInfo(personId), getLocale()]);
+  const [snapshot, locale] = await Promise.all([getPlayerIndexSnapshot(), getLocale()]);
+  const player = snapshot.players.find((p) => p.personId === personId);
   if (!player) return {};
   const name = `${player.firstName} ${player.lastName}`;
   const isZh = locale === "zh";
@@ -47,7 +49,8 @@ export default async function PlayerGameLogPage({ params }: PageProps) {
   const personId = parseInt(id, 10);
   if (isNaN(personId)) notFound();
 
-  const [player, locale] = await Promise.all([getPlayerInfo(personId), getLocale()]);
+  const [snapshot, locale] = await Promise.all([getPlayerIndexSnapshot(), getLocale()]);
+  const player = snapshot.players.find((p) => p.personId === personId);
   if (!player) notFound();
 
   const isZh = locale === "zh";
@@ -90,6 +93,11 @@ export default async function PlayerGameLogPage({ params }: PageProps) {
             >
               {player.teamCity} {player.teamName}
             </Link>
+          )}
+          {(player.teamAbbr || player.teamId > 0) && (
+            <p className="mt-1 text-[11px] text-text-secondary">
+              {isZh ? "球队归属：" : "Team affiliation: "}{playerIndexLabel(snapshot.provenance, locale)}
+            </p>
           )}
         </div>
         {player.teamId > 0 && (

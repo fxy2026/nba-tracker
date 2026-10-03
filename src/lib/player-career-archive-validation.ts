@@ -6,6 +6,8 @@ export interface ValidatedCareerArchive { playerName: string; data: PlayerCareer
 const identities: Record<string, { name: string; firstSeason: string }> = {
   "2544": { name: "LeBron James", firstSeason: "2003-04" },
   "203999": { name: "Nikola Jokić", firstSeason: "2015-16" },
+  "201939": { name: "Stephen Curry", firstSeason: "2009-10" },
+  "203507": { name: "Giannis Antetokounmpo", firstSeason: "2013-14" },
 };
 const digest = (value: unknown) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
 

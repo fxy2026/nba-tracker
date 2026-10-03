@@ -84,6 +84,34 @@ it.each(['en', 'zh'])('keeps retained empty attribution visible after a failed r
 });
 
 import archivedLeBron from '@/data/player-career-archives/2544-2026-10-03.json';
+import archivedCurry from '@/data/player-career-archives/201939-2026-10-03.json';
+import archivedGiannis from '@/data/player-career-archives/203507-2026-10-03.json';
+it.each([
+  ['en', archivedCurry, 'GSW'], ['zh', archivedCurry, 'GSW'],
+  ['en', archivedGiannis, 'MIL'], ['zh', archivedGiannis, 'MIL'],
+] as const)('renders the reviewed career snapshot for $1.player.name in $0', (locale, record, team) => {
+  state.locale = locale;
+  state.result = { data: record.data, loading: false, error: false, stale: true, retry: vi.fn() };
+  const html = renderToStaticMarkup(createElement(PlayerStatsBundle, {
+    playerId: Number(record.player.nbaId), playerName: record.player.name, teamTricode: team,
+  }));
+  const coverage = record.data.provenance.coverage;
+  expect(html).toContain(record.source.url);
+  expect(html).toContain(`dateTime="${record.data.provenance.capturedAt}"`);
+  expect(html).toContain(coverage.firstSeason); expect(html).toContain(coverage.lastSeason);
+  expect(html).toContain(locale === 'zh' ? `${coverage.seasonCount} 个赛季` : `${coverage.seasonCount} seasons`);
+  expect(html).toContain(locale === 'zh' ? '可能缺少后续更新' : 'may miss later updates');
+  expect(html).not.toContain(locale === 'zh' ? '本 API 获取时间：' : 'Retrieved by this API:');
+  const rows = [...html.matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr>/g)].map(match => match[0]);
+  const seasons = rows.filter(row => /<td[^>]*>\d{4}-\d{2}(?:<\/td>|<span)/.test(row));
+  expect(seasons).toHaveLength(coverage.rowCount);
+  for (const row of seasons) expect(row).toContain(`>${team}</td>`);
+  const career = html.match(/<tr class="border-t-2[^>]*>[\s\S]*?<\/tr>/)![0];
+  const overall = record.data.careerAverage;
+  for (const value of [String(overall.GP), overall.MIN.toFixed(1), overall.PTS.toFixed(1), overall.AST.toFixed(1)]) {
+    expect(career).toContain(`>${value}</td>`);
+  }
+});
 it.each(['en', 'zh'])('renders dated archive coverage, fixed capture time and direct Overall values honestly, %s', locale => {
   state.locale = locale;
   state.result = { data: archivedLeBron.data, loading: false, error: true, stale: true, retry: vi.fn() };

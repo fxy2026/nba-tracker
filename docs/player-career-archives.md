@@ -1,6 +1,6 @@
 # Reviewed, dated NBA career snapshots
 
-The server can use two independently reviewed NBA.com public-page captures when
+The server can use four independently reviewed NBA.com public-page captures when
 live career history fails or is demonstrably incomplete. These are dated source
 snapshots, not a claim that the current provider endpoint works or that the
 source has not changed since capture.
@@ -9,6 +9,8 @@ source has not changed since capture.
 | --- | --- | --- | --- |
 | 2544 | LeBron James | 2026-10-03 03:05:29.326 | 2003-04–2025-26, 23 season rows |
 | 203999 | Nikola Jokić | 2026-10-03 03:07:53.770 | 2015-16–2025-26, 11 season rows |
+| 201939 | Stephen Curry | 2026-10-03 03:18:56.056 | 2009-10–2025-26, 17 season rows |
+| 203507 | Giannis Antetokounmpo | 2026-10-03 03:20:04.525 | 2013-14–2025-26, 13 season rows |
 
 The exact public source is `https://www.nba.com/stats/player/{NBA_ID}/career`.
 The separate Totals capture uses `?PerMode=Totals`. The table is explicitly
@@ -26,8 +28,10 @@ for historical row teams.
   season cells, Overall cells, mode, source URL and capture time for both modes.
   It also records the SHA-256 of the original local DOM capture. It does not
   contain NBA page HTML, JavaScript, navigation or unrelated browser content.
-- Independent review compared all 530 normalized season/Overall values and all
-  1,824 factual source-evidence cells to the original captures. Coverage,
+- The first independent review compared all 530 normalized season/Overall values
+  and 1,824 factual source-evidence cells for James/Jokić to the original captures.
+  A separate review compared all 470 normalized values and 1,632 evidence cells
+  for Curry/Antetokounmpo, with the earlier records unchanged. Coverage,
   identity, timestamps, unit conversions and original capture hashes matched.
   The reviewed JSON.stringify SHA-256 content hashes are pinned in the server
   allowlist. A plausible edited statistic still fails that hash check.
@@ -46,8 +50,10 @@ for historical row teams.
   synthesize a more precise Per Game value.
 - Source rounding is preserved: LeBron's displayed season MIN totals sum to
   61,029 versus the source Overall 61,028; Jokić's sum to 25,913 versus Overall
-  25,910. All other checked integer counting-stat sums match the source Overall.
-  Neither minute discrepancy is “corrected.”
+  25,910; Curry's sum to 36,306 versus Overall 36,305. All other checked integer
+  counting-stat sums match the source Overall, including Antetokounmpo's minutes.
+  These minute discrepancies are not “corrected.” Historical teams remain GSW
+  for Curry and MIL for Antetokounmpo regardless of profile-header affiliation.
 
 ## Runtime and freshness
 
