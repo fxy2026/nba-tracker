@@ -30,6 +30,8 @@ import { getReportedScoreSequence } from "@/lib/reported-score-sequence-archive"
 import ReportedScoreSequence from "./_components/ReportedScoreSequence";
 import { getOfficialPeriodScores } from "@/lib/official-period-score-archive";
 import OfficialPeriodScores from "./_components/OfficialPeriodScores";
+import { getVerifiedShotChart } from "@/lib/verified-shot-chart-archive";
+import VerifiedShotChartSection from "./_components/VerifiedShotChartSection";
 import GameHero from "./_components/GameHero";
 import PreGameHero from "./_components/PreGameHero";
 import GameStickyScore from "./_components/GameStickyScore";
@@ -178,6 +180,7 @@ export default async function GamePage({ params }: PageProps) {
       const recoveredBox = getRecoveredPlayerBox(sg);
       const reportedSequence = getReportedScoreSequence(sg);
       const officialPeriods = getOfficialPeriodScores(sg);
+      const verifiedShots = getVerifiedShotChart(sg);
       const providerBox = recoveredBox ? null : getProviderPlayerBox(sg);
       const quarantined = isPlayerBoxQuarantined(sg.gameId);
       const sgPlayoffs = isPlayoff(sg.gameId);
@@ -214,7 +217,9 @@ export default async function GamePage({ params }: PageProps) {
               <span className="order-2 text-text-secondary/50 text-sm font-mono">@</span>
             </div>
             <p className="mt-8 text-xs text-text-secondary text-center max-w-md mx-auto">
-              {quarantined && !recoveredBox && !providerBox
+              {verifiedShots
+                ? (isZh ? `已恢复本场 ${verifiedShots.coverage.total} 次真实出手坐标，见下方 3D 球场。逐回合暂不可用。` : `${verifiedShots.coverage.total} verified shot locations have been recovered for the 3D court below. Play-by-play remains unavailable.`)
+                : quarantined && !recoveredBox && !providerBox
                 ? (isZh ? "本场补充球员数据存在身份核验问题，已暂停展示。可查看下方 NBA 官方赛后报告。" : "Supplemental player data is withheld while a player identity issue is reviewed. The NBA official final report is linked below.")
                 : (recoveredBox || providerBox)
                 ? (isZh ? "已恢复本场球员基础技术统计，见下表。投篮图与逐回合暂不可用。" : "Basic player stats have been recovered below. Shot charts and play-by-play remain unavailable.")
@@ -223,6 +228,7 @@ export default async function GamePage({ params }: PageProps) {
             <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
           {officialPeriods && <OfficialPeriodScores scores={officialPeriods} isZh={isZh} />}
+          <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />
           {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} isZh={isZh} />}
           {recoveredBox && <RecoveredPlayerBox box={recoveredBox} isZh={isZh} />}
           {providerBox && <ProviderPlayerBox box={providerBox} isZh={isZh} />}
@@ -258,6 +264,7 @@ export default async function GamePage({ params }: PageProps) {
 
   const isFinal = boxScore.gameStatus === 3;
   const isUpcoming = boxScore.gameStatus === 1;
+  const verifiedShots = getVerifiedShotChart(boxScore);
   const isLive = boxScore.gameStatus === 2;
   // Leaders/headlines/shooting splits compute fine from an in-progress box
   // score, so a live viewer gets the same "who's balling" summary as a final.
@@ -456,10 +463,11 @@ export default async function GamePage({ params }: PageProps) {
         </div>
       ) : (
         <>
+          {verifiedShots && <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />}
           {/* Box score + shot chart come right after the leaders — the #1 thing
               a fan wants. Deeper analytics charts follow below it. */}
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-6">
+          <div className={`mt-6 grid grid-cols-1 ${verifiedShots ? "lg:grid-cols-2" : "lg:grid-cols-3"} gap-6`}>
+            {!verifiedShots && <div className="lg:col-span-1 space-y-6">
               <Suspense fallback={null}>
                 <WithPlayByPlay data={pbp!}>{({ shots }) => (
                   <ShotChartSection
@@ -470,7 +478,7 @@ export default async function GamePage({ params }: PageProps) {
                 t={t}
               />)}</WithPlayByPlay>
               </Suspense>
-            </div>
+            </div>}
             <div className="lg:col-span-2 space-y-6">
               <Suspense fallback={<BoxScoreSection team={boxScore.awayTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.awayTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>
               <Suspense fallback={<BoxScoreSection team={boxScore.homeTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.homeTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>

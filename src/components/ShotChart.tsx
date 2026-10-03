@@ -38,7 +38,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
       if (selectedPlayer && s.personId !== selectedPlayer) continue;
       f.push(s);
       const isMade = s.shotResult === "Made";
-      const is3 = s.shotDistance > 22 || !!s.subType?.toLowerCase().includes("3pt");
+      const is3 = s.actionType === "3pt";
       if (isMade) m++;
       if (is3) { threesT++; if (isMade) threesM++; }
       else { twosT++; if (isMade) twosM++; }
@@ -257,7 +257,7 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
           { name: t.shotChartComp.threePtZone, made: 0, total: 0 },
         ];
         for (const s of filtered) {
-          const is3 = s.shotDistance > 22 || !!s.subType?.toLowerCase().includes("3pt");
+          const is3 = s.actionType === "3pt";
           let idx: number;
           if (is3) idx = 3;
           else if (s.shotDistance <= 4) idx = 0;

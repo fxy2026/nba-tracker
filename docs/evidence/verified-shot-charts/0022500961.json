@@ -1,0 +1,116 @@
+{
+  "reviewDate": "2026-10-03",
+  "gameId": "0022500961",
+  "source": {
+    "label": "NBA official game charts",
+    "url": "https://www.nba.com/game/mem-vs-det-0022500961/game-charts",
+    "retrievedAt": "2026-10-03T05:08:18.649Z",
+    "httpStatus": 200,
+    "htmlSha256": "768be2ecef18d11ab52e10771051501ea46fb6ab23e006bc2f194637f4b33a15",
+    "embeddedPath": "__NEXT_DATA__.props.pageProps.playByPlay",
+    "embeddedSource": "hanaV3",
+    "rawActionCount": 499,
+    "rawFieldGoalActionCount": 181,
+    "rawFieldGoalActionsSha256": "e9b63f4c567cc4d855acdf33a005b4d19221e8ac5b0f221af418f2920583dbdd"
+  },
+  "facts": {
+    "path": "src/data/verified-shot-charts/0022500961.json",
+    "sha256": "00dbdba6cd68f72513fe80dcdbd44c1b7588bf9c1df14d38bd4a66fd65aadaff",
+    "hashEncoding": "UTF-8 JSON, keys lexicographically sorted, compact separators, ensure_ascii=False, no final newline",
+    "shotRowCount": 181,
+    "preservedShotFieldCount": 1810,
+    "playerEvidenceRowCount": 26
+  },
+  "coordinateSemantics": {
+    "system": "NBA hanaV3 legacy basket-relative positions",
+    "xFeet": "xLegacy / 10; positive points right in the official top-hoop view",
+    "yFeet": "yLegacy / 10; positive points toward midcourt, origin at basket",
+    "rendering": "Both teams normalized to one basket. No original attack direction is asserted. No ball trajectories, release heights or flight times are available.",
+    "officialCode": "module 22862 converts hanaV3 xLegacy using [-250,250] to [-25,25], yLegacy using [-50,420] to [-5,42]; module 3133.zy is a linear map; module 3192 maps x[-25,25] and y[-5,42] to the official 500 by 470 chart, and module 77269 draws its hoop at (250,50).",
+    "clamping": "Official scale functions clamp outside their bounds; every reviewed row is inside those bounds. Our exact division preserves all source coordinates without clipping.",
+    "sourceJavaScript": [
+      {
+        "url": "https://www.nba.com/_next/static/chunks/14672-7246e95691a37805.js",
+        "sha256": "639f6882e02165ec447f5955882f9f40390fceed455e69b30613bdf68b60a37a"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/24094-e9fd2fd647bbb36e.js",
+        "sha256": "25d89b3ac913827b0d0407355b681c4634bd02dcc2c55c9cd5a9bdbb39a101ed"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/pages/_app-71c0bd4c8ffc33a7.js",
+        "sha256": "47f9487b21ea581649d3059ef5489c7a6744b3ef6edf0798ecd98299599a8e51"
+      }
+    ],
+    "xLegacyRange": [
+      -241,
+      237
+    ],
+    "yLegacyRange": [
+      -12,
+      312
+    ],
+    "negativeYCount": 4,
+    "zeroCoordinateCount": 6,
+    "zeroCoordinates": "All six (0,0) source rows explicitly describe a Tip Layup Shot; retained unchanged."
+  },
+  "reconciliation": {
+    "gameIdentity": "Exact NBA game ID, code, UTC tipoff, status, home/away numeric IDs/tricodes and final score match the archived canonical schedule.",
+    "sourceGame": {
+      "gameId": "0022500961",
+      "gameCode": "20260313/MEMDET",
+      "gameTimeUTC": "2026-03-13T23:30:00Z",
+      "gameStatus": 3,
+      "homeTeam": {
+        "teamId": 1610612765,
+        "teamTricode": "DET",
+        "score": 126
+      },
+      "awayTeam": {
+        "teamId": 1610612763,
+        "teamTricode": "MEM",
+        "score": 110
+      }
+    },
+    "home": {
+      "tricode": "DET",
+      "fieldGoalsMade": 50,
+      "fieldGoalsAttempted": 92,
+      "threePointersMade": 12,
+      "threePointersAttempted": 35
+    },
+    "away": {
+      "tricode": "MEM",
+      "fieldGoalsMade": 38,
+      "fieldGoalsAttempted": 89,
+      "threePointersMade": 15,
+      "threePointersAttempted": 41
+    },
+    "quarterShotCounts": [
+      46,
+      45,
+      43,
+      47
+    ],
+    "players": "Every player FGM/FGA/3PM/3PA matches the NBA page box; all 22 played player FG/3PT/FT/points lines also match existing recovered records and the official PDF final report. Four zero-attempt source roster rows are preserved as validation evidence only.",
+    "duplicateEventIds": 0,
+    "independentOfficialGamebook": {
+      "url": "https://statsdmz.nba.com/pdfs/20260313/20260313_MEMDET_book.pdf",
+      "sha256": "e798bb1ce8dd0d5e035f53af522567c8f5a038577ba3ba27be1bb3afb3afe55e",
+      "page": 1
+    }
+  },
+  "excludedFieldsAndUses": [
+    "Source shotDistance is zero for 21 attempts, including 15 three-pointers; it is not used or passed to the renderer.",
+    "Explicit shotValue classifies 2PT/3PT; no narrative or distance inference.",
+    "Free throws and non-shooting actions are not plotted.",
+    "No raw narrative, score timeline, assists, rebounds or actions are introduced into existing play-by-play modules.",
+    "No shot archive imports or raw source HTML enter client bundles.",
+    "One reviewed game only. Unknown, incomplete or conflicting game identities remain unavailable."
+  ],
+  "independentReview": {
+    "result": "PASS",
+    "candidateComparison": "All 181 shot rows, 1,810 fields, 26 player rows and game identity exactly match the captured source, including types and ordering.",
+    "coordinateAndTotalsReview": "Official served JavaScript semantics independently verified; all team/player FG and 3PT totals reconciled; original NBA rendered chart observed with 89 MEM and 92 DET shot titles."
+  }
+}

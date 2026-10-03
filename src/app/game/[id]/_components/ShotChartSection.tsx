@@ -18,14 +18,17 @@ export default function ShotChartSection({
   allPlayers: { personId: number; nameI: string; teamTricode: string }[];
   t: Translations;
 }) {
-  if (shots.length === 0) return null;
   return (
     <div className="glass-tile p-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <span className="w-1 h-4 bg-accent rounded-full" />
         {t.gameDetail.shotChart}
       </h3>
-      <ShotChart shots={shots} homeTricode={homeTricode} awayTricode={awayTricode} players={allPlayers} />
+      {shots.length > 0
+        ? <ShotChart shots={shots} homeTricode={homeTricode} awayTricode={awayTricode} players={allPlayers} />
+        : <p className="text-xs text-text-secondary py-4">{t.gameDetail.shotChart === "投篮图"
+          ? "本场真实出手坐标暂不可用。"
+          : "Verified shot locations are currently unavailable for this game."}</p>}
     </div>
   );
 }

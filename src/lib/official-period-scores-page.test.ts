@@ -97,9 +97,12 @@ describe.each(["en", "zh"] as const)("actual game page archive selection in %s",
     expect(restored[0].scores.home.periodPoints).toEqual(expected.home.periodPoints);
     expect(restored[0].scores.away.periodPoints).toEqual(expected.away.periodPoints);
     expect(restored[0].scores.source.reportUrl).toBe(expected.source.reportUrl);
-    expect(visibleText(result)).toContain(locale === "zh"
-      ? "投篮图与逐回合暂不可用。"
-      : "Shot charts and play-by-play remain unavailable.");
+    expect(visibleText(result)).toContain(id === "0022500961"
+      ? (locale === "zh" ? "181 次真实出手坐标" : "181 verified shot locations")
+      : (locale === "zh" ? "投篮图与逐回合暂不可用。" : "Shot charts and play-by-play remain unavailable."));
+    if (id === "0022500961") expect(visibleText(result)).toContain(locale === "zh"
+      ? "逐回合暂不可用。" : "Play-by-play remains unavailable.");
+    else expect(visibleText(result)).not.toContain(locale === "zh" ? "真实出手坐标" : "verified shot locations");
     expect(getOfficialPeriodScores).toHaveBeenCalledExactlyOnceWith(game(id));
     expect(regularQuarterBars(result)).toHaveLength(0);
     expect(mocks.box).toHaveBeenCalledExactlyOnceWith(id);
