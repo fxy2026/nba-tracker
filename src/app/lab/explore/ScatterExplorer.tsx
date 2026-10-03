@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { ScatterArchive } from "@/lib/scatter-archive";
 import { AlertCircle, ScatterChart } from "lucide-react";
 
 import { CURRENT_SEASON } from "@/lib/constants";
@@ -16,28 +17,28 @@ interface PlayerRow {
   PLAYER_ID: number;
   PLAYER: string;
   TEAM: string;
-  GP: number;
-  MIN: number;
-  FGM: number;
-  FGA: number;
-  FG_PCT: number;
-  FG3M: number;
-  FG3A: number;
-  FG3_PCT: number;
-  FTM: number;
-  FTA: number;
-  FT_PCT: number;
-  OREB: number;
-  DREB: number;
+  GP?: number;
+  MIN?: number;
+  FGM?: number;
+  FGA?: number;
+  FG_PCT?: number;
+  FG3M?: number;
+  FG3A?: number;
+  FG3_PCT?: number;
+  FTM?: number;
+  FTA?: number;
+  FT_PCT?: number;
+  OREB?: number;
+  DREB?: number;
   REB: number;
   AST: number;
-  STL: number;
-  BLK: number;
-  TOV: number;
+  STL?: number;
+  BLK?: number;
+  TOV?: number;
   PTS: number;
-  EFF: number;
+  EFF?: number;
   // derived
-  TS_PCT: number;
+  TS_PCT?: number;
 }
 
 // Numeric stat keys (and the derived TS%) — accessors avoid string indexing.
@@ -59,22 +60,22 @@ const AXES: AxisMeta[] = [
   { key: "PTS", zh: "得分", en: "Points", get: (r) => r.PTS },
   { key: "REB", zh: "篮板", en: "Rebounds", get: (r) => r.REB },
   { key: "AST", zh: "助攻", en: "Assists", get: (r) => r.AST },
-  { key: "STL", zh: "抢断", en: "Steals", get: (r) => r.STL },
-  { key: "BLK", zh: "盖帽", en: "Blocks", get: (r) => r.BLK },
-  { key: "TOV", zh: "失误", en: "Turnovers", get: (r) => r.TOV },
-  { key: "MIN", zh: "出场时间", en: "Minutes", get: (r) => r.MIN },
-  { key: "TS_PCT", zh: "真实命中率", en: "True Shooting %", pct: true, get: (r) => r.TS_PCT },
-  { key: "FG_PCT", zh: "投篮命中率", en: "FG %", pct: true, get: (r) => r.FG_PCT },
-  { key: "FG3_PCT", zh: "三分命中率", en: "3P %", pct: true, get: (r) => r.FG3_PCT },
-  { key: "FT_PCT", zh: "罚球命中率", en: "FT %", pct: true, get: (r) => r.FT_PCT },
-  { key: "FGA", zh: "出手数", en: "FG Attempts", get: (r) => r.FGA },
-  { key: "FG3A", zh: "三分出手", en: "3P Attempts", get: (r) => r.FG3A },
-  { key: "FG3M", zh: "三分命中", en: "3P Made", get: (r) => r.FG3M },
-  { key: "FTA", zh: "罚球出手", en: "FT Attempts", get: (r) => r.FTA },
-  { key: "OREB", zh: "前场篮板", en: "Off. Rebounds", get: (r) => r.OREB },
-  { key: "DREB", zh: "后场篮板", en: "Def. Rebounds", get: (r) => r.DREB },
-  { key: "EFF", zh: "效率值", en: "Efficiency", get: (r) => r.EFF },
-  { key: "GP", zh: "出场数", en: "Games", get: (r) => r.GP },
+  { key: "STL", zh: "抢断", en: "Steals", get: (r) => r.STL! },
+  { key: "BLK", zh: "盖帽", en: "Blocks", get: (r) => r.BLK! },
+  { key: "TOV", zh: "失误", en: "Turnovers", get: (r) => r.TOV! },
+  { key: "MIN", zh: "出场时间", en: "Minutes", get: (r) => r.MIN! },
+  { key: "TS_PCT", zh: "真实命中率", en: "True Shooting %", pct: true, get: (r) => r.TS_PCT! },
+  { key: "FG_PCT", zh: "投篮命中率", en: "FG %", pct: true, get: (r) => r.FG_PCT! },
+  { key: "FG3_PCT", zh: "三分命中率", en: "3P %", pct: true, get: (r) => r.FG3_PCT! },
+  { key: "FT_PCT", zh: "罚球命中率", en: "FT %", pct: true, get: (r) => r.FT_PCT! },
+  { key: "FGA", zh: "出手数", en: "FG Attempts", get: (r) => r.FGA! },
+  { key: "FG3A", zh: "三分出手", en: "3P Attempts", get: (r) => r.FG3A! },
+  { key: "FG3M", zh: "三分命中", en: "3P Made", get: (r) => r.FG3M! },
+  { key: "FTA", zh: "罚球出手", en: "FT Attempts", get: (r) => r.FTA! },
+  { key: "OREB", zh: "前场篮板", en: "Off. Rebounds", get: (r) => r.OREB! },
+  { key: "DREB", zh: "后场篮板", en: "Def. Rebounds", get: (r) => r.DREB! },
+  { key: "EFF", zh: "效率值", en: "Efficiency", get: (r) => r.EFF! },
+  { key: "GP", zh: "出场数", en: "Games", get: (r) => r.GP! },
 ];
 
 const AXIS_BY_KEY = new Map(AXES.map((a) => [a.key, a]));
@@ -90,19 +91,19 @@ function fmtVal(meta: AxisMeta, v: number): string {
 // Pill picker over the ~19 selectable axes. Module-level so it isn't recreated
 // every render (and so React doesn't reset its subtree state).
 function AxisPicker({
-  label, value, isZh, onChange,
-}: { label: string; value: AxisKey; isZh: boolean; onChange: (k: AxisKey) => void }) {
+  label, value, isZh, onChange, axes,
+}: { label: string; value: AxisKey; isZh: boolean; onChange: (k: AxisKey) => void; axes: AxisMeta[] }) {
   return (
     <div className="flex-1 min-w-0">
       <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-1.5">/ {label}</p>
       <div className="flex flex-wrap gap-1">
-        {AXES.map((a) => (
+        {axes.map((a) => (
           <button
             key={a.key}
             type="button"
             onClick={() => onChange(a.key)}
             aria-pressed={value === a.key}
-            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+            className={`min-h-11 min-w-11 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
               value === a.key
                 ? "bg-accent text-white shadow-md"
                 : "glass-tile text-text-secondary hover:text-text-primary"
@@ -148,10 +149,11 @@ function niceScale(min: number, max: number, pct = false): { lo: number; hi: num
   return { lo, hi, ticks };
 }
 
-export default function ScatterExplorer() {
+export default function ScatterExplorer({ archive }: { archive: ScatterArchive }) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
-  const router = useRouter();
+  const [archiveMode, setArchiveMode] = useState(false);
+  const requestRef = useRef<AbortController | null>(null);
 
   const [rows, setRows] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,9 +167,14 @@ export default function ScatterExplorer() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
+  const load = useCallback(async () => {
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const signal = controller.signal;
     setLoading(true);
-    setError("");
+    // Keep the current-source failure visible while an archive retry is pending.
+
     try {
       // No limit → every qualified player in the league comes back in ONE fetch.
       const qs = new URLSearchParams({
@@ -212,7 +219,12 @@ export default function ScatterExplorer() {
           PTS: pts, EFF: num("EFF"), TS_PCT: ts,
         };
       });
+      if (signal.aborted) return;
+      if (parsed.length === 0) throw new Error("No data");
+      setError("");
       setRows(parsed);
+      setArchiveMode(false);
+      setActiveIdx(null);
     } catch (e) {
       if (signal?.aborted) return;
       setError(String(e));
@@ -222,19 +234,19 @@ export default function ScatterExplorer() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    load(controller.signal);
-    return () => controller.abort();
+    load();
+    return () => requestRef.current?.abort();
   }, [load]);
 
+  const axes = archiveMode ? AXES.slice(0, 3) : AXES;
   const xMeta = AXIS_BY_KEY.get(xKey)!;
   const yMeta = AXIS_BY_KEY.get(yKey)!;
 
   // Filter by minutes threshold; require the player to have logged a game.
-  const points = useMemo(
-    () => rows.filter((r) => r.GP > 0 && r.MIN >= minMpg),
-    [rows, minMpg]
+  const points = useMemo<PlayerRow[]>(
+    () => archiveMode ? archive.rows : rows.filter((r) => (r.GP ?? 0) > 0 && (r.MIN ?? 0) >= minMpg),
+    [rows, minMpg, archiveMode, archive.rows]
   );
 
   const scales = useMemo(() => {
@@ -251,7 +263,7 @@ export default function ScatterExplorer() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIdx(null);
-  }, [xKey, yKey, minMpg]);
+  }, [xKey, yKey, minMpg, archiveMode]);
 
   // ── SVG geometry ────────────────────────────────────────────────────────
   const w = 640, h = 460;
@@ -291,21 +303,14 @@ export default function ScatterExplorer() {
       const d = dx * dx + dy * dy;
       if (d < bestD) { bestD = d; best = i; }
     }
-    // ~26px capture radius in viewBox units
-    setActiveIdx(bestD <= 26 * 26 ? best : null);
+    // Preserve the desktop radius and a 44px-diameter touch target on narrow screens.
+    const captureRadius = Math.max(26, (22 / rect.width) * w);
+    setActiveIdx(bestD <= captureRadius * captureRadius ? best : null);
   }, [projected]);
 
   const active = activeIdx != null ? projected[activeIdx] : null;
 
-  // Tooltip placement: flip to the left/below if near the right/top edge.
-  const tip = active
-    ? {
-        left: active.cx > w * 0.62,
-        below: active.cy < h * 0.22,
-      }
-    : null;
-
-  if (loading) {
+  if (loading && !archiveMode) {
     return (
       <div className="space-y-4">
         <div className="glass-tile h-28 skeleton-shimmer" />
@@ -314,45 +319,64 @@ export default function ScatterExplorer() {
     );
   }
 
-  if (error || rows.length === 0) {
-    return (
-      <EmptyState
-        icon={AlertCircle}
-        tone="danger"
-        title={isZh ? "数据加载失败" : "Failed to load data"}
-        description={
-          isZh
-            ? "无法获取全联盟球员数据，请稍后重试。"
-            : "Could not fetch league-wide player data. Please try again."
-        }
-        action={{ label: isZh ? "重试" : "Retry", onClick: () => load() }}
-      />
-    );
+  const failure = (error || (!loading && rows.length === 0)) && (
+    <EmptyState
+      icon={AlertCircle}
+      tone="danger"
+      className="[&_button]:min-h-11"
+      title={isZh ? "数据加载失败" : "Failed to load data"}
+      description={isZh ? "无法获取全联盟球员数据，请稍后重试。" : "Could not fetch league-wide player data. Please try again."}
+      action={archiveMode ? undefined : { label: isZh ? "重试" : "Retry", onClick: () => load() }}
+    />
+  );
+  const archiveButton = !archiveMode && archive.rows.length > 0 && (
+    <button type="button" className="min-h-11 px-4 py-2 rounded-lg glass-tile text-accent font-semibold" onClick={() => {
+      setXKey("PTS"); setYKey("AST"); setActiveIdx(null); setArchiveMode(true);
+    }}>
+      {isZh ? `查看 ${archive.season} 存档` : `View ${archive.season} archive`}
+    </button>
+  );
+  if (!archiveMode && (error || rows.length === 0)) {
+    return <div className="space-y-4">{failure}{archiveButton}</div>;
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" onKeyDown={e => { if (e.key === "Escape") { setActiveIdx(null); svgRef.current?.focus(); } }}>
+      {failure}
+      <section className="glass-tile p-4 space-y-2 text-sm" aria-live="polite">
+        <h2 className="font-semibold">{archiveMode
+          ? (isZh ? `${archive.season} 存档索引场均数据` : `${archive.season} archived index averages`)
+          : (isZh ? `${CURRENT_SEASON} 常规赛 · 当前数据` : `${CURRENT_SEASON} regular season · Current data`)}</h2>
+        {archiveMode && <>
+          <p className="text-text-secondary">{isZh
+            ? `${archive.rows.length} / ${archive.total} 名球员可绘制；${archive.omitted} 名缺少得分、篮板或助攻。仅支持这三项指标。存档未提供出场数、分钟及投篮数据，不应用出场门槛。`
+            : `${archive.rows.length} of ${archive.total} indexed players plotted; ${archive.omitted} missing points, rebounds or assists. Only these three metrics are available. No games/minutes qualification is applied; games, minutes and shooting data are unavailable.`}</p>
+          <p className="text-text-secondary">{isZh ? "球队归属来自存档索引，并非当前名单；未知球队使用中性色。存档未注明更新时间或 PerMode；场均解释沿用现有索引约定。" : "Team attribution is from the archived index, not the current roster. Unknown teams use a neutral color. The source supplies no retrieval timestamp or explicit PerMode; averages follow the existing index convention."}</p>
+          <button type="button" disabled={loading} className="min-h-11 px-3 py-2 rounded-lg glass-tile disabled:opacity-50" onClick={() => load()}>{loading ? (isZh ? "正在重试当前数据…" : "Retrying current data…") : (isZh ? `重试 ${CURRENT_SEASON} 当前数据` : `Retry ${CURRENT_SEASON} current data`)}</button>
+        </>}
+        {archiveButton}
+      </section>
       {/* Axis pickers */}
       <div className="glass-tile p-4 flex flex-col sm:flex-row gap-5">
-        <AxisPicker label={isZh ? "X 轴（横）" : "X axis"} value={xKey} isZh={isZh} onChange={setXKey} />
+        <AxisPicker label={isZh ? "X 轴（横）" : "X axis"} value={xKey} isZh={isZh} onChange={setXKey} axes={axes} />
         <div className="hidden sm:block w-px bg-border self-stretch" />
-        <AxisPicker label={isZh ? "Y 轴（纵）" : "Y axis"} value={yKey} isZh={isZh} onChange={setYKey} />
+        <AxisPicker label={isZh ? "Y 轴（纵）" : "Y axis"} value={yKey} isZh={isZh} onChange={setYKey} axes={axes} />
       </div>
 
       {/* Minutes threshold + summary */}
       <div className="glass-tile p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center gap-2">
+        {!archiveMode && <div className="flex flex-wrap items-center gap-2">
           <span className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 shrink-0">
             / {isZh ? "出场时间下限" : "Min MPG"}
           </span>
-          <div className="glass-tile flex overflow-hidden p-0.5">
+          <div className="glass-tile flex flex-wrap p-0.5">
             {MIN_THRESHOLDS.map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setMinMpg(m)}
                 aria-pressed={minMpg === m}
-                className={`px-2.5 py-1 text-[11px] font-mono tabular-nums rounded transition-all cursor-pointer ${
+                className={`min-h-11 min-w-11 px-2.5 py-1 text-[11px] font-mono tabular-nums rounded transition-all cursor-pointer ${
                   minMpg === m
                     ? "bg-accent text-white shadow-md"
                     : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
@@ -362,7 +386,7 @@ export default function ScatterExplorer() {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
         <span className="text-[11px] text-text-secondary font-mono tabular-nums ml-auto">
           {isZh
             ? `${points.length} 名球员 · ${xMeta.zh} × ${yMeta.zh}`
@@ -387,9 +411,17 @@ export default function ScatterExplorer() {
             <svg
               ref={svgRef}
               viewBox={`0 0 ${w} ${h}`}
-              className="w-full touch-none select-none"
+              className="w-full touch-pan-y select-none"
               preserveAspectRatio="xMidYMid meet"
-              role="img"
+              role="group"
+              tabIndex={0}
+              onKeyDown={e => {
+                if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter", " "].includes(e.key)) {
+                  e.preventDefault();
+                  const step = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1;
+                  setActiveIdx(activeIdx === null ? 0 : e.key === "Enter" || e.key === " " ? activeIdx : (activeIdx + step + projected.length) % projected.length);
+                }
+              }}
               aria-label={
                 isZh
                   ? `散点图：横轴 ${xMeta.zh}，纵轴 ${yMeta.zh}，共 ${points.length} 名球员`
@@ -397,7 +429,7 @@ export default function ScatterExplorer() {
               }
               onPointerMove={handleMove}
               onPointerDown={handleMove}
-              onPointerLeave={() => setActiveIdx(null)}
+
             >
               {/* Y grid + ticks */}
               {scales.y.ticks.map((tv) => {
@@ -463,63 +495,25 @@ export default function ScatterExplorer() {
                     stroke={isActive ? "var(--text-primary)" : "var(--bg-card)"}
                     strokeWidth={isActive ? 1.4 : 0.6}
                     style={{ cursor: "pointer" }}
-                    onClick={() => router.push(`/player/${p.r.PLAYER_ID}`)}
+                    onClick={() => setActiveIdx(i)}
                   />
                 );
               })}
             </svg>
 
-            {/* Tooltip — HTML overlay positioned in % of the SVG box */}
-            {active && tip && (
-              <div
-                className="absolute z-10 pointer-events-none"
-                style={{
-                  left: `${(active.cx / w) * 100}%`,
-                  top: `${(active.cy / h) * 100}%`,
-                  transform: `translate(${tip.left ? "-100%" : "0"}, ${tip.below ? "8px" : "calc(-100% - 8px)"}) translateX(${tip.left ? "-10px" : "10px"})`,
-                }}
-              >
-                <div className="glass-tile px-3 py-2 shadow-xl min-w-[160px]">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ background: TEAM_META[active.r.TEAM]?.primaryColor || "#64748B" }}
-                    />
-                    <span className="text-sm font-semibold text-text-primary truncate">{active.r.PLAYER}</span>
-                  </div>
-                  <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary mt-0.5">
-                    {active.r.TEAM}
-                    <span className="text-text-secondary/40 mx-1">·</span>
-                    {active.r.GP} {isZh ? "场" : "GP"}
-                    <span className="text-text-secondary/40 mx-1">·</span>
-                    {active.r.MIN.toFixed(1)} {isZh ? "分钟" : "MPG"}
-                  </p>
-                  <div className="mt-1.5 space-y-0.5">
-                    <div className="flex items-center justify-between gap-4 text-xs">
-                      <span className="text-text-secondary">{isZh ? xMeta.zh : xMeta.en}</span>
-                      <span className="font-mono tabular-nums text-accent font-bold">{fmtVal(xMeta, active.xv)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4 text-xs">
-                      <span className="text-text-secondary">{isZh ? yMeta.zh : yMeta.en}</span>
-                      <span className="font-mono tabular-nums text-success font-bold">{fmtVal(yMeta, active.yv)}</span>
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-text-secondary/60 mt-1.5">
-                    {isZh ? "点击圆点查看球员页" : "Tap dot for player page"}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Legend / note */}
-        <div className="mt-3 flex items-center gap-2 text-[10px] text-text-secondary">
+        {active && <div className="glass-tile p-3 mt-3 text-sm space-y-2" aria-live="polite">
+          <div className="flex items-start justify-between gap-2"><p className="font-semibold break-words">{active.r.PLAYER}</p><button type="button" className="min-h-11 min-w-11 shrink-0 text-text-secondary" onClick={() => { setActiveIdx(null); svgRef.current?.focus(); }}>{isZh ? "关闭" : "Close"}</button></div>
+          <p>{active.r.TEAM || (isZh ? "未知球队" : "Unknown team")}{archiveMode ? (isZh ? " · 存档球队归属" : " · Archived team attribution") : ` · ${active.r.GP} GP · ${active.r.MIN?.toFixed(1)} MPG`}</p>
+          <p>{isZh ? xMeta.zh : xMeta.en}: {fmtVal(xMeta, active.xv)} · {isZh ? yMeta.zh : yMeta.en}: {fmtVal(yMeta, active.yv)}</p>
+          <Link prefetch={false} href={`/player/${active.r.PLAYER_ID}`} className="inline-flex items-center min-h-11 text-accent">{isZh ? "打开球员页" : "Open player page"}</Link>
+        </div>}
+        <div className="mt-3 flex items-start gap-2 text-[11px] text-text-secondary">
           <ScatterChart size={12} className="text-accent shrink-0" aria-hidden="true" />
-          <span>
-            {isZh
-              ? "每个圆点为一名球员，颜色取自球队主色；悬停或点按高亮最近的点，点击跳转球员页。真实命中率 TS% = 得分 /（2 ×（出手 + 0.44 × 罚球出手））。"
-              : "Each dot is a player, colored by team; hover or tap to highlight the nearest dot, click to open the player page. True Shooting % = PTS / (2 × (FGA + 0.44 × FTA))."}
+          <span>{isZh ? "每个圆点为一名球员，颜色取自球队主色。点按查看详情，或聚焦图表后使用方向键选择球员；Esc 关闭详情。" : "Each dot is a player, colored by team. Tap for details, or focus the chart and use arrow keys to select a player; Escape closes details."}
+            {!archiveMode && (isZh ? "真实命中率 TS% = 得分 /（2 ×（出手 + 0.44 × 罚球出手））。" : " True Shooting % = PTS / (2 × (FGA + 0.44 × FTA)).")}
           </span>
         </div>
       </div>

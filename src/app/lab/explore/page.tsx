@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ScatterChart, BarChart3, Crown, Activity, Target, Users } from "lucide-react";
 import { getLocale } from "@/lib/locale";
-import { CURRENT_SEASON } from "@/lib/constants";
+import { getScatterArchive } from "@/lib/scatter-archive-server";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
@@ -12,8 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: isZh ? "全联盟散点探索器" : "League Scatter Explorer",
     description: isZh
-      ? "在两两数据维度上散点对比全联盟每位合格球员 — 自选 X/Y 轴（得分、篮板、助攻、命中率、真实命中率等），球队配色，悬停看详情。"
-      : "Plot every qualified player across any two stat dimensions — pick X/Y axes (points, rebounds, assists, shooting %, true shooting and more), team-colored dots, hover for details.",
+      ? "选择数据来源与坐标轴，对比球员数据，点按查看详情。"
+      : "Choose a dataset and axes to compare player statistics. Tap a point for details.",
   };
 }
 
@@ -34,12 +34,12 @@ export default async function ExplorePage() {
         title={isZh ? "全联盟散点探索器" : "League Scatter Explorer"}
         subtitle={
           isZh
-            ? `在任意两个数据维度上散点对比每位合格球员 · ${CURRENT_SEASON} 常规赛 · 自选坐标轴，球队配色，悬停看球员`
-            : `Scatter every qualified player across any two stat dimensions · ${CURRENT_SEASON} regular season · pick the axes, team-colored dots, hover for player detail`
+            ? "选择数据来源与坐标轴 · 球队配色 · 点按查看球员详情"
+            : "Choose a dataset and axes · team-colored dots · tap for player details"
         }
       />
 
-      <ScatterExplorer />
+      <ScatterExplorer archive={getScatterArchive()} />
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}
