@@ -61,6 +61,20 @@ describe("verified court archive routing", () => {
     expect(text(tree)).not.toContain("3D court below");expect(text(tree)).not.toContain("下方 3D 球场");
     expect(text(tree)).not.toContain("投篮图与逐回合暂不可用。");
   });
+  it.each(["en", "zh"])("uses dynamic recovered shot coverage for both additional games (%s)", async locale => {
+    mocks.locale.mockResolvedValue(locale);
+    for (const [gameId, total] of [["0042500405", 173], ["0042500173", 177]] as const) {
+      const tree = await GamePage({ params: Promise.resolve({ id: gameId }) });
+      expect(elements(tree, VerifiedShotChartSection)[0].props.data).toMatchObject({ gameId, coverage: { mapped: total, total, complete: true } });
+      expect(text(tree)).toContain(locale === "zh" ? `${total} 次真实出手坐标` : `${total} verified shot locations`);
+      expect(text(tree)).not.toContain("181 verified shot locations");
+      expect(elements(tree, ReportedScoreSequence)).toHaveLength(0);
+      expect(elements(tree, WithPlayByPlay)).toHaveLength(0);
+      expect(elements(tree, ShotChartSection)).toHaveLength(0);
+    }
+    expect(mocks.pbp).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("gives other recovered games an honest unavailable section, never MEM–DET points", async () => {
     const tree = await GamePage({ params: Promise.resolve({ id: "0042500401" }) });
     expect(elements(tree, VerifiedShotChartSection)[0].props.data).toBeNull();

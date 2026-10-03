@@ -51,6 +51,51 @@ If a current live box provides FG/3PT totals that disagree with the archive,
 the archived chart is withheld even if the final score is unchanged. Absent
 shooting totals remain unknown and are never defaulted to zero.
 
-This release restores one reviewed game. Adding another game requires a new
+The initial release restored one reviewed game. Adding another game requires a new
 public capture, an independent coordinate/identity/totals review and an explicit
 archive/hash allowlist entry. Successful scraping alone is not publication.
+
+## Three-game reviewed coverage
+
+The archive now includes the separately captured and independently reviewed
+Finals Game 5 (0042500405, NYK 94–90 SAS) and Lakers–Rockets first-round Game 3
+(0042500173, LAL 112–108 HOU, overtime). The original MEM–DET factual and evidence
+files remain byte-for-byte unchanged. There are 531 shots across three games:
+181 MEM–DET, 173 NYK–SAS and 177 LAL–HOU. The other 84 official-period archives
+still have no verified shot chart; source availability is never inferred.
+
+The new canonical local game codes are `20260613/NYKSAS` and `20260424/LALHOU`.
+Their UTC tipoffs are June 14 00:30Z and April 25 00:00Z. Local game dates and UTC
+tipoff dates must not be equated. The source footer links each game's own official
+Game Charts page. Source metadata retains actual fresh capture completion times:
+2026-10-03T06:22:28.352889+00:00 and 2026-10-03T06:22:32.965745+00:00.
+
+Each game has its own explicit immutable facts hash, final identity, shooting
+totals and period reconciliation in the server-only integrity allowlist. Every
+shot and roster entry is verified before a minimal display object is returned.
+Current defined team FG/3PT, made free throws, points, period scores and player
+identity/shooting conflicts withhold the entire chart. Absent fields and the
+normal empty-array API contract remain unknown, never zero-filled.
+
+NYK–SAS period attempts are 43, 45, 46, 39. LAL–HOU has 47, 36, 39, 40 and 15
+attempts, including all 15 official OT1 records. Only LAL–HOU's allowlist permits
+period 5. ISO clocks are at most 720 seconds in regulation and 300 in overtime,
+including fractional seconds at the boundary. Per-team period field-goal points
+plus independently verified made free throws equal the official period scores;
+period totals exactly reconcile to the final. Source row order remains intact.
+The existing OT1 / 加时1 filter, shot selection and list labels are tested with
+these real records. The primary court stays top-down and Three is still loaded
+only after the optional 3D control is chosen.
+
+New evidence files record 350 exact shot rows / 3,500 fields, 57 official roster
+identities, and 42 played-player PDF rows. Numeric NBA person IDs come from the
+NBA pages; printed PDF names and historical teams independently reconcile.
+Raw PBP actionNumber can repeat for paired events, but each promoted shot ID is
+unique. DNP/DND entries are identity evidence and never plotted. The Finals PDF's
+original retrieval time remains unknown; no timestamp is invented. Its exact
+preserved SHA-256 matches the official-period archive.
+
+No new source/PBP payload, trajectory, provider request or paid quota is added.
+Every original score sequence, period archive, player/career archive, screenshot
+asset, dependency and top-down rendering file is preserved unchanged. New captures
+still need independent review and an explicit integrity allowlist entry.

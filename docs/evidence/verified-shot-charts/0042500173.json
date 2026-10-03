@@ -1,0 +1,711 @@
+{
+  "reviewDate": "2026-10-03",
+  "independentReview": "PASS_SOURCE_ONLY_WITH_INTEGRATION_GATES",
+  "candidateOriginalsPreserved": true,
+  "coordinateSemantics": "Canonical xLegacy/10, yLegacy/10. Positive x right; positive y toward midcourt in official top-hoop view. No clamping, mirroring, physical attacking-end or flight claims. Reviewed official JS hashes and transformation code match the MEM-DET contract.",
+  "caveats": [
+    "No duplicate IDs applies to field-goal shots. Raw PBP has 25 and 39 repeated actionNumber groups from paired events such as shot/block and turnover/steal; all raw actionId values are unique. Do not claim globally unique raw actionNumbers.",
+    "Game dates are local NBA dates: June 13 and April 24; canonical UTC tipoffs are June 14 00:30Z and April 25 00:00Z respectively.",
+    "All source box jerseyNum values are blank. Numeric player identity is verified through official personId, nameI and team; PDF full names and historical teams reconcile but the PDF does not expose NBA personId.",
+    "Finals PDF original retrieval timestamp is unrecorded; this does not invalidate matching preserved PDF bytes, but must remain unknown.",
+    "Original validate_candidates.py is a writer: it rewrites candidate/report files and validation-summary timestamps without refreshing manifest.json. It was read, not executed, to preserve evidence. Use this independent read-only reviewer for checks, or refresh manifest deliberately after any authorized regeneration."
+  ],
+  "review": {
+    "gameId": "0042500173",
+    "status": "PASS_INDEPENDENT_SOURCE_REVIEW_NOT_ENABLED",
+    "game": {
+      "gameId": "0042500173",
+      "gameCode": "20260424/LALHOU",
+      "gameTimeUTC": "2026-04-25T00:00:00Z",
+      "gameStatus": 3,
+      "homeTeam": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "score": 108
+      },
+      "awayTeam": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "score": 112
+      }
+    },
+    "gameDate": "Friday, April 24, 2026",
+    "rawActionCount": 555,
+    "sourceCapture": {
+      "url": "https://www.nba.com/game/lal-vs-hou-0042500173/game-charts",
+      "startedAt": "2026-10-03T06:22:28.354014+00:00",
+      "retrievedAt": "2026-10-03T06:22:32.965745+00:00",
+      "httpStatus": 200,
+      "finalUrl": "https://www.nba.com/game/lal-vs-hou-0042500173/game-charts",
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "ETag": "\"b9l94os0nxc78b\"",
+        "Strict-Transport-Security": "max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "X-Frame-Options": "sameorigin",
+        "Vary": "Accept-Encoding",
+        "x-envoy-upstream-service-time": "673",
+        "x-cache-ability": "uncacheable",
+        "x-hits": "0",
+        "x-status": "miss",
+        "x-vcl-region": "West US2",
+        "x-vcl-version": "NBA.com prod 1.7a",
+        "x-varnish": "34675259",
+        "x-full-ttl": "30.000",
+        "X-Akamai-Transformed": "0 567565 0 -",
+        "Expires": "Sat, 03 Oct 2026 06:22:32 GMT",
+        "Cache-Control": "max-age=0, no-cache, no-store",
+        "Pragma": "no-cache",
+        "Date": "Sat, 03 Oct 2026 06:22:32 GMT",
+        "Transfer-Encoding": "chunked",
+        "Connection": "close"
+      },
+      "bytes": 567681,
+      "htmlSha256": "48930df874ff85da99b33decaea29c1ab7e85de739018517471b99e86e4ae611",
+      "headersNote": "Set-Cookie omitted from retained evidence; no cookie used for retrieval."
+    },
+    "rawHtmlSha256": "48930df874ff85da99b33decaea29c1ab7e85de739018517471b99e86e4ae611",
+    "rawEmbeddedSha256": "fc0a30f8729b36947ba0ebd43e3758a99448e4bdbf1167552dbb5500a3f11820",
+    "rawPdfSha256": "c1daf7edf233f2a6d61c3c6ff22cc482ca56a9d227fc5ddb0bf152f67f3ba7b2",
+    "canonicalFactsSha256": "f2da580cff5b72098d2ddcddb64549f01cb38677dcc01ba9833c1b60c24f0b9e",
+    "candidateFileSha256": "1890e9838a8d0c6249f9393ad609fffea211f68864b157b14240a14e167a76d3",
+    "displayPreviewFileSha256": "82fc7e56ed2be75275f25bc26b8cc8346a80bf235406a2cfb8dd9794464400e6",
+    "shotCount": 177,
+    "preservedFields": 1770,
+    "sourceFieldTypesAndShotArrayOrderPreserved": true,
+    "chronologicalPeriodClockOrderVerified": true,
+    "sameTenShotFieldsAsReference": true,
+    "rosterCount": 27,
+    "playedPdfRows": 21,
+    "duplicateShotIds": 0,
+    "rawRepeatedActionNumberGroups": 39,
+    "outsideHalfcourt": 0,
+    "negativeYCount": 6,
+    "exactOriginCount": 7,
+    "periodAttempts": {
+      "1": 47,
+      "2": 36,
+      "3": 39,
+      "4": 40,
+      "5": 15
+    },
+    "quarterFgFtReconstructionMatchesPdf": true,
+    "rawScoreStatesReconciled": 131,
+    "teams": {
+      "home": {
+        "teamId": 1610612745,
+        "teamTricode": "HOU",
+        "fieldGoalsMade": 40,
+        "fieldGoalsAttempted": 98,
+        "threePointersMade": 11,
+        "threePointersAttempted": 39,
+        "freeThrowsMade": 17,
+        "freeThrowsAttempted": 23,
+        "score": 108,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 11,
+            "fieldGoalsAttempted": 25,
+            "threePointersMade": 4,
+            "threePointersAttempted": 11,
+            "freeThrowsMade": 6,
+            "freeThrowsAttempted": 7,
+            "fieldGoalPoints": 26,
+            "points": 32
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 5,
+            "fieldGoalsAttempted": 18,
+            "threePointersMade": 3,
+            "threePointersAttempted": 8,
+            "freeThrowsMade": 7,
+            "freeThrowsAttempted": 9,
+            "fieldGoalPoints": 13,
+            "points": 20
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 10,
+            "fieldGoalsAttempted": 23,
+            "threePointersMade": 0,
+            "threePointersAttempted": 9,
+            "freeThrowsMade": 3,
+            "freeThrowsAttempted": 4,
+            "fieldGoalPoints": 20,
+            "points": 23
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 11,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 3,
+            "threePointersAttempted": 6,
+            "freeThrowsMade": 1,
+            "freeThrowsAttempted": 2,
+            "fieldGoalPoints": 25,
+            "points": 26
+          },
+          {
+            "period": 5,
+            "fieldGoalsMade": 3,
+            "fieldGoalsAttempted": 10,
+            "threePointersMade": 1,
+            "threePointersAttempted": 5,
+            "freeThrowsMade": 0,
+            "freeThrowsAttempted": 1,
+            "fieldGoalPoints": 7,
+            "points": 7
+          }
+        ]
+      },
+      "away": {
+        "teamId": 1610612747,
+        "teamTricode": "LAL",
+        "fieldGoalsMade": 38,
+        "fieldGoalsAttempted": 79,
+        "threePointersMade": 12,
+        "threePointersAttempted": 29,
+        "freeThrowsMade": 24,
+        "freeThrowsAttempted": 32,
+        "score": 112,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 14,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 6,
+            "threePointersAttempted": 9,
+            "freeThrowsMade": 5,
+            "freeThrowsAttempted": 7,
+            "fieldGoalPoints": 34,
+            "points": 39
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 9,
+            "fieldGoalsAttempted": 18,
+            "threePointersMade": 2,
+            "threePointersAttempted": 4,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 4,
+            "fieldGoalPoints": 20,
+            "points": 24
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 6,
+            "fieldGoalsAttempted": 16,
+            "threePointersMade": 2,
+            "threePointersAttempted": 7,
+            "freeThrowsMade": 3,
+            "freeThrowsAttempted": 6,
+            "fieldGoalPoints": 14,
+            "points": 17
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 7,
+            "fieldGoalsAttempted": 18,
+            "threePointersMade": 1,
+            "threePointersAttempted": 6,
+            "freeThrowsMade": 6,
+            "freeThrowsAttempted": 7,
+            "fieldGoalPoints": 15,
+            "points": 21
+          },
+          {
+            "period": 5,
+            "fieldGoalsMade": 2,
+            "fieldGoalsAttempted": 5,
+            "threePointersMade": 1,
+            "threePointersAttempted": 3,
+            "freeThrowsMade": 6,
+            "freeThrowsAttempted": 8,
+            "fieldGoalPoints": 5,
+            "points": 11
+          }
+        ]
+      }
+    },
+    "players": [
+      {
+        "personId": 1631106,
+        "name": "Tari Eason",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 9,
+          "threePointersMade": 0,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 1
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1631095,
+        "name": "Jabari Smith Jr.",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 16,
+          "threePointersMade": 6,
+          "threePointersAttempted": 10
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630578,
+        "name": "Alperen Sengun",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 15,
+          "fieldGoalsAttempted": 27,
+          "threePointersMade": 1,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 3
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642263,
+        "name": "Reed Sheppard",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 6,
+          "fieldGoalsAttempted": 21,
+          "threePointersMade": 4,
+          "threePointersAttempted": 13
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1641708,
+        "name": "Amen Thompson",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 14,
+          "threePointersMade": 0,
+          "threePointersAttempted": 1
+        },
+        "freeThrows": {
+          "freeThrowsMade": 10,
+          "freeThrowsAttempted": 13
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629006,
+        "name": "Josh Okogie",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 1,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203991,
+        "name": "Clint Capela",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1627827,
+        "name": "Dorian Finney-Smith",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 5,
+          "threePointersMade": 0,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628988,
+        "name": "Aaron Holiday",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 1,
+          "threePointersMade": 0,
+          "threePointersAttempted": 1
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630256,
+        "name": "Jae'Sean Tate",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 201145,
+        "name": "Jeff Green",
+        "teamTricode": "HOU",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 0,
+          "threePointersAttempted": 1
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1631120,
+        "name": "JD Davison",
+        "teamTricode": "HOU",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 201142,
+        "name": "Kevin Durant",
+        "teamTricode": "HOU",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 2544,
+        "name": "LeBron James",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 10,
+          "fieldGoalsAttempted": 22,
+          "threePointersMade": 4,
+          "threePointersAttempted": 9
+        },
+        "freeThrows": {
+          "freeThrowsMade": 5,
+          "freeThrowsAttempted": 6
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629060,
+        "name": "Rui Hachimura",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 14,
+          "threePointersMade": 4,
+          "threePointersAttempted": 7
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 4
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629028,
+        "name": "Deandre Ayton",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 3,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203935,
+        "name": "Marcus Smart",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 9,
+          "threePointersMade": 2,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 9,
+          "freeThrowsAttempted": 11
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628379,
+        "name": "Luke Kennard",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 4,
+          "fieldGoalsAttempted": 12,
+          "threePointersMade": 1,
+          "threePointersAttempted": 6
+        },
+        "freeThrows": {
+          "freeThrowsMade": 5,
+          "freeThrowsAttempted": 6
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1631222,
+        "name": "Jake LaRavia",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 4,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629637,
+        "name": "Jaxson Hayes",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 8,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 3
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642355,
+        "name": "Bronny James",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 1,
+          "threePointersAttempted": 1
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629020,
+        "name": "Jarred Vanderbilt",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 5,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1641733,
+        "name": "Nick Smith Jr.",
+        "teamTricode": "LAL",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628467,
+        "name": "Maxi Kleber",
+        "teamTricode": "LAL",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642261,
+        "name": "Dalton Knecht",
+        "teamTricode": "LAL",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630559,
+        "name": "Austin Reaves",
+        "teamTricode": "LAL",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642876,
+        "name": "Adou Thiero",
+        "teamTricode": "LAL",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      }
+    ],
+    "sourceJavaScript": [
+      {
+        "url": "https://www.nba.com/_next/static/chunks/14672-7246e95691a37805.js",
+        "sha256": "639f6882e02165ec447f5955882f9f40390fceed455e69b30613bdf68b60a37a"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/24094-e9fd2fd647bbb36e.js",
+        "sha256": "25d89b3ac913827b0d0407355b681c4634bd02dcc2c55c9cd5a9bdbb39a101ed"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/pages/_app-71c0bd4c8ffc33a7.js",
+        "sha256": "47f9487b21ea581649d3059ef5489c7a6744b3ef6edf0798ecd98299599a8e51"
+      }
+    ],
+    "originalPdfCaptureTimestamp": "2026-10-03T01:46:49.676222+00:00",
+    "originalPdfCaptureTimestampStatus": "recorded in existing report recovery provenance"
+  }
+}

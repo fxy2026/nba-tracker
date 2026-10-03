@@ -1,0 +1,739 @@
+{
+  "reviewDate": "2026-10-03",
+  "independentReview": "PASS_SOURCE_ONLY_WITH_INTEGRATION_GATES",
+  "candidateOriginalsPreserved": true,
+  "coordinateSemantics": "Canonical xLegacy/10, yLegacy/10. Positive x right; positive y toward midcourt in official top-hoop view. No clamping, mirroring, physical attacking-end or flight claims. Reviewed official JS hashes and transformation code match the MEM-DET contract.",
+  "caveats": [
+    "No duplicate IDs applies to field-goal shots. Raw PBP has 25 and 39 repeated actionNumber groups from paired events such as shot/block and turnover/steal; all raw actionId values are unique. Do not claim globally unique raw actionNumbers.",
+    "Game dates are local NBA dates: June 13 and April 24; canonical UTC tipoffs are June 14 00:30Z and April 25 00:00Z respectively.",
+    "All source box jerseyNum values are blank. Numeric player identity is verified through official personId, nameI and team; PDF full names and historical teams reconcile but the PDF does not expose NBA personId.",
+    "Finals PDF original retrieval timestamp is unrecorded; this does not invalidate matching preserved PDF bytes, but must remain unknown.",
+    "Original validate_candidates.py is a writer: it rewrites candidate/report files and validation-summary timestamps without refreshing manifest.json. It was read, not executed, to preserve evidence. Use this independent read-only reviewer for checks, or refresh manifest deliberately after any authorized regeneration."
+  ],
+  "review": {
+    "gameId": "0042500405",
+    "status": "PASS_INDEPENDENT_SOURCE_REVIEW_NOT_ENABLED",
+    "game": {
+      "gameId": "0042500405",
+      "gameCode": "20260613/NYKSAS",
+      "gameTimeUTC": "2026-06-14T00:30:00Z",
+      "gameStatus": 3,
+      "homeTeam": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "score": 90
+      },
+      "awayTeam": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "score": 94
+      }
+    },
+    "gameDate": "Saturday, June 13, 2026",
+    "rawActionCount": 554,
+    "sourceCapture": {
+      "url": "https://www.nba.com/game/nyk-vs-sas-0042500405/game-charts",
+      "startedAt": "2026-10-03T06:22:21.232687+00:00",
+      "retrievedAt": "2026-10-03T06:22:28.352889+00:00",
+      "httpStatus": 200,
+      "finalUrl": "https://www.nba.com/game/nyk-vs-sas-0042500405/game-charts",
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "ETag": "\"cm5vh3mhvac7bs\"",
+        "Strict-Transport-Security": "max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "X-Frame-Options": "sameorigin",
+        "Vary": "Accept-Encoding",
+        "x-envoy-upstream-service-time": "505",
+        "x-cache-ability": "uncacheable",
+        "x-hits": "0",
+        "x-status": "miss",
+        "x-vcl-region": "West US2",
+        "x-vcl-version": "NBA.com prod 1.7a",
+        "x-varnish": "33042011",
+        "x-full-ttl": "30.000",
+        "X-Akamai-Transformed": "0 567670 0 -",
+        "Expires": "Sat, 03 Oct 2026 06:22:28 GMT",
+        "Cache-Control": "max-age=0, no-cache, no-store",
+        "Pragma": "no-cache",
+        "Date": "Sat, 03 Oct 2026 06:22:28 GMT",
+        "Transfer-Encoding": "chunked",
+        "Connection": "close"
+      },
+      "bytes": 567786,
+      "htmlSha256": "3a016509e3fb867bf47c50489cdb2ca06628626192a2892e71e9eed28e3d3ef4",
+      "headersNote": "Set-Cookie omitted from retained evidence; no cookie used for retrieval."
+    },
+    "rawHtmlSha256": "3a016509e3fb867bf47c50489cdb2ca06628626192a2892e71e9eed28e3d3ef4",
+    "rawEmbeddedSha256": "a03b289a5b1ff78b3209406655964f411032ef47f560961f4c903dd63e5c65d9",
+    "rawPdfSha256": "f75b932ecc949348a467e6aa0900b09dc9af07d387506e793c2b38522c1c632b",
+    "canonicalFactsSha256": "72cbc0a0c3daef17ef387ca9b990b6c6525d8895427669b29b893684bb378caf",
+    "candidateFileSha256": "a95e6a3331e698c76d98e03ecbe84d69e7f5c2061a5598a9c47196ece8165e34",
+    "displayPreviewFileSha256": "f074c7d84a5295c57f08c6b1c2ea01ad49c658cb0bfcc4d26874637eabee430d",
+    "shotCount": 173,
+    "preservedFields": 1730,
+    "sourceFieldTypesAndShotArrayOrderPreserved": true,
+    "chronologicalPeriodClockOrderVerified": true,
+    "sameTenShotFieldsAsReference": true,
+    "rosterCount": 30,
+    "playedPdfRows": 21,
+    "duplicateShotIds": 0,
+    "rawRepeatedActionNumberGroups": 25,
+    "outsideHalfcourt": 0,
+    "negativeYCount": 10,
+    "exactOriginCount": 7,
+    "periodAttempts": {
+      "1": 43,
+      "2": 45,
+      "3": 46,
+      "4": 39
+    },
+    "quarterFgFtReconstructionMatchesPdf": true,
+    "rawScoreStatesReconciled": 110,
+    "teams": {
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "fieldGoalsMade": 33,
+        "fieldGoalsAttempted": 86,
+        "threePointersMade": 12,
+        "threePointersAttempted": 37,
+        "freeThrowsMade": 12,
+        "freeThrowsAttempted": 19,
+        "score": 90,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 9,
+            "fieldGoalsAttempted": 21,
+            "threePointersMade": 3,
+            "threePointersAttempted": 11,
+            "freeThrowsMade": 2,
+            "freeThrowsAttempted": 2,
+            "fieldGoalPoints": 21,
+            "points": 23
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 6,
+            "fieldGoalsAttempted": 23,
+            "threePointersMade": 3,
+            "threePointersAttempted": 10,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 4,
+            "fieldGoalPoints": 15,
+            "points": 19
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 11,
+            "fieldGoalsAttempted": 20,
+            "threePointersMade": 4,
+            "threePointersAttempted": 10,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 7,
+            "fieldGoalPoints": 26,
+            "points": 30
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 7,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 2,
+            "threePointersAttempted": 6,
+            "freeThrowsMade": 2,
+            "freeThrowsAttempted": 6,
+            "fieldGoalPoints": 16,
+            "points": 18
+          }
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "fieldGoalsMade": 31,
+        "fieldGoalsAttempted": 87,
+        "threePointersMade": 12,
+        "threePointersAttempted": 37,
+        "freeThrowsMade": 20,
+        "freeThrowsAttempted": 28,
+        "score": 94,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 4,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 3,
+            "threePointersAttempted": 9,
+            "freeThrowsMade": 2,
+            "freeThrowsAttempted": 4,
+            "fieldGoalPoints": 11,
+            "points": 13
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 9,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 4,
+            "threePointersAttempted": 10,
+            "freeThrowsMade": 2,
+            "freeThrowsAttempted": 3,
+            "fieldGoalPoints": 22,
+            "points": 24
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 10,
+            "fieldGoalsAttempted": 26,
+            "threePointersMade": 3,
+            "threePointersAttempted": 12,
+            "freeThrowsMade": 5,
+            "freeThrowsAttempted": 5,
+            "fieldGoalPoints": 23,
+            "points": 28
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 8,
+            "fieldGoalsAttempted": 17,
+            "threePointersMade": 2,
+            "threePointersAttempted": 6,
+            "freeThrowsMade": 11,
+            "freeThrowsAttempted": 16,
+            "fieldGoalPoints": 18,
+            "points": 29
+          }
+        ]
+      }
+    },
+    "players": [
+      {
+        "personId": 1630170,
+        "name": "Devin Vassell",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 8,
+          "threePointersMade": 2,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630577,
+        "name": "Julian Champagnie",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 9,
+          "threePointersMade": 4,
+          "threePointersAttempted": 8
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1641705,
+        "name": "Victor Wembanyama",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 7,
+          "fieldGoalsAttempted": 19,
+          "threePointersMade": 1,
+          "threePointersAttempted": 6
+        },
+        "freeThrows": {
+          "freeThrowsMade": 4,
+          "freeThrowsAttempted": 5
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642264,
+        "name": "Stephon Castle",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 10,
+          "threePointersMade": 0,
+          "threePointersAttempted": 3
+        },
+        "freeThrows": {
+          "freeThrowsMade": 4,
+          "freeThrowsAttempted": 6
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628368,
+        "name": "De'Aaron Fox",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 3,
+          "fieldGoalsAttempted": 15,
+          "threePointersMade": 1,
+          "threePointersAttempted": 8
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642844,
+        "name": "Dylan Harper",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 10,
+          "fieldGoalsAttempted": 19,
+          "threePointersMade": 2,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 3,
+          "freeThrowsAttempted": 6
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629640,
+        "name": "Keldon Johnson",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 5,
+          "threePointersMade": 2,
+          "threePointersAttempted": 3
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628436,
+        "name": "Luke Kornet",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 1,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642868,
+        "name": "Carter Bryant",
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203084,
+        "name": "Harrison Barnes",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 202687,
+        "name": "Bismack Biyombo",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629162,
+        "name": "Jordan McLaughlin",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203482,
+        "name": "Kelly Olynyk",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203486,
+        "name": "Mason Plumlee",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630322,
+        "name": "Lindy Waters III",
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628404,
+        "name": "Josh Hart",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 4,
+          "fieldGoalsAttempted": 11,
+          "threePointersMade": 3,
+          "threePointersAttempted": 6
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 3
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628384,
+        "name": "OG Anunoby",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 3,
+          "fieldGoalsAttempted": 11,
+          "threePointersMade": 1,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 4,
+          "freeThrowsAttempted": 6
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1626157,
+        "name": "Karl-Anthony Towns",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 7,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628969,
+        "name": "Mikal Bridges",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 10,
+          "threePointersMade": 3,
+          "threePointersAttempted": 7
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1628973,
+        "name": "Jalen Brunson",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 14,
+          "fieldGoalsAttempted": 27,
+          "threePointersMade": 4,
+          "threePointersAttempted": 7
+        },
+        "freeThrows": {
+          "freeThrowsMade": 13,
+          "freeThrowsAttempted": 15
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629013,
+        "name": "Landry Shamet",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 7,
+          "threePointersMade": 1,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630631,
+        "name": "Jose Alvarado",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 5,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1629011,
+        "name": "Mitchell Robinson",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 2
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630540,
+        "name": "Miles McBride",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1630574,
+        "name": "Ariel Hukporti",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 203903,
+        "name": "Jordan Clarkson",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 5,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1631110,
+        "name": "Jeremy Sochan",
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642359,
+        "name": "Pacôme Dadiet",
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642885,
+        "name": "Mohamed Diawara",
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      },
+      {
+        "personId": 1642278,
+        "name": "Tyler Kolek",
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "shooting": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "pdfStatisticsAndMinutesMatched": true
+      }
+    ],
+    "sourceJavaScript": [
+      {
+        "url": "https://www.nba.com/_next/static/chunks/14672-7246e95691a37805.js",
+        "sha256": "639f6882e02165ec447f5955882f9f40390fceed455e69b30613bdf68b60a37a"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/24094-e9fd2fd647bbb36e.js",
+        "sha256": "25d89b3ac913827b0d0407355b681c4634bd02dcc2c55c9cd5a9bdbb39a101ed"
+      },
+      {
+        "url": "https://www.nba.com/_next/static/chunks/pages/_app-71c0bd4c8ffc33a7.js",
+        "sha256": "47f9487b21ea581649d3059ef5489c7a6744b3ef6edf0798ecd98299599a8e51"
+      }
+    ],
+    "originalPdfCaptureTimestamp": null,
+    "originalPdfCaptureTimestampStatus": "unknown; no invented timestamp"
+  }
+}
