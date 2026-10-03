@@ -8,6 +8,8 @@ import { getVerifiedShotChart } from "./verified-shot-chart-archive";
 import type { CourtShot } from "./court-shots";
 import schedule from "@/data/schedule-2025-26.json";
 const harness=vi.hoisted(()=>({states:[] as unknown[],refs:[] as {current:unknown}[],index:0,refIndex:0,locale:"en" as "en"|"zh",imports:0,create:vi.fn()}));
+// Standalone handler harness; real shared-context coverage is separate.
+vi.mock("@/components/GamePeriodProvider", () => ({ useLinkedGamePeriod: () => null }));
 vi.mock("react",async original=>({...await original<typeof import("react")>(),
   useState:(initial:unknown)=>{const i=harness.index++;if(!(i in harness.states))harness.states[i]=initial;return [harness.states[i],(next:unknown)=>{harness.states[i]=typeof next==="function"?next(harness.states[i]):next;}];},
   useMemo:(fn:()=>unknown)=>fn(),useRef:(initial:unknown)=>{const i=harness.refIndex++;return harness.refs[i]??(harness.refs[i]={current:initial});},

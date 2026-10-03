@@ -9,6 +9,8 @@ import type { CourtShot } from "./court-shots";
 // Hook harness exercises actual filter/list/selection handlers without a browser.
 // Production smoke independently checks the final rendered pages and bundle boundary.
 const harness = vi.hoisted(() => ({ states: [] as unknown[], index: 0, locale: "en" as "en" | "zh" }));
+// Standalone handler harness; real shared-context coverage is separate.
+vi.mock("@/components/GamePeriodProvider", () => ({ useLinkedGamePeriod: () => null }));
 vi.mock("react", async original => ({ ...await original<typeof import("react")>(),
   useMemo: (fn: () => unknown) => fn(),
   useState: (initial: unknown) => {

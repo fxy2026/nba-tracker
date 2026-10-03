@@ -106,6 +106,16 @@ still need independent review and an explicit integrity allowlist entry.
 
 ## Full-court comparison UI
 
+Where the no-box final-game route also has the reviewed gamebook score trend,
+the two panels share period selection and visibly label that link. Court dots
+and FG summaries follow the selected period; the score chart remains cumulative.
+Both player selections, result visibility, full/half focus and list state stay
+independent. “Clear shot filters” resets players/result/shot selection but keeps
+the linked period and focus. Returning to the whole game changes only period.
+Out-of-period shot selections clear rather than returning unexpectedly later.
+Other games retain their independent period and overtime controls. No event join,
+score-at-shot, inferred free-throw position or expanded timeline is introduced.
+
 The shared period/result controls are always visible, with independent away/home
 player selectors. Per-team FG made/attempts/percentage follows player + period
 selection and deliberately ignores the result visibility filter. The separately

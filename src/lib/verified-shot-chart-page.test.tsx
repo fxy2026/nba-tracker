@@ -4,6 +4,7 @@ import schedule from "@/data/schedule-2025-26.json";
 import type { BoxScore, ScheduleGame } from "./api";
 import VerifiedShotChartSection from "@/app/game/[id]/_components/VerifiedShotChartSection";
 import ReportedScoreSequence from "@/app/game/[id]/_components/ReportedScoreSequence";
+import GamePeriodProvider from "@/components/GamePeriodProvider";
 import WithPlayByPlay from "@/app/game/[id]/_components/WithPlayByPlay";
 import ShotChartSection from "@/app/game/[id]/_components/ShotChartSection";
 
@@ -52,6 +53,8 @@ describe("verified court archive routing", () => {
     expect(chart).toHaveLength(1);
     expect(chart[0].props).toMatchObject({ isZh: locale === "zh", data: { gameId: id, coordinateSystem: "nba-legacy-basket-feet", coverage: { mapped: 181, total: 181, complete: true } } });
     expect(elements(tree, ReportedScoreSequence)).toHaveLength(1);
+    expect(elements(tree, GamePeriodProvider)).toHaveLength(1);
+    expect(elements(tree, GamePeriodProvider)[0].key).toBe(id);
     expect(elements(tree, WithPlayByPlay)).toHaveLength(0);
     expect(elements(tree, ShotChartSection)).toHaveLength(0);
     expect(mocks.pbp).not.toHaveBeenCalled();
@@ -69,6 +72,7 @@ describe("verified court archive routing", () => {
       expect(text(tree)).toContain(locale === "zh" ? `${total} 次真实出手坐标` : `${total} verified shot locations`);
       expect(text(tree)).not.toContain("181 verified shot locations");
       expect(elements(tree, ReportedScoreSequence)).toHaveLength(0);
+    expect(elements(tree, GamePeriodProvider)).toHaveLength(0);
       expect(elements(tree, WithPlayByPlay)).toHaveLength(0);
       expect(elements(tree, ShotChartSection)).toHaveLength(0);
     }
@@ -94,6 +98,7 @@ describe("verified court archive routing", () => {
     expect(elements(tree, VerifiedShotChartSection)[0].props.data).toMatchObject({ gameId: id, coverage: { mapped: 181 } });
     expect(elements(tree, ShotChartSection)).toHaveLength(0);
     expect(elements(tree, ReportedScoreSequence)).toHaveLength(0);
+    expect(elements(tree, GamePeriodProvider)).toHaveLength(0);
     expect(mocks.pbp).toHaveBeenCalledExactlyOnceWith(id);
     expect(fetch).not.toHaveBeenCalled();
   });

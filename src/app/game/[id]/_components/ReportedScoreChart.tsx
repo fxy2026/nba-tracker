@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLinkedGamePeriod } from "@/components/GamePeriodProvider";
 import {
   moveReportedScoreSelection, nearestReportedScorePoint, reportedScorePoints, reportedScoreStepPath,
   scoreChartDomain, scoreChartPointsForPeriod,
@@ -18,12 +19,22 @@ export default function ReportedScoreChart({ rows, homeTricode, awayTricode, sou
   const id = useId();
   const plotRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(720);
-  const [period, setPeriod] = useState<ScorePeriod>(0);
-  const [selectedIndex, setSelectedIndex] = useState(Math.max(0, rows.length - 1));
-  const [inspecting, setInspecting] = useState(false);
+  const linkedPeriod = useLinkedGamePeriod();
+  const [localPeriod, setLocalPeriod] = useState<ScorePeriod>(0);
+  const period = linkedPeriod?.period ?? localPeriod;
+  const [inspection, setInspection] = useState({ period, sourceIndex: Math.max(0, rows.length - 1), active: false });
   const points = useMemo(() => reportedScorePoints(rows), [rows]);
   const visible = useMemo(() => scoreChartPointsForPeriod(points, period), [points, period]);
-  const selected = visible.find(point => point.sourceIndex === selectedIndex) ?? visible.at(-1);
+  // Reconcile during this component's render, so a period change from either
+  // control cannot display a stale cursor for one frame or resurrect it later.
+  const currentInspection = inspection.period === period ? inspection : {
+    period,
+    sourceIndex: (visible.find(point => point.sourceIndex === inspection.sourceIndex) ?? visible[0])?.sourceIndex ?? 0,
+    active: true,
+  };
+  if (inspection.period !== period) setInspection(currentInspection);
+  const inspecting = currentInspection.active;
+  const selected = visible.find(point => point.sourceIndex === currentInspection.sourceIndex) ?? visible.at(-1);
   const domain = scoreChartDomain(period);
   const maxScore = Math.max(20, Math.ceil(Math.max(...points.flatMap(point => [point.homeScore, point.awayScore])) / 20) * 20);
 
@@ -44,16 +55,16 @@ export default function ReportedScoreChart({ rows, homeTricode, awayTricode, sou
   const quarter = (value: number) => isZh ? `第 ${value} 节` : `Q${value}`;
   const recordLabel = isZh ? `第 ${selected.sourceIndex + 1} / ${points.length} 条记录` : `Record ${selected.sourceIndex + 1} of ${points.length}`;
   const selectionLabel = `${recordLabel}, ${quarter(selected.period)}, ${selected.clockAsPrinted}, ${homeTricode} ${selected.homeScore}, ${awayTricode} ${selected.awayScore}`;
-  const select = (index: number) => { setSelectedIndex(index); setInspecting(true); };
+  const select = (index: number) => { setInspection({ period, sourceIndex: index, active: true }); };
   const pointerSelect = (event: PointerEvent<SVGSVGElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const index = nearestReportedScorePoint(visible, event.clientX - bounds.left, event.clientY - bounds.top, bounds.width, bounds.height, domain, maxScore);
     if (index !== null) select(index);
   };
   const selectPeriod = (value: ScorePeriod) => {
-    setPeriod(value);
-    setInspecting(true);
-    if (value && selected.period !== value) setSelectedIndex(points.find(point => point.period === value)!.sourceIndex);
+    if (value === period) return;
+    if (linkedPeriod) linkedPeriod.selectPeriod(value);
+    else setLocalPeriod(value);
   };
   const move = (delta: number) => {
     const index = moveReportedScoreSelection(visible, selected.sourceIndex, delta);
@@ -115,6 +126,10 @@ export default function ReportedScoreChart({ rows, homeTricode, awayTricode, sou
         ))}
       </div>
 
+      {linkedPeriod && <p className="mt-1 text-[11px] text-text-secondary" data-score-linked-scope>
+        {isZh ? "节次与投篮图联动 · 比分始终为累计得分" : "Period linked with shot chart · Scores remain cumulative"}
+      </p>}
+
       <div className="mt-3 rounded-xl border border-border bg-bg-secondary px-3 pb-1 pt-3" data-score-readout>
         <div className="flex items-center justify-between gap-2" aria-live="polite" aria-atomic="true">
           <div className="shrink-0 text-[10px] text-text-secondary">
@@ -131,7 +146,7 @@ export default function ReportedScoreChart({ rows, homeTricode, awayTricode, sou
           <button type="button" onClick={() => move(-1)} disabled={selectedPosition === 0} aria-label={isZh ? "上一条记录" : "Previous record"} className="flex size-11 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-bg-hover focus-visible:outline-2 disabled:opacity-30"><ChevronLeft size={17} aria-hidden="true" /></button>
           <input type="range" min={0} max={visible.length - 1} value={selectedPosition} step={1}
             aria-label={isZh ? "按原文顺序查看比分记录" : "Inspect score records in source order"} aria-valuetext={selectionLabel}
-            onFocus={() => setInspecting(true)} onChange={event => select(visible[Number(event.currentTarget.value)].sourceIndex)}
+            onFocus={() => select(selected.sourceIndex)} onChange={event => select(visible[Number(event.currentTarget.value)].sourceIndex)}
             className="h-11 min-w-0 flex-1 cursor-pointer accent-accent" />
           <button type="button" onClick={() => move(1)} disabled={selectedPosition === visible.length - 1} aria-label={isZh ? "下一条记录" : "Next record"} className="flex size-11 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-bg-hover focus-visible:outline-2 disabled:opacity-30"><ChevronRight size={17} aria-hidden="true" /></button>
         </div>

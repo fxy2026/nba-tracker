@@ -32,6 +32,7 @@ import { getOfficialPeriodScores } from "@/lib/official-period-score-archive";
 import OfficialPeriodScores from "./_components/OfficialPeriodScores";
 import { getVerifiedShotChart } from "@/lib/verified-shot-chart-archive";
 import VerifiedShotChartSection from "./_components/VerifiedShotChartSection";
+import GamePeriodProvider from "@/components/GamePeriodProvider";
 import GameHero from "./_components/GameHero";
 import PreGameHero from "./_components/PreGameHero";
 import GameStickyScore from "./_components/GameStickyScore";
@@ -228,8 +229,15 @@ export default async function GamePage({ params }: PageProps) {
             <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
           {officialPeriods && !reportedSequence && <OfficialPeriodScores scores={officialPeriods} isZh={isZh} />}
-          <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />
-          {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} periodScores={officialPeriods} isZh={isZh} />}
+          {verifiedShots && reportedSequence ? (
+            <GamePeriodProvider key={sg.gameId}>
+              <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />
+              <ReportedScoreSequence sequence={reportedSequence} periodScores={officialPeriods} isZh={isZh} />
+            </GamePeriodProvider>
+          ) : <>
+            <VerifiedShotChartSection data={verifiedShots} isZh={isZh} />
+            {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} periodScores={officialPeriods} isZh={isZh} />}
+          </>}
           {recoveredBox && <RecoveredPlayerBox box={recoveredBox} isZh={isZh} />}
           {providerBox && <ProviderPlayerBox box={providerBox} isZh={isZh} />}
           <RelatedPages

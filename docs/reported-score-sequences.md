@@ -80,6 +80,15 @@ Only an actively selected record receives a cursor and two point markers: a home
 chart does not derive lead changes, runs, shots, or play-by-play.
 
 The full-game view has alternating quarter bands and four quarter zoom buttons.
+When the same final game's independently verified court chart is also present in
+the no-box archive route, both existing period controls share one viewing range.
+Quarter zoom retains cumulative scores and the full-game vertical scale: Q2
+opens at the printed DET 37–MEM 35, while its quarter-total table shows 31–26.
+Shared range state carries no score or shot facts. Exact records, untimed end
+summaries and source validation remain server-rendered and unchanged. Score-row
+inspection does not select a shot or infer a score for a missed attempt.
+The normal-box/PBP route retains its existing source precedence; games without
+reviewed timed score observations keep independent court period controls.
 Pointer inspection selects a real observation; a native range control and
 previous/next buttons traverse source rows, including exact overlaps and repeated
 clocks. A compact selected-record card shows the unchanged printed clock, both

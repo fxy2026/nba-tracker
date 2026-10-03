@@ -6,6 +6,8 @@ import ReportedScoreChart from "@/app/game/[id]/_components/ReportedScoreChart";
 // Exercise the actual component handlers in a deterministic hook harness. Browser
 // layout/native input behavior is a separate smoke test, not claimed by this file.
 const hooks = vi.hoisted(() => ({ values: [] as unknown[], cursor: 0 }));
+// Standalone handler harness; real shared-context coverage is separate.
+vi.mock("@/components/GamePeriodProvider", () => ({ useLinkedGamePeriod: () => null }));
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
   useId: () => "score-chart-test",
