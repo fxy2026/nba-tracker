@@ -72,3 +72,16 @@ export const courtBasicMarkings = {
   restricted: "M252,48V63A48,48,0,0,0,348,63V48",
   halfCourt: "M228,564A72,72,0,0,1,372,564",
 } as const;
+
+/** Only schematic source-category cuts; regulation outlines are drawn separately.
+ * Endpoints reuse the zone geometry exactly. This does not classify any shots. */
+export const courtBasicStatisticalDividers = [
+  `M204,${paintSideY}L${at(150)}`,
+  `M${paintBottomLeft},228L${at(110)}`,
+  `M${paintBottomRight},228L${at(70)}`,
+  `M396,${paintSideY}L${at(30)}`,
+  `M${at(110)}L${halfCourtLeft},564`,
+  `M${at(70)}L${halfCourtRight},564`,
+  `M0,${courtBasicCornerY}H36`,
+  `M564,${courtBasicCornerY}H600`,
+] as const;

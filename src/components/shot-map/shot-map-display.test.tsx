@@ -6,10 +6,10 @@ import { loadHistoricalShotMap } from '@/lib/historical-shot-spatial';
 import { loadHistoricalCourtArchive } from '@/lib/historical-shot-archive';
 import type { SeasonShotMapDTO } from '@/lib/season-shot-map';
 import type { SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
-import { courtBasicGeometry } from '@/lib/season-heatmap-court-geometry';
+import { courtBasicGeometry, courtBasicStatisticalDividers } from '@/lib/season-heatmap-court-geometry';
 import RefinedShotExplorer from './RefinedShotExplorer';
 import ShotMapCourt, { ShotMapLegend } from './ShotMapCourt';
-import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, zoneReference, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
+import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, zoneBand, zoneReference, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
 let data:SeasonShotMapDTO,zones:SeasonHeatmapRendererDTO;
 beforeAll(async()=>{
  const spatial=await loadHistoricalShotMap({playerId:201939,season:'2025-26',seasonType:'Regular Season'});
@@ -52,9 +52,9 @@ describe('refined product states and provenance',()=>{
    expect(html).toContain(locale==='en'?'Escape closes':'Escape 关闭');
   }
  });
- it('restores zone colors without altering Hex colors, unknown-reference behavior, or exact ±3 pp boundaries',()=>{
+ it('adds five zone colors without altering Hex colors or its exact ±3 pp boundaries',()=>{
   expect(SHOT_MAP_PALETTE).toEqual({below:'#6c93a2',near:'#c6c3b9',above:'#c3836e',neutral:'#d7d8d4'});
-  expect(SHOT_MAP_ZONE_PALETTE).toEqual({below:'#55adce',near:'#e6ca46',above:'#e98232',neutral:'#d7d8d4'});
+  expect(SHOT_MAP_ZONE_PALETTE).toEqual({farBelow:'#237ea5',below:'#85c9df',near:'#e6ca46',above:'#f4b36f',farAbove:'#e98232',neutral:'#d7d8d4'});
   for(const [made,expected] of [[54,'above'],[53,'near'],[47,'near'],[46,'below']] as const){
    expect(binColor(count(made,100),count(50,100),SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE[expected]);
    expect(binColor(count(made,100),count(50,100))).toBe(SHOT_MAP_PALETTE[expected]);
@@ -68,13 +68,13 @@ describe('refined product states and provenance',()=>{
  it('colors real small-sample zones using exact same-zone counts and preserves geometry and raw data',()=>{
   const before=JSON.stringify(zones);
   const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={zones} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
-  for(const [id,fgm,fga,leagueFgm,leagueFga] of [['midrange-center',8,17,2018,4718],['midrange-left',13,23,2393,5819]] as const){
+  for(const [id,fgm,fga,leagueFgm,leagueFga,band] of [['midrange-center',8,17,2018,4718,'above'],['midrange-left',13,23,2393,5819,'farAbove']] as const){
    const row=zones.zones.find(zone=>zone.id===id)!;
    expect([row.fgm,row.fga]).toEqual([fgm,fga]);
    expect(zoneReference(row)).toEqual({fgm:leagueFgm,fga:leagueFga});
-   expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE.above);
+   expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE[band]);
    const path=html.match(new RegExp(`<path[^>]*data-zone-id="${id}"[^>]*>`))?.[0];
-   expect(path).toContain(`fill="${SHOT_MAP_ZONE_PALETTE.above}"`);
+   expect(path).toContain(`fill="${SHOT_MAP_ZONE_PALETTE[band]}"`);
    expect(path).toContain(`${fgm}/${fga}`);
   }
   for(const geometry of courtBasicGeometry){
@@ -86,11 +86,53 @@ describe('refined product states and provenance',()=>{
  });
  it('colors even one-attempt and small league samples without using rounded percentages',()=>{
   const row=(fgm:number,fga:number,leagueFgm:number,leagueFga:number):SeasonHeatmapDisplayRow=>({...zones.zones[0],fgm,fga,leagueAverage:{displayedPct:'99.9',provenance:'weighted-archive-counts-not-official-displayed-LA',leagueFgm,leagueFga}});
-  for(const [made,attempts,leagueMade,leagueAttempts,color] of [[1,1,1,2,'above'],[0,1,1,2,'below'],[1,2,1,2,'near'],[13,23,9,19,'above'],[53,100,50,100,'near'],[47,100,50,100,'near'],[5301,10000,50,100,'above'],[4699,10000,50,100,'below']] as const){
+  for(const [made,attempts,leagueMade,leagueAttempts,color] of [[1,1,1,2,'farAbove'],[0,1,1,2,'farBelow'],[1,2,1,2,'near'],[13,23,9,19,'above'],[53,100,50,100,'near'],[47,100,50,100,'near'],[5301,10000,50,100,'above'],[4699,10000,50,100,'below']] as const){
    expect(zoneColor(row(made,attempts,leagueMade,leagueAttempts))).toBe(SHOT_MAP_ZONE_PALETTE[color]);
   }
   expect(binColor(count(1,1),count(1,2))).toBe(SHOT_MAP_PALETTE.neutral);
   expect(binColor(count(13,23),count(9,19))).toBe(SHOT_MAP_PALETTE.neutral);
+ });
+ it.each([
+  [3999,10000,'farBelow'],[40,100,'below'],[4001,10000,'below'],
+  [4699,10000,'below'],[47,100,'near'],[4701,10000,'near'],
+  [5299,10000,'near'],[53,100,'near'],[5301,10000,'above'],
+  [5999,10000,'above'],[60,100,'above'],[6001,10000,'farAbove'],
+ ] as const)('assigns exact ±3 / ±10 pp bin endpoint: %i/%i to %s',(fgm,fga,band)=>{
+  const row={...zones.zones[0],fgm,fga,leagueAverage:{displayedPct:'0.0',provenance:'weighted-archive-counts-not-official-displayed-LA' as const,leagueFgm:50,leagueFga:100}};
+  expect(zoneBand(row)).toBe(band);expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE[band]);
+ });
+ it('compares very large safe integer counts without cross-product rounding',()=>{
+  const size=100_000_000_000_000;
+  for(const [numerator,band] of [[40,'below'],[47,'near'],[53,'near'],[60,'above']] as const){
+   const row={...zones.zones[0],fgm:numerator*size,fga:100*size,leagueAverage:{displayedPct:'50.0',provenance:'weighted-archive-counts-not-official-displayed-LA' as const,leagueFgm:50,leagueFga:100}};
+   // Stay within safe source integer limits while products are far beyond them.
+   row.fgm/=2;row.fga/=2;
+   expect(zoneBand(row)).toBe(band);
+  }
+ });
+ it.each(['en','zh'] as const)('labels all five presentation bins and units unambiguously (%s)',locale=>{
+  const legend=renderToStaticMarkup(<ShotMapLegend view="zones" locale={locale}/>);
+  for(const [band,color] of Object.entries(SHOT_MAP_ZONE_PALETTE).filter(([key])=>key!=='neutral')){
+   expect(legend).toContain(`data-zone-legend-band="${band}"`);expect(legend).toContain(color);
+  }
+  expect(legend).toContain(locale==='en'?'FG% difference Δ vs same-zone league archive (pp)':'与同分区联盟档案命中率之差 Δ（百分点）');
+  for(const range of ['&lt; −10','−10 ≤ Δ &lt; −3','−3 ≤ Δ ≤ +3','+3 &lt; Δ ≤ +10','&gt; +10'])expect(legend).toContain(range);
+  const html=explorer({locale,initialView:'zones'});
+  expect(html).toContain(locale==='en'?'Five presentation bins, not official NBA thresholds':'五档颜色仅为展示分档，并非 NBA 官方阈值');
+ });
+ it('draws separate non-interactive two-tone statistical dividers with exact existing endpoints',()=>{
+  const sameColor={...zones,zones:zones.zones.map(row=>({...row,fgm:1,fga:1,leagueAverage:{displayedPct:'50.0',provenance:'weighted-archive-counts-not-official-displayed-LA' as const,leagueFgm:1,leagueFga:2}}))};
+  const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={sameColor} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
+  expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);
+  expect((html.match(/data-zone-divider=/g)??[]).length).toBe(8);
+  for(const path of courtBasicStatisticalDividers)expect(html.split(`d="${path}"`).length-1).toBe(2);
+  expect(html).toContain('pointer-events="none" aria-hidden="true" transform=');
+  expect(html).toContain('data-zone-court-halo="true"');
+  expect(html).toContain('vector-effect="non-scaling-stroke"');
+  const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');
+  expect(css).toContain('stroke-dasharray:4 3');expect(css).toContain('stroke-width:1.1');expect(css).toContain('stroke-width:2.8');
+  expect(css).toContain('--map-zone-halo:#fff9eb');expect(css).toContain('--map-zone-halo:#fff4df');
+  expect(css).not.toContain('stroke-opacity:.35');
  });
  it('keeps zero, missing and invalid reference zones gray rather than guessing from displayed percentages',()=>{
   const base=zones.zones[0];
@@ -121,7 +163,7 @@ describe('refined product states and provenance',()=>{
  it('defaults to hex with true totals, compact legend and honest source scope',()=>{const html=explorer();expect(html).toContain('data-shot-map-view="hex"');for(const text of ['799','374','46.8%','39.3%','Area = attempts','fewer than 5 player or 20 league attempts','individual shots and league coverage are not fully verified','including this player']){expect(html).toContain(text);}expect(html).not.toContain('OFFICIAL AGGREGATES');});
  it('hides wrong-identity coordinate data and reports an error',()=>{const html=explorer({spatial:{status:'ready',data:{...data,playerId:99999}},aggregate:{status:'unavailable'}});expect(html).toContain('Unable to load this dataset');expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('46.8%');});
  it('separates loading, unavailable, and error without turning any into zeros',()=>{for(const status of ['loading','unavailable','error'] as const){const html=explorer({spatial:{status},aggregate:{status:'unavailable'}});expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('0 / 0 FG');expect(html).toContain(status==='loading'?'Loading the shot archive':status==='error'?'Unable to load this dataset':'This view is not available');}});
- it('zone view uses source categories with the restored orange/yellow/blue palette and an accessible statistics list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).toContain('fill-opacity=".82"');expect(html).toContain('Yellow = within ±3 pp');for(const color of ['#e98232','#e6ca46','#55adce'])expect(html).toContain(color);expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
+ it('zone view uses source categories with the restored orange/yellow/blue palette and an accessible statistics list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).toContain('fill-opacity=".82"');expect(html).toContain('Five presentation bins, not official NBA thresholds');for(const color of Object.values(SHOT_MAP_ZONE_PALETTE).filter(color=>color!==SHOT_MAP_ZONE_PALETTE.neutral))expect(html).toContain(color);expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
  it('keeps all geometry residuals and discrepancies separate from source BASIC zones',async()=>{
  const result=await loadHistoricalShotMap({playerId:201939,season:'2015-16',seasonType:'Regular Season'});if(result.status!=='ready')throw new Error('Missing2015');
  const html=explorer({selection:result.data,spatial:result,aggregate:{status:'unavailable'},datasets:[{...result.data,availability:'available'}]});

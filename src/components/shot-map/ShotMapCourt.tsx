@@ -1,14 +1,14 @@
 import { useId, type KeyboardEvent, type MouseEvent, type Ref } from 'react';
 import type { SeasonShotMapDTO, ShotMapBin } from '@/lib/season-shot-map';
 import type { SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
-import { courtBasicGeometry } from '@/lib/season-heatmap-court-geometry';
+import { courtBasicGeometry, courtBasicStatisticalDividers } from '@/lib/season-heatmap-court-geometry';
 import { zoneName } from '../season-heatmap/season-heatmap-display';
 import { axialCenter, binColor, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE, SHOT_MAP_VIEWBOX, type ShotMapView } from './shot-map-display';
 import styles from './shot-map.module.css';
 export const binKey = (bin: Pick<ShotMapBin,'q'|'r'>) => `${bin.q}:${bin.r}`;
 export function CourtMarkings({zones=false}:{zones?:boolean}={}) {
   const cornerY = 417.5 - Math.sqrt(237.5 ** 2 - 220 ** 2);
-  return <g pointerEvents="none" aria-hidden="true" data-court-markings="regulation-50-by-47-feet" className={`${styles.courtLine}${zones?` ${styles.zoneCourtLine}`:''}`}>
+  const markings = <>
     <rect x="-250" y="0" width="500" height="470" />
     <path d="M-80 470V280H80V470" />
     <path d={`M-220 470V${cornerY}A237.5 237.5 0 0 1 220 ${cornerY}V470`} />
@@ -17,6 +17,17 @@ export function CourtMarkings({zones=false}:{zones?:boolean}={}) {
     <path d="M-40 430V417.5A40 40 0 0 1 40 417.5V430" />
     <path d="M-60 0A60 60 0 0 0 60 0" strokeOpacity=".6" />
     <g className={styles.hoop}><path d="M-30 430H30" strokeWidth="2.5" /><circle cx="0" cy="417.5" r="7.5" /></g>
+  </>;
+  return <g pointerEvents="none" aria-hidden="true" data-court-markings="regulation-50-by-47-feet" className={`${styles.courtLine}${zones?` ${styles.zoneCourtLine}`:''}`}>
+    {zones&&<g className={styles.zoneCourtHalo} data-zone-court-halo="true">{markings}</g>}{markings}
+  </g>;
+}
+function ZoneDividers() {
+  return <g pointerEvents="none" aria-hidden="true" transform="translate(-250 470) scale(.8333333333 -.8333333333)" data-zone-dividers="schematic-source-categories">
+    {courtBasicStatisticalDividers.map((path,index)=><g key={path}>
+      <path d={path} className={styles.zoneDividerHalo} vectorEffect="non-scaling-stroke"/>
+      <path d={path} className={styles.zoneDivider} vectorEffect="non-scaling-stroke" data-zone-divider={index}/>
+    </g>)}
   </g>;
 }
 interface Props { data: SeasonShotMapDTO | null; zones: SeasonHeatmapRendererDTO | null; view: ShotMapView; locale: 'en'|'zh'; selected: string | null; onSelect: (key:string|null)=>void; detailsId?:string; courtRef?:Ref<SVGSVGElement> }
@@ -71,12 +82,29 @@ export default function ShotMapCourt({data,zones,view,locale,selected,onSelect,d
       {edge&&<polygon data-edge-cell="true" points={hexPoints(x,y,radius)} fill="none" stroke="var(--map-line, #abb3aa)" strokeWidth="1" strokeDasharray="2 2"/>}
       <polygon points={hexPoints(x,y,hexRadius(bin.fga,max,radius))} fill={binColor(bin,bin.league)===SHOT_MAP_PALETTE.neutral?"var(--map-neutral, #d7d8d4)":binColor(bin,bin.league)} className={selected===binKey(bin)?styles.selectedHex:styles.hex}/>
     </g>)}</g>}
+    {view==='zones'&&zones&&<ZoneDividers/>}
     <CourtMarkings zones={view==='zones'} />
     {selected&&view!=='zones'&&points.filter(p=>binKey(p.bin)===selected).map(({bin,x,y})=><g key="selected" clipPath={`url(#${clip})`} pointerEvents="none"><polygon points={hexPoints(x,y,radius)} fill="none" stroke="var(--map-focus, #477c84)" strokeWidth="2" strokeDasharray="3 3"/><title>{`${bin.fgm}/${bin.fga}`}</title></g>)}
   </svg>;
 }
-export function ShotMapLegend({view,locale}:{view:ShotMapView;locale:'en'|'zh'}) { const zh=locale==='zh',palette=view==='zones'?SHOT_MAP_ZONE_PALETTE:SHOT_MAP_PALETTE;return <div className={styles.legend}>
-  {view==='density'?<div className={styles.legendColors}><span>{zh?'出手频率':'Shot frequency'}</span><span>{zh?'低':'Low'}</span><span className={styles.swatches}>{[.15,.35,.6,.85].map(opacity=><i key={opacity} style={{background:'var(--map-density, #789a97)',opacity}}/>)}</span><span>{zh?'高':'High'}</span></div>:<div className={styles.legendColors}><span>{zh?'低于':'Below'}</span><span className={styles.swatches}>{[palette.below,palette.near,palette.above].map(color=><i key={color} style={{background:color}}/>)}</span><span>{zh?'高于联盟参考':'Above reference'}</span></div>}
-  {view==='hex'&&<span className={styles.legendSize}><svg viewBox="0 0 46 19" aria-hidden="true"><polygon points={hexPoints(7,10,3)} fill="#bec5be"/><polygon points={hexPoints(21,10,5)} fill="#bec5be"/><polygon points={hexPoints(38,10,8)} fill="#bec5be"/></svg>{zh?'面积 = 出手量':'Area = attempts'}</span>}
-  {view==='zones'&&<span>{zh?'黄色 = ±3 百分点内':'Yellow = within ±3 pp'}</span>}
-</div>;}
+export function ShotMapLegend({view,locale}:{view:ShotMapView;locale:'en'|'zh'}) {
+  const zh=locale==='zh';
+  if(view==='zones') {
+    const bands = [
+      { band:'farBelow', label:'< −10' },
+      { band:'below', label:'−10 ≤ Δ < −3' },
+      { band:'near', label:'−3 ≤ Δ ≤ +3' },
+      { band:'above', label:'+3 < Δ ≤ +10' },
+      { band:'farAbove', label:'> +10' },
+    ] as const;
+    return <div className={`${styles.legend} ${styles.zoneLegend}`} aria-label={zh?'分区颜色图例':'Zone color legend'}>
+      <span className={styles.zoneLegendTitle}>{zh?'与同分区联盟档案命中率之差 Δ（百分点）':'FG% difference Δ vs same-zone league archive (pp)'}</span>
+      <div className={styles.zoneLegendBins}>{bands.map(({band,label})=><span key={band} data-zone-legend-band={band}><i style={{background:SHOT_MAP_ZONE_PALETTE[band]}}/>{label}</span>)}</div>
+      <div className={styles.zoneBoundaryKey}><span><i/>{zh?'球场标线':'Court markings'}</span><span><i/>{zh?'分区示意边界':'Illustrative zone boundaries'}</span></div>
+    </div>;
+  }
+  return <div className={styles.legend}>
+    {view==='density'?<div className={styles.legendColors}><span>{zh?'出手频率':'Shot frequency'}</span><span>{zh?'低':'Low'}</span><span className={styles.swatches}>{[.15,.35,.6,.85].map(opacity=><i key={opacity} style={{background:'var(--map-density, #789a97)',opacity}}/>)}</span><span>{zh?'高':'High'}</span></div>:<div className={styles.legendColors}><span>{zh?'低于':'Below'}</span><span className={styles.swatches}>{[SHOT_MAP_PALETTE.below,SHOT_MAP_PALETTE.near,SHOT_MAP_PALETTE.above].map(color=><i key={color} style={{background:color}}/>)}</span><span>{zh?'高于联盟参考':'Above reference'}</span></div>}
+    {view==='hex'&&<span className={styles.legendSize}><svg viewBox="0 0 46 19" aria-hidden="true"><polygon points={hexPoints(7,10,3)} fill="#bec5be"/><polygon points={hexPoints(21,10,5)} fill="#bec5be"/><polygon points={hexPoints(38,10,8)} fill="#bec5be"/></svg>{zh?'面积 = 出手量':'Area = attempts'}</span>}
+  </div>;
+}

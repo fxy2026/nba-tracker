@@ -1,4 +1,3 @@
-import { HEATMAP_COLORS } from '../season-heatmap/season-heatmap-display';
 import type { SeasonHeatmapDisplayRow } from '@/lib/season-heatmap';
 /** Spatial rendering uses the source coordinate frame, never zone totals. */
 export const SHOT_MAP_LOW_PLAYER = 5;
@@ -7,7 +6,9 @@ export const SHOT_MAP_LOW_ZONE_PLAYER = 25;
 export const SHOT_MAP_DELTA_BAND = .03;
 export const SHOT_MAP_VIEWBOX = '-270 -20 540 510';
 export const SHOT_MAP_PALETTE = { below: '#6c93a2', near: '#c6c3b9', above: '#c3836e', neutral: '#d7d8d4' } as const;
-export const SHOT_MAP_ZONE_PALETTE = { below: HEATMAP_COLORS.below, near: HEATMAP_COLORS.near, above: HEATMAP_COLORS.above, neutral: SHOT_MAP_PALETTE.neutral } as const;
+// Presentation bins, not official NBA thresholds. Hex and density encodings stay separate.
+export const SHOT_MAP_ZONE_PALETTE = { farBelow: '#237ea5', below: '#85c9df', near: '#e6ca46', above: '#f4b36f', farAbove: '#e98232', neutral: SHOT_MAP_PALETTE.neutral } as const;
+export type ShotMapZoneBand = keyof typeof SHOT_MAP_ZONE_PALETTE;
 export type ShotMapView = 'hex' | 'density' | 'zones';
 export interface BinCounts { fgm: number; fga: number; fg3m: number; fg3a: number }
 export function fgRate(counts: Pick<BinCounts, 'fgm' | 'fga'>): number | null { return counts.fga > 0 ? counts.fgm / counts.fga : null; }
@@ -27,12 +28,22 @@ export function zoneReference(row: SeasonHeatmapDisplayRow): Pick<BinCounts, 'fg
   const counts = { fgm: reference.leagueFgm, fga: reference.leagueFga };
   return validZoneCounts(counts) ? counts : null;
 }
+/** Exact count cross-products keep inclusive ±3 / ±10 pp edges immune to rounding. */
+export function zoneBand(row: SeasonHeatmapDisplayRow): ShotMapZoneBand {
+  const reference = zoneReference(row);
+  if (!validZoneCounts(row) || !reference) return 'neutral';
+  const playerAttempts = BigInt(row.fga), leagueAttempts = BigInt(reference.fga);
+  const difference = (BigInt(row.fgm) * leagueAttempts - BigInt(reference.fgm) * playerAttempts) * BigInt(100);
+  const denominator = playerAttempts * leagueAttempts;
+  if (difference < -BigInt(10) * denominator) return 'farBelow';
+  if (difference < -BigInt(3) * denominator) return 'below';
+  if (difference <= BigInt(3) * denominator) return 'near';
+  if (difference <= BigInt(10) * denominator) return 'above';
+  return 'farAbove';
+}
 /** Zones retain descriptive colors for small samples; uncertainty is labeled separately. */
 export function zoneColor(row: SeasonHeatmapDisplayRow): string {
-  const reference = zoneReference(row);
-  if (!validZoneCounts(row) || !reference) return SHOT_MAP_ZONE_PALETTE.neutral;
-  const delta = row.fgm / row.fga - reference.fgm / reference.fga;
-  return delta > SHOT_MAP_DELTA_BAND + 1e-12 ? SHOT_MAP_ZONE_PALETTE.above : delta < -SHOT_MAP_DELTA_BAND - 1e-12 ? SHOT_MAP_ZONE_PALETTE.below : SHOT_MAP_ZONE_PALETTE.near;
+  return SHOT_MAP_ZONE_PALETTE[zoneBand(row)];
 }
 export function axialCenter(q: number, r: number, radius: number): readonly [number, number] { return [radius * Math.sqrt(3) * (q + r / 2), radius * 1.5 * r]; }
 /** SVG's downwards y is the inverse of the source's away-from-baseline y. */
