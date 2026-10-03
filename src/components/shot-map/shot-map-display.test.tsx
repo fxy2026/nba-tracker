@@ -7,8 +7,8 @@ import { loadHistoricalCourtArchive } from '@/lib/historical-shot-archive';
 import type { SeasonShotMapDTO } from '@/lib/season-shot-map';
 import type { SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
 import RefinedShotExplorer from './RefinedShotExplorer';
-import ShotMapCourt from './ShotMapCourt';
-import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, SHOT_MAP_PALETTE } from './shot-map-display';
+import ShotMapCourt, { ShotMapLegend } from './ShotMapCourt';
+import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
 let data:SeasonShotMapDTO,zones:SeasonHeatmapRendererDTO;
 beforeAll(async()=>{
  const spatial=await loadHistoricalShotMap({playerId:201939,season:'2025-26',seasonType:'Regular Season'});
@@ -43,10 +43,41 @@ describe('exact spatial encoding',()=>{
  });
 });
 describe('refined product states and provenance',()=>{
+ it.each(['en','zh'] as const)('starts every view with no empty panel or location chooser (%s)',locale=>{
+  for(const view of ['hex','density','zones'] as const){
+   const html=explorer({locale,initialView:view});
+   expect(html).not.toContain('<aside');
+   for(const removed of ['Start with a spot','EXPLORE THE COURT','cell selector','controls below','Choose a shot location','Previous location','Next location','从一处投篮开始','探索球场','选择器','选择投篮位置','上一个位置','下一个位置'])expect(html).not.toContain(removed);
+   expect(html).toContain(locale==='en'?'Escape closes':'Escape 关闭');
+  }
+ });
+ it('restores zone colors without altering Hex colors, unknown-reference behavior, or exact ±3 pp boundaries',()=>{
+  expect(SHOT_MAP_PALETTE).toEqual({below:'#6c93a2',near:'#c6c3b9',above:'#c3836e',neutral:'#d7d8d4'});
+  expect(SHOT_MAP_ZONE_PALETTE).toEqual({below:'#55adce',near:'#e6ca46',above:'#e98232',neutral:'#d7d8d4'});
+  for(const [made,expected] of [[54,'above'],[53,'near'],[47,'near'],[46,'below']] as const){
+   expect(binColor(count(made,100),count(50,100),SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE[expected]);
+   expect(binColor(count(made,100),count(50,100))).toBe(SHOT_MAP_PALETTE[expected]);
+  }
+  expect(binColor(count(0,0),count(50,100),SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE.neutral);
+  expect(binColor(count(90,100),null,SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE.neutral);
+  expect(binColor(count(90,100),count(15,19),SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE.neutral);
+  const hex=renderToStaticMarkup(<ShotMapLegend view="hex" locale="en"/>),density=renderToStaticMarkup(<ShotMapLegend view="density" locale="en"/>);
+  for(const color of [SHOT_MAP_ZONE_PALETTE.above,SHOT_MAP_ZONE_PALETTE.near,SHOT_MAP_ZONE_PALETTE.below]){expect(hex).not.toContain(color);expect(density).not.toContain(color);}
+ });
+ it('keeps low-sample, zero and missing-reference zones gray with all source geometry and counts intact',()=>{
+  const before=JSON.stringify(zones),modified=structuredClone(zones);
+  modified.zones[0]={...modified.zones[0],fgm:24,fga:24};
+  modified.zones[1]={...modified.zones[1],fgm:0,fga:0};
+  modified.zones[2]={...modified.zones[2],fgm:50,fga:100,leagueAverage:null};
+  const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={modified} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
+  for(const row of modified.zones.slice(0,3))expect(html.match(new RegExp(`<path[^>]*data-zone-id="${row.id}"[^>]*>`))?.[0]).toContain('fill="var(--map-zone-neutral, #d7d8d4)"');
+  expect(JSON.stringify(zones)).toBe(before);
+ });
+
  it('defaults to hex with true totals, compact legend and honest source scope',()=>{const html=explorer();expect(html).toContain('data-shot-map-view="hex"');for(const text of ['799','374','46.8%','39.3%','Area = attempts','fewer than 5 player or 20 league attempts','individual shots and league coverage are not fully verified','including this player']){expect(html).toContain(text);}expect(html).not.toContain('OFFICIAL AGGREGATES');});
  it('hides wrong-identity coordinate data and reports an error',()=>{const html=explorer({spatial:{status:'ready',data:{...data,playerId:99999}},aggregate:{status:'unavailable'}});expect(html).toContain('Unable to load this dataset');expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('46.8%');});
  it('separates loading, unavailable, and error without turning any into zeros',()=>{for(const status of ['loading','unavailable','error'] as const){const html=explorer({spatial:{status},aggregate:{status:'unavailable'}});expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('0 / 0 FG');expect(html).toContain(status==='loading'?'Loading the shot archive':status==='error'?'Unable to load this dataset':'This view is not available');}});
- it('zone view uses source categories with restrained fills and an accessible alternative list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).toContain('fill-opacity=".16"');expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
+ it('zone view uses source categories with the restored orange/yellow/blue palette and an accessible statistics list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).toContain('fill-opacity=".82"');expect(html).toContain('Yellow = within ±3 pp');for(const color of ['#e98232','#e6ca46','#55adce'])expect(html).toContain(color);expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
  it('keeps all geometry residuals and discrepancies separate from source BASIC zones',async()=>{
  const result=await loadHistoricalShotMap({playerId:201939,season:'2015-16',seasonType:'Regular Season'});if(result.status!=='ready')throw new Error('Missing2015');
  const html=explorer({selection:result.data,spatial:result,aggregate:{status:'unavailable'},datasets:[{...result.data,availability:'available'}]});
@@ -54,6 +85,6 @@ describe('refined product states and provenance',()=>{
  });
  it('supplies light default, explicit dark, reduced motion, readable type and 44px alternative hit targets',()=>{
  const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');expect(css).toContain("html[data-theme='dark']");expect(css).toContain('color-scheme:light');expect(css).not.toContain('html:not');expect(css).toContain('prefers-reduced-motion');expect(css).toContain('min-height:44px');
- const html=explorer();expect(html).toContain('Choose a shot location');expect(html).toContain('Previous location');expect(html).toContain('Next location');expect(html).toContain('aria-live="polite"');
+ const html=explorer();expect(html).not.toContain('Choose a shot location');expect(html).not.toContain('Previous location');expect(html).not.toContain('Next location');expect(html).toContain('aria-live="polite"');expect(css).toContain('max-width:720px');expect(css).toContain('.closeDetail');
  });
 });

@@ -1,5 +1,5 @@
 'use client';
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { HeatmapIdentity, HeatmapSeasonType, SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
 import type { SeasonShotMapDTO, SeasonShotMapResource, ShotMapBin, ShotMapResidualReason } from '@/lib/season-shot-map';
 import type { SeasonHeatmapDatasetMetadata, SeasonHeatmapResource } from '../SeasonHeatmapExplorer';
@@ -7,6 +7,7 @@ import { sameIdentity, zoneName } from '../season-heatmap/season-heatmap-display
 import ShotMapCourt, { binKey, ShotMapLegend } from './ShotMapCourt';
 import { axialCenter, binDelta, countFormat, displayPct, fgRate, type ShotMapView } from './shot-map-display';
 import styles from './shot-map.module.css';
+import Select from '../ui/Select';
 export type SpatialResource = SeasonShotMapResource | {status:'loading'};
 interface Props {
  player:{id:number;name:string;secondaryName?:string;teamLabel?:string}; locale:'en'|'zh'; datasets:readonly SeasonHeatmapDatasetMetadata[];
@@ -23,7 +24,7 @@ export default function RefinedShotExplorer(props:Props) {
  const typeName=(type:HeatmapSeasonType)=>type==='Playoffs'?(zh?'季后赛':'Playoffs'):(zh?'常规赛':'Regular season');
  return <section className={styles.explorer} lang={zh?'zh-CN':'en'} aria-labelledby={`${id}-title`} data-refined-shot-explorer="true">
    <header className={styles.header}><div><span className={styles.eyebrow}>{zh?'球员投篮档案':'PLAYER SHOT ARCHIVE'}</span><h2 id={`${id}-title`}>{zh?'投篮分布':'Shot distribution'}</h2><p className={styles.subtitle}>{player.name} · {selection.season.replace('-','–')} · {typeName(selection.seasonType)}</p></div>
-    <div className={styles.filters}><label><span className={styles.srOnly}>{zh?'赛季':'Season'}</span><select value={selection.season} aria-label={zh?'赛季':'Season'} onChange={e=>onChoose({...selection,season:e.target.value})}>{seasons.map(season=><option key={season}>{season}</option>)}</select></label>
+    <div className={styles.filters}><Select className={styles.seasonSelect} value={selection.season} aria-label={zh?'赛季':'Season'} onValueChange={season=>onChoose({...selection,season})} options={seasons.map(season=>({value:season,label:season}))}/>
     <div className={styles.segments} role="group" aria-label={zh?'赛季类型':'Season type'}>{(['Regular Season','Playoffs'] as const).map(type=><button type="button" key={type} aria-pressed={selection.seasonType===type} onClick={()=>onChoose({...selection,seasonType:type})}>{typeName(type)}</button>)}</div></div>
    </header>
    <div className={styles.stats} aria-label={zh?'档案统计':'Archive statistics'}>
@@ -39,26 +40,31 @@ function Stat({label,value,note}:{label:string;value:string;note:string}) {retur
 function ModeIcon({mode}:{mode:ShotMapView}) {return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">{mode==='hex'?<path d="M10 2L17 6V14L10 18L3 14V6Z"/>:mode==='density'?<><circle cx="10" cy="10" r="7" opacity=".3"/><circle cx="10" cy="10" r="4" opacity=".65"/><circle cx="10" cy="10" r="1"/></>:<><rect x="3" y="2" width="14" height="16" rx="1"/><path d="M7 18V12H13V18M3 9A7 7 0 0 1 17 9"/></>}</svg>;}
 function ChartPanel({data,zones,view,locale,spatial,aggregate,onRetry,selection}:Props&{data:SeasonShotMapDTO|null;zones:SeasonHeatmapRendererDTO|null;view:ShotMapView}) {
  const zh=locale==='zh',id=useId(),detailsId=`${id}-details`,[selected,setSelected]=useState<string|null>(null);
+ const courtRef=useRef<SVGSVGElement>(null),detailRef=useRef<HTMLElement>(null);
  const resolution=data?.resolutions.find(r=>r.id==='fine'); const bins=resolution?.bins??[];
  const selectedBin=bins.find(bin=>binKey(bin)===selected)??null;
  const rows=zones?[...zones.zones,...zones.residuals]:[]; const selectedZone=rows.find(row=>row.id===selected)??null;
  const active=view==='zones'?zones:data,resource=view==='zones'?aggregate:spatial;
+ const selectedRow=view==='zones'?selectedZone:selectedBin;
+ useEffect(()=>{if(selectedRow)detailRef.current?.scrollIntoView({block:'nearest'});},[selectedRow]);
+ const announcement=selectedRow?`${view==='zones'&&selectedZone?zoneName(selectedZone.id,locale):(zh?'投篮位置':'Shot location')}: ${displayPct(fgRate(selectedRow))}, ${selectedRow.fgm} / ${selectedRow.fga}`:'';
+ function dismiss(){setSelected(null);courtRef.current?.focus();}
  if(!active){const wrong=resource.status==='ready',status=wrong?'error':resource.status;return <div className={styles.state} aria-busy={status==='loading'} role={status==='error'?'alert':'status'}>
    <h3>{status==='loading'?(zh?'正在载入投篮记录':'Loading the shot archive'):status==='error'?(zh?'暂时无法载入':'Unable to load this dataset'):(zh?'这个赛季暂无此项数据':'This view is not available for this season')}</h3>
    <p>{status==='loading'?(zh?'正在读取所选球员、赛季与赛事类型的真实记录。':'Retrieving the selected player, season and season type.'):status==='error'?(zh?'请重试。未能验证的数据不会显示。':'Please retry. Unverified or mismatched data will not be displayed.'):(view==='zones'?(zh?'未收录不代表零次出手。':'Missing records do not mean zero attempts.'):(zh?'坐标记录暂不可用，可切换「球场分区」查看已有汇总。未收录不代表零次出手。':'Shot coordinates are unavailable. The Zones view may have aggregate records. Missing records do not mean zero attempts.'))}</p>
    {status==='error'&&<button type="button" onClick={onRetry}>{zh?'重新加载':'Retry'}</button>}
   </div>;}
- function step(direction:number){const keys=view==='zones'?rows.map(r=>r.id):bins.map(binKey);if(!keys.length)return; const index=selected?keys.indexOf(selected as typeof keys[number]):-1;setSelected(keys[(index+direction+keys.length)%keys.length]);}
  return <>
-   <div className={styles.layout}><div className={styles.visual}><div className={styles.courtWrap}><ShotMapCourt data={data} zones={zones} view={view} locale={locale} selected={selected} onSelect={setSelected} detailsId={detailsId}/></div><ShotMapLegend view={view} locale={locale}/>
-    <p className={styles.microcopy}>{view==='density'?(zh?'当前选区内的相对出手频率平滑估计；包含篮下，不表示命中率。':'Relative smoothed attempt frequency within this selection, including the rim. Not FG%.'):view==='zones'?(zh?'轻色分区为来源类别示意；少于 25 次出手为灰色。内部方向分界并非逐球边界。':'Light source categories; fewer than 25 attempts appears gray. Direction dividers are illustrative, not verified coordinate boundaries.'):(zh?'同赛季、同类型的同格联盟档案参考。球员 <5 次或联盟 <20 次出手：灰色。':'Same-cell, same-season/type league archive reference. Gray: fewer than 5 player or 20 league attempts.')}</p>
+   <p className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
+   <div className={styles.layout}><div className={styles.visual}><div className={styles.courtWrap}><ShotMapCourt data={data} zones={zones} view={view} locale={locale} selected={selected} onSelect={setSelected} detailsId={selectedRow?detailsId:undefined} courtRef={courtRef}/></div><ShotMapLegend view={view} locale={locale}/>
+    <p className={styles.microcopy}>{view==='density'?(zh?'当前选区内的相对出手频率平滑估计；包含篮下，不表示命中率。':'Relative smoothed attempt frequency within this selection, including the rim. Not FG%.'):view==='zones'?(zh?'橙色高于、黄色接近、蓝色低于同赛季联盟档案参考（±3 个百分点）。球员少于 25 次、联盟少于 20 次出手或缺少参考为灰色。内部分界为示意。':'Orange: above, yellow: within ±3 pp, blue: below the same-season league archive reference. Gray: fewer than 25 player or 20 league attempts, or no reference. Internal dividers are illustrative.'):(zh?'同赛季、同类型的同格联盟档案参考。球员 <5 次或联盟 <20 次出手：灰色。':'Same-cell, same-season/type league archive reference. Gray: fewer than 5 player or 20 league attempts.')}</p>
     {data&&view!=='zones'&&<div className={styles.residual}><span>{zh?'可定位':'Located'} {countFormat(data.plotted.fga,locale)} / {countFormat(data.totals.fga,locale)} {zh?'次出手':'attempts'}</span>{data.residuals.filter(r=>r.fga>0).map(r=><span key={r.reason}>{residualLabel(r.reason,zh)} {r.fgm}/{r.fga}</span>)}</div>}
-   </div><aside id={detailsId} className={styles.detail} aria-label={zh?'投篮详情':'Shot details'}>
-    <div aria-live="polite" aria-atomic="true">{view==='zones'&&selectedZone?<ZoneDetail row={selectedZone} zones={zones!} locale={locale}/>:view!=='zones'&&selectedBin?<BinDetail bin={selectedBin} data={data!} locale={locale}/>:<><span className={styles.detailLabel}>{zh?'探索球场':'EXPLORE THE COURT'}</span><svg className={styles.hintIcon} viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="20" cy="20" r="12"/><path d="M20 2V10M20 30V38M2 20H10M30 20H38"/><circle cx="20" cy="20" r="2"/></svg><h3>{zh?'从一处投篮开始':'Start with a spot'}</h3><p className={styles.instruction}>{zh?'轻点球场，查看命中、出手和联盟参考。也可用下方选择器逐个浏览。':'Tap a spot for exact makes, attempts and the league reference. Or browse cells using the controls below.'}</p></>}</div>
-    <div className={styles.browse}><select aria-label={zh?'选择投篮位置':'Choose a shot location'} value={selected??''} onChange={e=>setSelected(e.target.value||null)}><option value="">{view==='zones'?(zh?'选择分区':'Choose a zone'):(zh?'选择位置':'Choose a cell')}</option>{view==='zones'?rows.map(row=><option key={row.id} value={row.id}>{zoneName(row.id,locale)} · {row.fgm}/{row.fga}</option>):bins.map((bin,index)=><option key={binKey(bin)} value={binKey(bin)}>{zh?'位置':'Cell'} {index+1} · {bin.fgm}/{bin.fga}</option>)}</select><button type="button" onClick={()=>step(-1)} aria-label={zh?'上一个位置':'Previous location'}>‹</button><button type="button" onClick={()=>step(1)} aria-label={zh?'下一个位置':'Next location'}>›</button></div>
-   </aside></div>
+   </div>{selectedRow&&<aside ref={detailRef} id={detailsId} className={styles.detail} aria-label={zh?'投篮详情':'Shot details'} onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();dismiss();}}}>
+    <button type="button" className={styles.closeDetail} title={zh?'关闭详情':'Close details'} aria-label={zh?'关闭详情':'Close details'} onClick={dismiss}><span aria-hidden="true">×</span></button>
+    {view==='zones'&&selectedZone?<ZoneDetail row={selectedZone} zones={zones!} locale={locale}/>:selectedBin?<BinDetail bin={selectedBin} data={data!} locale={locale}/>:null}
+   </aside>}</div>
    <Coverage data={view==='zones'?zones:data} locale={locale}/>
-   {view==='zones'&&zones&&<details className={styles.scope}><summary>{zh?'全部分区统计':'All zone statistics'}<span>{zones.zones.length}</span></summary><div className={styles.zoneList}>{rows.map(row=><button type="button" key={row.id} aria-pressed={selected===row.id} aria-controls={detailsId} onClick={()=>setSelected(row.id)}><span>{zoneName(row.id,locale)}</span><span>{displayPct(fgRate(row))} · {row.fgm}/{row.fga}</span></button>)}</div></details>}
+   {view==='zones'&&zones&&<details className={styles.scope}><summary>{zh?'全部分区统计':'All zone statistics'}<span>{zones.zones.length}</span></summary><div className={styles.zoneList}>{rows.map(row=><button type="button" key={row.id} aria-pressed={selected===row.id} aria-controls={selectedRow?detailsId:undefined} onClick={()=>setSelected(row.id)}><span>{zoneName(row.id,locale)}</span><span>{displayPct(fgRate(row))} · {row.fgm}/{row.fga}</span></button>)}</div></details>}
    <details className={styles.scope}><summary>{zh?'数据范围与读图方法':'Data scope & reading guide'}</summary>
     {data&&view!=='zones'?<>
       <p>{zh?`六边形来自原始逐次投篮坐标，分箱半径为 ${resolution?.radius===25?'2.5':'4'} 英尺。面积与本图单格出手数成正比；最大格为 ${Math.max(0,...bins.map(b=>b.fga))} 次。边界格保持原中心，虚线轮廓保留被裁切小格的可见性。`:`Hexagons are aggregated from original shot coordinates at a ${(resolution?.radius??25)/10}-foot cell radius. Area is proportional to attempts within this selection (largest cell: ${Math.max(0,...bins.map(b=>b.fga))}). Edge cells keep their true centers; dashed outlines preserve visibility when their scaled glyph is clipped.`}</p>

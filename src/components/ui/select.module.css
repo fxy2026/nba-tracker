@@ -1,0 +1,41 @@
+.trigger {
+  display:inline-flex; align-items:center; justify-content:space-between; gap:18px;
+  min-width:104px; max-width:100%; min-height:44px; padding:10px 12px;
+  border:1px solid var(--border); border-radius:10px; background:var(--bg-card);
+  color:var(--text-primary); box-shadow:var(--shadow-sm); cursor:pointer;
+  font-family:inherit; font-size:13px; font-weight:500; line-height:1.4;
+  letter-spacing:0; text-align:left; font-variant-numeric:tabular-nums;
+  transition:border-color .12s ease, background-color .12s ease; touch-action:manipulation;
+}
+.trigger:hover:not(:disabled) { border-color:var(--border-strong); background:var(--bg-card-tinted); }
+.trigger[aria-expanded='true'] { border-color:var(--accent); }
+.trigger:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.trigger:disabled { opacity:.5; cursor:not-allowed; }
+.value { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chevron { flex:none; color:var(--text-secondary); }
+.popup {
+  position:fixed; z-index:200; overflow-y:auto; overscroll-behavior:contain;
+  box-sizing:border-box; margin:0; padding:5px; border:1px solid var(--border);
+  border-radius:12px; background:var(--bg-card); color:var(--text-primary);
+  box-shadow:var(--shadow-elevated); font-family:var(--font-sans),ui-sans-serif,system-ui,sans-serif;
+  font-size:13px; font-weight:400; line-height:1.4; letter-spacing:0;
+  font-variant-numeric:tabular-nums; scrollbar-width:thin;
+}
+.option {
+  position:relative; display:flex; align-items:center; justify-content:space-between; gap:16px;
+  box-sizing:border-box; min-height:40px; padding:10px 11px; border-radius:7px;
+  cursor:pointer; user-select:none; -webkit-user-select:none;
+}
+.option > span { min-width:0; overflow-wrap:anywhere; }
+.option[aria-selected='true'] { color:var(--accent-hover); background:var(--bg-card-tinted); font-weight:600; }
+.option[data-active='true'] { background:var(--bg-hover); outline:1px solid var(--border-strong); outline-offset:-1px; }
+.option[aria-disabled='true'] { opacity:.4; cursor:not-allowed; }
+.check { visibility:hidden; flex:none; }
+.option[aria-selected='true'] .check { visibility:visible; }
+@media(pointer:coarse) { .option { min-height:44px; } }
+@media(prefers-reduced-motion:reduce) { .trigger { transition:none; } }
+@media(forced-colors:active) {
+  .trigger, .popup { border-color:ButtonText; }
+  .option[data-active='true'] { outline-color:Highlight; }
+  .option[aria-selected='true'] { color:Highlight; }
+}
