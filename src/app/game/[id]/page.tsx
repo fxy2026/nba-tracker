@@ -26,6 +26,8 @@ import ProviderPlayerBox from "./_components/ProviderPlayerBox";
 import { getRecoveredPlayerBox } from "@/lib/recovered-player-box-archive";
 import RecoveredPlayerBox from "./_components/RecoveredPlayerBox";
 import OfficialGameReport from "./_components/OfficialGameReport";
+import { getReportedScoreSequence } from "@/lib/reported-score-sequence-archive";
+import ReportedScoreSequence from "./_components/ReportedScoreSequence";
 import { getOfficialPeriodScores } from "@/lib/official-period-score-archive";
 import OfficialPeriodScores from "./_components/OfficialPeriodScores";
 import GameHero from "./_components/GameHero";
@@ -174,6 +176,7 @@ export default async function GamePage({ params }: PageProps) {
       // unreachable since the 2026-07 cdn.nba.com block — show the final from
       // schedule data instead of a misleading "hasn't tipped off" state.
       const recoveredBox = getRecoveredPlayerBox(sg);
+      const reportedSequence = getReportedScoreSequence(sg);
       const officialPeriods = getOfficialPeriodScores(sg);
       const providerBox = recoveredBox ? null : getProviderPlayerBox(sg);
       const quarantined = isPlayerBoxQuarantined(sg.gameId);
@@ -220,6 +223,7 @@ export default async function GamePage({ params }: PageProps) {
             <OfficialGameReport gameId={sg.gameId} isZh={isZh} />
           </div>
           {officialPeriods && <OfficialPeriodScores scores={officialPeriods} isZh={isZh} />}
+          {reportedSequence && <ReportedScoreSequence sequence={reportedSequence} isZh={isZh} />}
           {recoveredBox && <RecoveredPlayerBox box={recoveredBox} isZh={isZh} />}
           {providerBox && <ProviderPlayerBox box={providerBox} isZh={isZh} />}
           <RelatedPages
