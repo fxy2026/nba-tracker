@@ -1,7 +1,9 @@
 import { HEATMAP_COLORS } from '../season-heatmap/season-heatmap-display';
+import type { SeasonHeatmapDisplayRow } from '@/lib/season-heatmap';
 /** Spatial rendering uses the source coordinate frame, never zone totals. */
 export const SHOT_MAP_LOW_PLAYER = 5;
 export const SHOT_MAP_LOW_LEAGUE = 20;
+export const SHOT_MAP_LOW_ZONE_PLAYER = 25;
 export const SHOT_MAP_DELTA_BAND = .03;
 export const SHOT_MAP_VIEWBOX = '-270 -20 540 510';
 export const SHOT_MAP_PALETTE = { below: '#6c93a2', near: '#c6c3b9', above: '#c3836e', neutral: '#d7d8d4' } as const;
@@ -15,6 +17,22 @@ export function binColor(player: BinCounts, league: BinCounts | null | undefined
   const delta = binDelta(player, league);
   if (player.fga < SHOT_MAP_LOW_PLAYER || !league || league.fga < SHOT_MAP_LOW_LEAGUE || delta === null) return palette.neutral;
   return delta > SHOT_MAP_DELTA_BAND + 1e-12 ? palette.above : delta < -SHOT_MAP_DELTA_BAND - 1e-12 ? palette.below : palette.near;
+}
+function validZoneCounts(counts: Pick<BinCounts, 'fgm' | 'fga'>): boolean {
+  return Number.isSafeInteger(counts.fga) && counts.fga > 0 && Number.isSafeInteger(counts.fgm) && counts.fgm >= 0 && counts.fgm <= counts.fga;
+}
+export function zoneReference(row: SeasonHeatmapDisplayRow): Pick<BinCounts, 'fgm' | 'fga'> | null {
+  const reference = row.leagueAverage;
+  if (reference?.provenance !== 'weighted-archive-counts-not-official-displayed-LA') return null;
+  const counts = { fgm: reference.leagueFgm, fga: reference.leagueFga };
+  return validZoneCounts(counts) ? counts : null;
+}
+/** Zones retain descriptive colors for small samples; uncertainty is labeled separately. */
+export function zoneColor(row: SeasonHeatmapDisplayRow): string {
+  const reference = zoneReference(row);
+  if (!validZoneCounts(row) || !reference) return SHOT_MAP_ZONE_PALETTE.neutral;
+  const delta = row.fgm / row.fga - reference.fgm / reference.fga;
+  return delta > SHOT_MAP_DELTA_BAND + 1e-12 ? SHOT_MAP_ZONE_PALETTE.above : delta < -SHOT_MAP_DELTA_BAND - 1e-12 ? SHOT_MAP_ZONE_PALETTE.below : SHOT_MAP_ZONE_PALETTE.near;
 }
 export function axialCenter(q: number, r: number, radius: number): readonly [number, number] { return [radius * Math.sqrt(3) * (q + r / 2), radius * 1.5 * r]; }
 /** SVG's downwards y is the inverse of the source's away-from-baseline y. */

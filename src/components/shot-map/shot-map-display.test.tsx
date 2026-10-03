@@ -5,10 +5,11 @@ vi.mock('server-only',()=>({}));
 import { loadHistoricalShotMap } from '@/lib/historical-shot-spatial';
 import { loadHistoricalCourtArchive } from '@/lib/historical-shot-archive';
 import type { SeasonShotMapDTO } from '@/lib/season-shot-map';
-import type { SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
+import type { SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
+import { courtBasicGeometry } from '@/lib/season-heatmap-court-geometry';
 import RefinedShotExplorer from './RefinedShotExplorer';
 import ShotMapCourt, { ShotMapLegend } from './ShotMapCourt';
-import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
+import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, zoneReference, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
 let data:SeasonShotMapDTO,zones:SeasonHeatmapRendererDTO;
 beforeAll(async()=>{
  const spatial=await loadHistoricalShotMap({playerId:201939,season:'2025-26',seasonType:'Regular Season'});
@@ -64,14 +65,57 @@ describe('refined product states and provenance',()=>{
   const hex=renderToStaticMarkup(<ShotMapLegend view="hex" locale="en"/>),density=renderToStaticMarkup(<ShotMapLegend view="density" locale="en"/>);
   for(const color of [SHOT_MAP_ZONE_PALETTE.above,SHOT_MAP_ZONE_PALETTE.near,SHOT_MAP_ZONE_PALETTE.below]){expect(hex).not.toContain(color);expect(density).not.toContain(color);}
  });
- it('keeps low-sample, zero and missing-reference zones gray with all source geometry and counts intact',()=>{
-  const before=JSON.stringify(zones),modified=structuredClone(zones);
-  modified.zones[0]={...modified.zones[0],fgm:24,fga:24};
-  modified.zones[1]={...modified.zones[1],fgm:0,fga:0};
-  modified.zones[2]={...modified.zones[2],fgm:50,fga:100,leagueAverage:null};
-  const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={modified} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
-  for(const row of modified.zones.slice(0,3))expect(html.match(new RegExp(`<path[^>]*data-zone-id="${row.id}"[^>]*>`))?.[0]).toContain('fill="var(--map-zone-neutral, #d7d8d4)"');
+ it('colors real small-sample zones using exact same-zone counts and preserves geometry and raw data',()=>{
+  const before=JSON.stringify(zones);
+  const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={zones} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
+  for(const [id,fgm,fga,leagueFgm,leagueFga] of [['midrange-center',8,17,2018,4718],['midrange-left',13,23,2393,5819]] as const){
+   const row=zones.zones.find(zone=>zone.id===id)!;
+   expect([row.fgm,row.fga]).toEqual([fgm,fga]);
+   expect(zoneReference(row)).toEqual({fgm:leagueFgm,fga:leagueFga});
+   expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE.above);
+   const path=html.match(new RegExp(`<path[^>]*data-zone-id="${id}"[^>]*>`))?.[0];
+   expect(path).toContain(`fill="${SHOT_MAP_ZONE_PALETTE.above}"`);
+   expect(path).toContain(`${fgm}/${fga}`);
+  }
+  for(const geometry of courtBasicGeometry){
+   const path=html.match(new RegExp(`<path[^>]*data-zone-id="${geometry.id}"[^>]*>`))?.[0];
+   expect(path).toContain(`d="${geometry.pathD}"`);
+  }
+  expect(html).not.toMatch(/<text|textLength|lengthAdjust/);
   expect(JSON.stringify(zones)).toBe(before);
+ });
+ it('colors even one-attempt and small league samples without using rounded percentages',()=>{
+  const row=(fgm:number,fga:number,leagueFgm:number,leagueFga:number):SeasonHeatmapDisplayRow=>({...zones.zones[0],fgm,fga,leagueAverage:{displayedPct:'99.9',provenance:'weighted-archive-counts-not-official-displayed-LA',leagueFgm,leagueFga}});
+  for(const [made,attempts,leagueMade,leagueAttempts,color] of [[1,1,1,2,'above'],[0,1,1,2,'below'],[1,2,1,2,'near'],[13,23,9,19,'above'],[53,100,50,100,'near'],[47,100,50,100,'near'],[5301,10000,50,100,'above'],[4699,10000,50,100,'below']] as const){
+   expect(zoneColor(row(made,attempts,leagueMade,leagueAttempts))).toBe(SHOT_MAP_ZONE_PALETTE[color]);
+  }
+  expect(binColor(count(1,1),count(1,2))).toBe(SHOT_MAP_PALETTE.neutral);
+  expect(binColor(count(13,23),count(9,19))).toBe(SHOT_MAP_PALETTE.neutral);
+ });
+ it('keeps zero, missing and invalid reference zones gray rather than guessing from displayed percentages',()=>{
+  const base=zones.zones[0];
+  const references:SeasonHeatmapDisplayRow['leagueAverage'][]=[null,{displayedPct:'50.0',provenance:'source-displayed-unverified-scope'},...[[0,0],[1,-1],[-1,20],[21,20],[NaN,20],[1,Infinity],[1.5,20]].map(([leagueFgm,leagueFga])=>({displayedPct:'50.0',provenance:'weighted-archive-counts-not-official-displayed-LA' as const,leagueFgm,leagueFga}))];
+  for(const leagueAverage of references){
+   const row={...base,fgm:8,fga:17,leagueAverage};
+   expect(zoneReference(row)).toBeNull();
+   expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE.neutral);
+   const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={{...zones,zones:[row]}} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
+   expect(html).toContain('fill="var(--map-zone-neutral, #d7d8d4)"');
+  }
+  for(const [fgm,fga] of [[0,0],[1,-1],[-1,1],[2,1],[NaN,10],[1,Infinity]])expect(zoneColor({...base,fgm,fga})).toBe(SHOT_MAP_ZONE_PALETTE.neutral);
+ });
+ it('leaves hex and density rendering unchanged when zone sample sizes or references change',()=>{
+  const changed={...zones,zones:zones.zones.map(row=>({...row,fgm:0,fga:1,leagueAverage:null}))};
+  for(const view of ['hex','density'] as const){
+   const render=(input:SeasonHeatmapRendererDTO)=>renderToStaticMarkup(<ShotMapCourt data={data} zones={input} view={view} locale="en" selected={null} onSelect={()=>{}}/>);
+   expect(render(changed)).toBe(render(zones));
+  }
+ });
+ it.each(['en','zh'] as const)('explains gray and uncertain small samples accurately in %s',locale=>{
+  const html=explorer({locale,initialView:'zones'});
+  expect(html).toContain(locale==='en'?'Gray: no attempts or no valid reference. Small-sample colors are uncertain.':'灰色表示无出手或无有效参考；小样本颜色不稳定。');
+  expect(html).not.toContain('Gray: fewer than 25');
+  expect(html).not.toContain('球员少于 25 次、联盟少于 20 次出手或缺少参考为灰色');
  });
 
  it('defaults to hex with true totals, compact legend and honest source scope',()=>{const html=explorer();expect(html).toContain('data-shot-map-view="hex"');for(const text of ['799','374','46.8%','39.3%','Area = attempts','fewer than 5 player or 20 league attempts','individual shots and league coverage are not fully verified','including this player']){expect(html).toContain(text);}expect(html).not.toContain('OFFICIAL AGGREGATES');});

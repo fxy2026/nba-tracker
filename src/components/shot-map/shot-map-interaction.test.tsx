@@ -7,7 +7,7 @@ import { loadHistoricalCourtArchive } from '@/lib/historical-shot-archive';
 import { zoneName } from '../season-heatmap/season-heatmap-display';
 import RefinedShotExplorer from './RefinedShotExplorer';
 import { binKey } from './ShotMapCourt';
-import { axialCenter, displayPct, fgRate, projectShot } from './shot-map-display';
+import { axialCenter, displayPct, fgRate, projectShot, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
 
 // Exercise the real rendered component and event handlers without a browser.
 // Hook state belongs to a live component path/key, and unmounted keys are removed
@@ -362,6 +362,29 @@ describe.each(locales)('click-first shot details (%s)', locale => {
     const alternate = elements(tree, 'button').find(node => text(node).startsWith(zoneName(row.id, locale)))!;
     fire(alternate, 'onClick');
     expectZoneDetails(app.render(), row, locale);
+  });
+
+  it.each(['player', 'league', 'both', 'neither', 'zero'] as const)('labels %s small samples once, separately from zone color', sample => {
+    const row: SeasonHeatmapDisplayRow = {
+      ...zones.zones.find(zone => zone.id === 'midrange-center')!,
+      fgm: sample === 'zero' ? 0 : sample === 'player' || sample === 'both' ? 8 : 50,
+      fga: sample === 'zero' ? 0 : sample === 'player' || sample === 'both' ? 17 : 100,
+      leagueAverage: { provenance: 'weighted-archive-counts-not-official-displayed-LA', displayedPct: '40.0', leagueFgm: sample === 'league' || sample === 'both' ? 4 : 40, leagueFga: sample === 'league' || sample === 'both' ? 10 : 100 },
+    };
+    const app = mount({ locale, initialView: 'zones', aggregate: { status: 'ready', data: { ...zones, zones: zones.zones.map(zone => zone.id === row.id ? row : zone) } } });
+    let tree = app.render();
+    const path = elements(tree, node => node.props['data-zone-id'] === row.id)[0];
+    expect(path.props.fill).toBe(sample === 'zero' ? 'var(--map-zone-neutral, #d7d8d4)' : SHOT_MAP_ZONE_PALETTE.above);
+    fire(path, 'onClick', { stopPropagation: vi.fn() });
+    tree = app.render();
+    expectZoneDetails(tree, row, locale);
+    const aside = elements(tree, 'aside')[0];
+    const low = sample === 'player' || sample === 'league' || sample === 'both';
+    expect(elements(aside, node => node.type === 'span' && text(node) === (locale === 'en' ? 'Small sample' : '小样本'))).toHaveLength(low ? 1 : 0);
+    if (sample === 'player' || sample === 'both') expect(text(aside)).toContain(locale === 'en' ? 'Fewer than 25 player attempts' : '球员少于 25 次出手');
+    if (sample === 'league' || sample === 'both') expect(text(aside)).toContain(locale === 'en' ? 'Fewer than 20 league reference attempts' : '联盟参考少于 20 次出手');
+    if (low) expect(text(aside)).toContain(locale === 'en' ? 'small samples are uncertain' : '小样本波动较大');
+    expect(text(aside)).not.toContain(locale === 'en' ? 'shown in gray' : '使用灰色');
   });
 
   it('clears both zone and spatial selections when switching between their views', () => {

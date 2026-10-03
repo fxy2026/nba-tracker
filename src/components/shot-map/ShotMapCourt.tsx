@@ -3,7 +3,7 @@ import type { SeasonShotMapDTO, ShotMapBin } from '@/lib/season-shot-map';
 import type { SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
 import { courtBasicGeometry } from '@/lib/season-heatmap-court-geometry';
 import { zoneName } from '../season-heatmap/season-heatmap-display';
-import { axialCenter, binColor, displayPct, fgRate, hexPoints, hexRadius, projectShot, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE, SHOT_MAP_VIEWBOX, type ShotMapView } from './shot-map-display';
+import { axialCenter, binColor, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE, SHOT_MAP_VIEWBOX, type ShotMapView } from './shot-map-display';
 import styles from './shot-map.module.css';
 export const binKey = (bin: Pick<ShotMapBin,'q'|'r'>) => `${bin.q}:${bin.r}`;
 export function CourtMarkings({zones=false}:{zones?:boolean}={}) {
@@ -61,8 +61,7 @@ export default function ShotMapCourt({data,zones,view,locale,selected,onSelect,d
     <rect x="-270" y="-20" width="540" height="510" rx="12" fill="var(--map-court, #fafaf7)" />
     {view==='zones'&&zones&&<g transform="translate(-250 470) scale(.8333333333 -.8333333333)">{courtBasicGeometry.map(geometry=>{
       const row=zones.zones.find(z=>z.id===geometry.id); if(!row)return null;
-      const league=row.leagueAverage?.provenance==='weighted-archive-counts-not-official-displayed-LA'?{fgm:row.leagueAverage.leagueFgm??0,fga:row.leagueAverage.leagueFga??0,fg3m:0,fg3a:0}:null;
-      const color=row.fga<25?SHOT_MAP_PALETTE.neutral:binColor({fgm:row.fgm,fga:row.fga,fg3m:row.fg3m??0,fg3a:row.fg3a??0},league,SHOT_MAP_ZONE_PALETTE);
+      const color=zoneColor(row);
       return <path key={row.id} d={geometry.pathD} fill={color===SHOT_MAP_PALETTE.neutral?"var(--map-zone-neutral, #d7d8d4)":color} fillOpacity={selected===row.id?'.96':'.82'} fillRule="evenodd" className={styles.zone} role="button" tabIndex={0} aria-pressed={selected===row.id} aria-controls={detailsId}
         aria-label={`${zoneName(row.id,locale)}: ${displayPct(fgRate(row))}, ${row.fgm}/${row.fga}`} data-zone-id={row.id}
         onClick={event=>{event.stopPropagation();onSelect(row.id);}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect(row.id);}}}/>;
