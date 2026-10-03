@@ -1,3 +1,4 @@
+import { coverageFromOfficialSchedule, validOfficialScheduleEnvelope, normalizeScheduleCoverage, type CanonicalScheduleCoverage } from './schedule-coverage';
 import observedFinalRecords from '@/data/observed-final-games.json';
 import { observedFinalsToSchedule, mergeObservedFinalSchedule } from './observed-final-schedule';
 // NBA Official CDN API — completely free, no key needed
@@ -260,6 +261,10 @@ export function projectScheduleDates(rawDates: RawScheduleDate[]): ScheduleDate[
 
 // ========== API Functions ==========
 
+const scoreboardSourceDates = new WeakMap<NbaGame[], string>();
+export function getScoreboardSourceDate(games: NbaGame[]): string | null {
+  return scoreboardSourceDates.get(games) ?? null;
+}
 // Get today's scoreboard (live data, refreshes frequently)
 export async function getTodayScoreboard(): Promise<NbaGame[]> {
   const res = await fetch(
@@ -272,14 +277,37 @@ export async function getTodayScoreboard(): Promise<NbaGame[]> {
   // Filter out "if necessary" playoff games that are no longer needed.
   // These show up with ifNecessary=true, gameStatus=1, and gameStatusText="TBD"
   // even after the series is decided — they are ghost games and should not display.
-  return games.filter((g) => !(g.ifNecessary === true && g.gameStatus === 1 && /tbd/i.test(g.gameStatusText || "")));
+  const filtered = games.filter((g) => !(g.ifNecessary === true && g.gameStatus === 1 && /tbd/i.test(g.gameStatusText || "")));
+  // Only a schema-valid scoreboard with its own date can establish an empty
+  // day. An HTTP failure, malformed body, or cache-load clock cannot do that.
+  const sourceDate = data.scoreboard?.gameDate;
+  if (Array.isArray(data.scoreboard?.games) && typeof sourceDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(sourceDate)) scoreboardSourceDates.set(filtered, sourceDate);
+  return filtered;
 }
 
 // In-memory cache for the 11MB schedule — extended TTL + stale-while-revalidate
-let scheduleCache: { data: ScheduleDate[]; ts: number } | null = null;
+let scheduleCache: { data: ScheduleDate[]; ts: number; coverage: CanonicalScheduleCoverage | null; revision: number } | null = null;
+let scheduleRequestRevision = 0;
+const scheduleCoverage = new WeakMap<ScheduleDate[], CanonicalScheduleCoverage | null>();
+export function getScheduleCoverage(dates: ScheduleDate[]): CanonicalScheduleCoverage | null {
+  return scheduleCoverage.get(dates) ?? null;
+}
+function commitSchedule(data: ScheduleDate[], seasonYear: string, coverage: CanonicalScheduleCoverage | null, revision: number) {
+  // The data and its source evidence advance together; an older concurrent request
+  // cannot overwrite a newer response or attach its coverage to that response.
+  if (!scheduleCache || revision >= scheduleCache.revision) {
+    scheduleCache = { data, ts: Date.now(), coverage, revision };
+    scheduleCoverage.set(data, coverage);
+    scheduleSeasonYear = seasonYear;
+  }
+  return { seasonYear: scheduleSeasonYear ?? seasonYear, dates: scheduleCache.data, coverage: scheduleCache.coverage };
+}
 const SCHEDULE_TTL = 2 * 60 * 60 * 1000; // 2 hours (data changes infrequently)
 let scheduleInflight: Promise<ScheduleDate[]> | null = null;
 let scheduleRevalidating = false;
+// Failed refreshes retain the data timestamp and coverage. Throttle attempts
+// separately so every subsequent visit cannot retry an unavailable source.
+let scheduleNextBackgroundAttempt = 0;
 let scheduleSeasonYear: string | null = null;
 
 // 2026-07: NBA/Akamai cut non-browser clients off from cdn.nba.com's JSON
@@ -308,19 +336,18 @@ const ARCHIVE_FEED = {
 
 const OBSERVED_FINAL_DATES = observedFinalsToSchedule(observedFinalRecords);
 
-function mergeWithArchive(live: ScheduleDate[]): ScheduleDate[] {
+function mergeWithArchive(live: ScheduleDate[], coveredSeason?: string): ScheduleDate[] {
   const seen = new Set(live.map((d) => d.gameDate.slice(0, 10)));
-  const merged = [...live, ...ARCHIVE_FEED.dates.filter((d) => !seen.has(d.gameDate.slice(0, 10)))];
+  const merged = [...live, ...ARCHIVE_FEED.dates.filter((d) => !seen.has(d.gameDate.slice(0, 10))).map(day => ({ ...day, games: day.games.filter(game => !coveredSeason || game.gameId.slice(3, 5) !== coveredSeason.slice(2, 4) || game.gameStatus === 3) })).filter(day => day.games.length > 0)];
   return mergeObservedFinalSchedule(merged.sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate)), OBSERVED_FINAL_DATES);
 }
 
-function archiveFallbackFeed(): { seasonYear: string; dates: ScheduleDate[] } {
+function archiveFallbackFeed(): { seasonYear: string; dates: ScheduleDate[]; coverage: CanonicalScheduleCoverage | null } {
   if (!scheduleCache) {
     console.error("schedule: live sources unavailable — serving baked 2025-26 archive");
-    scheduleCache = { data: mergeObservedFinalSchedule(ARCHIVE_FEED.dates, OBSERVED_FINAL_DATES), ts: Date.now() };
-    scheduleSeasonYear = ARCHIVE_FEED.seasonYear;
+    commitSchedule(mergeObservedFinalSchedule(ARCHIVE_FEED.dates, OBSERVED_FINAL_DATES), ARCHIVE_FEED.seasonYear, null, 0);
   }
-  return { seasonYear: scheduleSeasonYear ?? ARCHIVE_FEED.seasonYear, dates: scheduleCache.data };
+  return { seasonYear: scheduleSeasonYear ?? ARCHIVE_FEED.seasonYear, dates: scheduleCache!.data, coverage: scheduleCache!.coverage };
 }
 
 // Start year of the season the cached feed covers, e.g. "2025". The feed
@@ -345,18 +372,19 @@ function internalBaseUrl(): string {
 // Feed accessor for /api/schedule-slim ONLY. Uses its own inflight promise —
 // getFullSchedule awaits this route over HTTP, so sharing scheduleInflight
 // would deadlock the route against its own caller on a single-process server.
-let rawFeedInflight: Promise<{ seasonYear: string; dates: ScheduleDate[] }> | null = null;
+let rawFeedInflight: Promise<{ seasonYear: string; dates: ScheduleDate[]; coverage: CanonicalScheduleCoverage | null }> | null = null;
 
-export async function getCachedScheduleFeed(): Promise<{ seasonYear: string; dates: ScheduleDate[] }> {
+export async function getCachedScheduleFeed(): Promise<{ seasonYear: string; dates: ScheduleDate[]; coverage: CanonicalScheduleCoverage | null }> {
   const cached = scheduleCache;
   if (cached) {
-    if (Date.now() - cached.ts > SCHEDULE_TTL && !scheduleRevalidating) {
+    if (Date.now() - cached.ts > SCHEDULE_TTL && !scheduleRevalidating && Date.now() >= scheduleNextBackgroundAttempt) {
       scheduleRevalidating = true;
+      scheduleNextBackgroundAttempt = Date.now() + SCHEDULE_TTL;
       getRawScheduleDates()
         .catch((err) => console.error("schedule revalidate error:", err))
         .finally(() => { scheduleRevalidating = false; });
     }
-    return { seasonYear: scheduleSeasonYear ?? "", dates: cached.data };
+    return { seasonYear: scheduleSeasonYear ?? "", dates: cached.data, coverage: cached.coverage };
   }
   if (!rawFeedInflight) {
     rawFeedInflight = (async () => {
@@ -434,7 +462,8 @@ async function fetchWithRetry(
 // intentional — an 11MB body exceeds the data-cache entry limit, so the old
 // revalidate hint never cached anything and only misled readers. Used ONLY
 // by /api/schedule-slim and as the fallback when that route fails.
-export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates: ScheduleDate[] }> {
+export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates: ScheduleDate[]; coverage: CanonicalScheduleCoverage | null }> {
+  const revision = ++scheduleRequestRevision;
   // One budget for connection, retries, backoff AND body download. This
   // matches the slim-route/scoreboard callers' existing 8s timeout. A caller's
   // Promise.race alone does not cancel the network request underneath it.
@@ -452,18 +481,15 @@ export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates
       throw new Error(`schedule fetch failed: HTTP ${res.status}`);
     }
     const data = await res.json();
-    const rawDates: RawScheduleDate[] = data.leagueSchedule?.gameDates || [];
+    const coverage = coverageFromOfficialSchedule(data);
+    // A failed/malformed response never turns an unavailable season into an empty one.
+    if (!validOfficialScheduleEnvelope(data) || (!coverage && scheduleCache)) return archiveFallbackFeed();
+    const rawDates: RawScheduleDate[] = data.leagueSchedule.gameDates;
     const seasonYear = String(data.leagueSchedule?.seasonYear ?? "").slice(0, 4) || ARCHIVE_FEED.seasonYear;
     const live = projectScheduleDates(rawDates);
-    if (live.length === 0) {
-      // Empty live feed: never clobber an existing cache with it — cold
-      // instances degrade to the baked archive instead of an empty site.
-      return { seasonYear, dates: scheduleCache?.data ?? archiveFallbackFeed().dates };
-    }
-    const dates = mergeWithArchive(live);
-    scheduleCache = { data: dates, ts: Date.now() };
-    scheduleSeasonYear = seasonYear;
-    return { seasonYear, dates };
+    if (live.length === 0) return archiveFallbackFeed();
+    const dates = mergeWithArchive(live, coverage?.season);
+    return commitSchedule(dates, seasonYear, coverage, revision);
   } finally {
     clearTimeout(timeout);
   }
@@ -472,8 +498,9 @@ export async function getRawScheduleDates(): Promise<{ seasonYear: string; dates
 export async function getFullSchedule(): Promise<ScheduleDate[]> {
   // Serve from cache immediately if available (even if stale)
   if (scheduleCache) {
-    if (Date.now() - scheduleCache.ts > SCHEDULE_TTL && !scheduleRevalidating) {
+    if (Date.now() - scheduleCache.ts > SCHEDULE_TTL && !scheduleRevalidating && Date.now() >= scheduleNextBackgroundAttempt) {
       scheduleRevalidating = true;
+      scheduleNextBackgroundAttempt = Date.now() + SCHEDULE_TTL;
       fetchScheduleInBackground();
     }
     return scheduleCache.data;
@@ -486,7 +513,10 @@ export async function getFullSchedule(): Promise<ScheduleDate[]> {
 // Current-season views must not aggregate the archive merged above. Evaluate
 // the season per call so a warm server also handles the October rollover.
 export async function getCurrentSeasonSchedule(season = currentSeason()): Promise<ScheduleDate[]> {
-  return scheduleForSeason(await getFullSchedule(), season);
+  const dates = await getFullSchedule();
+  const filtered = scheduleForSeason(dates, season);
+  scheduleCoverage.set(filtered, getScheduleCoverage(dates));
+  return filtered;
 }
 
 // Consumer path: prefer the slim route — its <2MB response is eligible for
@@ -494,20 +524,19 @@ export async function getCurrentSeasonSchedule(season = currentSeason()): Promis
 // entirely. Any failure (preview-deploy protection, build-time self-fetch,
 // route 503) falls back to the direct CDN fetch — never worse than before.
 async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
+  const revision = ++scheduleRequestRevision;
   try {
     // Next's Data Cache survives deploys. Bind both it and the CDN cache to
     // the validated data baked into this build, rather than a fixed schema URL.
-    const { schema, revision } = scheduleProjection;
-    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim?schema=${schema}&revision=${revision}`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
+    const { schema, revision: projectionRevision } = scheduleProjection;
+    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim?schema=${schema}&revision=${projectionRevision}`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
-    const body = (await res.json()) as { schema?: number; revision?: string; seasonYear?: string; dates?: ScheduleDate[] };
+    const body = (await res.json()) as { schema?: number; revision?: string; seasonYear?: string; dates?: ScheduleDate[]; coverage?: unknown };
     // The response may come from an older production deployment during a
     // preview/build, or an intermediary cache. Never relabel it as current.
-    if (body.schema !== schema || body.revision !== revision) return null;
+    if (body.schema !== schema || body.revision !== projectionRevision) return null;
     if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
-    scheduleCache = { data: mergeObservedFinalSchedule(body.dates, OBSERVED_FINAL_DATES), ts: Date.now() };
-    if (body.seasonYear) scheduleSeasonYear = body.seasonYear;
-    return scheduleCache.data;
+    return commitSchedule(mergeObservedFinalSchedule(body.dates, OBSERVED_FINAL_DATES), body.seasonYear ?? "", normalizeScheduleCoverage(body.coverage), revision).dates;
   } catch {
     return null;
   }

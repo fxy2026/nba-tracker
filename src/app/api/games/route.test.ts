@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+vi.mock("server-only", () => ({}));
 import { NextRequest } from "next/server";
 const { getFullSchedule, getGamesByDate, getTodayScoreboard } = vi.hoisted(() => ({ getFullSchedule: vi.fn(), getGamesByDate: vi.fn(), getTodayScoreboard: vi.fn() }));
-vi.mock("@/lib/api", () => ({ getFullSchedule, getGamesByDate, getTodayScoreboard, formatDate: () => "2026-10-02" }));
+vi.mock("@/lib/api", () => ({ getFullSchedule, getGamesByDate, getTodayScoreboard, getScheduleCoverage: () => null, getScoreboardSourceDate: () => null, formatDate: () => "2026-10-02" }));
 import { GET } from "./route";
 const game = { gameId: "9401810012", gameStatus: 3, gameStatusText: "Final", gameDateTimeUTC: "2026-06-14T00:30:00Z", homeTeam: {}, awayTeam: {} };
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-02T12:00:00Z")); vi.clearAllMocks(); getFullSchedule.mockResolvedValue([{ gameDate: "", games: [game] }]); getGamesByDate.mockResolvedValue([]); getTodayScoreboard.mockResolvedValue([]); });

@@ -1,5 +1,7 @@
 "use client";
 
+import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
+import { fixtureDateInZone, normalizePlannedFixtureView, type PlannedFixtureView } from "@/lib/planned-fixtures";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
@@ -48,11 +50,11 @@ export default function CalendarPage() {
   const et = getLocalParts(tz);
   const [year, setYear] = useState(et.year);
   const [month, setMonth] = useState(et.month); // 0-indexed (local tz)
-  const [response, setResponse] = useState<{key:string;days:CalendarDay[];loading:boolean;error:boolean}>({key:"",days:[],loading:true,error:false});
+  const [response, setResponse] = useState<{key:string;days:CalendarDay[];planned:PlannedFixtureView|null;loading:boolean;error:boolean}>({key:"",days:[],planned:null,loading:true,error:false});
   const [retry, setRetry] = useState(0);
   const requestKey = `${getMonthStr(year,month)}:${tz}`;
-  const current = response.key === requestKey ? response : {days:[],loading:true,error:false};
-  const {days,loading,error} = current;
+  const current = response.key === requestKey ? response : {days:[],planned:null,loading:true,error:false};
+  const {days,planned,loading,error} = current;
   useEffect(() => {
     const zone=localTz(), local=getLocalParts(zone);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate browser timezone without SSR mismatch
@@ -75,15 +77,17 @@ export default function CalendarPage() {
     if(!ready)return;
     const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keyed async request state
-    setResponse({key:requestKey,days:[],loading:true,error:false});
+    setResponse({key:requestKey,days:[],planned:null,loading:true,error:false});
     fetch(`/api/calendar?month=${getMonthStr(year,month)}&tz=${encodeURIComponent(tz)}`,{signal:controller.signal})
       .then(async response => {
         if(!response.ok)throw new Error("Calendar unavailable");
-        const data=normalizeCalendarMonth(await response.json(),getMonthStr(year,month));
-        if(!data)throw new Error("Invalid calendar response");
-        if(!controller.signal.aborted)setResponse({key:requestKey,days:data,loading:false,error:false});
+        const payload=await response.json();
+        const data=normalizeCalendarMonth(payload,getMonthStr(year,month));
+        const planned=payload.planned ? normalizePlannedFixtureView(payload.planned,{mode:"month",month:getMonthStr(year,month),timeZone:tz}) : null;
+        if(!data || (payload.planned && !planned))throw new Error("Invalid calendar response");
+        if(!controller.signal.aborted)setResponse({key:requestKey,days:data,planned,loading:false,error:false});
       })
-      .catch(()=>{if(!controller.signal.aborted)setResponse({key:requestKey,days:[],loading:false,error:true});});
+      .catch(()=>{if(!controller.signal.aborted)setResponse({key:requestKey,days:[],planned:null,loading:false,error:true});});
     return ()=>controller.abort();
   },[year,month,tz,requestKey,retry,ready]);
 
@@ -164,6 +168,8 @@ export default function CalendarPage() {
         <button className="mt-2 text-accent" onClick={()=>setRetry(value=>value+1)}>{isZh ? "重试" : "Retry"}</button>
       </div>}
 
+      {planned?.state === 'snapshot' && !loading && !error && <div className="glass-tile p-4 mb-4"><PlannedSnapshotNote timeZone={tz} /><p className="text-xs text-accent">{planned.fixtures.length} {isZh ? '场已公布的计划比赛' : 'published planned fixtures'}</p></div>}
+
       {/* Month Summary */}
       {!loading && !error && days.length > 0 && (() => {
         const totalGames = days.reduce((s, d) => s + d.gameCount, 0);
@@ -210,18 +216,20 @@ export default function CalendarPage() {
             {cells.map((cell, i) => {
               if (!cell.date) return <div key={i} aria-hidden="true" className="border-b border-r border-border/50 min-h-[80px]" />;
               const isToday = cell.date === today;
-              const hasGames = cell.calDay && cell.calDay.gameCount > 0;
+              const plannedGames = planned?.state === 'snapshot' ? planned.fixtures.filter(fixture => fixtureDateInZone(fixture.tipoffUTC, tz) === cell.date) : [];
+              const count = cell.calDay?.gameCount || plannedGames.length;
+              const hasGames = count > 0;
               const dayOfWeek = i % 7;
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
               return (
                 <Link
                   href={homeDateUrl(cell.date)}
                   prefetch={false}
-                  aria-label={`${cell.date} · ${error ? (isZh ? "赛程数据不可用" : "Schedule unavailable") : `${cell.calDay?.gameCount ?? 0} ${isZh ? "场已列比赛" : "listed games"}`}`}
+                  aria-label={`${cell.date} · ${error ? (isZh ? "赛程数据不可用" : "Schedule unavailable") : `${count} ${plannedGames.length ? (isZh ? "场计划比赛" : "planned fixtures") : (isZh ? "场已列比赛" : "listed games")}`}`}
                   key={i}
                   className={`border-b border-r border-border/50 min-w-0 px-1 py-2 sm:p-2 min-h-[80px] text-center sm:text-left transition-colors ${
                     cell.day ? "cursor-pointer hover:bg-bg-hover" : ""
-                  } ${isToday ? "bg-accent/10" : hasGames ? (cell.calDay!.gameCount >= 8 ? "bg-success/15" : cell.calDay!.gameCount >= 4 ? "bg-success/10" : "bg-success/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
+                  } ${isToday ? "bg-accent/10" : hasGames ? (count >= 8 ? "bg-success/15" : count >= 4 ? "bg-success/10" : "bg-success/5") : isWeekend && cell.day ? "bg-bg-secondary/40" : ""}`}
 
                 >
                   {cell.day && (
@@ -232,14 +240,14 @@ export default function CalendarPage() {
                       {hasGames && (
                         <div className="mt-1">
                           <span aria-hidden="true" className="inline-block max-w-full whitespace-nowrap rounded-full bg-accent/15 px-1 py-0.5 text-[10px] font-medium leading-tight text-accent sm:hidden">
-                            {cell.calDay!.gameCount}{isZh ? "场" : ""}
+                            {count}{isZh ? "场" : ""}
                           </span>
                           <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
-                            {cell.calDay!.gameCount} {cell.calDay!.gameCount === 1 ? t.common.game : t.common.games}
+                            {count} {count === 1 ? t.common.game : t.common.games}
                           </span>
                           <div className="hidden sm:block">
                             {(() => {
-                              const completedGames = cell.calDay!.games.filter(g => g.gameStatus === 3);
+                              const completedGames = (cell.calDay?.games ?? []).filter(g => g.gameStatus === 3);
                               if (completedGames.length === 0) return null;
                               const totalPts = completedGames.reduce((s, g) => s + g.homeScore + g.awayScore, 0);
                               return (
@@ -249,7 +257,7 @@ export default function CalendarPage() {
                               );
                             })()}
                             <div className="mt-1 space-y-0.5">
-                              {cell.calDay!.games.slice(0, 2).map((g) => (
+                              {(cell.calDay?.games ?? []).slice(0, 2).map((g) => (
                                 <div key={g.gameId} className="text-[9px] text-text-secondary truncate flex items-center gap-0.5">
                                   {TEAM_META[g.awayTricode] && (
                                     <Image src={teamLogoUrl(TEAM_META[g.awayTricode].teamId)} alt={g.awayTricode} width={10} height={10} unoptimized className="inline-block" />
@@ -271,9 +279,11 @@ export default function CalendarPage() {
                                   )}
                                 </div>
                               ))}
-                              {cell.calDay!.games.length > 2 && (
+                              {plannedGames.slice(0, 2).map(fixture => <div key={fixture.key} className="text-[9px] text-text-secondary truncate">{fixture.awayTricode} {fixture.relationship === "vs" ? "vs" : "@"} {fixture.homeTricode}{fixture.venue && <span className="block truncate" title={`${fixture.venue.name}, ${fixture.venue.city}`}>{fixture.venue.city}</span>}</div>)}
+                              {plannedGames.length > 2 && <div className="text-[9px] text-text-secondary/60">+{plannedGames.length - 2} {t.calendarPage.more}</div>}
+                              {(cell.calDay?.games.length ?? 0) > 2 && (
                                 <div className="text-[9px] text-text-secondary/60">
-                                  +{cell.calDay!.games.length - 2} {t.calendarPage.more}
+                                  +{(cell.calDay?.games.length ?? 0) - 2} {t.calendarPage.more}
                                 </div>
                               )}
                             </div>

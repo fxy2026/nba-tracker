@@ -77,7 +77,7 @@ export default function TeamHero({
           <p className={`${styles.heroMetadata} text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2 flex-wrap`}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: team.primaryColor }} />
             {team.tricode} · {team.conference}ern · {team.division}
-            <UpdatedPill ageMs={updatedAt} />
+            <UpdatedPill ageMs={updatedAt} meaning="cache" />
           </p>
           <h1 className={`${styles.heroTitle} leading-[0.9] tracking-[-0.03em] mt-1.5`}>
             <span className="block text-sm sm:text-base font-extralight text-text-secondary">{team.city}</span>

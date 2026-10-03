@@ -1,7 +1,10 @@
+import { hasCanonicalSeasonCoverage } from "@/lib/schedule-coverage";
+import { PLANNED_SEASON } from "@/lib/planned-fixtures";
+import PlannedFixturesPanel from "@/components/PlannedFixtures";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, CalendarX, Calendar, Repeat, Target, ListOrdered } from "lucide-react";
-import { getFullSchedule, type ScheduleGame } from "@/lib/api";
+import { getFullSchedule, getScheduleCoverage, type ScheduleGame } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import GameCard from "@/components/GameCard";
 import DateJumper from "@/components/DateJumper";
@@ -78,6 +81,13 @@ export default async function SchedulePage({ searchParams }: PageProps) {
   const totalGames = recentDates.reduce((s, d) => s + d.games.length, 0);
   const finishedGames = recentDates.reduce((s, d) => s + d.games.filter(g => g.gameStatus === 3).length, 0);
   const upcomingGames = totalGames - finishedGames;
+  const showPlanned = !hasCanonicalSeasonCoverage(allDates, getScheduleCoverage(allDates), PLANNED_SEASON);
+  const noRecentScores = (<EmptyState
+          icon={CalendarX}
+          title={isZh ? "近期比分暂无可用数据" : "No recent scores available"}
+          description={isZh ? "可选择其他日期查看已收录的比赛。" : "Choose another date to view available games."}
+          action={filterTeam ? { label: "Clear filter", href: "/schedule" } : { label: "Go to today", href: "/" }}
+        />);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -127,6 +137,8 @@ export default async function SchedulePage({ searchParams }: PageProps) {
         ))}
       </div>
 
+      {showPlanned && <PlannedFixturesPanel team={TEAM_META[filterTeam] ? filterTeam : undefined} fallback={recentDates.length === 0 ? noRecentScores : null} />}
+
       {recentDates.length > 0 ? (
         <div className="space-y-8">
           {recentDates.map(({ dateStr, displayDate, games }) => (
@@ -149,12 +161,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
           ))}
         </div>
       ) : (
-        <EmptyState
-          icon={CalendarX}
-          title={`${t.schedulePage.noGamesFound}${filterTeam ? ` ${filterTeam}` : ""}`}
-          description="Try clearing the team filter or jumping to a different date."
-          action={filterTeam ? { label: "Clear filter", href: "/schedule" } : { label: "Go to today", href: "/" }}
-        />
+        showPlanned ? null : noRecentScores
       )}
 
       <RelatedPages

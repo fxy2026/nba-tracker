@@ -11,6 +11,8 @@ import { offsetCalendarDate } from "@/lib/calendar-date";
 import { homeDateUrl } from "@/lib/date-navigation";
 import { localTz } from "@/lib/timezone";
 import type { ScheduleNavigation } from "@/lib/schedule-navigation";
+import { PlannedFixtureSection } from "./PlannedFixtures";
+import { normalizePlannedFixtureView, type PlannedFixtureView } from "@/lib/planned-fixtures";
 import ScheduleEmptyNavigation from "./ScheduleEmptyNavigation";
 import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
@@ -35,7 +37,7 @@ interface GamesListProps {
 export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday, timeZone }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const [{ games, navigation, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; date: string }>({ games: initialGames || [], navigation: null, date: selectedDate });
+  const [{ games, navigation, planned, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; date: string }>({ games: initialGames || [], navigation: null, planned: null, date: selectedDate });
   const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
   const [loading, setLoading] = useState(!initialGames);
   const [error, setError] = useState(false);
@@ -46,7 +48,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     const request = requests.begin();
     const { signal } = request;
     setError(false);
-    setResults((previous) => ({ ...previous, navigation: null }));
+    setResults((previous) => ({ ...previous, navigation: null, planned: null }));
     // Optional replay metadata shares the refresh/date cancellation gate, but
     // never holds up score rendering or changes the scoreboard's error state.
     void (async () => {
@@ -70,7 +72,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
         return order(a.gameStatus) - order(b.gameStatus);
       });
-      setResults({ games: rawGames, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, date });
+      setResults({ games: rawGames, planned: gamesJson.planned ? normalizePlannedFixtureView(gamesJson.planned, { mode: "day", date, timeZone: timeZone ?? localTz() }) : null, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, date });
     } catch {
       if (request.isCurrent()) setError(true);
     } finally {
@@ -363,6 +365,8 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
             </div>
           )}
         </div>
+      ) : responseDate === selectedDate && planned?.state === "snapshot" ? (
+        <PlannedFixtureSection view={planned} />
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
           <svg viewBox="0 0 80 80" className="w-16 h-16 mb-4 opacity-20">

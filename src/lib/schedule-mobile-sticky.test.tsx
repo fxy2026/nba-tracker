@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ schedule: vi.fn(), locale: vi.fn() }));
-vi.mock("@/lib/api", () => ({ getFullSchedule: mocks.schedule }));
+vi.mock("@/lib/api", () => ({ getScheduleCoverage: () => null, getFullSchedule: mocks.schedule }));
 vi.mock("@/lib/locale", () => ({ getLocale: mocks.locale }));
 import SchedulePage from "@/app/schedule/page";
 

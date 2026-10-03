@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFullSchedule } from "@/lib/api";
+import { getPlannedFixtureView } from "@/lib/planned-fixtures-server";
+import { validCalendarDate, validTimeZone } from "@/lib/planned-fixtures";
+import { getFullSchedule, getScheduleCoverage } from "@/lib/api";
 
 interface CalendarGame {
   gameId: string;
@@ -27,17 +29,12 @@ function dateInTz(utcIso: string, tz: string): string {
 export async function GET(request: NextRequest) {
   const month = request.nextUrl.searchParams.get("month");
   const tzParam = request.nextUrl.searchParams.get("tz") || "America/New_York";
-  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+  if (!month || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month) || !validCalendarDate(`${month}-01`) || request.nextUrl.searchParams.getAll("month").length !== 1 || request.nextUrl.searchParams.getAll("tz").length > 1) {
     return NextResponse.json({ error: "month required (YYYY-MM)" }, { status: 400 });
   }
 
-  // Validate timezone — Intl will throw on bad value
-  let tz = tzParam;
-  try {
-    new Intl.DateTimeFormat("en-CA", { timeZone: tz });
-  } catch {
-    tz = "America/New_York";
-  }
+  if (!validTimeZone(tzParam)) return NextResponse.json({ error: "Invalid timezone" }, { status: 400 });
+  const tz = tzParam;
 
   try {
     const dates = await Promise.race([
@@ -74,7 +71,7 @@ export async function GET(request: NextRequest) {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, games]) => ({ date, gameCount: games.length, games }));
 
-    return NextResponse.json({ data: monthGames }, {
+    return NextResponse.json({ data: monthGames, planned: getPlannedFixtureView({ mode: "month", month, timeZone: tz }, dates, getScheduleCoverage(dates)) }, {
       headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
     });
   } catch {

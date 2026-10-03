@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 // Increment only when the projection contract changes. Data changes invalidate
 // themselves through the hash; no deploy IDs, timestamps or manual bumps.
-const SCHEMA = 3;
+const SCHEMA = 4; // Canonical coverage travels atomically with the projected dates.
 
 export function createScheduleProjectionRevision(archive: unknown, observed: unknown) {
   return {

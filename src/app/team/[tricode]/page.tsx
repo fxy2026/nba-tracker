@@ -1,7 +1,10 @@
+import { hasCanonicalSeasonCoverage } from "@/lib/schedule-coverage";
+import { PLANNED_SEASON } from "@/lib/planned-fixtures";
+import PlannedFixturesPanel from "@/components/PlannedFixtures";
 import { playerIndexLabel } from "@/lib/player-index-provenance";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentSeasonSchedule, getPlayerIndexSnapshot, formatDate, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleCoverage, getPlayerIndexSnapshot, formatDate, getScheduleAge } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isRegular, isPlayoff, winPct as calcWinPct } from "@/lib/games";
@@ -290,7 +293,7 @@ export default async function TeamPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <TeamScheduleCard mode="recent" t={t} games={recentGames} />
-        <TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} difficulty={upcomingDifficulty} />
+        {upcomingGames.length > 0 || hasCanonicalSeasonCoverage(schedule, getScheduleCoverage(schedule), PLANNED_SEASON) ? <TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} difficulty={upcomingDifficulty} /> : <PlannedFixturesPanel team={team.tricode} compact fallback={<TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} />} />}
       </div>
 
       <TeamTrendsPanel t={t} recentGames={regularGames} rivalries={rivalries} />
