@@ -1,3 +1,4 @@
+import Select from "@/components/ui/Select";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactNode, type ReactElement } from "react";
 import ShotChartExplorer from "@/components/ShotChartExplorer";
@@ -29,7 +30,7 @@ vi.mock("react", async original => ({ ...await original<typeof import("react")>(
     }];
   },
 }));
-interface Props { children?: ReactNode; onClick?: () => void; onChange?: (event: { target: { value: string }; currentTarget: { value: string } }) => void; [key: string]: unknown }
+interface Props { children?: ReactNode; onClick?: () => void; onValueChange?: (value: string) => void; onChange?: (event: { target: { value: string }; currentTarget: { value: string } }) => void; [key: string]: unknown }
 function elements(node: ReactNode, type: unknown): ReactElement<Props>[] {
   if (Array.isArray(node)) return node.flatMap(child => elements(child, type));
   if (!isValidElement<Props>(node)) return [];
@@ -49,12 +50,12 @@ function render() {
   return { court, score, view: elements(court, ComparisonCourtView)[0].props, slider: elements(score, "input")[0].props };
 }
 function change(node: ReactNode, label: string, value: string) {
-  elements(node, "select").find(item => item.props["aria-label"] === label)!.props.onChange!({ target: { value }, currentTarget: { value } });
+  elements(node, Select).find(item => item.props["aria-label"] === label)!.props.onValueChange!(value);
 }
 function click(node: ReactNode, label: string) {
   elements(node, "button").find(item => item.props["aria-label"] === label || text(item) === label)!.props.onClick!();
 }
-function selected(node: ReactNode, label: string) { return elements(node, "select").find(item => item.props["aria-label"] === label)!.props.value; }
+function selected(node: ReactNode, label: string) { return elements(node, Select).find(item => item.props["aria-label"] === label)!.props.value; }
 beforeEach(() => { harness.states = { court: [], score: [] }; harness.period = 0; harness.index = 0; });
 
 describe("linked period handlers across both panels", () => {

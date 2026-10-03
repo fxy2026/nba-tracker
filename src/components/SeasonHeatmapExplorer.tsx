@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import Select from "@/components/ui/Select";
 import type { HeatmapIdentity, HeatmapSeasonType, SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from "@/lib/season-heatmap";
 import SeasonHeatmapCourt from "./season-heatmap/SeasonHeatmapCourt";
 import { copy, datasetKey, heatmapCopy, HEATMAP_COLORS, LOW_SAMPLE_ATTEMPTS, percent, rate, referenceDifference, sameIdentity, share, zoneColor, zoneName, type HeatmapLocale, type HeatmapMode } from "./season-heatmap/season-heatmap-display";
@@ -59,10 +60,8 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
       <div className={styles.identity}><span>{player.secondaryName}</span><span>{player.teamLabel}</span></div>
     </header>
     <div className={styles.filters}>
-      <label className={styles.seasonLabel}><span className={styles.srOnly}>{t.season}</span><select aria-label={t.season} value={selection.season} disabled={!seasons.length} onChange={event => choose({ ...selection, season: event.target.value })}>
-        {!seasons.includes(selection.season) && <option value={selection.season}>{selection.season || "—"}</option>}
-        {seasons.map(season => <option key={season} value={season}>{season.replace("-", "–")}</option>)}
-      </select></label>
+      <div className={styles.seasonLabel}><Select aria-label={t.season} className={styles.seasonSelect} value={selection.season} disabled={!seasons.length} onValueChange={season => choose({ ...selection, season })}
+        options={[...(!seasons.includes(selection.season) ? [{ value: selection.season, label: selection.season || "—" }] : []), ...seasons.map(season => ({ value: season, label: season.replace("-", "–") }))]} /></div>
       <div className={styles.segment} role="group" aria-label={t.type}>
         {(["Regular Season", "Playoffs"] as const).map(type => <button type="button" key={type} aria-pressed={selection.seasonType === type} onClick={() => choose({ ...selection, seasonType: type })}>{typeName(type)}</button>)}
       </div>

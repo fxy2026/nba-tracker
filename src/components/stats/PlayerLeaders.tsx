@@ -7,6 +7,7 @@ import { AlertCircle } from "lucide-react";
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
 import EmptyState from "@/components/EmptyState";
+import Select from "@/components/ui/Select";
 import { playerHeadshotUrl as buildHeadshotUrl } from "@/lib/teamUrls";
 import { parseLeagueLeaders, formatLeagueLeaderValue, type LeagueLeaderRow, type LeagueLeaderNumericField } from "@/lib/league-leaders";
 const STATS_API = "/api/stats";
@@ -106,16 +107,17 @@ export default function PlayerLeaders() {
             </button>
           ))}
         </div>
-        <select value={seasonType} onChange={(e) => {
-          if (e.target.value !== seasonType) {
-            requestRef.current?.abort(); setLoading(true); setError(""); setSeasonType(e.target.value);
+        <Select value={seasonType} onValueChange={(value) => {
+          if (value !== seasonType) {
+            requestRef.current?.abort(); setLoading(true); setError(""); setSeasonType(value);
           }
         }}
           aria-label={locale === "zh" ? "赛季类型" : "Season type"}
-          className="glass-tile px-3 py-1.5 text-xs text-text-primary cursor-pointer">
-          <option value="Regular Season">{t.statsPage.regularSeason}</option>
-          <option value="Playoffs">{t.statsPage.playoffs}</option>
-        </select>
+          options={[
+            { value: "Regular Season", label: t.statsPage.regularSeason },
+            { value: "Playoffs", label: t.statsPage.playoffs },
+          ]}
+        />
       </div>
 
       {loading ? (

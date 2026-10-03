@@ -20,7 +20,7 @@ function render(data: SeasonHeatmapRendererDTO, locale: "en" | "zh" = "en") {
 
 describe("court-aligned archive explorer", () => {
   it.each(["en", "zh"] as const)("renders 12 actual court categories and preserves the source/control separation (%s)", async locale => {
-    const data = await fixture(), html = render(data, locale), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    const data = await fixture(), html = render(data, locale), svg = html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect(data.geometryVersion).toBe("nba-court-basic12-v1");
     expect(decodeSeasonHeatmapResource({ status: "ready", data }, identity)).toEqual({ status: "ready", data });
     expect((svg.match(/data-zone-id=/g) ?? [])).toHaveLength(12);
@@ -53,7 +53,7 @@ describe("court-aligned archive explorer", () => {
     const conflict = { ...row, id: "classification-conflict" as const, sourceZoneId: "Source classification / explicit shot type conflict", fgm: 1, fga: 1, fg3m: 0, fg3a: 0, fgPct: 1, fgPctDisplay: "100.0", sourceFgPctDisplay: "100.0", attemptShare: 1 / data.totals.fga, attemptShareDisplay: "0.1", leagueAverage: null };
     row.fgm--; row.fga--; row.fgPct = row.fgm / row.fga; row.fgPctDisplay = (100 * row.fgPct).toFixed(1); row.sourceFgPctDisplay = row.fgPctDisplay; row.attemptShare = row.fga / data.totals.fga; row.attemptShareDisplay = (100 * row.attemptShare).toFixed(1);
     data.residuals.push(conflict); data.coverage.normalZoneAttempts--; data.coverage.residualAttempts++;
-    const html = render(data), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    const html = render(data), svg = html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect(svg).not.toContain('data-zone-id="classification-conflict"');
     expect(html).toContain('data-list-zone="classification-conflict"');
     expect(html).toContain("Source classification conflict"); expect(html).toContain("1/1*");

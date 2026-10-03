@@ -175,7 +175,7 @@ describe("reviewed overtime clocks, presentation and source provenance", () => {
   it.each(["en", "zh"] as const)("renders exact coverage and top-down-first without initial Three (%s)", locale => {
     const data = getVerifiedShotChart(getGame("0042500173"))!;
     const html = renderToStaticMarkup(<LocaleProvider initialLocale={locale}><ShotChartExplorer data={data} /></LocaleProvider>);
-    expect(html).toContain('<option value="5">'); // Shared period filters remain visible.
+    expect(html).toContain(`role="combobox" aria-label="${locale === "en" ? "Period" : "节次"}"`); // Options and OT selection are checked by the component-handler suite.
     expect(html).not.toContain("Q5");
     expect(html).toContain("177/177");
     expect(html).toContain('data-court-state="flat"');
@@ -184,7 +184,7 @@ describe("reviewed overtime clocks, presentation and source provenance", () => {
     const finalData = getVerifiedShotChart(getGame("0042500405"))!;
     const finalHtml = renderToStaticMarkup(<LocaleProvider initialLocale={locale}><ShotChartExplorer data={finalData} /></LocaleProvider>);
     expect(finalHtml).toContain("173/173");
-    expect(finalHtml).not.toContain('<option value="5">');
+    expect(finalData.shots.every(shot => shot.period <= 4)).toBe(true);
   });
   it("retains the actual chart capture times and separates local game date from UTC tipoff", () => {
     const finals = getVerifiedShotChart(getGame("0042500405"))!;

@@ -49,7 +49,7 @@ describe("Finals G1–G4 explicit provenance and unchanged comparison presentati
     expect(html).toContain('data-court-focus="full"');
     expect(html).toContain('data-court-state="flat"');
     expect(html).not.toContain("<canvas");
-    expect(html).not.toContain('<option value="5">');
+    expect(data.shots.every(shot => shot.period <= 4)).toBe(true);
     expect(html).toContain(data.source.url);
     expect(html).toContain(locale === "en" ? "not actual attacking direction" : "不代表比赛实际进攻方向");
     expect(html).toContain(locale === "en" ? "not ball flight" : "不代表篮球飞行轨迹");

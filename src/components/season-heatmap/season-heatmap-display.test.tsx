@@ -42,28 +42,28 @@ describe("season heatmap display rules", () => {
   });
   it("is independent of source zone array order", () => {
     const data = fixture(); data.zones.forEach((z, i) => { z.fgPctDisplay = `${i + 10}.0`; });
-    const court = (html: string) => html.match(/<svg[\s\S]*?<\/svg>/)?.[0];
+    const court = (html: string) => html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)?.[0];
     const before = court(render(data)); data.zones.reverse(); expect(court(render(data))).toBe(before);
   });
   it.each(["en", "zh"] as const)("keeps all 14 mapped zones and both residuals with full denominators (%s)", locale => {
-    const html = render(fixture(), locale), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    const html = render(fixture(), locale), svg = html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect((svg.match(/data-zone-id=/g) ?? [])).toHaveLength(14); expect((svg.match(/data-zone-label=/g) ?? [])).toHaveLength(14);
     expect(svg).not.toContain('data-zone-id="backcourt"'); expect(svg).not.toContain('data-zone-id="unclassified"'); expect(svg).not.toContain('d="M0,0"');
     expect(html).toContain('data-list-zone="backcourt"'); expect(html).toContain('data-list-zone="unclassified"'); expect(html).toContain("144 / 294"); expect(html).toContain("= 294");
     expect(html).toContain("0.7%"); expect(html).toContain("3/12*"); expect(html).toContain("1/2*");
   });
   it("provides exactly 14 keyboard-accessible SVG regions and a button list", () => {
-    const html = render(), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    const html = render(), svg = html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect((svg.match(/role="button"/g) ?? [])).toHaveLength(14); expect((svg.match(/tabindex="0"/g) ?? [])).toHaveLength(14);
     expect((html.match(/data-list-zone=/g) ?? [])).toHaveLength(16); expect(html).toContain('aria-live="polite"'); expect(html).toContain("All zone statistics");
   });
   it("never horizontally transforms glyphs", () => {
-    const svg = render().match(/<svg[\s\S]*?<\/svg>/)![0];
+    const svg = render().match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect(svg).not.toMatch(/textLength|lengthAdjust|scaleX/); expect(svg).not.toMatch(/<text[^>]*transform=/);
     const labels = [...svg.matchAll(/<g data-zone-label=[\s\S]*?<\/g>/g)]; expect(labels).toHaveLength(14); for (const label of labels) expect(label[0]).not.toContain("transform=");
   });
   it("uses a single coherent path per region with no warp, clipping strips or underpaint", () => {
-    const svg = render().match(/<svg[\s\S]*?<\/svg>/)![0];
+    const svg = render().match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect(svg).not.toMatch(/data-display-underpaint|clipPath|matrix\(|transform=/);
     expect((svg.match(/data-zone-fill=/g) ?? [])).toHaveLength(14);
     expect((svg.match(/data-corner-leader=/g) ?? [])).toHaveLength(2);
@@ -97,7 +97,7 @@ describe("season heatmap display rules", () => {
 
 describe("archive-summary display rules", () => {
   it.each(["en", "zh"] as const)("retains the same 14 schematic regions and non-spatial residuals (%s)", locale => {
-    const html = render(archiveFixture(), locale), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    const html = render(archiveFixture(), locale), svg = html.match(/<svg[^>]*data-display-geometry=[\s\S]*?<\/svg>/)![0];
     expect((svg.match(/data-zone-id=/g) ?? [])).toHaveLength(14);
     expect((svg.match(/data-zone-label=/g) ?? [])).toHaveLength(14);
     expect(svg).not.toContain('data-zone-id="backcourt"');

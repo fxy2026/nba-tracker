@@ -50,7 +50,8 @@ describe("real shared-period context and SSR composition", () => {
     const other = schedule.dates.flatMap(date => date.games).find(game => game.gameId === "0042500173")!;
     const html = renderToStaticMarkup(<LocaleProvider initialLocale="en"><ShotChartExplorer data={getVerifiedShotChart(other)!} /></LocaleProvider>);
     expect(html).not.toMatch(/data-linked-game-period|data-court-linked-scope|data-score-linked-scope/);
-    expect(html).toContain("OT1");
+    expect(html).toContain('role="combobox" aria-label="Period"');
+    expect(getVerifiedShotChart(other)!.shots.filter(shot => shot.period === 5)).toHaveLength(15); // Choosing OT is covered by the real component-handler suite.
     expect(html.match(/data-shot-id=/g)).toHaveLength(177);
   });
 });

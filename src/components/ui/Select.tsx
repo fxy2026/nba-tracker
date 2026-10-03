@@ -29,7 +29,15 @@ export default function Select({ value, onValueChange, options, disabled = false
   const [position, setPosition] = useState<SelectPopupPosition | null>(null);
   const selectedIndex = options.findIndex(option => option.value === value);
   const unavailable = disabled || !options.some(option => !option.disabled);
-  const expanded = open && !unavailable;
+  // A pending keyboard choice belongs to one exact set of choices. Close on
+  // external changes rather than silently committing a different array index.
+  const context = JSON.stringify([value, disabled, options.map(option => [option.value, option.label, Boolean(option.disabled)])]);
+  const [previousContext, setPreviousContext] = useState(context);
+  if (previousContext !== context) {
+    setPreviousContext(context);
+    if (open) setOpen(false);
+  }
+  const expanded = open && !unavailable && previousContext === context;
   const active = options[activeIndex] && !options[activeIndex].disabled ? activeIndex : -1;
 
   function close(restoreFocus = false) {
@@ -39,6 +47,7 @@ export default function Select({ value, onValueChange, options, disabled = false
   }
   function show(index = selectedIndex) {
     if (unavailable) return;
+    search.current = { text: "", time: 0 };
     setActiveIndex(options[index] && !options[index].disabled ? index : nextEnabledOption(options, -1, 1));
     setPosition(null);
     setOpen(true);
@@ -78,12 +87,15 @@ export default function Select({ value, onValueChange, options, disabled = false
     if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
       const now = Date.now();
-      const text = now - search.current.time > 700 ? event.key : search.current.text + event.key;
+      const text = !expanded || now - search.current.time > 700 ? event.key : search.current.text + event.key;
       search.current = { text, time: now };
       const repeated = [...text].every(character => character.toLocaleLowerCase() === text[0].toLocaleLowerCase());
       const query = repeated ? text[0] : text;
       const next = findTypeaheadOption(options, query, expanded ? active : selectedIndex, !repeated);
-      if (!expanded) show(next >= 0 ? next : selectedIndex); else if (next >= 0) setActiveIndex(next);
+      if (!expanded) {
+        show(next >= 0 ? next : selectedIndex);
+        search.current = { text, time: now };
+      } else if (next >= 0) setActiveIndex(next);
     }
   }
 
@@ -93,10 +105,15 @@ export default function Select({ value, onValueChange, options, disabled = false
       if (event?.target === list.current) return;
       if (!trigger.current || !list.current) return;
       const viewport = window.visualViewport;
-      const nextPosition = positionSelectPopup(trigger.current.getBoundingClientRect(), {
+      const bounds = {
         left: viewport?.offsetLeft ?? 0, top: viewport?.offsetTop ?? 0,
         width: viewport?.width ?? window.innerWidth, height: viewport?.height ?? window.innerHeight,
-      }, list.current.scrollHeight + 2);
+      };
+      const rect = trigger.current.getBoundingClientRect();
+      // Measure after applying the final width so wrapped labels determine the
+      // correct height even on the first upward-opening frame or after resize.
+      list.current.style.width = `${positionSelectPopup(rect, bounds, 320).width}px`;
+      const nextPosition = positionSelectPopup(rect, bounds, list.current.scrollHeight + 2);
       setPosition(previous => previous && Object.keys(nextPosition).every(key => previous[key as keyof SelectPopupPosition] === nextPosition[key as keyof SelectPopupPosition]) ? previous : nextPosition);
     };
     updatePosition();

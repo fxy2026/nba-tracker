@@ -14,6 +14,7 @@ import {
   COURT_WIDTH_FT,
 } from "@/lib/court";
 import { useLocale } from "@/components/LocaleProvider";
+import Select from "@/components/ui/Select";
 
 interface Props {
   shots: ShotAction[];
@@ -109,17 +110,15 @@ export default memo(function ShotChart({ shots, homeTricode, awayTricode, player
         </div>
 
         {filter !== "all" && (
-          <select
-            value={selectedPlayer || ""}
-            onChange={(e) => setSelectedPlayer(e.target.value ? parseInt(e.target.value) : null)}
+          <Select
+            value={selectedPlayer === null ? "" : String(selectedPlayer)}
+            onValueChange={(value) => setSelectedPlayer(value ? parseInt(value) : null)}
             aria-label={isZh ? "按球员筛选" : "Filter by player"}
-            className="bg-bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-          >
-            <option value="">{t.shotChartComp.allPlayers}</option>
-            {teamPlayers.map((p) => (
-              <option key={p.personId} value={p.personId}>{p.nameI}</option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: t.shotChartComp.allPlayers },
+              ...teamPlayers.map((p) => ({ value: String(p.personId), label: p.nameI })),
+            ]}
+          />
         )}
 
         <span className="text-xs text-text-secondary ml-auto flex items-center gap-2">

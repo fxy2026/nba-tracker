@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { ArrowLeft, ArrowRight, List, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { useLinkedGamePeriod } from "@/components/GamePeriodProvider";
+import Select from "@/components/ui/Select";
 import type { ScorePeriod } from "@/lib/reported-score-chart";
 import type { VerifiedShotChart } from "@/lib/court-shots";
 import ComparisonCourtView from "./shot-chart/ComparisonCourtView";
@@ -49,8 +50,8 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
     <div className={styles.comparisonHeader}>
       <div><span className={styles.comparisonEyebrow}>SHOT ATLAS</span><p>{copy.compareTeams}</p></div>
       <div className={styles.sharedFilters}>
-        <label><span className={styles.srOnly}>{copy.period}</span><select aria-label={copy.period} value={period} onChange={event=>changeFilter("period",event.target.value)}><option value="all">{copy.allPeriods}</option>{periods.map(period=><option key={period} value={period}>{periodLabel(period)}</option>)}</select></label>
-        <label><span className={styles.srOnly}>{copy.outcome}</span><select aria-label={copy.outcome} value={filters.result} onChange={event=>changeFilter("result",event.target.value)}><option value="all">{copy.allResults}</option><option value="Made">{copy.made}</option><option value="Missed">{copy.missed}</option></select></label>
+        <Select aria-label={copy.period} value={period} className={styles.filterSelect} onValueChange={value=>changeFilter("period",value)} options={[{value:"all",label:copy.allPeriods},...periods.map(period=>({value:String(period),label:periodLabel(period)}))]} />
+        <Select aria-label={copy.outcome} value={filters.result} className={styles.filterSelect} onValueChange={value=>changeFilter("result",value)} options={[{value:"all",label:copy.allResults},{value:"Made",label:copy.made},{value:"Missed",label:copy.missed}]} />
         {active&&<button type="button" className={styles.comparisonClear} onClick={clear}>{linkedPeriod?copy.clearShots:copy.clear}</button>}
       </div>
     </div>
@@ -58,7 +59,7 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
     <div className={styles.teamComparison}>
       {(["away","home"] as const).map(side=>{const team=data[side],summary=comparison[side].summary,teamColor=side==="away"?awayColor:homeColor;return <div key={side} className={styles.teamComparisonCard} style={{"--team-color":teamColor} as CSSProperties}>
         <div className={styles.teamComparisonTitle}><span className={styles.teamIdentity}><i/>{team.teamTricode}</span><span>{side==="away"?copy.away:copy.home}</span></div>
-        <label className={styles.comparisonPlayer}><span className={styles.srOnly}>{team.teamTricode} {copy.player}</span><select aria-label={`${team.teamTricode} ${copy.player}`} value={filters[side==="away"?"awayPlayer":"homePlayer"]} onChange={event=>changeFilter(side==="away"?"awayPlayer":"homePlayer",event.target.value)}><option value="all">{copy.allPlayers}</option>{players[side].map(player=><option key={player.personId} value={player.personId}>{player.playerName}</option>)}</select></label>
+        <div className={styles.comparisonPlayer}><Select aria-label={`${team.teamTricode} ${copy.player}`} className={styles.playerFilter} value={filters[side==="away"?"awayPlayer":"homePlayer"]} onValueChange={value=>changeFilter(side==="away"?"awayPlayer":"homePlayer",value)} options={[{value:"all",label:copy.allPlayers},...players[side].map(player=>({value:String(player.personId),label:player.playerName}))]} /></div>
         <div className={styles.teamShooting} aria-label={`${team.teamTricode} ${copy.summary}`} aria-live="polite"><strong>{summary.attempted?`${(summary.made/summary.attempted*100).toFixed(1)}`:"—"}<small>{summary.attempted?"%":""}</small></strong><span>{summary.attempted?copy.fg:copy.noAttempts}<b>{summary.made} / {summary.attempted}</b></span></div>
         <div className={styles.shootingTrack} aria-hidden="true"><i style={{width:`${summary.attempted?summary.made/summary.attempted*100:0}%`}}/></div>
       </div>;})}
@@ -73,8 +74,8 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
     </div>
     <div className={styles.comparisonCount} aria-live="polite"><span>{copy.shown}: {shots.length} {copy.shotsLabel}{period!=="all"?` · ${periodLabel(Number(period))}`:""}{filters.result!=="all"?` · ${filters.result==="Made"?copy.made:copy.missed}`:""}</span><span>{copy.fgScope}</span></div>
     <ComparisonCourtView key={focus} shots={shots} selectedId={selected?.eventId??null} onSelect={setSelectedId} focus={focus} away={data.away} home={data.home} awayColor={awayColor} homeColor={homeColor} copy={copy}/>
-    <div className={`${styles.selection} ${selected?styles.hasSelection:""}`} aria-live="polite" aria-atomic="true">
-      {selected?<>
+    <div aria-live="polite" aria-atomic="true">
+      {selected&&<div className={`${styles.selection} ${styles.hasSelection}`} data-shot-detail="true">
         <div className={styles.selectionMain}>
           <span className={styles.comparisonResult}>{selected.result==="Made"?"●":"○"} {selected.result==="Made"?copy.made:copy.missed}</span>
           <strong>{selected.playerName}</strong><span>{selected.teamTricode} · {periodLabel(selected.period)} · {formatCourtClock(selected.clock)} · {selected.value}{isZh?" 分":" PT"}</span>
@@ -86,7 +87,7 @@ export default function ShotChartExplorer({data}:{data:VerifiedShotChart}) {
           <button type="button" aria-label={copy.next} disabled={selectedIndex>=shots.length-1} onClick={()=>setSelectedId(shots[selectedIndex+1].eventId)}><ArrowRight size={17}/></button>
           <button type="button" aria-label={copy.close} onClick={()=>setSelectedId(null)}><X size={17}/></button>
         </div>
-      </>:<p>{copy.select}</p>}
+      </div>}
     </div>
     <div className={styles.footer}>
       <p><a href={data.source.url} target="_blank" rel="noreferrer">{copy.source}</a> · {data.coverage.mapped}/{data.coverage.total} {copy.coverage}</p>

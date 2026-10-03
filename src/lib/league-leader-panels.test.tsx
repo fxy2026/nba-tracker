@@ -77,6 +77,7 @@ import zh from '@/locales/zh';
 import { CURRENT_SEASON } from '@/lib/constants';
 vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: runtime.locale, t: runtime.locale === 'zh' ? zh : en }) }));
 import PlayerLeaders from '@/components/stats/PlayerLeaders';
+import Select from '@/components/ui/Select';
 import MvpLadder from '@/components/stats/MvpLadder';
 import AwardsRaceClient from '@/app/awards-race/AwardsRaceClient';
 import { metadata as awardsMetadata } from '@/app/awards-race/layout';
@@ -126,7 +127,7 @@ beforeEach(() => {
 afterEach(() => { for (const h of runtime.hooks) if (h.kind === 'effect') h.value.cleanup?.(); runtime.mounted = false; vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 function retry() { const action = nodes(tree).find(n => n.props.action)?.props.action as { onClick: () => void }; expect(action).toBeDefined(); action.onClick(); flush(); }
-function season(value: string) { const select = nodes(tree).find(n => n.type === 'select')!; (select.props.onChange as (event: unknown) => void)({ target: { value } }); flush(); }
+function season(value: string) { const select = nodes(tree).find(n => n.type === Select)!; expect(select).toBeDefined(); (select.props.onValueChange as (value: string) => void)(value); flush(); }
 function race(value: string) { const button = nodes(tree).find(n => n.type === 'button' && Array.isArray(n.props.children) && n.props.children.includes(value))!; (button.props.onClick as () => void)(); flush(); }
 const loading = () => nodes(tree).some(n => String(n.props.className).includes('skeleton-shimmer'));
 const signal = (call = 0): AbortSignal => fetcher.mock.calls[call][1].signal;
@@ -135,6 +136,15 @@ const awards = () => AwardsRaceClient({ mvpSeasons: [] });
 const currentIndex = (id = 1) => ({ ok: true, json: async () => ({ data: [{ personId: id, firstName: 'Rookie', lastName: 'One', fromYear: CURRENT_SEASON.slice(0, 4), toYear: CURRENT_SEASON.slice(0, 4), draftYear: null }], provenance: { source: 'nba-cdn', season: CURRENT_SEASON, stale: false, retrievedAt: null } }) });
 
 describe('PlayerLeaders request ownership and safe numeric rendering', () => {
+  it.each(['en', 'zh'])('shared season-type selector preserves localized labels and API values (%s)', async locale => {
+    runtime.locale = locale; fetcher.mockResolvedValue(response([base])); mount(PlayerLeaders); await settle();
+    const t = locale === 'en' ? en : zh;
+    const select = nodes(tree).find(n => n.type === Select)!;
+    expect(select.props['aria-label']).toBe(locale === 'en' ? 'Season type' : '赛季类型');
+    expect(select.props.value).toBe('Regular Season');
+    expect(select.props.options).toEqual([{ value: 'Regular Season', label: t.statsPage.regularSeason }, { value: 'Playoffs', label: t.statsPage.playoffs }]);
+    expect(nodes(tree).some(n => n.type === 'select')).toBe(false);
+  });
   it('a retried Points request cannot overwrite a newer Rebs response', async () => {
     const old = deferred<ReturnType<typeof response>>();
     fetcher.mockResolvedValueOnce({ ok: false, status: 504 }).mockImplementationOnce(() => old.promise).mockResolvedValueOnce(response([reb]));

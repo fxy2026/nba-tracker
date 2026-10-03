@@ -10,7 +10,7 @@
 .identity { display: flex; justify-content: space-between; gap: 16px; color: var(--heat-muted); font-size: 12px; min-height: 18px; }
 .filters { display: flex; gap: 12px; margin: 21px 0 25px; max-width: 540px; }
 .seasonLabel { flex: 0 0 138px; min-width: 0; }
-.seasonLabel select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid transparent; border-radius: 6px; background: var(--heat-control); color: var(--heat-text); font-size: 14px; }
+.seasonLabel .seasonSelect { width: 100%; font-size: 13px; font-weight: 500; }
 .segment { display: flex; flex: 1; min-width: 0; border-radius: 6px; padding: 3px; background: var(--heat-control); }
 .segment button { min-width: 0; flex: 1; border: 0; border-radius: 4px; padding: 8px 10px; background: transparent; color: var(--heat-muted); font-size: 13px; white-space: nowrap; }
 .segment button[aria-pressed='true'] { background: var(--heat-surface); color: var(--heat-text); box-shadow: 0 0 0 1px var(--heat-active-border); font-weight: 600; }

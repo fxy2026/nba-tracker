@@ -1,3 +1,4 @@
+import Select from "@/components/ui/Select";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactNode, type ReactElement } from "react";
 import ShotChartExplorer from "@/components/ShotChartExplorer";
@@ -16,14 +17,14 @@ vi.mock("react",async original=>({...await original<typeof import("react")>(),
 }));
 vi.mock("@/components/LocaleProvider",()=>({useLocale:()=>({locale:harness.locale})}));
 vi.mock("@/components/shot-chart/court-renderer",()=>{harness.imports++;return {createCourtRenderer:harness.create};});
-interface Props {children?:ReactNode;onClick?:()=>void;onChange?:(event:{target:{value:string}})=>void;[key:string]:unknown}
+interface Props {children?:ReactNode;onClick?:()=>void;onValueChange?:(value:string)=>void;onChange?:(event:{target:{value:string}})=>void;[key:string]:unknown}
 function elements(node:ReactNode,type:unknown):ReactElement<Props>[] {if(Array.isArray(node))return node.flatMap(child=>elements(child,type));if(!isValidElement<Props>(node))return [];return [...(node.type===type?[node]:[]),...elements(node.props.children,type)];}
 function text(node:ReactNode):string {if(typeof node==="string"||typeof node==="number")return String(node);if(Array.isArray(node))return node.map(text).join("");return isValidElement<Props>(node)?text(node.props.children):"";}
 const game=schedule.dates.flatMap(date=>date.games).find(game=>game.gameId==="0042500173")!;
 const data=getVerifiedShotChart(game)!;
 function render(){harness.index=0;harness.refIndex=0;return ShotChartExplorer({data});}
 function click(tree:ReactNode,label:string){elements(tree,"button").find(button=>text(button)===label)!.props.onClick!();}
-function change(tree:ReactNode,label:string,value:string){elements(tree,"select").find(select=>select.props["aria-label"]===label)!.props.onChange!({target:{value}});}
+function change(tree:ReactNode,label:string,value:string){elements(tree,Select).find(select=>select.props["aria-label"]===label)!.props.onValueChange!(value);}
 function court(tree:ReactNode){return elements(tree,ComparisonCourtView)[0].props;}
 beforeEach(()=>{harness.states=[];harness.refs=[];harness.index=0;harness.refIndex=0;harness.locale="en";harness.create.mockClear();});
 afterEach(()=>vi.unstubAllGlobals());
@@ -38,8 +39,8 @@ describe("dual-team selection and focus controls",()=>{
     for(const [side,team] of [["away",data.away],["home",data.home]] as const){
       click(tree,`${team.teamTricode} ${copy.halfCourt}`);tree=render();expect(court(tree).focus).toBe(side);
       expect((court(tree).shots as CourtShot[]).every(shot=>shot.teamId===team.teamId&&shot.period===1&&shot.result==="Missed")).toBe(true);
-      expect(elements(tree,"select").find(select=>select.props["aria-label"]===`${data.away.teamTricode} ${copy.player}`)!.props.value).toBe(String(away.personId));
-      expect(elements(tree,"select").find(select=>select.props["aria-label"]===`${data.home.teamTricode} ${copy.player}`)!.props.value).toBe(String(home.personId));
+      expect(elements(tree,Select).find(select=>select.props["aria-label"]===`${data.away.teamTricode} ${copy.player}`)!.props.value).toBe(String(away.personId));
+      expect(elements(tree,Select).find(select=>select.props["aria-label"]===`${data.home.teamTricode} ${copy.player}`)!.props.value).toBe(String(home.personId));
     }
     click(tree,copy.backFull);tree=render();expect(court(tree).focus).toBe("full");expect(court(tree).shots).toEqual(full);
     const focusButtons=elements(tree,"button").filter(button=>[copy.fullCourt,`${data.away.teamTricode} ${copy.halfCourt}`,`${data.home.teamTricode} ${copy.halfCourt}`].includes(text(button)));

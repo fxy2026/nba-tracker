@@ -1,3 +1,4 @@
+import Select, { type SelectOption } from "@/components/ui/Select";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import schedule from "@/data/schedule-2025-26.json";
@@ -20,7 +21,7 @@ vi.mock("react", async original => ({ ...await original<typeof import("react")>(
   },
 }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: harness.locale }) }));
-interface Props { children?: ReactNode; onClick?: () => void; onChange?: (event: { target: { value: string } }) => void; [key: string]: unknown }
+interface Props { children?: ReactNode; onClick?: () => void; onValueChange?: (value: string) => void; onChange?: (event: { target: { value: string } }) => void; [key: string]: unknown }
 function elements(node: ReactNode, type: unknown): ReactElement<Props>[] {
   if (Array.isArray(node)) return node.flatMap(child => elements(child, type));
   if (!isValidElement<Props>(node)) return [];
@@ -38,12 +39,33 @@ function click(tree: ReactNode, label: string) { elements(tree, "button").find(b
 beforeEach(() => { harness.states = []; harness.index = 0; harness.locale = "en"; });
 
 describe("reviewed OT1 filters and truthful shot details", () => {
+  it.each(["en", "zh"] as const)("keeps regulation-only options free of invented overtime (%s)", locale => {
+    harness.locale = locale;
+    const regulationGame = schedule.dates.flatMap(date => date.games).find(row => row.gameId === "0042500405")!;
+    const regulationData = getVerifiedShotChart(regulationGame)!;
+    const tree = ShotChartExplorer({ data: regulationData });
+    const period = elements(tree, Select).find(select => select.props["aria-label"] === (locale === "en" ? "Period" : "节次"))!;
+    expect((period.props.options as SelectOption[]).map(option => option.value)).toEqual(["all", "1", "2", "3", "4"]);
+    expect((period.props.options as SelectOption[]).map(option => option.label)).toEqual(locale === "en" ? ["Whole game", "Q1", "Q2", "Q3", "Q4"] : ["全场", "第 1 节", "第 2 节", "第 3 节", "第 4 节"]);
+  });
+  it("shows the detail card only after a shot is selected and removes it on dismissal", () => {
+    let tree = render();
+    expect(elements(tree, "div").some(node => node.props["data-shot-detail"])).toBe(false);
+    expect(elements(tree, CourtView)).toHaveLength(1);
+    (elements(tree, CourtView)[0].props.onSelect as (id: number) => void)(data.shots[0].eventId);
+    tree = render();
+    expect(elements(tree, "div").filter(node => node.props["data-shot-detail"])).toHaveLength(1);
+    elements(tree, "button").find(button => button.props["aria-label"] === "Clear selection")!.props.onClick!();
+    tree = render();
+    expect(elements(tree, "div").some(node => node.props["data-shot-detail"])).toBe(false);
+    expect(text(tree)).toContain("177/177");
+  });
   it.each(["en", "zh"] as const)("keeps all 15 OT attempts, source clocks and correct result counts (%s)", locale => {
     harness.locale = locale;
     let tree = render();
-    const period = elements(tree, "select").find(select=>select.props["aria-label"]===(locale === "en" ? "Period" : "节次"))!;
-    expect(elements(period, "option").map(text)).toEqual(locale === "en" ? ["Whole game", "Q1", "Q2", "Q3", "Q4", "OT1"] : ["全场", "第 1 节", "第 2 节", "第 3 节", "第 4 节", "加时1"]);
-    period.props.onChange!({ target: { value: "5" } });
+    const period = elements(tree, Select).find(select=>select.props["aria-label"]===(locale === "en" ? "Period" : "节次"))!;
+    expect((period.props.options as SelectOption[]).map(option => option.label)).toEqual(locale === "en" ? ["Whole game", "Q1", "Q2", "Q3", "Q4", "OT1"] : ["全场", "第 1 节", "第 2 节", "第 3 节", "第 4 节", "加时1"]);
+    period.props.onValueChange!("5");
     tree = render();
     const shots = elements(tree, CourtView)[0].props.shots as CourtShot[];
     expect(shots).toHaveLength(15);
@@ -58,7 +80,7 @@ describe("reviewed OT1 filters and truthful shot details", () => {
     tree = render();
     expect(elements(tree, "li")).toHaveLength(15);
     expect(elements(tree, "li").every(row => text(row).includes(locale === "en" ? "OT1" : "加时1"))).toBe(true);
-    elements(tree, "select").find(select=>select.props["aria-label"]===(locale === "en" ? "Result" : "结果"))!.props.onChange!({ target: { value: "Made" } });
+    elements(tree, Select).find(select=>select.props["aria-label"]===(locale === "en" ? "Result" : "结果"))!.props.onValueChange!("Made");
     tree = render();
     expect(elements(tree, CourtView)[0].props.shots).toHaveLength(5);
     expect(elements(tree, CourtView)[0].props.selectedId).toBeNull();

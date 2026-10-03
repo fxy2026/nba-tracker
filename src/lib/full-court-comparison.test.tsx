@@ -75,7 +75,8 @@ describe("full-court standardized rigid transform",()=>{
     expect((html.match(/data-shot-id=/g)||[])).toHaveLength(177);
     expect(html).toContain('data-court-focus="full"');expect(html).toContain('tabindex="0"');expect(html).toContain('viewBox="0 0 1000 560"');
     expect(html).toContain('aria-label="LAL '+(locale==="en"?"Player":"球员")+'"');expect(html).toContain('aria-label="HOU '+(locale==="en"?"Player":"球员")+'"');
-    expect(html).toContain(locale==="en"?"OT1":"加时1");expect(html).not.toContain("Q5");
+    expect(html).toContain(`role="combobox" aria-label="${locale === "en" ? "Period" : "节次"}"`); // OT option labels/selection are covered by the component-handler suite.
+    expect(html).not.toContain("Q5");
     expect(html).toContain(locale==="en"?"not actual attacking direction":"不代表比赛实际进攻方向");expect(html).toContain(data.source.url);
     expect(html).toContain(locale==="en"?"Hollow circles":"空心圆");expect(html).not.toContain("<canvas");
     for(const file of ["src/components/ShotChartExplorer.tsx","src/components/shot-chart/ComparisonCourtView.tsx","src/components/shot-chart/FullCourtSurface.tsx","src/components/shot-chart/comparison-geometry.ts"]){

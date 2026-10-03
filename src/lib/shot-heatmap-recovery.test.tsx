@@ -14,6 +14,7 @@ vi.mock('react',async original=>({...await original<typeof import('react')>(),
 }));
 vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:hooks.locale,t:hooks.locale==='zh'?zh:en})}));
 import ShotHeatmap from '@/components/ShotHeatmap';
+import Select from '@/components/ui/Select';
 import { AbsoluteShotLegend, ShotSampleCoverage } from '@/components/ShotSampleContext';
 function draw(){hooks.index=0;const node=ShotHeatmap({playerId:2544,teamTricode:'LAL',fromYear:'2024',toYear:'2025'});hooks.effects.splice(0).forEach(f=>f());return node;}
 function find(node:ReactNode,type:unknown):Record<string,unknown>[] {if(Array.isArray(node))return node.flatMap(n=>find(n,type));if(!isValidElement<Record<string,unknown>>(node))return[];return[...(node.type===type?[node.props]:[]),...find(node.props.children as ReactNode,type)];}
@@ -23,8 +24,17 @@ const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 function unmount(){hooks.slots.forEach(x=>(x as {cleanup?:()=>void}|undefined)?.cleanup?.());}
 beforeEach(()=>{hooks.slots=[];hooks.effects=[];hooks.index=0;hooks.locale='en';vi.useFakeTimers();vi.setSystemTime(new Date('2026-10-02T00:00:00Z'));});
 afterEach(()=>{unmount();vi.unstubAllGlobals();vi.useRealTimers();});
-it('actual default selector requests its archived season, not current season',async()=>{const fetcher=vi.fn().mockResolvedValue(response(shots(true)));vi.stubGlobal('fetch',fetcher);draw();await flush();expect(fetcher.mock.calls[0][0]).toContain('season=2025-26');expect(find(draw(),'select')[0].value).toBe('2025-26');});
-it('superseded body cannot overwrite the newly selected season',async()=>{let oldBody!:(v:unknown)=>void;const fetcher=vi.fn().mockResolvedValueOnce({ok:true,json:()=>new Promise(r=>{oldBody=r;})}).mockResolvedValueOnce(response(shots(true)));vi.stubGlobal('fetch',fetcher);draw();await flush();const select=find(draw(),'select')[0];(select.onChange as (e:unknown)=>void)({target:{value:'2024-25'}});draw();await flush();oldBody(shots(false));await flush();const svg=find(draw(),'svg').find(p=>p.role==='img')!;expect(svg['aria-label']).toContain('2024-25');expect(svg['aria-label']).toContain('100.0%');expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);});
+it('actual default selector requests its archived season, not current season',async()=>{const fetcher=vi.fn().mockResolvedValue(response(shots(true)));vi.stubGlobal('fetch',fetcher);draw();await flush();expect(fetcher.mock.calls[0][0]).toContain('season=2025-26');expect(find(draw(),Select)[0].value).toBe('2025-26');});
+it.each(['en','zh'])('shared season selector keeps archive options and a same-value live request (%s)',async locale=>{
+ hooks.locale=locale;const fetcher=vi.fn().mockImplementation(()=>new Promise(()=>{}));vi.stubGlobal('fetch',fetcher);draw();await flush();
+ const tree=draw(),select=find(tree,Select)[0];
+ expect(select['aria-label']).toBe(locale==='en'?'Season':'选择赛季');
+ expect(select.options).toEqual([{value:'2025-26',label:'2025-26'},{value:'2024-25',label:'2024-25'}]);
+ expect(find(tree,'select')).toHaveLength(0);
+ (select.onValueChange as (value:string)=>void)('2025-26');draw();await flush();
+ expect(fetcher).toHaveBeenCalledTimes(1);expect(fetcher.mock.calls[0][1].signal.aborted).toBe(false);
+});
+it('superseded body cannot overwrite the newly selected season',async()=>{let oldBody!:(v:unknown)=>void;const fetcher=vi.fn().mockResolvedValueOnce({ok:true,json:()=>new Promise(r=>{oldBody=r;})}).mockResolvedValueOnce(response(shots(true)));vi.stubGlobal('fetch',fetcher);draw();await flush();const select=find(draw(),Select)[0];(select.onValueChange as (value:string)=>void)('2024-25');draw();await flush();oldBody(shots(false));await flush();const svg=find(draw(),'svg').find(p=>p.role==='img')!;expect(svg['aria-label']).toContain('2024-25');expect(svg['aria-label']).toContain('100.0%');expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);});
 it('nullresponse exposes manualretry and subsequentvaliddatarecovers',async()=>{const fetcher=vi.fn().mockResolvedValueOnce(response(null)).mockResolvedValueOnce(response(shots(true)));vi.stubGlobal('fetch',fetcher);draw();await flush();const retry=find(draw(),'button').find(p=>p.children==='Retry')!;expect(retry).toBeDefined();(retry.onClick as ()=>void)();await flush();expect(find(draw(),'svg').some(p=>p.role==='img')).toBe(true);expect(fetcher).toHaveBeenCalledTimes(2);});
 it('unmount aborts request without applying late data',async()=>{let body!:(v:unknown)=>void;const fetcher=vi.fn().mockResolvedValue({ok:true,json:()=>new Promise(r=>{body=r;})});vi.stubGlobal('fetch',fetcher);draw();await flush();unmount();const before=[...hooks.slots];body(shots(true));await flush();expect(hooks.slots).toEqual(before);expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);});
 
@@ -61,7 +71,7 @@ it('season supersession cancels the old deadline, keeps the new result and ignor
  let oldBody!:(value:unknown)=>void;
  const fetcher=vi.fn().mockResolvedValueOnce({ok:true,json:()=>new Promise(resolve=>{oldBody=resolve;})}).mockResolvedValueOnce(response(shots(true)));
  vi.stubGlobal('fetch',fetcher);draw();await flush();await vi.advanceTimersByTimeAsync(1000);
- (find(draw(),'select')[0].onChange as (event:unknown)=>void)({target:{value:'2024-25'}});draw();await flush();
+ (find(draw(),Select)[0].onValueChange as (value:string)=>void)('2024-25');draw();await flush();
  expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);expect(vi.getTimerCount()).toBe(0);
  await vi.advanceTimersByTimeAsync(PLAYER_SHOT_REQUEST_TIMEOUT_MS);oldBody(shots(false));await flush();
  const tree=draw(),svg=find(tree,'svg').find(p=>p.role==='img')!;
