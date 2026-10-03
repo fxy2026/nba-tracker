@@ -50,6 +50,7 @@ export default function MobileNav() {
               <Link
                 key={href}
                 href={href}
+                prefetch={false}
                 aria-current={active ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 min-w-0 min-h-[48px] justify-center px-0.5 py-1 rounded-lg transition-colors cursor-pointer relative ${
                   active ? "text-accent" : "text-text-secondary"

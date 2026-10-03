@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import PlayerHeadshot from "./PlayerHeadshot";
 import { Star, ArrowUpRight } from "lucide-react";
@@ -22,14 +22,21 @@ interface StarPlayer {
 export default function TodayStars() {
   const { t } = useLocale();
   const [stars, setStars] = useState<StarPlayer[]>([]);
+  const sentinel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    (async () => {
+    let started = false;
+    let observer: IntersectionObserver | null = null;
+    const loadStars = async () => {
+      if (started || controller.signal.aborted) return;
+      started = true;
+      observer?.disconnect();
       try {
         const res = await fetch(`/api/games?date=${localToday()}&tz=${encodeURIComponent(localTz())}`, { signal: controller.signal });
         if (!res.ok) return;
         const data = await res.json();
+        if (controller.signal.aborted) return;
         const games = data.data || [];
         const finalGames = games.filter((g: { gameStatus: number }) => g.gameStatus === 3);
         if (finalGames.length === 0) return;
@@ -42,7 +49,8 @@ export default function TodayStars() {
                 { signal: controller.signal }
               );
               if (!r.ok) return null;
-              return (await r.json()).game;
+              const box = await r.json();
+              return controller.signal.aborted ? null : box.game;
             } catch { return null; }
           })
         );
@@ -87,11 +95,27 @@ export default function TodayStars() {
       } catch {
         // Aborted or network error — silent
       }
-    })();
-    return () => controller.abort();
+    };
+
+    // Keep browser-local today/timezone resolution inside loadStars. The parent
+    // can be viewing an ET-scoped day and is not an equivalent data source.
+    if (typeof IntersectionObserver === "undefined") {
+      void loadStars();
+    } else {
+      observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) void loadStars();
+      }, { rootMargin: "300px 0px" });
+      if (sentinel.current) observer.observe(sentinel.current);
+    }
+    return () => {
+      controller.abort();
+      observer?.disconnect();
+    };
   }, []);
 
-  if (stars.length === 0) return null;
+  // A stable, visually empty target lets the below-the-fold widget wait until
+  // it is near the viewport without reserving a blank card-sized section.
+  if (stars.length === 0) return <div ref={sentinel} aria-hidden="true" />;
 
   const [hero, ...rest] = stars;
   const heroTeamColor = TEAM_META[hero.teamTricode]?.primaryColor || "#3B82F6";

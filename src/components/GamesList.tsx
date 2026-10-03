@@ -47,16 +47,23 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     const { signal } = request;
     setError(false);
     setResults((previous) => ({ ...previous, navigation: null }));
+    // Optional replay metadata shares the refresh/date cancellation gate, but
+    // never holds up score rendering or changes the scoreboard's error state.
+    void (async () => {
+      try {
+        const replayRes = await fetch("/api/replay?action=ids", { signal });
+        if (!replayRes.ok || !request.isCurrent()) return;
+        const replayJson = await replayRes.json();
+        if (request.isCurrent() && replayJson) setReplayIds(replayJson.ids || []);
+      } catch {
+        // Keep the last known replay IDs when this optional request fails.
+      }
+    })();
+
     try {
-      const [gamesRes, replayRes] = await Promise.all([
-        fetch(`/api/games?date=${date}&tz=${encodeURIComponent(timeZone ?? localTz())}&navigation=1`, { signal }),
-        fetch("/api/replay?action=ids", { signal }).catch(() => null),
-      ]);
+      const gamesRes = await fetch(`/api/games?date=${date}&tz=${encodeURIComponent(timeZone ?? localTz())}&navigation=1`, { signal });
       if (!gamesRes.ok) throw new Error("Failed to fetch games");
-      const [gamesJson, replayJson] = await Promise.all([
-        gamesRes.json(),
-        replayRes?.ok ? replayRes.json().catch(() => null) : null,
-      ]);
+      const gamesJson = await gamesRes.json();
       if (!request.isCurrent()) return;
       const rawGames: ScheduleGame[] = gamesJson.data || [];
       rawGames.sort((a, b) => {
@@ -64,8 +71,6 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
         return order(a.gameStatus) - order(b.gameStatus);
       });
       setResults({ games: rawGames, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, date });
-
-      if (replayJson) setReplayIds(replayJson.ids || []);
     } catch {
       if (request.isCurrent()) setError(true);
     } finally {
