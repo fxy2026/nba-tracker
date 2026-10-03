@@ -1,4 +1,5 @@
 import { afterEach, expect, it } from 'vitest';
+import verifiedArchive from '../data/recovered-player-boxes.json';
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -65,7 +66,7 @@ it('merges missing games on an existing date, retains live identities and never 
 it('empty directory generates valid empty index and clean checkout regenerates all three aggregates',()=>{
  const root=temp();cpSync('src/data',root,{recursive:true});for(const name of ['provider-player-boxes.json','recovered-player-boxes.json','observed-final-games.json'])rmSync(join(root,name),{force:true});
  generateStoredArchives(root);expect(JSON.parse(readFileSync(join(root,'observed-final-games.json'),'utf8'))).toEqual({});
- expect(Object.keys(JSON.parse(readFileSync(join(root,'recovered-player-boxes.json'),'utf8')))).toHaveLength(57);
+ expect(Object.keys(JSON.parse(readFileSync(join(root,'recovered-player-boxes.json'),'utf8'))).sort()).toEqual(Object.keys(verifiedArchive).sort());
 });
 it('a corrupt observed record does not replace any good generated artifact',()=>{
  const root=temp();cpSync('src/data',root,{recursive:true});generateStoredArchives(root);const before=readFileSync(join(root,'recovered-player-boxes.json'),'utf8');

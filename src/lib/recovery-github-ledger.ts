@@ -1,4 +1,4 @@
-import { RECOVERY_REVIEWED_RUNS, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
+import { RECOVERY_REVIEWED_RUNS, RECOVERY_OCT3_PLAYOFF_PILOT, RECOVERY_INGESTION_JOB_NAME, RECOVERY_WORKFLOW_PATH, type RecoveryRunBudgetInput, type RecoveryRunRecord, type RecoveryIngestionSkipProof } from "./recovery-run-budget";
 
 export const RECOVERY_REPOSITORY = "fxy2026/nba-tracker";
 type JsonReader = (path: string) => Promise<unknown>;
@@ -16,6 +16,31 @@ export async function collectRecoveryLedgerRows(get:JsonReader,path:string,key:'
     if(raw[key].length===0)throw new Error('truncated-ledger');
   }
   throw new Error('ledger-page-limit');
+}
+
+// This one immutable failed run is reviewed separately from successful pilots.
+// Complete job metadata must show the exact failure after its bounded fetch,
+// and all other credential-bearing paths skipped. Unknown failures retain230.
+function reviewedPostFetchFailure(jobs:Record<string,unknown>[],job:Record<string,unknown>):boolean {
+  const fixed=RECOVERY_OCT3_PLAYOFF_PILOT;
+  const step=(row:Record<string,unknown>,name:string,conclusion:string)=>Array.isArray(row.steps)
+    && row.steps.filter(s=>object(s)&&s.name===name).length===1
+    && row.steps.some(s=>object(s)&&s.name===name&&s.status==='completed'&&s.conclusion===conclusion);
+  if(jobs.length!==2||job.conclusion!=='failure'||!Array.isArray(job.steps)
+    ||job.steps.some(s=>!object(s)||typeof s.name!=='string'||s.status!=='completed')
+    ||new Set(job.steps.map(s=>(s as Record<string,unknown>).name)).size!==job.steps.length
+    ||job.steps.filter(s=>object(s)&&s.conclusion==='failure').length!==1)return false;
+  const quota=jobs.find(row=>row.id===fixed.quotaJobId);
+  if(!quota||quota.run_id!==fixed.runId||quota.run_attempt!==1||quota.head_sha!==fixed.sha||quota.head_branch!=='master'
+    ||quota.name!=='Check UTC-day quota'||quota.status!=='completed'||quota.conclusion!=='success'
+    ||!step(quota,'Verify complete durable run ledger','success'))return false;
+  return [
+    ['Verify ingestion code before credential access','success'],['Compile bounded ingestor','success'],
+    ['Verify known provider snapshots','skipped'],['Diagnose one playoff metadata response','skipped'],
+    ['Restore one validated Finals player table','skipped'],['Fetch and normalize provider data','success'],
+    ['Verify normalized snapshot changes','failure'],['Validate temporary recovery bundle without credentials','success'],
+    ['Retain validated data if publication is interrupted','success'],['Publish one data-only commit without force','skipped'],
+  ].every(([name,conclusion])=>step(job,name,conclusion));
 }
 
 // Read-only adapter. The supplied reader is restricted to the GitHub API by
@@ -36,7 +61,7 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
       const relevant = [run.createdAt,run.startedAt,run.updatedAt].some(t=>t!==null&&t.slice(0,10)===now.slice(0,10));
       const mayVerify=raw.display_title==='Verify NBA provider'&&raw.head_branch==='master'&&raw.event==='workflow_dispatch'&&run.runAttempt===1&&run.conclusion==='success';
       const reviewed=RECOVERY_REVIEWED_RUNS.find(item=>item.runId===run.id);
-      const mayPilot=!!reviewed&&raw.head_sha===reviewed.sha&&raw.head_branch==='master'&&raw.event==='push'&&run.runAttempt===1&&run.conclusion==='success';
+      const mayPilot=!!reviewed&&raw.head_sha===reviewed.sha&&raw.head_branch==='master'&&raw.event==='push'&&run.runAttempt===1&&run.conclusion===(reviewed.runId===RECOVERY_OCT3_PLAYOFF_PILOT.runId?'failure':'success');
       if(run.id!==currentRun.id&&run.status==='completed'&&(relevant||mayVerify||mayPilot)&&run.runAttempt<=10){
         const attempts:RecoveryIngestionSkipProof['attempts']=[];
         for(let attempt=1;attempt<=run.runAttempt;attempt++){
@@ -45,7 +70,12 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
           const ingestion=jobs.rows.filter(j=>j.name===RECOVERY_INGESTION_JOB_NAME);
           if(ingestion.length!==1)break;
           const job=ingestion[0];
-          if(mayPilot&&reviewed&&job.id===reviewed.jobId&&job.run_attempt===attempt&&job.head_sha===reviewed.sha&&job.head_branch==='master'&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name===reviewed.stepName&&step.status==='completed'&&step.conclusion==='success'))run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:reviewed.jobId,headSha:reviewed.sha,headBranch:'master',event:'push',maxRequests:reviewed.maxRequests,allJobsFetched:true};
+          if(mayPilot&&reviewed&&job.id===reviewed.jobId&&job.run_attempt===attempt&&job.head_sha===reviewed.sha&&job.head_branch==='master'&&job.status==='completed'){
+            const failed=reviewed.runId===RECOVERY_OCT3_PLAYOFF_PILOT.runId;
+            const matched=failed?reviewedPostFetchFailure(jobs.rows,job):job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name===reviewed.stepName&&step.status==='completed'&&step.conclusion==='success');
+            if(matched)run.reviewedPilotProof={source:'complete-github-job-metadata',runId:run.id,jobId:reviewed.jobId,headSha:reviewed.sha,headBranch:'master',event:'push',maxRequests:reviewed.maxRequests,allJobsFetched:true,
+              ...(failed?{postFetchValidationFailure:{quotaJobId:RECOVERY_OCT3_PLAYOFF_PILOT.quotaJobId,quotaConclusion:'success',ingestionConclusion:'failure',fetchConclusion:'success',validationConclusion:'failure',otherProviderStepsSkipped:true}}:{})};
+          }
           if(mayVerify&&job.status==='completed'&&job.conclusion==='success'&&Array.isArray(job.steps)&&job.steps.some(step=>object(step)&&step.name==='Verify known provider snapshots'&&step.status==='completed'&&step.conclusion==='success'))providerVerified=true;
           if(job.status!=='completed'||job.conclusion!=='skipped'||!Array.isArray(job.steps)||job.steps.length!==0)break;
           attempts.push({runAttempt:attempt,allJobsFetched:true,jobId:job.id as number,jobName:RECOVERY_INGESTION_JOB_NAME,steps:[],status:'completed',conclusion:'skipped'});

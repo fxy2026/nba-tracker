@@ -1,7 +1,9 @@
+import { PlayerDirectorySource } from "@/components/PlayerDirectoryContext";
+import { milestoneCandidates, findChasing, GP_PER_SEASON, type Threshold, type ChasingMilestone } from "@/lib/milestone-projections";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trophy, Target, Award, Crown, TrendingUp, Activity } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
@@ -10,29 +12,8 @@ import { getLocale } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Career Pace Tracker",
-  description: "Career totals projected from recent per-game averages — milestone projections, not official career totals.",
+  description: "Hypothetical milestone projections from snapshot averages, assuming 70 games per season across the index year span; not actual career totals.",
 };
-
-interface MilestoneCandidate {
-  personId: number;
-  firstName: string;
-  lastName: string;
-  teamAbbr: string;
-  estCareerPoints: number;
-  estCareerRebs: number;
-  estCareerAsts: number;
-  ppg: number;
-  rpg: number;
-  apg: number;
-  seasons: number;
-}
-
-const GP_PER_SEASON = 70; // estimate
-
-interface Threshold {
-  value: number;
-  label: string;
-}
 
 const SCORING_TIERS: Threshold[] = [
   { value: 30000, label: "30,000 pts" },
@@ -56,37 +37,6 @@ const ASSIST_TIERS: Threshold[] = [
   { value: 6000, label: "6,000 ast" },
 ];
 
-interface ChasingMilestone {
-  player: MilestoneCandidate;
-  current: number;
-  threshold: Threshold;
-  needed: number;
-  pace: string; // estimated games until reached
-}
-
-function findChasing(players: MilestoneCandidate[], tiers: Threshold[], current: (p: MilestoneCandidate) => number, perGame: (p: MilestoneCandidate) => number): ChasingMilestone[] {
-  const out: ChasingMilestone[] = [];
-  for (const p of players) {
-    const cur = current(p);
-    // Find the next tier the player is below but within reasonable reach (within next 2 seasons at current pace)
-    for (const tier of tiers) {
-      if (cur < tier.value) {
-        const needed = tier.value - cur;
-        const pg = perGame(p);
-        if (pg < 0.5) continue;
-        const gamesNeeded = needed / pg;
-        if (gamesNeeded > GP_PER_SEASON * 2.5) continue;
-        const seasonsLeft = (gamesNeeded / GP_PER_SEASON).toFixed(1);
-        const pace = `~${Math.round(gamesNeeded)} gp · ${seasonsLeft} seasons`;
-        out.push({ player: p, current: cur, threshold: tier, needed, pace });
-        break; // only show closest tier per player
-      }
-    }
-  }
-  out.sort((a, b) => a.needed - b.needed);
-  return out.slice(0, 12);
-}
-
 function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color: string; eyebrow: string; isZh: boolean }) {
   const pct = m.threshold.value > 0 ? Math.min((m.current / m.threshold.value) * 100, 100) : 0;
   return (
@@ -105,7 +55,7 @@ function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color
           {m.player.firstName} {m.player.lastName}
         </p>
         <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-          {m.player.teamAbbr} · <span className="tabular-nums">{m.player.seasons}</span> seasons
+          {m.player.teamAbbr} · <span className="tabular-nums">{m.player.seasons}</span> {isZh ? "年跨度" : "year span"}
         </p>
 
         <div className="mt-2 flex items-center gap-2">
@@ -121,7 +71,7 @@ function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color
         <p className="text-lg font-light font-mono tabular-nums" style={{ color }}>
           {m.needed.toLocaleString()}
         </p>
-        <p className="text-[9px] font-mono uppercase tracking-[0.1em] text-text-secondary/60 mt-0.5">{m.pace}</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.1em] text-text-secondary/60 mt-0.5">{isZh ? `约 ${Math.round(m.gamesNeeded)} 场 · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} 个假设赛季` : `~${Math.round(m.gamesNeeded)} games · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} assumed seasons`}</p>
       </div>
     </Link>
   );
@@ -130,12 +80,14 @@ function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color
 export default async function MilestonesPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot().catch(() => null);
+  const players = snapshot?.players ?? [];
 
   if (players.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         <PageHeader eyebrow="Players" icon={Trophy} title={isZh ? "生涯轨迹追踪" : "Career Pace Tracker"} />
+        <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
         <EmptyState
           icon={Trophy}
           title={isZh ? "暂无球员数据" : "No player data"}
@@ -145,25 +97,8 @@ export default async function MilestonesPage() {
     );
   }
 
-  const candidates: MilestoneCandidate[] = players
-    .filter((p) => p.fromYear && p.toYear && p.pts > 0)
-    .map((p) => {
-      const seasons = Math.max(1, parseInt(p.toYear) - parseInt(p.fromYear) + 1);
-      return {
-        personId: p.personId,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        teamAbbr: p.teamAbbr,
-        seasons,
-        ppg: p.pts,
-        rpg: p.reb,
-        apg: p.ast,
-        estCareerPoints: Math.round(p.pts * GP_PER_SEASON * seasons),
-        estCareerRebs: Math.round(p.reb * GP_PER_SEASON * seasons),
-        estCareerAsts: Math.round(p.ast * GP_PER_SEASON * seasons),
-      };
-    });
-
+  const candidates = milestoneCandidates(players);
+  const hasKnownMetric = candidates.some(p => p.estCareerPoints !== null || p.estCareerRebs !== null || p.estCareerAsts !== null);
   const scoringChase = findChasing(candidates, SCORING_TIERS, (p) => p.estCareerPoints, (p) => p.ppg);
   const reboundChase = findChasing(candidates, REBOUND_TIERS, (p) => p.estCareerRebs, (p) => p.rpg);
   const assistChase = findChasing(candidates, ASSIST_TIERS, (p) => p.estCareerAsts, (p) => p.apg);
@@ -174,8 +109,23 @@ export default async function MilestonesPage() {
         eyebrow="Players"
         icon={Trophy}
         title={isZh ? "生涯轨迹追踪" : "Career Pace Tracker"}
-        subtitle={isZh ? "基于近期场均推算的生涯累计与里程碑投影 · 实际数字会因伤病、场均波动而不同" : "Career totals projected from recent per-game averages · actual numbers shift with injuries and form"}
+        subtitle={isZh ? "基于该快照场均的假设投影 · 不是实际生涯累计" : "Hypothetical projections from this snapshot’s averages · not actual career totals"}
       />
+
+      <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <p className="glass-tile p-4 mb-6 text-xs text-text-secondary leading-relaxed">
+        {isZh
+          ? "模型假设：该快照场均 × 每赛季 70 场 × 索引首末年份跨度。年份跨度不是实际参赛季数；数字不是实际生涯累计或官方纪录。各项仅使用已知场均，展示在相同速度下约 2.5 个假设赛季内可达的最近未达档位。"
+          : "Model assumption: this snapshot’s per-game average × 70 games per season × the index’s first-to-last year span. The span is not seasons actually played; these are not actual career totals or official records. Each metric uses its own known average and shows the nearest unmet tier within about 2.5 assumed seasons at the same pace."}
+      </p>
+      {scoringChase.length + reboundChase.length + assistChase.length === 0 && (
+        <EmptyState icon={Trophy}
+          title={hasKnownMetric ? (isZh ? "暂无近程投影目标" : "No nearby projected targets") : (isZh ? "暂无可用投影数据" : "No usable projection data")}
+          description={hasKnownMetric
+            ? (isZh ? "已知场均和有效年份跨度下，没有约 2.5 个假设赛季内可达的未达档位；已知零值不用于计算达标时间。" : "The known averages and valid year spans yield no unmet tier within about 2.5 assumed seasons. Known zero averages do not produce an arrival estimate.")
+            : (isZh ? "需要有效的首末年份和至少一项已知场均。缺失数据不作为零值，也不生成投影。" : "A valid first-to-last year span and at least one known average are required. Missing data is not treated as zero or projected.")}
+        />
+      )}
 
       {scoringChase.length > 0 && (
         <section className="mb-10">
@@ -248,15 +198,6 @@ export default async function MilestonesPage() {
           </div>
         </section>
       )}
-
-      <div className="glass-tile p-4 mt-2">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
-        <p className="text-xs text-text-secondary leading-relaxed">
-          {isZh
-            ? "所有数字均为投影，非官方生涯统计。计算方式：NBA 球员索引中的上赛季场均（得分／篮板／助攻）× ~70 场／赛季 × 出场赛季数。由于使用的是上赛季场均而非各赛季实际数据，结果会因伤病、半赛季、轮休及场均波动而与真实生涯总和不同。展示按当前速度 ~2.5 赛季内能达成下一档的球员。这是观察清单，不是官方纪录册。"
-            : "All numbers are projections, not official career totals. Method: last-season per-game averages (pts / reb / ast) from the NBA player index × ~70 games per season × seasons played. Because we use last-season averages rather than each season's actuals, results diverge from real career totals due to injuries, partial seasons, rest, and form. Players within ~2.5 seasons (at current pace) of their next tier are shown. This is a watchlist, not an official record book."}
-        </p>
-      </div>
 
       <RelatedPages
         eyebrow={isZh ? "继续探索" : "Keep exploring"}

@@ -1,9 +1,6 @@
 name: Recover NBA player data
 run-name: ${{ github.event_name == 'push' && 'Backfill October 3 playoff pilot' || github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' && 'Verify NBA provider' || 'Backfill NBA player data' }}
 on:
-  push:
-    branches: [master]
-    paths: ['.github/recovery-kickoff/2026-10-03-playoff-pilot-20-60.json']
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:

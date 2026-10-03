@@ -14,6 +14,17 @@ export const RECOVERY_FINALS_RESTORE = {runId:37012916918,jobId:110856904401,sha
 export const RECOVERY_PLAYOFF_BATCH = {runId:37014621758,jobId:110862528475,sha:"e25c8e3b9d2587a033a8349b221226070918b15d",maxRequests:60} as const;
 export const RECOVERY_PLAYOFF_BATCH_40 = {runId:37018021993,jobId:110873833607,sha:"26d0ee3ac5d4f6249ce7e74558b21a5ef2b7b34a",maxRequests:120} as const;
 export const RECOVERY_MEMBERSHIP_DIAGNOSTIC = {runId:37062310459,jobId:111021780119,sha:"7b61b4bfd70dbeae52e73075b47d95990d8eb2f1",maxRequests:3} as const;
+// Exact reviewed failure: provider fetch completed under an immutable60 cap;
+// subsequent local validation failed. Keep the full cap, never observed usage.
+export const RECOVERY_OCT3_PLAYOFF_PILOT = {runId:37085128575,jobId:111093794513,quotaJobId:111093693330,sha:"7b8ac109592c3e1430663c49bb9e237338dc3551",maxRequests:60} as const;
+export interface RecoveryPostFetchFailureProof {
+  quotaJobId: number;
+  quotaConclusion: "success";
+  ingestionConclusion: "failure";
+  fetchConclusion: "success";
+  validationConclusion: "failure";
+  otherProviderStepsSkipped: true;
+}
 export const RECOVERY_REVIEWED_RUNS = [
  {...RECOVERY_FIRST_PILOT,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_METADATA_DIAGNOSTIC,stepName:"Diagnose one playoff metadata response"},
@@ -21,6 +32,7 @@ export const RECOVERY_REVIEWED_RUNS = [
  {...RECOVERY_PLAYOFF_BATCH,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_PLAYOFF_BATCH_40,stepName:"Fetch and normalize provider data"},
  {...RECOVERY_MEMBERSHIP_DIAGNOSTIC,stepName:"Diagnose fixed NBA game membership"},
+ {...RECOVERY_OCT3_PLAYOFF_PILOT,stepName:"Fetch and normalize provider data"},
 ] as const;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -51,7 +63,7 @@ export interface RecoveryRunRecord {
   createdAt: string;
   startedAt: string | null;
   updatedAt: string;
-  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3 | 1 | 60 | 120; allJobsFetched: true };
+  reviewedPilotProof?: { source: "complete-github-job-metadata"; runId: number; jobId: number; headSha: string; headBranch: "master"; event: "push"; maxRequests: 25 | 3 | 1 | 60 | 120; allJobsFetched: true; postFetchValidationFailure?: RecoveryPostFetchFailureProof };
   ingestionSkippedProof?: RecoveryIngestionSkipProof | null;
 }
 
@@ -153,9 +165,16 @@ export function calculateRecoveryRunBudget(input: unknown): RecoveryRunBudgetRes
       if (proof === "invalid") return deny("Skipped-ingestion exclusion proof is incomplete or mismatched");
       let reservation = RECOVERY_DAILY_LIMIT;
       if (value.reviewedPilotProof !== undefined) {
+        if(proof==="valid")return deny("Executed-bound and skipped-job proofs conflict");
         const bounded=value.reviewedPilotProof;
         const reviewed=RECOVERY_REVIEWED_RUNS.find(item=>item.runId===value.id);
-        if(!isRecord(bounded)||bounded.source!=="complete-github-job-metadata"||repository!=="fxy2026/nba-tracker"||!reviewed||value.runAttempt!==1||value.status!=="completed"||value.conclusion!=="success"||bounded.runId!==value.id||bounded.jobId!==reviewed.jobId||bounded.headSha!==reviewed.sha||bounded.headBranch!=="master"||bounded.event!=="push"||bounded.maxRequests!==reviewed.maxRequests||bounded.allJobsFetched!==true)return deny("Invalid immutable pilot bound proof");
+        if(!isRecord(bounded)||bounded.source!=="complete-github-job-metadata"||repository!=="fxy2026/nba-tracker"||!reviewed||value.runAttempt!==1||value.status!=="completed"||value.conclusion!==(reviewed.runId===RECOVERY_OCT3_PLAYOFF_PILOT.runId?"failure":"success")||bounded.runId!==value.id||bounded.jobId!==reviewed.jobId||bounded.headSha!==reviewed.sha||bounded.headBranch!=="master"||bounded.event!=="push"||bounded.maxRequests!==reviewed.maxRequests||bounded.allJobsFetched!==true)return deny("Invalid immutable pilot bound proof");
+        const failed=bounded.postFetchValidationFailure;
+        if(reviewed.runId===RECOVERY_OCT3_PLAYOFF_PILOT.runId){
+          if(!isRecord(failed)||Object.keys(failed).sort().join(',')!=="fetchConclusion,ingestionConclusion,otherProviderStepsSkipped,quotaConclusion,quotaJobId,validationConclusion"
+            ||failed.quotaJobId!==RECOVERY_OCT3_PLAYOFF_PILOT.quotaJobId||failed.quotaConclusion!=="success"||failed.ingestionConclusion!=="failure"
+            ||failed.fetchConclusion!=="success"||failed.validationConclusion!=="failure"||failed.otherProviderStepsSkipped!==true)return deny("Invalid reviewed post-fetch failure proof");
+        }else if(failed!==undefined)return deny("Unexpected post-fetch failure proof");
         reservation=reviewed.maxRequests;
       }
       if (value.id === currentRun.id) {

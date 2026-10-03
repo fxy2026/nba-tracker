@@ -47,3 +47,11 @@ it('duplicate provider UUID across generic and verified archives fails before ge
 it('verified filename identity mismatch is rejected',()=>{const root=mkdtempSync(join(tmpdir(),'nba-verified-name-'));try{mkdirSync(join(root,'verified'));writeFileSync(join(root,'verified/0042500999.json'),JSON.stringify(archive['0042500201']));expect(()=>readVerifiedSnapshotDirectory(join(root,'verified'),schedule)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
 it('unconfirmed loss of generic files cannot blank the last-good aggregate',()=>{const root=fixtureRoot();try{generateStoredArchives(root);writeFileSync(join(root,'provider-player-boxes.json'),JSON.stringify({'0042500991':storageSample}));expect(()=>generateStoredArchives(root)).toThrow();}finally{rmSync(root,{recursive:true,force:true});}});
 it('validator has no import of API or generated archives',()=>{const source=readFileSync('src/lib/recovered-player-box.ts','utf8');expect(source).not.toMatch(/import.*(?:api|\.json)/);});
+
+it('validated promotion can remove an old generic ID while other generic rows remain',()=>{
+ const root=fixtureRoot();try{
+  const row=structuredClone(storageSample);row.game.nbaGameId='0042500991';row.game.providerMatchId='11111111-1111-4111-8111-111111111111';writeFileSync(join(root,`provider-player-boxes/${row.game.nbaGameId}.json`),JSON.stringify(row));generateStoredArchives(root);
+  const current=JSON.parse(readFileSync(join(root,'provider-player-boxes.json'),'utf8'));writeFileSync(join(root,'provider-player-boxes.json'),JSON.stringify({...current,[storageSample.game.nbaGameId]:storageSample}));
+  generateStoredArchives(root);const output=JSON.parse(readFileSync(join(root,'provider-player-boxes.json'),'utf8'));expect(output).toEqual(current);expect(output).not.toHaveProperty(storageSample.game.nbaGameId);expect(output).toHaveProperty(row.game.nbaGameId);
+ }finally{rmSync(root,{recursive:true,force:true});}
+});

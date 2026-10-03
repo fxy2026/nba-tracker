@@ -51,7 +51,7 @@ it.each(['count','names','duplicate','report','hash','source','provider-id','pos
 function root(){const dir=mkdtempSync(join(tmpdir(),'nba-supplement-'));cpSync('src/data/supplemented-player-box-originals',join(dir,'supplemented-player-box-originals'),{recursive:true});cpSync('src/data/supplemented-player-box-history.json',join(dir,'supplemented-player-box-history.json'));return dir;}
 it('binds source supplements separately from identity corrections and preserves active uniqueness',()=>{
  expect(assertSupplementedHistory('src/data',archive as Record<string,RecoveredPlayerBox>)).toEqual(new Set(['0042500164']));
- expect(Object.keys(readStoredArchives().verified)).toHaveLength(57);
+ expect(Object.keys(readStoredArchives().verified).sort()).toEqual(Object.keys(archive).sort());
 });
 it.each(['original-bytes','original-hash','new-hash','row','metadata','missing','source-kind'])('history refuses modified originals or additions %s',kind=>{
  const dir=root();try{

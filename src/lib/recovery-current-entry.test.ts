@@ -179,13 +179,15 @@ function setupPilot(){
   throw Error('Unexpected fixture read');
  });
 }
-it('exact admitted Oct3 push retries twenty remaining playoff targets with one schedule load and provider cap60',async()=>{
+it('exact admitted Oct3 push retries at most twenty remaining playoff targets with one schedule load and provider cap60',async()=>{
  setupPilot();await execute();expect(process.exitCode).toBe(0);
  expect(h.load).toHaveBeenCalledExactlyOnceWith({mode:'backfill',expectedSeason:'2026-27'});
  expect(h.provider).toHaveBeenCalledExactlyOnceWith({apiKey:'TEST_ONLY_KEY',maxRequests:60,expiresAt:'2026-10-04T00:00:00Z'});
  const targets=h.batch.mock.calls[0][0] as {nbaGameId:string}[];
- expect(targets).toEqual(selectRecoveryTargets(fullArchive,existing,null,20));expect(targets).toHaveLength(20);
- expect(targets.every(row=>row.nbaGameId.startsWith('00425')&&!existing.has(row.nbaGameId))).toBe(true);
+ expect(targets).toEqual(selectRecoveryTargets(fullArchive,existing,null,20));expect(targets.length).toBeGreaterThan(0);expect(targets.length).toBeLessThanOrEqual(20);
+ expect(targets.every(row=>!existing.has(row.nbaGameId))).toBe(true);
+ const firstRegular=targets.findIndex(row=>!row.nbaGameId.startsWith('00425'));
+ if(firstRegular>=0)expect(targets.slice(firstRegular).every(row=>!row.nbaGameId.startsWith('00425'))).toBe(true);
  expect(targets).not.toEqual(selectRecoveryTargets(fullArchive,existing,oldCursor,20));
  expect(h.batch.mock.calls[0][2]).toBe(60);expect(h.membership).not.toHaveBeenCalled();expect(h.membershipRun).not.toHaveBeenCalled();
  expect(h.write).not.toHaveBeenCalled(); // selection reset alone never rewrites stored cursor

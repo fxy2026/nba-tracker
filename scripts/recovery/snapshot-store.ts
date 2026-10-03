@@ -36,9 +36,11 @@ export function writeNewSnapshots(directory: string, snapshots: ProviderBasicSna
   for (const snapshot of snapshots) writeFileSync(join(directory,`${snapshot.game.nbaGameId}.json`),JSON.stringify(snapshot,null,2)+'\n',{flag:'wx'});
 }
 function writeGeneratedAggregate(snapshots:Record<string,unknown>,output:string,movedIds:ReadonlySet<string>=new Set()) {
-  if(!Object.keys(snapshots).length&&existsSync(output)){
+  if(existsSync(output)){
     const previous=Object.keys(JSON.parse(readFileSync(output,'utf8')));
-    if(previous.some(id=>!movedIds.has(id)))throw new Error('Empty archive cannot replace existing snapshots');
+    // Protect every previously generated identity, even when other new files
+    // remain. A validated move to a stronger/quarantined store is explicit.
+    if(previous.some(id=>!Object.hasOwn(snapshots,id)&&!movedIds.has(id)))throw new Error('Archive entries cannot be removed without a validated migration');
   }
   const text=JSON.stringify(snapshots,null,2)+'\n';
   if(existsSync(output)&&readFileSync(output,'utf8')===text)return;

@@ -1,0 +1,204 @@
+{
+  "run": {
+    "id": 37085128575,
+    "workflow_id": 373064390,
+    "head_sha": "7b8ac109592c3e1430663c49bb9e237338dc3551",
+    "head_branch": "master",
+    "event": "push",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-10-03T01:11:22Z",
+    "run_started_at": "2026-10-03T01:11:22Z",
+    "updated_at": "2026-10-03T01:13:38Z",
+    "path": ".github/workflows/player-data-ingestion.yml",
+    "repository": {
+      "full_name": "fxy2026/nba-tracker"
+    }
+  },
+  "jobs": {
+    "total_count": 2,
+    "jobs": [
+      {
+        "id": 111093693330,
+        "run_id": 37085128575,
+        "run_attempt": 1,
+        "head_sha": "7b8ac109592c3e1430663c49bb9e237338dc3551",
+        "head_branch": "master",
+        "name": "Check UTC-day quota",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run npm ci --ignore-scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Compile read-only quota gate",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Verify complete durable run ledger",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          }
+        ]
+      },
+      {
+        "id": 111093794513,
+        "run_id": 37085128575,
+        "run_attempt": 1,
+        "head_sha": "7b8ac109592c3e1430663c49bb9e237338dc3551",
+        "head_branch": "master",
+        "name": "Ingest player data",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run npm ci --ignore-scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Verify ingestion code before credential access",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Compile bounded ingestor",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Verify known provider snapshots",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Diagnose one playoff metadata response",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
+          },
+          {
+            "name": "Restore one validated Finals player table",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Fetch and normalize provider data",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Verify normalized snapshot changes",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 11
+          },
+          {
+            "name": "Validate temporary recovery bundle without credentials",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Retain validated data if publication is interrupted",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "Publish one data-only commit without force",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14
+          },
+          {
+            "name": "Post Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 27
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 28
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 29
+          }
+        ]
+      }
+    ]
+  }
+}

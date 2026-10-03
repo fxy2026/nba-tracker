@@ -45,3 +45,11 @@ it.each(['existing','protected','invalid','duplicate','owner'])('entire batch is
 });
 
 it('empty tracked marker preserves a clean zero-snapshot directory',()=>{const{directory,output}=setup();writeFileSync(join(directory,'.gitkeep'),'');expect(readSnapshotDirectory(directory)).toEqual({});generateSnapshotAggregate(directory,output);expect(JSON.parse(readFileSync(output,'utf8'))).toEqual({});writeFileSync(join(directory,'.gitkeep'),'unexpected');expect(()=>readSnapshotDirectory(directory)).toThrow();});
+
+it('partial loss cannot silently replace a nonempty last-good aggregate',()=>{
+ const{directory,output}=setup();save(directory,sample());save(directory,next());generateSnapshotAggregate(directory,output);const good=readFileSync(output,'utf8');
+ rmSync(join(directory,`${next().game.nbaGameId}.json`));expect(()=>generateSnapshotAggregate(directory,output)).toThrow('validated migration');expect(readFileSync(output,'utf8')).toBe(good);
+});
+it('adding a valid snapshot preserves old records and remains generatable',()=>{
+ const{directory,output}=setup();save(directory,sample());generateSnapshotAggregate(directory,output);save(directory,next());generateSnapshotAggregate(directory,output);expect(JSON.parse(readFileSync(output,'utf8'))).toEqual({[sample().game.nbaGameId]:sample(),[next().game.nbaGameId]:next()});
+});
