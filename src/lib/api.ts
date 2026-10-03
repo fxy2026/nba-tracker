@@ -334,6 +334,12 @@ const ARCHIVE_FEED = {
   })),
 };
 
+/** Server-side recorded season only: independent of live cache and refreshes.
+ * Uses the cleaned baked archive; this is not a source-freshness assertion. */
+export function getRecorded2025SeasonSchedule(): ScheduleDate[] {
+  return scheduleForSeason(ARCHIVE_FEED.dates, "2025-26");
+}
+
 const OBSERVED_FINAL_DATES = observedFinalsToSchedule(observedFinalRecords);
 
 function mergeWithArchive(live: ScheduleDate[], coveredSeason?: string): ScheduleDate[] {
