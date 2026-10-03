@@ -8,7 +8,7 @@ import { comparisonFeet, comparisonToSvg, comparisonViewBox, compareCourtShots, 
 import { courtToSvg, courtLines } from "@/components/shot-chart/court-geometry";
 import { getVerifiedShotChart } from "./verified-shot-chart-archive";
 const games=schedule.dates.flatMap(date=>date.games);
-const charts=["0022500961","0042500405","0042500173"].map(id=>getVerifiedShotChart(games.find(game=>game.gameId===id)!)!);
+const charts=["0022500961","0042500405","0042500173","0042500401","0042500402","0042500403","0042500404"].map(id=>getVerifiedShotChart(games.find(game=>game.gameId===id)!)!);
 
 describe("full-court standardized rigid transform",()=>{
   it("maps baskets, baselines, sidelines and midcourt exactly in regulation feet",()=>{

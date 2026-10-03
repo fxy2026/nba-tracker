@@ -1,0 +1,908 @@
+{
+  "reviewDate": "2026-10-03",
+  "independentReview": "PASS_SOURCE_ONLY_WITH_INTEGRATION_GATES",
+  "candidateOriginalsPreserved": true,
+  "coordinateSemantics": "Official served-JS chunks match pinned prior contract and occur in every captured page. Inspected hanaV3 mapping: xLegacy/10, yLegacy/10; positive x right and y toward midcourt in official top-hoop view. All rows fit official and current drawing bounds; no clamping, mirroring, or physical attacking-end inference.",
+  "caveats": [
+    "The saved player boxes are BigBallsData snapshots reference-checked against NBA PDFs. Do not describe their provider UUIDs as official numeric NBA personIds or infer a mapping from the current roster.",
+    "Eight Finals Games 1–3 minute values have explicitly attributed NBA report corrections. Game 3 Jeremy Sochan was a NYK appearance lasting ten seconds, despite rounded minutes being zero. Game 4 Jeremy Sochan is also NYK.",
+    "PDFs provide historical name/team/jersey/stat evidence but no NBA numeric player IDs. The candidate official game roster and action personId/nameI/team must establish numeric identity independently.",
+    "Optional schedule pointsLeaders contain stale interim totals in some finals. They cannot be used as final player-stat evidence.",
+    "Pinned historical provider commit is unavailable in this checkout, so original provider snapshot hash verification was not repeated. Current recovered rows, documented corrections, PDF hashes, final scores and periods were independently verified.",
+    "Saved PDF capture timestamps are unrecorded; do not reuse provider retrieval timestamps or filesystem mtimes as PDF capture times.",
+    "Raw actionNumber may repeat for paired events; every field-goal actionNumber and every raw actionId was unique.",
+    "All source box jerseyNum strings are blank; numeric identity is established within official box/action records and matched by full historical name/team to the PDF, not by numeric IDs printed in the PDF.",
+    "Source shotDistance has zero values on three-pointers. Use the explicit shotValue; exclude distances and narratives from factual chart projections.",
+    "No live chart UI was reopened for this offline review; hashes and captured HTML/script references were checked."
+  ],
+  "integrationGates": [
+    "Candidate review does not enable runtime or authorize publication. Add separately reviewed game allowlist, immutable facts hashes, source evidence links and per-game totals before integration.",
+    "Preserve server-only facts and raw-source isolation from existing play-by-play consumers.",
+    "Retain all source coordinates. Exact-origin rows are official reported zero pairs; some descriptions are not tip shots, so their true precision is not independently established. Do not relabel every zero pair a verified basket-level location.",
+    "Any box-minute reconciliation must retain the Game 4 Jeremy Sochan source string 2:60 and PDF 03:00 caveat. Equal duration is verified; literal normalized-minute matching is not."
+  ],
+  "sourceEvidenceSha256": "04a25fc745cd89071b17621b6944f68ff03735bf2fa675fc4ad5017a6c5b8ba0",
+  "sourceManifestSha256": "50f72ecece3c15b9e3cba302a96696d4ea237b905cb5a880196ae6c91006f024",
+  "independentReviewSha256": "1111a6b0fb836cd75c7ecd3e5072cf1239fcec1f10d3bcbbf6349937f8009a21",
+  "review": {
+    "gameId": "0042500402",
+    "status": "PASS_INDEPENDENT_SOURCE_REVIEW_NOT_ENABLED",
+    "rawActionCount": 520,
+    "shotCount": 167,
+    "preservedFieldCount": 1670,
+    "periodAttempts": {
+      "1": 41,
+      "2": 42,
+      "3": 41,
+      "4": 43
+    },
+    "fieldGoalIdsUnique": true,
+    "rawActionIdsUnique": true,
+    "rawRepeatedActionNumberGroups": 31,
+    "fieldGoalRowsExactlyPreservedIncludingTypesAndOrder": true,
+    "allPlayerAndTeamFieldGoalAndFreeThrowTotalsReconciled": true,
+    "pdfStatisticsMatchedForPlayedRows": 19,
+    "officialRosterRowsVerified": 30,
+    "pdfMinuteRepresentationCaveats": [],
+    "shotIdentityVerifiedFromOfficialBoxAndActionNames": true,
+    "allRostersJerseyNumbersBlank": true,
+    "teams": {
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "fieldGoalsMade": 37,
+        "fieldGoalsAttempted": 78,
+        "threePointersMade": 11,
+        "threePointersAttempted": 29,
+        "freeThrowsMade": 19,
+        "freeThrowsAttempted": 27,
+        "score": 104,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 13,
+            "fieldGoalsAttempted": 20,
+            "threePointersMade": 4,
+            "threePointersAttempted": 8,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 8,
+            "fieldGoalPoints": 30,
+            "points": 34
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 4,
+            "fieldGoalsAttempted": 21,
+            "threePointersMade": 2,
+            "threePointersAttempted": 10,
+            "freeThrowsMade": 8,
+            "freeThrowsAttempted": 9,
+            "fieldGoalPoints": 10,
+            "points": 18
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 9,
+            "fieldGoalsAttempted": 19,
+            "threePointersMade": 2,
+            "threePointersAttempted": 7,
+            "freeThrowsMade": 3,
+            "freeThrowsAttempted": 5,
+            "fieldGoalPoints": 20,
+            "points": 23
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 11,
+            "fieldGoalsAttempted": 18,
+            "threePointersMade": 3,
+            "threePointersAttempted": 4,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 5,
+            "fieldGoalPoints": 25,
+            "points": 29
+          }
+        ]
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "fieldGoalsMade": 37,
+        "fieldGoalsAttempted": 89,
+        "threePointersMade": 15,
+        "threePointersAttempted": 38,
+        "freeThrowsMade": 16,
+        "freeThrowsAttempted": 21,
+        "score": 105,
+        "periods": [
+          {
+            "period": 1,
+            "fieldGoalsMade": 8,
+            "fieldGoalsAttempted": 21,
+            "threePointersMade": 3,
+            "threePointersAttempted": 7,
+            "freeThrowsMade": 6,
+            "freeThrowsAttempted": 9,
+            "fieldGoalPoints": 19,
+            "points": 25
+          },
+          {
+            "period": 2,
+            "fieldGoalsMade": 10,
+            "fieldGoalsAttempted": 21,
+            "threePointersMade": 5,
+            "threePointersAttempted": 13,
+            "freeThrowsMade": 6,
+            "freeThrowsAttempted": 7,
+            "fieldGoalPoints": 25,
+            "points": 31
+          },
+          {
+            "period": 3,
+            "fieldGoalsMade": 12,
+            "fieldGoalsAttempted": 22,
+            "threePointersMade": 4,
+            "threePointersAttempted": 7,
+            "freeThrowsMade": 0,
+            "freeThrowsAttempted": 0,
+            "fieldGoalPoints": 28,
+            "points": 28
+          },
+          {
+            "period": 4,
+            "fieldGoalsMade": 7,
+            "fieldGoalsAttempted": 25,
+            "threePointersMade": 3,
+            "threePointersAttempted": 11,
+            "freeThrowsMade": 4,
+            "freeThrowsAttempted": 5,
+            "fieldGoalPoints": 17,
+            "points": 21
+          }
+        ]
+      }
+    },
+    "players": [
+      {
+        "name": "Devin Vassell",
+        "personId": 1630170,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 4,
+          "fieldGoalsAttempted": 9,
+          "threePointersMade": 3,
+          "threePointersAttempted": 7
+        },
+        "freeThrows": {
+          "freeThrowsMade": 3,
+          "freeThrowsAttempted": 3
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 14,
+        "pdfName": "Devin Vassell",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Julian Champagnie",
+        "personId": 1630577,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 6,
+          "threePointersMade": 2,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 2
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 8,
+        "pdfName": "Julian Champagnie",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Victor Wembanyama",
+        "personId": 1641705,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 11,
+          "fieldGoalsAttempted": 21,
+          "threePointersMade": 2,
+          "threePointersAttempted": 6
+        },
+        "freeThrows": {
+          "freeThrowsMade": 5,
+          "freeThrowsAttempted": 8
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 29,
+        "pdfName": "Victor Wembanyama",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Stephon Castle",
+        "personId": 1642264,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 14,
+          "threePointersMade": 2,
+          "threePointersAttempted": 4
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 4
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 14,
+        "pdfName": "Stephon Castle",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "De'Aaron Fox",
+        "personId": 1628368,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 12,
+          "threePointersMade": 2,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 2
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 20,
+        "pdfName": "De'Aaron Fox",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Dylan Harper",
+        "personId": 1642844,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 6,
+          "fieldGoalsAttempted": 12,
+          "threePointersMade": 0,
+          "threePointersAttempted": 3
+        },
+        "freeThrows": {
+          "freeThrowsMade": 3,
+          "freeThrowsAttempted": 4
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 15,
+        "pdfName": "Dylan Harper",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Keldon Johnson",
+        "personId": 1629640,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 1,
+          "fieldGoalsAttempted": 4,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 3,
+        "pdfName": "Keldon Johnson",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Luke Kornet",
+        "personId": 1628436,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 1,
+          "freeThrowsAttempted": 2
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 1,
+        "pdfName": "Luke Kornet",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Carter Bryant",
+        "personId": 1642868,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Carter Bryant",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Harrison Barnes",
+        "personId": 203084,
+        "teamTricode": "SAS",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Harrison Barnes",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Bismack Biyombo",
+        "personId": 202687,
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Bismack Biyombo",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Jordan McLaughlin",
+        "personId": 1629162,
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Jordan McLaughlin",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Kelly Olynyk",
+        "personId": 203482,
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Kelly Olynyk",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Mason Plumlee",
+        "personId": 203486,
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Mason Plumlee",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Lindy Waters III",
+        "personId": 1630322,
+        "teamTricode": "SAS",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Lindy Waters III",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Josh Hart",
+        "personId": 1628404,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 4,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Josh Hart",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "OG Anunoby",
+        "personId": 1628384,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 10,
+          "threePointersMade": 2,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 5,
+          "freeThrowsAttempted": 5
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 17,
+        "pdfName": "OG Anunoby",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Karl-Anthony Towns",
+        "personId": 1626157,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 12,
+          "threePointersMade": 3,
+          "threePointersAttempted": 5
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 2
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 21,
+        "pdfName": "Karl-Anthony Towns",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Mikal Bridges",
+        "personId": 1628969,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 8,
+          "fieldGoalsAttempted": 13,
+          "threePointersMade": 4,
+          "threePointersAttempted": 6
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 20,
+        "pdfName": "Mikal Bridges",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Jalen Brunson",
+        "personId": 1628973,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 7,
+          "fieldGoalsAttempted": 25,
+          "threePointersMade": 2,
+          "threePointersAttempted": 8
+        },
+        "freeThrows": {
+          "freeThrowsMade": 4,
+          "freeThrowsAttempted": 5
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 20,
+        "pdfName": "Jalen Brunson",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Miles McBride",
+        "personId": 1630540,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 7,
+          "threePointersMade": 1,
+          "threePointersAttempted": 3
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 5,
+        "pdfName": "Miles McBride",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Landry Shamet",
+        "personId": 1629013,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 5,
+          "fieldGoalsAttempted": 12,
+          "threePointersMade": 3,
+          "threePointersAttempted": 7
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 13,
+        "pdfName": "Landry Shamet",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Mitchell Robinson",
+        "personId": 1629011,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 2,
+          "fieldGoalsAttempted": 2,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 3,
+          "freeThrowsAttempted": 6
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 7,
+        "pdfName": "Mitchell Robinson",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Jose Alvarado",
+        "personId": 1630631,
+        "teamTricode": "NYK",
+        "didNotPlay": false,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 4,
+          "threePointersMade": 0,
+          "threePointersAttempted": 2
+        },
+        "freeThrows": {
+          "freeThrowsMade": 2,
+          "freeThrowsAttempted": 3
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 2,
+        "pdfName": "Jose Alvarado",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Jordan Clarkson",
+        "personId": 203903,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Jordan Clarkson",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Pacôme Dadiet",
+        "personId": 1642359,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Pacome Dadiet",
+        "nameCorrespondence": "accent-only complete-name match, Pacôme/Pacome Dadiet",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Mohamed Diawara",
+        "personId": 1642885,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Mohamed Diawara",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Ariel Hukporti",
+        "personId": 1630574,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Ariel Hukporti",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Tyler Kolek",
+        "personId": 1642278,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Tyler Kolek",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      },
+      {
+        "name": "Jeremy Sochan",
+        "personId": 1631110,
+        "teamTricode": "NYK",
+        "didNotPlay": true,
+        "fieldGoals": {
+          "fieldGoalsMade": 0,
+          "fieldGoalsAttempted": 0,
+          "threePointersMade": 0,
+          "threePointersAttempted": 0
+        },
+        "freeThrows": {
+          "freeThrowsMade": 0,
+          "freeThrowsAttempted": 0
+        },
+        "countingStatisticsMatchedPdf": true,
+        "durationSecondsMatchedPdf": true,
+        "pointsReconstructedFromActions": 0,
+        "pdfName": "Jeremy Sochan",
+        "nameCorrespondence": "exact",
+        "nbaJerseyNumberBlank": true
+      }
+    ],
+    "rawScoreStatesReconciled": 120,
+    "rawHtmlSha256": "1c1c14027321bb073e45da6eecdfd2730898fff069adced0b89bb99946b610ae",
+    "rawEmbeddedSha256": "a35536a9c7e3baf3a6695117eaab27f37b697df13d0a7744f831e3bd5d1371cc",
+    "rawPdfSha256": "fd3044b322edc0a558edf53ac0d041752ba81fbcc62f520f4488c0d983a754f1",
+    "canonicalFactsSha256": "119a9d1b66e5766f0588d1b057956480b01c9f053d90f031be7327334399b0e2",
+    "candidateFileSha256": "b61ae2e1804e33ddd3b239b119161791f27e68179eeebf01708015f95bad9865",
+    "displayPreviewFileSha256": "6732a7bcfdf8a4a7f235efcc6032db11954be7c19868c3e91627ca6b4127dbcb",
+    "sourceCapture": {
+      "url": "https://www.nba.com/game/nyk-vs-sas-0042500402/game-charts",
+      "startedAt": "2026-10-03T07:37:56.746432+00:00",
+      "requestCount": 1,
+      "requestMethod": "GET",
+      "cookiesSent": false,
+      "authenticationUsed": false,
+      "retries": 0,
+      "retrievedAt": "2026-10-03T07:38:00.990946+00:00",
+      "httpStatus": 200,
+      "finalUrl": "https://www.nba.com/game/nyk-vs-sas-0042500402/game-charts",
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "ETag": "\"3iprb9th8qbw9z\"",
+        "Strict-Transport-Security": "max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "X-Frame-Options": "sameorigin",
+        "Vary": "Accept-Encoding",
+        "x-envoy-upstream-service-time": "314",
+        "x-cache-ability": "uncacheable",
+        "x-hits": "0",
+        "x-status": "miss",
+        "x-vcl-version": "NBA.com prod 1.7b",
+        "x-varnish": "817381903",
+        "x-full-ttl": "30.000",
+        "X-Akamai-Transformed": "0 553363 0 -",
+        "Expires": "Sat, 03 Oct 2026 07:38:00 GMT",
+        "Cache-Control": "max-age=0, no-cache, no-store",
+        "Pragma": "no-cache",
+        "Date": "Sat, 03 Oct 2026 07:38:00 GMT",
+        "Transfer-Encoding": "chunked",
+        "Connection": "Transfer-Encoding"
+      },
+      "bytes": 553479,
+      "htmlSha256": "1c1c14027321bb073e45da6eecdfd2730898fff069adced0b89bb99946b610ae"
+    },
+    "coordinateExtents": {
+      "xLegacy": [
+        -243,
+        240
+      ],
+      "yLegacy": [
+        -35,
+        278
+      ]
+    },
+    "negativeYCount": 32,
+    "exactOriginRows": [
+      {
+        "actionNumber": 388,
+        "personId": 1626157,
+        "description": "Towns Putback Layup (19 PTS)"
+      },
+      {
+        "actionNumber": 439,
+        "personId": 1641705,
+        "description": "MISS Wembanyama Tip Layup Shot"
+      },
+      {
+        "actionNumber": 441,
+        "personId": 1641705,
+        "description": "Wembanyama Tip Layup Shot (13 PTS)"
+      },
+      {
+        "actionNumber": 468,
+        "personId": 1628973,
+        "description": "MISS Brunson Tip Layup Shot"
+      }
+    ],
+    "zeroShotDistanceCount": 19,
+    "zeroShotDistanceThreePointerCount": 14,
+    "outsideDrawingBounds": 0
+  }
+}

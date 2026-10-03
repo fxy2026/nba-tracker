@@ -103,7 +103,7 @@ describe.each(["en", "zh"] as const)("actual game page archive selection in %s",
     expect(restored[0].scores.home.periodPoints).toEqual(expected.home.periodPoints);
     expect(restored[0].scores.away.periodPoints).toEqual(expected.away.periodPoints);
     expect(restored[0].scores.source.reportUrl).toBe(expected.source.reportUrl);
-    const shots: Record<string, number> = { "0022500961": 181, "0042500405": 173, "0042500173": 177 };
+    const shots: Record<string, number> = { "0022500961": 181, "0042500405": 173, "0042500173": 177, "0042500401": 183, "0042500402": 167, "0042500403": 172, "0042500404": 164 };
     expect(visibleText(result)).toContain(shots[id]
       ? (locale === "zh" ? `${shots[id]} 次真实出手坐标` : `${shots[id]} verified shot locations`)
       : (locale === "zh" ? "投篮图与逐回合暂不可用。" : "Shot charts and play-by-play remain unavailable."));

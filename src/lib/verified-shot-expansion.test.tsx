@@ -6,6 +6,10 @@ import schedule from "@/data/schedule-2025-26.json";
 import memDet from "@/data/verified-shot-charts/0022500961.json";
 import nykSas from "@/data/verified-shot-charts/0042500405.json";
 import lalHou from "@/data/verified-shot-charts/0042500173.json";
+import finalsGame1 from "@/data/verified-shot-charts/0042500401.json";
+import finalsGame2 from "@/data/verified-shot-charts/0042500402.json";
+import finalsGame3 from "@/data/verified-shot-charts/0042500403.json";
+import finalsGame4 from "@/data/verified-shot-charts/0042500404.json";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import ShotChartExplorer from "@/components/ShotChartExplorer";
 import { EMPTY_FILTERS, filterCourtShots, formatCourtClock } from "@/components/shot-chart/court-geometry";
@@ -15,7 +19,7 @@ import { summarizeCourtShots } from "./court-shots";
 
 const copy = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 const games = schedule.dates.flatMap(date => date.games);
-const cases = [memDet, nykSas, lalHou];
+const cases = [memDet, nykSas, lalHou, finalsGame1, finalsGame2, finalsGame3, finalsGame4];
 const keys = ["fieldGoalsMade", "fieldGoalsAttempted", "threePointersMade", "threePointersAttempted"] as const;
 const getGame = (id: string) => games.find(game => game.gameId === id)!;
 const sha = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
@@ -23,13 +27,21 @@ const expected = [
   { id: "0022500961", total: 181, periods: [46, 45, 43, 47], negative: 4, origin: 6 },
   { id: "0042500405", total: 173, periods: [43, 45, 46, 39], negative: 10, origin: 7 },
   { id: "0042500173", total: 177, periods: [47, 36, 39, 40, 15], negative: 6, origin: 7 },
+  { id: "0042500401", total: 183, periods: [48, 46, 46, 43], negative: 2, origin: 9 },
+  { id: "0042500402", total: 167, periods: [41, 42, 41, 43], negative: 32, origin: 4 },
+  { id: "0042500403", total: 172, periods: [42, 39, 43, 48], negative: 10, origin: 4 },
+  { id: "0042500404", total: 164, periods: [40, 44, 41, 39], negative: 18, origin: 7 },
 ];
 
-describe("three reviewed archives, exact source records and fail-closed contexts", () => {
+describe("seven reviewed archives, exact source records and fail-closed contexts", () => {
   it("preserves all original and newly reviewed factual file bytes", () => {
     expect(sha("src/data/verified-shot-charts/0022500961.json")).toBe("e300d7e7f03e8c6aebe6264a3446b46eda8e7fba946373f9df2e943ea637a717");
     expect(sha("src/data/verified-shot-charts/0042500405.json")).toBe("a95e6a3331e698c76d98e03ecbe84d69e7f5c2061a5598a9c47196ece8165e34");
     expect(sha("src/data/verified-shot-charts/0042500173.json")).toBe("1890e9838a8d0c6249f9393ad609fffea211f68864b157b14240a14e167a76d3");
+    expect(sha("src/data/verified-shot-charts/0042500401.json")).toBe("4027119a63ef8f0f01d022e93af1719fae7a32b916209a1eccf1ad4563328dec");
+    expect(sha("src/data/verified-shot-charts/0042500402.json")).toBe("b61ae2e1804e33ddd3b239b119161791f27e68179eeebf01708015f95bad9865");
+    expect(sha("src/data/verified-shot-charts/0042500403.json")).toBe("d5695fe7643561dc86a82be6ff5255a151a46e2bd522b01c34c0743ba38e3524");
+    expect(sha("src/data/verified-shot-charts/0042500404.json")).toBe("47bc7092ccba93cfc1c6b507e2ceb880dc965d87a6a0c51f1fe1163c0e325600");
   });
   it.each(expected)("retains every record and period for $id", ({ id, total, periods, negative, origin }) => {
     const raw = cases.find(record => record.game.gameId === id)!;
@@ -132,9 +144,11 @@ describe("three reviewed archives, exact source records and fail-closed contexts
       for (const bad of [null, {}, [...players, players[0]]]) expect(getVerifiedShotChart({ ...game, [teamKey]: { ...team, players: bad } })).toBeNull();
     }
   });
-  it("only enables three reviewed games, with all other 84 official-period games unavailable", () => {
+  it("only enables seven reviewed games, with all other 80 official-period games unavailable", () => {
     const ids = readdirSync("src/data/official-period-scores").filter(file => file.endsWith(".json")).map(file => file.slice(0, -5));
     expect(ids).toHaveLength(87);
+    expect(Object.keys(reviewedShotGames)).toHaveLength(7);
+    expect(cases.reduce((sum, raw) => sum + raw.shots.length, 0)).toBe(1217);
     const available = ids.filter(id => getVerifiedShotChart(getGame(id)) !== null);
     expect(available.sort()).toEqual(expected.map(row => row.id).sort());
     for (const id of ["constructor", "__proto__", "toString", "0042500999"]) expect(getVerifiedShotChart({ ...getGame("0042500173"), gameId: id })).toBeNull();

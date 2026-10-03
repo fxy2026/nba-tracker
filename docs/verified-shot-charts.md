@@ -63,9 +63,9 @@ archive/hash allowlist entry. Successful scraping alone is not publication.
 The archive now includes the separately captured and independently reviewed
 Finals Game 5 (0042500405, NYK 94–90 SAS) and Lakers–Rockets first-round Game 3
 (0042500173, LAL 112–108 HOU, overtime). The original MEM–DET factual and evidence
-files remain byte-for-byte unchanged. There are 531 shots across three games:
-181 MEM–DET, 173 NYK–SAS and 177 LAL–HOU. The other 84 official-period archives
-still have no verified shot chart; source availability is never inferred.
+files remain byte-for-byte unchanged. That expansion established 531 shots across three games:
+181 MEM–DET, 173 NYK–SAS and 177 LAL–HOU. At that stage, the other 84 official-period archives
+had no verified shot chart; source availability is never inferred.
 
 The new canonical local game codes are `20260613/NYKSAS` and `20260424/LALHOU`.
 Their UTC tipoffs are June 14 00:30Z and April 25 00:00Z. Local game dates and UTC
@@ -122,3 +122,41 @@ points. Mobile full-view glyphs enlarge without changing their centers.
 The static court and marker layers are memoized. Hover updates only selection and
 tooltip presentation. Source and coverage disclosures, source clocks, OT labels,
 existing scores and unavailable-game behavior remain unchanged.
+
+## Seven-game reviewed coverage
+
+Finals Games 1–4 (0042500401–0042500404) now add 183, 167, 172 and 164
+field-goal attempts, respectively. All five Finals games are covered. The four
+new games contribute 686 exact source rows; total coverage is seven games and
+1,217 attempts. The remaining 80 official-period archives have no verified chart.
+The original three factual and evidence archives and all UI files are unchanged.
+
+Each new game has its own explicit immutable canonical-facts SHA-256 pin, final
+identity, local gameCode, UTC tipoff, source URL and actual capture timestamp.
+Independently verified team/player FG and 3PT totals and all 32 team-quarter
+FG-points-plus-made-FT totals reconcile to official gamebook period/final scores.
+The existing validation schema and fail-closed checks are unchanged. Only the
+reviewed Lakers–Rockets game permits period 5. No raw PBP, score observations,
+narrative or player box minutes cross the shot-chart display boundary.
+
+The new per-game evidence retains the independent review, original source hashes,
+120 official roster identities, and 80 played-player PDF reconciliations. Numeric
+NBA player IDs come from each historical official box/action pair, never provider
+UUIDs or current rosters. DNP/DND rows remain identity evidence without shots.
+
+Negative-y counts are 2, 32, 10 and 18; exact (0,0) counts are 9, 4, 4 and 7.
+All original coordinates are retained, including those pairs. A reported zero
+pair is not independent proof of exact basket-level precision; some such source
+descriptions are not tip shots. No substitution, jitter, clamping, trajectory,
+physical attacking-end or independently video-verified precision is claimed.
+The same standardized full-court transform and source-relative half view apply.
+
+Game 4 Jeremy Sochan's official embedded box minutes remain `2:60`; the PDF
+prints `03:00`. Both durations equal 180 seconds, but the evidence does not claim
+literal string agreement or silently normalize the original. Game 3 Sochan has
+a genuine NYK 00:10 appearance even though the saved player archive rounds to
+zero minutes. These minute caveats do not alter the plotted ten-field facts.
+Official PDFs' original capture times remain unknown. Optional schedule points
+leaders are not used as final player-stat evidence. The inert capture bundle and
+independent source review are preserved; runtime inclusion required the separate
+allowlist, data-integrity, UI-preservation and offline production gates.

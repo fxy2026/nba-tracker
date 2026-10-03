@@ -4,6 +4,10 @@ import { createHash } from "node:crypto";
 import memDet from "@/data/verified-shot-charts/0022500961.json";
 import nykSas from "@/data/verified-shot-charts/0042500405.json";
 import lalHou from "@/data/verified-shot-charts/0042500173.json";
+import finalsGame1 from "@/data/verified-shot-charts/0042500401.json";
+import finalsGame2 from "@/data/verified-shot-charts/0042500402.json";
+import finalsGame3 from "@/data/verified-shot-charts/0042500403.json";
+import finalsGame4 from "@/data/verified-shot-charts/0042500404.json";
 import { reviewedShotGames } from "./verified-shot-chart-allowlist";
 import type { CourtShot, CourtShotTeam, VerifiedShotChart } from "./court-shots";
 
@@ -31,6 +35,7 @@ interface ReviewedTeam extends CourtShotTeam {
 }
 const archives: Record<keyof typeof reviewedShotGames, unknown> = {
   "0022500961": memDet, "0042500405": nykSas, "0042500173": lalHou,
+  "0042500401": finalsGame1, "0042500402": finalsGame2, "0042500403": finalsGame3, "0042500404": finalsGame4,
 };
 const object = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const count = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value >= 0;

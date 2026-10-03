@@ -61,9 +61,9 @@ describe("verified court archive routing", () => {
     expect(text(tree)).not.toContain("3D court below");expect(text(tree)).not.toContain("下方 3D 球场");
     expect(text(tree)).not.toContain("投篮图与逐回合暂不可用。");
   });
-  it.each(["en", "zh"])("uses dynamic recovered shot coverage for both additional games (%s)", async locale => {
+  it.each(["en", "zh"])("uses dynamic recovered shot coverage for all six additional games (%s)", async locale => {
     mocks.locale.mockResolvedValue(locale);
-    for (const [gameId, total] of [["0042500405", 173], ["0042500173", 177]] as const) {
+    for (const [gameId, total] of [["0042500405", 173], ["0042500173", 177], ["0042500401", 183], ["0042500402", 167], ["0042500403", 172], ["0042500404", 164]] as const) {
       const tree = await GamePage({ params: Promise.resolve({ id: gameId }) });
       expect(elements(tree, VerifiedShotChartSection)[0].props.data).toMatchObject({ gameId, coverage: { mapped: total, total, complete: true } });
       expect(text(tree)).toContain(locale === "zh" ? `${total} 次真实出手坐标` : `${total} verified shot locations`);
@@ -76,7 +76,7 @@ describe("verified court archive routing", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
   it("gives other recovered games an honest unavailable section, never MEM–DET points", async () => {
-    const tree = await GamePage({ params: Promise.resolve({ id: "0042500401" }) });
+    const tree = await GamePage({ params: Promise.resolve({ id: "0042500311" }) });
     expect(elements(tree, VerifiedShotChartSection)[0].props.data).toBeNull();
     expect(text(tree)).not.toContain("181 verified");
     expect(mocks.pbp).not.toHaveBeenCalled();
