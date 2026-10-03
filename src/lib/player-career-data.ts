@@ -1,4 +1,5 @@
 import { normalizeCareerShooting, type CareerShootingRates } from "./career-shooting";
+import { normalizeCareerProvenance, type PlayerCareerProvenance } from "./player-career-provenance";
 // Career row from /api/player's careerSeasons — the SeasonTotalsRegularSeason
 // result set, or the ESPN fallback (same field names). Shooting-volume
 // columns can be absent on very old seasons, so they stay optional.
@@ -23,6 +24,8 @@ export interface CareerSeasonRow {
 export interface PlayerCareerData {
   careerSeasons: CareerSeasonRow[];
   careerShooting?: CareerShootingRates;
+  // Older cached responses may have no attribution. Never guess their source.
+  provenance?: PlayerCareerProvenance;
 }
 
 
@@ -42,5 +45,14 @@ export function normalizePlayerCareerData(raw: unknown): PlayerCareerData | null
   });
   if (!valid) return null;
   const rates = "careerShooting" in raw ? normalizeCareerShooting(raw.careerShooting) : null;
-  return { careerSeasons: rows as CareerSeasonRow[], ...(rates ? { careerShooting: rates } : {}) };
+  const provenance = "provenance" in raw ? normalizeCareerProvenance(raw.provenance) : null;
+  // Missing legacy metadata is allowed; malformed declared metadata must not
+  // replace a last-good snapshot or be silently presented as unattributed data.
+  if ("provenance" in raw && !provenance) return null;
+  if (provenance?.source === "espn" && rates) return null; // No mixed-provider snapshot.
+  return {
+    careerSeasons: rows as CareerSeasonRow[],
+    ...(rates ? { careerShooting: rates } : {}),
+    ...(provenance ? { provenance } : {}),
+  };
 }

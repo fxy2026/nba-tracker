@@ -80,6 +80,7 @@ it('retains the complete last-good snapshot and source when a nonempty refresh l
   const history = {
     careerSeasons: [{ ...row, SEASON_ID: '2024-25' }, row],
     careerShooting: { source: 'nba-career-totals', FG_PCT: .48, FG3_PCT: null, FT_PCT: .79 },
+    provenance: { source: 'nba-stats', providerPlayerId: '2544', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T02:00:00.000Z' },
   };
   const recovered = { ...history, careerSeasons: [history.careerSeasons[0], { ...row, GP: 72, PTS: 21 }] };
   const fetcher = vi.fn().mockResolvedValueOnce(ok(history))
@@ -149,4 +150,35 @@ it('keeps season coverage scoped to the exact player and request contract', asyn
     .toEqual({ data, unavailable: false, stale: false });
   expect(await load('/api/player?id=201939&context=2&seasonType=Regular+Season'))
     .toEqual({ data, unavailable: false, stale: false });
+});
+
+it('keeps the exact source timestamp on cache hits, failed refresh, and malformed metadata', async () => {
+  const provenance = { source: 'nba-stats', providerPlayerId: '2544', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T02:00:00.000Z' };
+  const history = { ...data, provenance };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history)).mockResolvedValueOnce({ ok: false, status: 503 })
+    .mockResolvedValueOnce(ok({ ...data, provenance: { ...provenance, retrievedAt: '2025-26' } }))
+    .mockResolvedValue(ok({ ...data, provenance: { ...provenance, source: 'espn', providerPlayerId: '1966', retrievedAt: '2026-10-03T03:00:00.000Z' } }));
+  const load = createPlayerCareerLoader(fetcher);
+  const accepted = await load('/one');
+  await vi.advanceTimersByTimeAsync(CAREER_SUCCESS_TTL_MS - 1);
+  expect((await load('/one')).data).toBe(accepted.data);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(await load('/one')).toEqual({ data: history, unavailable: true, stale: true });
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/one')).toEqual({ data: history, unavailable: true, stale: true });
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  const recovered = await load('/one');
+  expect(recovered).toMatchObject({ unavailable: false, stale: false, data: { provenance: {
+    source: 'espn', providerPlayerId: '1966', retrievedAt: '2026-10-03T03:00:00.000Z',
+  } } });
+  expect(recovered.data).not.toHaveProperty('careerShooting');
+});
+
+it('retains an attributed empty snapshot on failure without inventing career rows', async () => {
+  const history = { careerSeasons: [], provenance: { source: 'espn', providerPlayerId: '1966', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T02:00:00.000Z' } };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history)).mockResolvedValue({ ok: false, status: 503 });
+  const load = createPlayerCareerLoader(fetcher);
+  await load('/empty');
+  expect(await load('/empty', true)).toEqual({ data: history, unavailable: true, stale: true });
 });

@@ -19,3 +19,66 @@ it.each(['en','zh'])('career percentages are unavailable without the direct aggr
 it.each(['en','zh'])('direct career percentages and TOT arithmetic remain useful %s',locale=>{
  state.locale=locale;state.result={data:{careerSeasons:[{...row,GP:60},{...row,TEAM_ABBREVIATION:'NYK',GP:40},{...row,TEAM_ABBREVIATION:'TOT',GP:100}],careerShooting:{source:'nba-career-totals',FG_PCT:.467,FG3_PCT:0,FT_PCT:null}},loading:false,error:false,stale:false,retry:vi.fn()};const html=render();const career=html.match(/<tr class="border-t-2[^>]*>[\s\S]*?<\/tr>/)![0];expect(career).toContain('46.7%');expect(career).toContain('0.0%');expect(career).toContain('>100</td>');expect(career).not.toContain('>200</td>');expect(html).toContain('TOT');expect(html).toContain('NYK');
 });
+
+it.each(['en', 'zh'])('shows NBA source and clearly scoped API retrieval time, %s', locale => {
+  state.locale = locale;
+  state.result = { data: { careerSeasons: [row], provenance: {
+    source: 'nba-stats', providerPlayerId: '2544', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T02:00:00.000Z',
+  } }, loading: false, error: false, stale: false, retry: vi.fn() };
+  const html = render();
+  expect(html).toContain('stats.nba.com/stats/playercareerstats?PlayerID=2544&amp;PerMode=PerGame');
+  expect(html).toContain('NBA Stats');
+  expect(html).toContain('dateTime="2026-10-03T02:00:00.000Z"');
+  expect(html).toContain('2026-10-03 02:00:00 UTC');
+  expect(html).toContain(locale === 'zh' ? '本 API 获取时间' : 'Retrieved by this API');
+  expect(html).toContain(locale === 'zh' ? '获取时可能使用缓存' : 'Retrieval may use cached data');
+  expect(html).toContain(locale === 'zh' ? '不代表赛季或比赛日期' : 'not a season/game date');
+  expect(html).not.toMatch(/verified|已核实|独立核验/i);
+});
+
+it.each(['en', 'zh'])('labels ESPN fallback accurately for both rows and empty responses, %s', locale => {
+  state.locale = locale;
+  for (const careerSeasons of [[row], []]) {
+    state.result = { data: { careerSeasons, provenance: {
+      source: 'espn', providerPlayerId: '1966', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T02:00:00.000Z',
+    } }, loading: false, error: false, stale: false, retry: vi.fn() };
+    const html = render();
+    expect(html).toContain('site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/stats');
+    expect(html).toContain(locale === 'zh' ? 'ESPN（备用来源）' : 'ESPN (fallback)');
+    expect(html).not.toContain('NBA Stats');
+    if (!careerSeasons.length) expect(html).toContain(locale === 'zh' ? '数据源已响应' : 'The source responded');
+  }
+});
+
+it.each(['en', 'zh'])('retained rows keep the original source and timestamp beside the stale warning, %s', locale => {
+  state.locale = locale;
+  state.result = { data: { careerSeasons: [row], provenance: {
+    source: 'espn', providerPlayerId: '1966', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-09-01T01:02:03.000Z',
+  } }, loading: false, error: true, stale: true, retry: vi.fn() };
+  const html = render();
+  expect(html).toContain(locale === 'zh' ? '保留上次成功加载' : 'last successfully loaded');
+  expect(html).toContain('ESPN');
+  expect(html).toContain('2026-09-01 01:02:03 UTC');
+  expect(html).toContain('2025-26');
+});
+
+it.each(['en', 'zh'])('does not guess provenance for legacy rows, even with an NBA shooting aggregate, %s', locale => {
+  state.locale = locale;
+  state.result = { data: { careerSeasons: [row], careerShooting: { source: 'nba-career-totals', FG_PCT: .5, FG3_PCT: null, FT_PCT: .8 } }, loading: false, error: false, stale: false, retry: vi.fn() };
+  const html = render();
+  expect(html).toContain(locale === 'zh' ? '未附来源及获取时间' : 'Source and retrieval time are unavailable');
+  expect(html).not.toContain('NBA Stats');
+  expect(html).not.toContain('<time');
+});
+
+it.each(['en', 'zh'])('keeps retained empty attribution visible after a failed refresh, %s', locale => {
+  state.locale = locale;
+  state.result = { data: { careerSeasons: [], provenance: {
+    source: 'espn', providerPlayerId: '1966', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-09-01T01:02:03.000Z',
+  } }, loading: false, error: true, stale: true, retry: vi.fn() };
+  const html = render();
+  expect(html).toContain('ESPN');
+  expect(html).toContain('2026-09-01 01:02:03 UTC');
+  expect(html).toContain(locale === 'zh' ? '重试' : 'Retry');
+  expect(html).not.toContain(locale === 'zh' ? '数据源已响应' : 'The source responded');
+});

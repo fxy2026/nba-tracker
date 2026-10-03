@@ -8,6 +8,7 @@ import { usePlayerCareer, type CareerSeasonRow } from "@/lib/usePlayerCareer";
 import type { Translations } from "@/locales/types";
 import PlayerCareerChart from "@/components/player/PlayerCareerChart";
 import PlayerRankBadges from "@/components/player/PlayerRankBadges";
+import PlayerCareerSource from "@/components/player/PlayerCareerSource";
 
 interface Props {
   playerId: number;
@@ -36,6 +37,7 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
       <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
         <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
         <p className="text-xs text-text-secondary">{locale === "zh" ? "失败后暂停请求 30 秒，再点重试。" : "After a failed request, wait 30 seconds before retrying."}</p>
+        {data && <PlayerCareerSource provenance={data.provenance} isZh={locale === "zh"} />}
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
             className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
@@ -54,9 +56,12 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   }
 
   if (!seasons?.length) {
-    return <p className="text-sm text-text-secondary p-4">{locale === "zh"
-      ? "数据源已响应，但未返回可用的常规赛生涯记录。"
-      : "The source responded with no regular-season career records."}</p>;
+    return <div className="p-4 space-y-2">
+      <p className="text-sm text-text-secondary">{locale === "zh"
+        ? "数据源已响应，但未返回可用的常规赛生涯记录。"
+        : "The source responded with no regular-season career records."}</p>
+      <PlayerCareerSource provenance={data?.provenance} isZh={locale === "zh"} />
+    </div>;
   }
 
   return (
@@ -69,7 +74,10 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
       <PlayerRankBadges playerId={playerId} />
 
       {/* Career Stats — table by default, with an opt-in chart view */}
-      <CareerSection careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
+      <div className="space-y-3">
+        <PlayerCareerSource provenance={data?.provenance} isZh={locale === "zh"} />
+        <CareerSection careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
+      </div>
     </div>
   );
 }
