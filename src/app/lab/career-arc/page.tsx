@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import nextDynamic from "next/dynamic";
 import { Activity, Target, BarChart3, GitCompare, Crown, Flame } from "lucide-react";
+import { getReviewedCareerArchive } from "@/lib/player-career-archive";
+import type { PlayerCareerData } from "@/lib/player-career-data";
 import { getPlayerInfo } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
@@ -25,6 +27,7 @@ interface ResolvedPlayer {
   personId: number;
   name: string;
   teamAbbr: string;
+  initialCareer?: PlayerCareerData;
 }
 
 // Resolve a player's display name + most-associated team from the data we can
@@ -33,6 +36,11 @@ interface ResolvedPlayer {
 // generic label so the page still renders for ids we can't name server-side —
 // the client then fills in the real career data either way.
 async function resolvePlayer(id: number): Promise<ResolvedPlayer> {
+  const archive = await getReviewedCareerArchive(String(id));
+  if (archive) {
+    const legend = ALL_TIME_LEADERS.find((p) => p.personId === id);
+    return { personId: id, name: archive.playerName, teamAbbr: legend?.team ?? "", initialCareer: archive.data };
+  }
   const active = await getPlayerInfo(id).catch(() => null);
   if (active) {
     return {
@@ -107,6 +115,7 @@ export default async function CareerArcPage({ searchParams }: PageProps) {
         playerId={player.personId}
         playerName={player.name}
         teamTricode={player.teamAbbr}
+        initialCareer={player.initialCareer}
       />
 
       <RelatedPages

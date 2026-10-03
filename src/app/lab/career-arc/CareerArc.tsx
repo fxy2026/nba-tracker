@@ -5,6 +5,8 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import PlayerCareerSource from "@/components/player/PlayerCareerSource";
+import type { PlayerCareerData } from "@/lib/player-career-data";
 import { usePlayerCareer } from "@/lib/usePlayerCareer";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
@@ -17,6 +19,7 @@ interface Props {
   playerId: number;
   playerName: string;
   teamTricode: string;
+  initialCareer?: PlayerCareerData;
 }
 
 // Traded seasons yield one row per team plus a combined "TOT" row. Keep one
@@ -40,12 +43,12 @@ function dedupeSeasons(rows: CareerSeason[]): CareerSeason[] {
   return order.map((s) => bySeason.get(s)!);
 }
 
-export default function CareerArc({ playerId, playerName, teamTricode }: Props) {
+export default function CareerArc({ playerId, playerName, teamTricode, initialCareer }: Props) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
 
   // ---- Career rows ----
-  const { data: career, loading: careerLoading, error: careerError, stale: careerStale, retry: retryCareer } = usePlayerCareer(playerId, playerName, teamTricode);
+  const { data: career, loading: careerLoading, error: careerError, stale: careerStale, retry: retryCareer } = usePlayerCareer(playerId, playerName, teamTricode, initialCareer);
   const seasons = useMemo(() => dedupeSeasons(career?.careerSeasons ?? []), [career]);
 
   // ---- UI state ----
@@ -123,7 +126,9 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   return (
     <div className="space-y-5">
       {(careerStale || careerError) && <div role="status" className="glass-tile p-3 text-sm text-text-secondary">
-        <p>{isZh ? "保留上次成功加载的生涯数据，可能已过时。" : "Showing the last successfully loaded career data; it may be stale."}</p>
+        {career?.provenance?.source === "nba-com"
+          ? <PlayerCareerSource provenance={career.provenance} isZh={isZh} checkingLive={careerLoading} />
+          : <p>{isZh ? "保留上次成功加载的生涯数据，可能已过时。" : "Showing the last successfully loaded career data; it may be stale."}</p>}
         <button type="button" disabled={careerLoading} onClick={retryCareer} className="text-accent hover:underline">{isZh ? "重试" : "Retry"}</button>
       </div>}
       {/* Picker + identity */}

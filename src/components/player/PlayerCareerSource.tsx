@@ -1,6 +1,6 @@
 import { careerSourceUrl, type PlayerCareerProvenance } from "@/lib/player-career-provenance";
 
-export default function PlayerCareerSource({ provenance, isZh }: { provenance?: PlayerCareerProvenance; isZh: boolean }) {
+export default function PlayerCareerSource({ provenance, isZh, checkingLive = false }: { provenance?: PlayerCareerProvenance; isZh: boolean; checkingLive?: boolean }) {
   if (!provenance) {
     return <p className="text-xs text-text-secondary">{isZh
       ? "此常规赛生涯数据未附来源及获取时间。"
@@ -18,7 +18,7 @@ export default function PlayerCareerSource({ provenance, isZh }: { provenance?: 
       <p>{isZh ? "网页采集时间：" : "Page captured: "}<time dateTime={provenance.capturedAt}>{captured}</time></p>
       <p>{isZh ? `已存档范围：${c.firstSeason} 至 ${c.lastSeason}，${c.seasonCount} 个赛季（${c.rowCount} 行）。`
         : `Archived coverage: ${c.firstSeason} to ${c.lastSeason}, ${c.seasonCount} seasons (${c.rowCount} rows).`}</p>
-      <p>{isZh ? "实时来源暂不可用或返回的历史不完整。显示固定日期的快照，可能缺少后续更新；采集时间不是本 API 获取时间，也不是数据源的最后更新时间。"
+      <p>{checkingLive ? (isZh ? "正在检查实时来源。显示固定日期的存档快照，可能缺少后续更新；采集时间不是本 API 获取时间，也不是数据源的最后更新时间。" : "Checking live sources. This dated archive snapshot may miss later updates; its capture time is not API retrieval or the source’s last-update time.") : isZh ? "实时来源暂不可用或返回的历史不完整。显示固定日期的快照，可能缺少后续更新；采集时间不是本 API 获取时间，也不是数据源的最后更新时间。"
         : "Live sources are unavailable or returned incomplete history. This dated snapshot may miss later updates; its capture time is not API retrieval or the source's last-update time."}</p>
     </div>;
   }

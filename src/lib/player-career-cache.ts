@@ -41,6 +41,7 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
         if (requestedId && data.provenance?.source === "nba-com" && data.provenance.providerPlayerId !== requestedId) {
           throw new Error("archive player identity mismatch");
         }
+        const retained = cache.get(url)?.data;
         // A complete career cannot silently lose previously observed seasons.
         // Providers can change team splits or correct stats within a season,
         // so live-to-live refreshes compare season identities. An archive also
@@ -49,18 +50,19 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
         // with the failure/stale state instead of mixing provider snapshots.
         // Entries remain scoped to this exact player/request URL; a first
         // successful empty response still means no available history.
-        if (entry?.data && (!containsCareerSeasons(data, entry.data)
-          || (entry.data.stale && !coversArchivedCareer(data, entry.data))
-          || (data.stale && !coversArchivedCareer(data, entry.data))
-          || (data.stale && !entry.data.stale && coversArchivedCareer(entry.data, data)))) {
+        if (retained && (!containsCareerSeasons(data, retained)
+          || (retained.stale && !coversArchivedCareer(data, retained))
+          || (data.stale && !coversArchivedCareer(data, retained))
+          || (data.stale && !retained.stale && coversArchivedCareer(retained, data)))) {
           throw new Error("incomplete career refresh");
         }
         cache.set(url, { data, expiresAt: now() + CAREER_SUCCESS_TTL_MS,
           retryAt: data.stale ? now() + CAREER_FAILURE_COOLDOWN_MS : 0 });
         return publish(url, { data, unavailable: data.stale === true, stale: data.stale === true });
       } catch {
-        cache.set(url, { data: entry?.data ?? null, expiresAt: 0, retryAt: now() + CAREER_FAILURE_COOLDOWN_MS });
-        return publish(url, snapshot(entry));
+        const retained = cache.get(url);
+        cache.set(url, { data: retained?.data ?? null, expiresAt: 0, retryAt: now() + CAREER_FAILURE_COOLDOWN_MS });
+        return publish(url, snapshot(retained));
       } finally {
         clearTimeout(timer);
         // Keep retained browser-session data bounded; in-flight work is separate.
@@ -72,6 +74,24 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
     return request;
   }
   return Object.assign(load, {
+    // Read-only render snapshot. Only exact-ID archived data may prime a URL.
+    read(url: string, raw?: PlayerCareerData | null): PlayerCareerData | null {
+      const current = cache.get(url)?.data;
+      if (current?.careerSeasons.length) return current;
+      const data = normalizePlayerCareerData(raw);
+      const id = new URL(url, "http://local.invalid").searchParams.get("id");
+      return data?.stale && data.provenance?.source === "nba-com"
+        && data.provenance.providerPlayerId === id && data.careerSeasons.length ? data : current ?? null;
+    },
+    // Commit only from the mount effect, before joining the single refresh.
+    seed(url: string, raw?: PlayerCareerData | null): void {
+      const entry = cache.get(url);
+      const data = this.read(url, raw);
+      if (data && data !== entry?.data) {
+        cache.set(url, { data, expiresAt: 0, retryAt: entry?.retryAt ?? 0 });
+        if (cache.size > 50) cache.delete(cache.keys().next().value!);
+      }
+    },
     subscribe(url: string, listener: (result: CareerLoadResult) => void) {
       const group = listeners.get(url) ?? new Set();
       group.add(listener); listeners.set(url, group);

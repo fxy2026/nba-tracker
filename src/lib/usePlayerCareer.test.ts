@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const hooks=vi.hoisted(()=>({index:0,slots:[] as unknown[],effects:[] as (()=>void)[],load:vi.fn()}));
-vi.mock('./player-career-cache',()=>({createPlayerCareerLoader:()=>Object.assign(hooks.load,{subscribe:()=>()=>{}})}));
+vi.mock('./player-career-cache',()=>({createPlayerCareerLoader:()=>Object.assign(hooks.load,{subscribe:()=>()=>{},seed:()=>{},read:()=>null})}));
 vi.mock('react',()=>({
  useRef:(initial:unknown)=>{const i=hooks.index++;if(!(i in hooks.slots))hooks.slots[i]={current:initial};return hooks.slots[i];},
  useState:(initial:unknown)=>{const i=hooks.index++;if(!(i in hooks.slots))hooks.slots[i]=initial;return[hooks.slots[i],(v:unknown)=>{hooks.slots[i]=typeof v==='function'?v(hooks.slots[i]):v;}];},
