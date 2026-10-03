@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import styles from "./favorites-mobile.module.css";
 import {
   Heart, Users, User, Copy, Check, Search, ListOrdered, Compass,
   ArrowUpRight, AlertTriangle, Newspaper, X, CalendarDays, Clock,
@@ -478,7 +479,7 @@ function GameRow({ label, game, isZh, kind }: {
   if (!game) {
     return (
       <div className="flex items-center gap-2 text-[11px]">
-        <span className="font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0">{label}</span>
+        <span className={`${styles.gameLabel} font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0`}>{label}</span>
         <span className="text-text-secondary/70 italic">
           {kind === "next" ? (isZh ? "暂无已知赛程" : "No scheduled game available") : (isZh ? "暂无比赛" : "No game yet")}
         </span>
@@ -497,37 +498,41 @@ function GameRow({ label, game, isZh, kind }: {
 
   const inner = (
     <>
-      <span className="font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0">{label}</span>
-      <RowIcon size={12} className="text-text-secondary/50 shrink-0" />
-      {live ? (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wide bg-success/15 text-success shrink-0">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
+      <span className={styles.gameSummary}>
+        <span className={`${styles.gameLabel} font-mono uppercase tracking-[0.12em] text-text-secondary/60 w-12 shrink-0`}>{label}</span>
+        <RowIcon size={12} className="text-text-secondary/50 shrink-0" />
+        {live ? (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wide bg-success/15 text-success shrink-0">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
+            </span>
+            {isZh ? "进行中" : "Live"}
           </span>
-          {isZh ? "进行中" : "Live"}
-        </span>
-      ) : (
-        kind === "last" && game.win !== undefined && (
-          <span className={`font-mono font-bold ${game.win ? "text-success" : "text-danger"}`}>
-            {game.win ? (isZh ? "胜" : "W") : (isZh ? "负" : "L")}
+        ) : (
+          kind === "last" && game.win !== undefined && (
+            <span className={`font-mono font-bold ${game.win ? "text-success" : "text-danger"}`}>
+              {game.win ? (isZh ? "胜" : "W") : (isZh ? "负" : "L")}
+            </span>
+          )
+        )}
+        {kind === "last" && game.teamScore != null && game.oppScore != null && (
+          <span className={`${styles.gameScore} font-mono tabular-nums text-text-primary`}>
+            {game.teamScore}<span className="text-text-secondary/40 mx-0.5">-</span>{game.oppScore}
           </span>
-        )
-      )}
-      {(playoff || playIn) && (
-        <span className="px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[9px] font-mono font-semibold uppercase tracking-[0.08em] shrink-0">
-          {playIn ? (isZh ? "附加赛" : "Play-In") : (isZh ? "季后赛" : "Playoffs")}
+        )}
+        <span className={`${styles.gameOpponent} text-text-secondary truncate`}>
+          {oppPrefix}{game.opponentTricode}
         </span>
-      )}
-      {kind === "last" && game.teamScore != null && game.oppScore != null && (
-        <span className="font-mono tabular-nums text-text-primary">
-          {game.teamScore}<span className="text-text-secondary/40 mx-0.5">-</span>{game.oppScore}
-        </span>
-      )}
-      <span className="text-text-secondary truncate">
-        {oppPrefix}{game.opponentTricode}
       </span>
-      <span className="ml-auto text-text-secondary/60 font-mono shrink-0">{date}</span>
+      <span className={styles.gameMetadata}>
+        {(playoff || playIn) && (
+          <span className={`${styles.gameType} px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[9px] font-mono font-semibold uppercase tracking-[0.08em] shrink-0`}>
+            {playIn ? (isZh ? "附加赛" : "Play-In") : (isZh ? "季后赛" : "Playoffs")}
+          </span>
+        )}
+        <span className={`${styles.gameDate} ml-auto text-text-secondary/60 font-mono shrink-0`}>{date}</span>
+      </span>
     </>
   );
 
@@ -536,13 +541,13 @@ function GameRow({ label, game, isZh, kind }: {
     return (
       <Link
         href={`/game/${game.gameId}`}
-        className="flex items-center gap-2 text-[11px] group hover:bg-bg-hover/60 rounded-md -mx-1 px-1 py-0.5 transition-colors"
+        className={`${styles.gameRow} flex items-center gap-2 text-[11px] group hover:bg-bg-hover/60 rounded-md -mx-1 px-1 py-0.5 transition-colors`}
       >
         {inner}
       </Link>
     );
   }
-  return <div className="flex items-center gap-2 text-[11px] py-0.5">{inner}</div>;
+  return <div className={`${styles.gameRow} flex items-center gap-2 text-[11px] py-0.5`}>{inner}</div>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

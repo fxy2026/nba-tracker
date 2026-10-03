@@ -664,7 +664,7 @@ const zh: Translations = {
     recentGames: "近期比赛",
     upcomingGames: "即将到来的比赛",
     noCompletedGames: "暂无已完成比赛",
-    noUpcomingGames: "暂无即将到来的比赛",
+    noUpcomingGames: "暂无可用的后续赛程记录",
     toughSchedule: "高难度赛程",
     easySchedule: "低难度赛程",
     average: "中等",

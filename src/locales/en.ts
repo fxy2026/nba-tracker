@@ -664,7 +664,7 @@ const en: Translations = {
     recentGames: "Recent Games",
     upcomingGames: "Upcoming Games",
     noCompletedGames: "No completed games yet",
-    noUpcomingGames: "No upcoming games scheduled",
+    noUpcomingGames: "No upcoming game records available",
     toughSchedule: "Tough Schedule",
     easySchedule: "Easy Schedule",
     average: "Average",

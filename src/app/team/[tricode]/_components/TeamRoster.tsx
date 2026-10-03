@@ -1,4 +1,5 @@
 import Link from "next/link";
+import styles from "./team-mobile.module.css";
 import { Users } from "lucide-react";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import type { PlayerInfo } from "@/lib/api";
@@ -25,12 +26,12 @@ export default function TeamRoster({ roster, t }: TeamRosterProps) {
       {roster.length >= 3 && (
         <div className="glass-tile p-4 mt-6">
           <h3 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary mb-3">{t.teamPage.topScorers}</h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`${styles.topScorers} grid grid-cols-3 gap-3`}>
             {roster.slice(0, 3).map((p) => (
-              <Link key={p.personId} href={`/player/${p.personId}`} className="flex flex-col items-center gap-2 bg-bg-secondary rounded-lg p-3 hover:bg-bg-hover transition-colors">
+              <Link key={p.personId} href={`/player/${p.personId}`} className={`${styles.scorerCard} flex flex-col items-center gap-2 bg-bg-secondary rounded-lg p-3 hover:bg-bg-hover transition-colors`}>
                 <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={48} />
-                <span className="text-sm font-medium text-text-primary text-center">{p.firstName} {p.lastName}</span>
-                <span className="text-lg font-bold text-accent">{p.pts} <span className="text-xs text-text-secondary font-normal">PPG</span></span>
+                <span className={`${styles.scorerName} text-sm font-medium text-text-primary text-center`}>{p.firstName} {p.lastName}</span>
+                <span className={`${styles.scorerPoints} text-lg font-bold text-accent`}>{p.pts} <span className="text-xs text-text-secondary font-normal">PPG</span></span>
               </Link>
             ))}
           </div>

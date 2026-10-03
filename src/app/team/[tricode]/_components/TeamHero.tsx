@@ -1,3 +1,4 @@
+import styles from "./team-mobile.module.css";
 import { hasPlayedRecord } from "@/lib/team-rank";
 import Link from "next/link";
 import TeamLogo from "@/components/TeamLogo";
@@ -68,21 +69,21 @@ export default function TeamHero({
         <TeamLogo teamId={team.teamId} tricode={team.tricode} size={280} />
       </div>
 
-      <div className="relative flex items-center gap-4 sm:gap-6">
-        <div className="shrink-0">
+      <div className={`${styles.heroIdentity} relative flex items-center gap-4 sm:gap-6`}>
+        <div className={`${styles.heroLogo} shrink-0`}>
           <TeamLogo teamId={team.teamId} tricode={team.tricode} size={88} />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2 flex-wrap">
+        <div className={`${styles.heroDetails} flex-1 min-w-0`}>
+          <p className={`${styles.heroMetadata} text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary flex items-center gap-2 flex-wrap`}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: team.primaryColor }} />
             {team.tricode} · {team.conference}ern · {team.division}
             <UpdatedPill ageMs={updatedAt} />
           </p>
-          <h1 className="leading-[0.9] tracking-[-0.03em] mt-1.5">
+          <h1 className={`${styles.heroTitle} leading-[0.9] tracking-[-0.03em] mt-1.5`}>
             <span className="block text-sm sm:text-base font-extralight text-text-secondary">{team.city}</span>
             <span className="block text-3xl sm:text-5xl font-bold text-text-primary">{team.name}</span>
           </h1>
-          <div className="flex items-center gap-3 mt-3 flex-wrap">
+          <div className={`${styles.heroActions} flex items-center gap-3 mt-3 flex-wrap`}>
             {hasRecord && confRank > 0 && (
               <span className={`text-[10px] font-mono uppercase tracking-[0.15em] px-2 py-1 rounded-full font-bold ${
                 confRank <= 6 ? "bg-accent-amber/15 text-accent-amber border border-accent-amber/30" :

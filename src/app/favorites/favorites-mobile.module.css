@@ -1,0 +1,65 @@
+/* The contents wrappers keep the existing single-row desktop geometry/order. */
+.gameSummary,
+.gameMetadata {
+  display: contents;
+}
+
+.gameType {
+  order: 1;
+}
+
+.gameScore,
+.gameOpponent {
+  order: 2;
+}
+
+.gameDate {
+  order: 3;
+}
+
+@media (max-width: 639px) {
+  .gameRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .gameSummary,
+  .gameMetadata {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .gameSummary {
+    gap: 6px;
+  }
+
+  .gameLabel {
+    width: 72px;
+  }
+
+  .gameScore,
+  .gameOpponent {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .gameOpponent {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .gameMetadata {
+    gap: 4px 8px;
+  }
+
+  .gameDate {
+    margin-left: 0;
+    flex-shrink: 1;
+    overflow-wrap: anywhere;
+  }
+}
