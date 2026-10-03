@@ -123,13 +123,14 @@ export default async function SchedulePage({ searchParams }: PageProps) {
       {/* Team filter */}
       <div className="mb-6 flex flex-wrap items-center gap-1.5">
         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary/70 mr-2">{t.schedulePage.filterByTeam}</span>
-        <Link href="/schedule" className={`chip ${!filterTeam ? "chip-active" : ""}`}>
+        <Link href="/schedule" prefetch={false} className={`chip ${!filterTeam ? "chip-active" : ""}`}>
           {t.schedulePage.all}
         </Link>
         {teamsList.map((t_team) => (
           <Link
             key={t_team.tricode}
             href={`/schedule?team=${t_team.tricode}`}
+            prefetch={false}
             className={`chip font-mono ${filterTeam === t_team.tricode ? "chip-active" : ""}`}
           >
             {t_team.tricode}

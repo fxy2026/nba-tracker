@@ -60,7 +60,7 @@ export default function TeamRoster({ roster, t }: TeamRosterProps) {
               {roster.map((p) => (
                 <tr key={p.personId} className="border-b border-border/50 hover:bg-bg-hover transition-colors">
                   <td className="py-2.5 px-4">
-                    <Link href={`/player/${p.personId}`} className="flex items-center gap-2 hover:text-accent transition-colors">
+                    <Link href={`/player/${p.personId}`} prefetch={false} className="flex items-center gap-2 hover:text-accent transition-colors">
                       <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={28} />
                       <span className="font-medium text-text-primary">{p.firstName} {p.lastName}</span>
                     </Link>

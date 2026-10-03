@@ -166,6 +166,7 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
                         <Link
                           key={tm.tricode}
                           href={`/team/${tm.tricode}`}
+                          prefetch={false}
                           title={tm.label}
                           className={`${styles.teamLink} text-[10px] px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary hover:text-accent transition-colors font-mono`}
                         >

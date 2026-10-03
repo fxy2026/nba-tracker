@@ -1,4 +1,5 @@
 import { isValidElement, type ReactElement, type ReactNode } from "react";
+import Link from "next/link";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -103,4 +104,12 @@ describe("news filter accessibility and unchanged selection behavior", () => {
     expect(css).toContain("scrollbar-width: thin"); expect(css).toContain("grid-column: 1 / -1");
     expect(css).not.toMatch(/display: none|overflow-x: hidden|font-size:/);
   });
+});
+
+it("article team badges retain exact destinations and disable secondary prefetch", () => {
+  const links = nodes(render()).filter(node => node.type === Link);
+  expect(links.map(node => node.props.href)).toEqual(["/team/BOS", "/team/LAL"]);
+  expect(links.map(node => text(node))).toEqual(["BOS", "LAL"]);
+  expect(links.map(node => node.props.title)).toEqual(["Boston Celtics", "Los Angeles Lakers"]);
+  for (const link of links) expect(link.props.prefetch).toBe(false);
 });

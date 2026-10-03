@@ -25,6 +25,7 @@ it("all player anchors use canonical identities, including distinct players shar
   const tree = SearchInput({}); const destinations = nodes(tree).filter(n => typeof n.props.href === "string");
   expect(destinations.map(n => n.props.href)).toEqual(["/player/201939", "/player/977", "/player/121", "/player/201607"]);
   expect(new Set(destinations.map(n => n.key)).size).toBe(4);
+  for (const link of destinations) expect(link.props.prefetch).toBe(false);
   const html = renderToStaticMarkup(tree); expect(html).toContain("ID 121"); expect(html).toContain("ID 201607");
   expect(html).toContain('role="combobox"'); expect(html).toContain('role="listbox"'); expect(html).toContain('aria-activedescendant="search-test-players-201939"');
 });
