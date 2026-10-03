@@ -23,6 +23,7 @@ interface Props {
 export default function ArchivedPlayerProfile({ player, locale, catalog, initialSelection, initialResource }: Props) {
   const isZh = locale === "zh";
   const legend = ALL_TIME_LEADERS.find(row => row.personId === player.id && !row.active);
+  const identityOnly = !initialSelection && !legend;
   const iconicSeasons = ICONIC_SEASONS.filter(row => row.personId === player.id);
   const title = isZh ? "球员主页" : "Player profile";
   const sourceLabel = player.sources.includes("all-time-registry") ? (isZh ? "NBA 官方历代球员名录" : "NBA official all-time player registry")
@@ -49,8 +50,10 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
       </div>
       <nav aria-label={isZh ? "球员页导航" : "Player page navigation"} className="mt-5 flex flex-wrap gap-2">
         <a href="#overview" className="chip min-h-11 inline-flex items-center gap-1.5"><UserRound size={14} />{isZh ? "概览" : "Overview"}</a>
-        <a href="#shooting" className="chip min-h-11 inline-flex items-center gap-1.5"><Target size={14} />{isZh ? "投篮分布" : "Shooting"}</a>
-        <a href="#career" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</a>
+        {identityOnly ? <a href="#shooting" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "数据可用情况" : "Data availability"}</a> : <>
+          <a href="#shooting" className="chip min-h-11 inline-flex items-center gap-1.5"><Target size={14} />{isZh ? "投篮分布" : "Shooting"}</a>
+          <a href="#career" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</a>
+        </>}
       </nav>
     </header>
 
@@ -65,7 +68,7 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
     </details>
 
     {player.shotArchiveStatus === "error" && <p className="mt-3 text-sm text-text-secondary" role="alert">{isZh ? "投篮档案暂时加载失败；球员身份仍然可用。这不代表没有投篮记录。请重新加载页面重试。" : "The shot archive could not load; the player identity is still available. This is not an absence of shot records. Reload the page to retry."}</p>}
-    {!initialSelection && !legend ? <section id="shooting" className="mt-5 scroll-mt-24 glass-tile p-5" role="status">
+    {identityOnly ? <section id="shooting" className="mt-5 scroll-mt-24 glass-tile p-5" role="status">
       <div id="career" className="scroll-mt-24">
         <h2 className="text-base font-semibold text-text-primary">{isZh ? "已收录球员身份" : "Player identity recorded"}</h2>
         <p className="mt-2 text-sm text-text-secondary">{player.shotArchiveStatus === "error" ? (isZh ? "生涯统计暂未收录；投篮档案加载失败。" : "Career statistics are not recorded; shooting-archive loading failed.") : (isZh ? "生涯统计与投篮记录暂未收录。缺失记录不表示零出场或零次出手。" : "Career statistics and shooting records are not yet available. Missing records do not imply zero games or zero attempts.")}</p>

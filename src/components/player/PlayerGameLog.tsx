@@ -193,12 +193,14 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
   // The season-type toggle renders unconditionally so a user who errored on
   // one season type can always switch back to the other.
   const toggle = (
-    <div className="glass-tile inline-flex overflow-hidden p-1">
+    <div role="group" aria-label={isZh ? "赛事类型" : "Season type"} className="glass-tile inline-flex overflow-hidden p-1">
       {SEASON_TYPES.map((st) => (
         <button
           key={st}
+          type="button"
+          aria-pressed={seasonType === st}
           onClick={() => setSeasonType(st)}
-          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+          className={`min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
             seasonType === st
               ? "bg-accent text-white shadow-md"
               : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
@@ -215,7 +217,7 @@ export default function PlayerGameLog({ playerId, playerName }: Props) {
       <div className="space-y-6">
         {toggle}
         <div className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="glass-tile h-28 w-32 shrink-0 skeleton-shimmer" />
             ))}

@@ -748,3 +748,19 @@ nav.sticky[data-scrolled="true"] {
   main { min-width: 0; }
   .chip { min-height: 44px; }
 }
+
+
+/* Frozen career labels must cover scrolled values in both themes. */
+.career-table-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--bg-card);
+}
+.career-table-sticky-best {
+  /* Both endpoints are opaque; retain the best-season tint without bleed-through. */
+  background-color: color-mix(in srgb, var(--accent) 5%, var(--bg-card));
+}
+.career-table-sticky-total {
+  background-color: var(--bg-secondary);
+}

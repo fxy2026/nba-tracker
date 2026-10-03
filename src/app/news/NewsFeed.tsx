@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ExternalLink, Newspaper } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { formatGameDate, formatRelative } from "@/lib/dates";
+import styles from "./news-mobile.module.css";
 
 export interface NewsArticle {
   id: string;
@@ -74,7 +75,7 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
 
   const hasFilter = Boolean(typeFilter || teamFilter);
   const chipCls = (active: boolean) =>
-    `text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
+    `${styles.filterChip} text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
       active
         ? "bg-accent text-white"
         : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"
@@ -84,14 +85,14 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
     <div>
       {/* Category filter — ESPN article types mapped to Hupu-style tags */}
       {typesPresent.length > 1 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <button onClick={() => setTypeFilter(null)} className={chipCls(!typeFilter)}>
+        <div role="group" aria-label={isZh ? "资讯分类" : "News category"} className="flex flex-wrap gap-1.5 mb-3">
+          <button type="button" aria-pressed={!typeFilter} onClick={() => setTypeFilter(null)} className={chipCls(!typeFilter)}>
             {isZh ? "全部" : "All"}
           </button>
           {typesPresent.map((tp) => {
             const meta = TYPE_META[tp] ?? FALLBACK_TYPE;
             return (
-              <button key={tp} onClick={() => setTypeFilter(typeFilter === tp ? null : tp)} className={chipCls(typeFilter === tp)}>
+              <button type="button" aria-pressed={typeFilter === tp} key={tp} onClick={() => setTypeFilter(typeFilter === tp ? null : tp)} className={chipCls(typeFilter === tp)}>
                 {isZh ? meta.zh : meta.en}
               </button>
             );
@@ -101,15 +102,15 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
 
       {/* Team filter — only teams actually present in the feed */}
       {teamsPresent.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+        <div role="group" aria-label={isZh ? "球队筛选" : "Filter by team"} className={`${styles.teamFilters} flex flex-wrap items-center gap-1.5 mb-4`}>
           <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mr-1">
             {isZh ? "球队" : "Teams"}
           </span>
-          <button onClick={() => setTeamFilter(null)} className={chipCls(!teamFilter)}>
+          <button type="button" aria-pressed={!teamFilter} onClick={() => setTeamFilter(null)} className={chipCls(!teamFilter)}>
             {isZh ? "全部" : "All"}
           </button>
           {teamsPresent.map((tri) => (
-            <button key={tri} onClick={() => setTeamFilter(teamFilter === tri ? null : tri)} className={`${chipCls(teamFilter === tri)} font-mono`}>
+            <button type="button" aria-pressed={teamFilter === tri} key={tri} onClick={() => setTeamFilter(teamFilter === tri ? null : tri)} className={`${chipCls(teamFilter === tri)} font-mono`}>
               {tri}
             </button>
           ))}
@@ -117,12 +118,13 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
       )}
 
       {filtered.length === 0 ? (
-        <div className="glass-tile p-12 text-center">
+        <div className="glass-tile px-5 py-8 sm:p-12 text-center">
           <Newspaper size={32} className="text-text-secondary mx-auto mb-3 opacity-30" />
           <p className="text-text-secondary">{isZh ? "没有符合筛选条件的资讯" : "No news matches the current filters"}</p>
           <button
+            type="button"
             onClick={() => { setTypeFilter(null); setTeamFilter(null); }}
-            className="text-xs text-accent hover:underline mt-2 cursor-pointer"
+            className={`${styles.clearButton} text-xs text-accent hover:underline mt-2 cursor-pointer`}
           >
             {isZh ? "清除筛选" : "Clear filters"}
           </button>
@@ -149,14 +151,14 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
                 </div>
               ) : null;
               return (
-                <article key={a.id} className="flex gap-3 px-4 py-3 hover:bg-bg-hover/50 transition-colors">
+                <article key={a.id} className={`${styles.article} ${a.image ? styles.withImage : ""} flex gap-3 px-4 py-3 hover:bg-bg-hover/50 transition-colors`}>
                   {thumb && (a.link ? (
                     <a href={a.link} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true" className="shrink-0">
                       {thumb}
                     </a>
                   ) : thumb)}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                  <div className={`${styles.content} flex-1 min-w-0`}>
+                    <div className={`${styles.tags} flex items-center gap-1.5 flex-wrap mb-1`}>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${meta.cls}`}>
                         {isZh ? meta.zh : meta.en}
                       </span>
@@ -165,7 +167,7 @@ export default function NewsFeed({ articles, fetchedAt }: { articles: NewsArticl
                           key={tm.tricode}
                           href={`/team/${tm.tricode}`}
                           title={tm.label}
-                          className="text-[10px] px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary hover:text-accent transition-colors font-mono"
+                          className={`${styles.teamLink} text-[10px] px-1.5 py-0.5 rounded bg-bg-hover text-text-secondary hover:text-accent transition-colors font-mono`}
                         >
                           {tm.tricode}
                         </Link>

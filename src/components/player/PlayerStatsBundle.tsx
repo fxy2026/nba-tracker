@@ -186,7 +186,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border text-text-secondary">
-              <th className="text-left py-2.5 px-3 sticky left-0 bg-bg-card">{t.common.season}</th>
+              <th className="text-left py-2.5 px-3 career-table-sticky">{t.common.season}</th>
               <th className="text-left py-2.5 px-2">{t.common.team}</th>
               <th className="text-center py-2.5 px-2">GP</th>
               <th className="text-center py-2.5 px-2">MIN</th>
@@ -206,7 +206,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
                 key={`${s.SEASON_ID}-${s.TEAM_ABBREVIATION}-${i}`}
                 className={`border-b border-border/30 hover:bg-bg-hover/50 ${i === bestIdx ? "bg-accent/5" : ""}`}
               >
-                <td className={`py-2 px-3 font-medium sticky left-0 whitespace-nowrap ${i === bestIdx ? "text-accent bg-accent/5" : "text-text-primary bg-bg-card"}`}>
+                <td className={`py-2 px-3 font-medium career-table-sticky whitespace-nowrap ${i === bestIdx ? "text-accent career-table-sticky-best" : "text-text-primary"}`}>
                   {s.SEASON_ID}
                   {i === bestIdx && <span className="ml-1 text-accent-amber text-[10px]" title={t.playerStats.bestSeason}>★</span>}
                 </td>
@@ -226,7 +226,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
             {/* Career Average Row */}
             {careerAvg && (
               <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
-                <td className="py-2 px-3 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold">{t.common.career}</td>
+                <td className="py-2 px-3 career-table-sticky career-table-sticky-total text-text-primary font-bold">{t.common.career}</td>
                 <td className="py-2 px-2 text-text-secondary">-</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.GP}</td>
                 <td className="text-center py-2 px-2 text-text-secondary">{careerAvg.MIN.toFixed(1)}</td>
@@ -243,7 +243,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
             {/* Current Season vs Career Comparison */}
             {currentSeason && careerAvg && seasons.length > 1 && (
               <tr className="bg-bg-hover/30 text-[10px]">
-                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>{latestYear} · {t.playerStats.vsCareerAvg}</td>
+                <td className="py-1.5 px-3 text-text-secondary italic" colSpan={4}>{latestYear} · {t.playerStats.vsCareerAvg}</td>
                 <td className="text-center py-1.5 px-2 font-medium">
                   {currentSeason.PTS > careerAvg.PTS ? "+" : ""}{(currentSeason.PTS - careerAvg.PTS).toFixed(1)}
                   <CompareArrow current={currentSeason.PTS} career={careerAvg.PTS} />
