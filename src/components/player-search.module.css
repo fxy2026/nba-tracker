@@ -38,3 +38,5 @@
 @media(max-width:380px) { .option { gap:9px; } .avatar { display:none; } }
 @media(prefers-reduced-motion:reduce) { .input { transition:none; } }
 @media(forced-colors:active) { .input, .popup { border-color:ButtonText; } .option[data-active='true'] { outline-color:Highlight; } .name mark { color:Highlight; } }
+
+@media(max-width:639px) { .clear { width:44px; height:44px; } .history, .retry { min-height:44px; } .context { font-size:12px; } }

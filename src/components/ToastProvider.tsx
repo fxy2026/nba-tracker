@@ -58,7 +58,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {toasts.length > 0 && createPortal(
         <div
-          className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 pointer-events-none"
+          className="mobile-floating fixed left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 pointer-events-none"
           role="status"
           aria-live="polite"
           aria-atomic="true"

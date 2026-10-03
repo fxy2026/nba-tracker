@@ -163,14 +163,14 @@ export default function Navbar() {
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 h-12 sm:h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-12 sm:h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group cursor-pointer">
+        <Link href="/" className="flex min-w-0 items-center gap-1.5 sm:gap-2 group cursor-pointer">
           <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-accent-gradient flex items-center justify-center transition-transform group-hover:scale-105 shadow-lg shadow-accent/30">
             <Trophy size={17} className="text-white" />
             <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
           </div>
-          <span className="text-base sm:text-lg font-bold tracking-tight">
+          <span className="text-sm sm:text-lg font-bold tracking-tight whitespace-nowrap">
             NBA<span className="text-accent">Tracker</span>
             <span className="text-[10px] text-text-secondary font-normal ml-1.5 hidden sm:inline font-mono uppercase tracking-[0.15em]">by FXY</span>
           </span>

@@ -13,7 +13,7 @@ export default function HomePlayerSearch() {
         <h2 id="home-player-search-heading" className="text-xl font-semibold tracking-tight text-text-primary">
           {isZh ? "搜索球员" : "Player search"}
         </h2>
-        <p className="mt-1 text-xs text-text-secondary">
+        <p className="mt-1 text-sm sm:text-xs leading-relaxed text-text-secondary">
           {isZh ? "从现役到历史，直达球员档案" : "Explore player profiles, past and present"}
         </p>
       </div>

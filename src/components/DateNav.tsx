@@ -23,6 +23,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const router = useRouter();
+  const navRef = useRef<HTMLDivElement>(null);
 
   // Timezone caption: localTz() reads Intl at runtime, so it can differ between
   // SSR and client. Defer to a post-mount flag to avoid a hydration mismatch on
@@ -56,9 +57,12 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       // Modifier combos (Alt+Left = browser Back) must reach the browser
-      if (e.altKey || e.metaKey || e.ctrlKey) return;
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.metaKey || e.ctrlKey) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
-      if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.closest('[role="dialog"]'))) return;
+      if (e.target instanceof HTMLElement) {
+        if (e.target.isContentEditable || e.target.closest('[role="dialog"], [role="combobox"], [role="slider"]')) return;
+        if (e.target.closest('button, a') && !navRef.current?.contains(e.target)) return;
+      }
       if (e.key === "ArrowLeft") { e.preventDefault(); navigate(offsetCalendarDate(selectedDate, -1)); }
       if (e.key === "ArrowRight") { e.preventDefault(); navigate(offsetCalendarDate(selectedDate, 1)); }
     };
@@ -66,32 +70,18 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
     return () => window.removeEventListener("keydown", handleKey);
   }, [selectedDate, navigate]);
 
-  // Mobile swipe navigation
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
+  const daysRef = useRef<HTMLDivElement>(null);
+  // Center the active day within this scroller only; do not scroll the page.
   useEffect(() => {
-    const el = document.getElementById("main-content");
-    if (!el) return;
-    const onTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      if (touchStartX.current === null || touchStartY.current === null) return;
-      const diff = e.changedTouches[0].clientX - touchStartX.current;
-      const diffY = e.changedTouches[0].clientY - touchStartY.current;
-      touchStartX.current = null;
-      touchStartY.current = null;
-      // Only trigger date change on mostly-horizontal swipes (Y delta < 50px)
-      // so vertical scrolls don't accidentally navigate.
-      if (Math.abs(diff) > 80 && Math.abs(diffY) < 50) {
-        navigate(offsetCalendarDate(selectedDate, diff > 0 ? -1 : 1));
-      }
-    };
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchend", onTouchEnd, { passive: true });
-    return () => { el.removeEventListener("touchstart", onTouchStart); el.removeEventListener("touchend", onTouchEnd); };
-  }, [selectedDate, navigate]);
+    const row = daysRef.current;
+    const selected = row?.querySelector<HTMLElement>('[aria-current="date"]');
+    if (!row || !selected) return;
+    const center = () => { row.scrollLeft = selected.offsetLeft - (row.clientWidth - selected.offsetWidth) / 2; };
+    center();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(center);
+    observer?.observe(row);
+    return () => observer?.disconnect();
+  }, [selectedDate, mounted, locale]);
 
   // Memoize the 7-day array
   const days = useMemo(() => {
@@ -116,19 +106,20 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
 
   return (
     <div
-      className="sticky top-[calc(env(safe-area-inset-top)+3rem)] sm:top-[calc(env(safe-area-inset-top)+4rem)] z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
+      ref={navRef}
+      className="sticky site-sticky-offset z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
       role="navigation"
       aria-label={isZh ? "日期导航" : "Date navigation"}
     >
       <button
         onClick={() => navigate(prevDate)}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label={isZh ? "前一天" : "Previous day"}
       >
         <ChevronLeft size={20} />
       </button>
 
-      <div className="flex gap-1 overflow-x-auto scrollbar-hide scroll-snap-x">
+      <div ref={daysRef} className="relative flex min-w-0 gap-1 overflow-x-auto overscroll-x-contain scrollbar-hide scroll-snap-x">
         {days.map((day) => {
           const isSelected = day.date === selectedDate;
           const isToday = day.date === today;
@@ -157,16 +148,16 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
 
       <button
         onClick={() => navigate(nextDate)}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label={isZh ? "后一天" : "Next day"}
       >
         <ChevronRight size={20} />
       </button>
 
-      {selectedDate !== today && (
+      {today && selectedDate !== today && (
         <button
           onClick={() => navigate(today)}
-          className="ml-2 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] glass-tile text-text-secondary hover:text-accent transition-colors cursor-pointer"
+          className="shrink-0 min-h-11 px-2 sm:ml-2 sm:px-3 py-1.5 text-xs sm:text-[10px] font-mono uppercase tracking-[0.15em] glass-tile text-text-secondary hover:text-accent transition-colors cursor-pointer"
         >
           {t.dateNav.today}
         </button>

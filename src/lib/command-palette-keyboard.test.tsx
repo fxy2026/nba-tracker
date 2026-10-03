@@ -289,3 +289,35 @@ vi.mock('react', async original => ({
     }
   },
 }));
+
+// Actual effect + key handler regression: touch users can browse before invoking the keyboard.
+it('phone opening focuses the panel, traps Shift+Tab, then restores the trigger on close', async () => {
+  vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+  await show();
+  const panel = doc.activeElement!;
+  expect(panel.props.tabIndex).toBe(-1);
+  expect(panel).not.toBe(input());
+  const event = key(panel, 'Tab', { shiftKey: true });
+  expect(event.defaultPrevented).toBe(true);
+  expect(doc.activeElement).toBe(links().at(-1));
+  key(doc.activeElement!, 'Escape');
+  expect(open).toBe(false);
+  expect(doc.activeElement).toBe(trigger);
+});
+it('phone dialog follows the visual viewport through keyboard open and dismissal', async () => {
+  const events = new Map<string, () => void>();
+  const viewport = { offsetTop: 0, height: 680,
+    addEventListener: vi.fn((name: string, fn: () => void) => events.set(name, fn)),
+    removeEventListener: vi.fn(),
+  };
+  vi.stubGlobal('window', { matchMedia: () => ({ matches: true }), visualViewport: viewport, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+  await show();
+  const overlay = [...hosts.values()].find(host => host.props.role === 'dialog')!;
+  expect(overlay.style).toMatchObject({ top: '0px', height: '680px', bottom: 'auto' });
+  viewport.height = 300; viewport.offsetTop = 90; events.get('resize')!();
+  expect(overlay.style).toMatchObject({ top: '90px', height: '300px' });
+  viewport.height = 680; viewport.offsetTop = 0; events.get('scroll')!();
+  expect(overlay.style).toMatchObject({ top: '0px', height: '680px' });
+  setOpen(false);
+  expect(viewport.removeEventListener).toHaveBeenCalledTimes(2);
+});

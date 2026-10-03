@@ -97,7 +97,7 @@ function CareerSection({ seasons, t, isZh, careerShooting, careerAverage }: { ca
           key={k}
           onClick={() => setView(k)}
           aria-pressed={view === k}
-          className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+          className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 py-1 text-xs sm:text-[11px] font-medium rounded-md transition-all cursor-pointer ${
             view === k ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -172,7 +172,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
 
   return (
     <div className="glass-tile overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+      <div className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t.playerStats.seasonBySeasonStats}</h3>
         {headerExtra}
       </div>
@@ -182,7 +182,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, caree
       {careerAverage && <p className="px-4 pb-2 text-xs text-text-secondary">{isZh
         ? "存档生涯汇总直接采用 NBA 网页的 Overall 行；不根据四舍五入后的赛季均值重建。"
         : "Archived career averages use the NBA page's Overall row directly, without reconstructing them from rounded season averages."}</p>}
-      <div className="overflow-x-auto">
+      <div className="table-scroll-x overflow-x-auto overscroll-x-contain" tabIndex={0} role="region" aria-label={t.playerStats.seasonBySeasonStats}>
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border text-text-secondary">

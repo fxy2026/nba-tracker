@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useId, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Search, X, UserRound, ArrowUpRight, LoaderCircle } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -100,7 +101,7 @@ export default function SearchInput({ initialQuery = "", variant = "page", autoF
 
   useEffect(() => {
     function outside(event: Event) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node) && !popupRef.current?.contains(event.target as Node)) {
         allowOpen.current = false;
         setShowDropdown(false);
         setSelectedIndex(-1);
@@ -159,7 +160,7 @@ export default function SearchInput({ initialQuery = "", variant = "page", autoF
     router.push(`/player/${player.id}`);
   }
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.nativeEvent?.isComposing) return;
+    if (event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
     if (event.key === "Escape") { event.preventDefault(); dismiss(); return; }
     if (event.key === "Tab") { dismiss(); return; }
     if ((event.key === "ArrowDown" || event.key === "ArrowUp") && results.length > 0) {
@@ -260,11 +261,11 @@ export default function SearchInput({ initialQuery = "", variant = "page", autoF
       </form>
       <span id={`${id}-hint`} className="sr-only">{isZh ? "支持中英文姓名、昵称和 NBA ID。使用上下方向键选择，回车打开，Esc 关闭。" : "Search names, known aliases or NBA IDs. Use arrow keys to choose, Enter to open, Escape to close."}</span>
       <span className="sr-only" aria-live="polite">{resultMenu ? status : ""}</span>
-      {helpMenu && <div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }}>
+      {helpMenu && typeof document !== "undefined" && createPortal(<div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }}>
         <div className={styles.hint}><strong>{isZh ? "从名字或球员 ID 开始" : "Start with a name or player ID"}</strong>{isZh ? "例如 Curry、乔丹、2544" : "Try Curry, Michael Jordan, or 2544"}</div>
         {searchHistory.length > 0 && !query && <><div className={styles.caption}>{isZh ? "最近搜索" : "Recent searches"}</div>{searchHistory.map((item) => <button key={item} type="button" className={styles.history} onMouseDown={(event) => event.preventDefault()} onClick={() => { changeQuery(item); inputRef.current?.focus(); }}>{item}</button>)}</>}
-      </div>}
-      {resultMenu && <div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }} data-player-search-popup="true">
+      </div>, document.body)}
+      {resultMenu && typeof document !== "undefined" && createPortal(<div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }} data-player-search-popup="true">
         {loading ? <div className={`${styles.hint} flex items-center gap-2`}><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{status}</div>
           : error ? <div className={styles.hint}><strong>{status}</strong>{isZh ? "请稍后重试，输入的内容会保留。" : "Please try again. Your search is still here."}<div><button type="button" className={styles.retry} onClick={() => { allowOpen.current = true; setRetry((value) => value + 1); }}>{isZh ? "重试" : "Try again"}</button></div></div>
           : results.length === 0 ? <div className={styles.hint}><strong>{t.searchPage.noResults}</strong>{isZh ? "试试完整姓名、英文拼写或 NBA ID。" : "Try the full name, another spelling, or an NBA ID."}</div>
@@ -286,7 +287,7 @@ export default function SearchInput({ initialQuery = "", variant = "page", autoF
               })}
             </div>
           </>}
-      </div>}
+      </div>, document.body)}
     </div>
   );
 }

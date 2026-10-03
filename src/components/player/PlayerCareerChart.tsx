@@ -78,7 +78,7 @@ export default function PlayerCareerChart({ seasons, headerExtra }: Props) {
     m.pct ? `${Math.round(v * 100)}%` : v >= 10 ? String(Math.round(v)) : v.toFixed(1);
 
   const header = (
-    <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+    <div className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
       <h3 className="text-sm font-semibold">{isZh ? "生涯走势" : "Career Trend"}</h3>
       {headerExtra}
     </div>
@@ -89,7 +89,7 @@ export default function PlayerCareerChart({ seasons, headerExtra }: Props) {
       key={mt.key}
       onClick={() => setMetric(mt.key)}
       aria-pressed={metric === mt.key}
-      className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+      className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 py-1 text-xs sm:text-[11px] font-medium rounded-md transition-all cursor-pointer ${
         metric === mt.key
           ? "bg-accent text-white shadow-md"
           : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"

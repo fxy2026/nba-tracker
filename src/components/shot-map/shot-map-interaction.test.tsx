@@ -258,6 +258,8 @@ describe.each(locales)('click-first shot details (%s)', locale => {
     expect(elements(tree, 'aside')).toHaveLength(0);
     expect(court(tree).props['aria-controls']).toBeUndefined();
     expect(ref.current.focus).toHaveBeenCalledOnce();
+    expect(ref.current.focus).toHaveBeenLastCalledWith({preventScroll:true});
+    expect(host(court(tree)).scrollIntoView).toHaveBeenLastCalledWith({block:'nearest'});
     expect(text(liveStatus(tree))).toBe('');
     clickBin(tree, bin);
     tree = app.render();
@@ -364,6 +366,22 @@ describe.each(locales)('click-first shot details (%s)', locale => {
     expectZoneDetails(app.render(), row, locale);
   });
 
+  it('closes tapped zone details and returns to the court without a default focus jump',()=>{
+    const app=mount({locale,initialView:'zones'});
+    let tree=app.render();
+    const path=elements(tree,node=>!!node.props['data-zone-id'])[0];
+    fire(path,'onClick',{stopPropagation:vi.fn()});
+    tree=app.render();
+    expect(elements(tree,'aside')).toHaveLength(1);
+    const courtHost=host(court(tree));
+    fire(button(tree,locale==='en'?'Close details':'关闭详情'),'onClick');
+    tree=app.render();
+    expect(elements(tree,'aside')).toHaveLength(0);
+    expect(courtHost.focus).toHaveBeenLastCalledWith({preventScroll:true});
+    expect(courtHost.scrollIntoView).toHaveBeenLastCalledWith({block:'nearest'});
+    expect(elements(tree,node=>Boolean(node.props['data-zone-id']&&node.props['aria-pressed']))).toHaveLength(0);
+  });
+
   it.each(['player', 'league', 'both', 'neither', 'zero'] as const)('labels %s small samples once, separately from zone color', sample => {
     const row: SeasonHeatmapDisplayRow = {
       ...zones.zones.find(zone => zone.id === 'midrange-center')!,
@@ -374,7 +392,7 @@ describe.each(locales)('click-first shot details (%s)', locale => {
     const app = mount({ locale, initialView: 'zones', aggregate: { status: 'ready', data: { ...zones, zones: zones.zones.map(zone => zone.id === row.id ? row : zone) } } });
     let tree = app.render();
     const path = elements(tree, node => node.props['data-zone-id'] === row.id)[0];
-    expect(path.props.fill).toBe(sample === 'zero' ? 'var(--map-zone-neutral, #d7d8d4)' : SHOT_MAP_ZONE_PALETTE.above);
+    expect(path.props.fill).toBe(sample === 'zero' ? 'var(--map-zone-neutral, #d7d8d4)' : `var(--map-zone-above, ${SHOT_MAP_ZONE_PALETTE.above})`);
     fire(path, 'onClick', { stopPropagation: vi.fn() });
     tree = app.render();
     expectZoneDetails(tree, row, locale);

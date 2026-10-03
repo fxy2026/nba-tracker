@@ -71,7 +71,7 @@ export default async function GameHero({
 
       {/* Top meta row — editorial */}
       <div className="relative flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] sm:text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">
           {isPlayoffs && <span className="text-accent-amber font-bold">★ {t.common.playoffs}</span>}
           {isCloseGame && <span className="text-danger font-bold">● {t.gameDetail.thriller}</span>}
           {isFinal && scoreDiff >= 20 && <span className="text-accent-amber font-bold">⚡ {t.gameDetail.blowout}</span>}
@@ -117,9 +117,9 @@ export default async function GameHero({
       </div>
 
       {/* Main score row */}
-      <div className="relative flex items-center justify-center gap-6 sm:gap-10 py-4">
+      <div className="relative grid grid-cols-2 items-start justify-items-center gap-x-3 gap-y-4 sm:flex sm:items-center sm:justify-center sm:gap-10 py-4">
         {/* Away */}
-        <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+        <div className="row-start-1 col-start-1 flex min-w-0 flex-col items-center gap-2 w-full sm:flex-1 max-w-[180px]">
           <TeamLogo teamId={boxScore.awayTeam.teamId} tricode={boxScore.awayTeam.teamTricode} size={64} />
           <Link href={`/team/${boxScore.awayTeam.teamTricode}`} className="text-center hover:text-accent transition-colors cursor-pointer">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Away</p>
@@ -130,7 +130,7 @@ export default async function GameHero({
         </div>
 
         {/* Score */}
-        <div className="flex items-center gap-3 sm:gap-5 shrink-0">
+        <div className="row-start-2 col-span-2 flex items-center justify-center gap-3 sm:gap-5 sm:shrink-0">
           <span
             className={`text-5xl sm:text-7xl font-light font-mono tabular-nums leading-none tracking-tight ${
               isFinal && !homeWon ? "text-text-primary" : isFinal ? "text-text-secondary" : "text-text-primary"
@@ -149,7 +149,7 @@ export default async function GameHero({
         </div>
 
         {/* Home */}
-        <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+        <div className="row-start-1 col-start-2 flex min-w-0 flex-col items-center gap-2 w-full sm:flex-1 max-w-[180px]">
           <TeamLogo teamId={boxScore.homeTeam.teamId} tricode={boxScore.homeTeam.teamTricode} size={64} />
           <Link href={`/team/${boxScore.homeTeam.teamTricode}`} className="text-center hover:text-accent transition-colors cursor-pointer">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary">Home</p>
@@ -164,12 +164,12 @@ export default async function GameHero({
         <div className="mt-2 border-t border-border pt-3">
           <QuarterScores homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} />
           {isFinal && (
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[11px] sm:text-[10px] text-text-secondary">
               <span className="px-1.5 py-0.5 rounded bg-accent-amber/10 text-accent-amber font-medium">Lead Changes: {leadChanges}</span>
             </div>
           )}
           {isFinal && quarterMvp && (
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-text-secondary">
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[11px] sm:text-[10px] text-text-secondary">
               <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">
                 {quarterMvp.qLabel} {t.gameDetail.mvp}
               </span>

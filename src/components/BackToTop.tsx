@@ -46,7 +46,7 @@ export default memo(function BackToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`fixed bottom-20 sm:bottom-8 right-4 z-40 w-11 h-11 rounded-full bg-accent-gradient text-white shadow-xl shadow-accent/30 ring-1 ring-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer ${
+      className={`mobile-floating [--desktop-floating-bottom:2rem] fixed right-4 z-40 w-11 h-11 rounded-full bg-accent-gradient text-white shadow-xl shadow-accent/30 ring-1 ring-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none translate-y-2"
       }`}
       aria-label={isZh ? "回到顶部" : "Back to top"}

@@ -18,7 +18,7 @@ export default function LocaleToggle() {
       aria-label={locale === "zh" ? t.locale.switchToEnglish : t.locale.switchToChinese}
     >
       <span className="flex items-center gap-1.5">
-        <Globe size={15} />
+        <Globe size={15} className="hidden sm:block" />
         <span className="font-mono font-bold">{locale === "zh" ? "EN" : "中"}</span>
       </span>
     </button>

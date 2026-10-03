@@ -732,3 +732,19 @@ nav.sticky[data-scrolled="true"] {
     scroll-behavior: auto !important;
   }
 }
+
+/* Keep content and floating controls above the phone navigation + home indicator. */
+:root { --site-header-height: calc(3rem + env(safe-area-inset-top, 0px)); }
+.app-shell { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+.mobile-floating { bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+.site-sticky-offset { top: var(--site-header-height); }
+@media (min-width: 640px) {
+  :root { --site-header-height: calc(4rem + env(safe-area-inset-top, 0px)); }
+  .app-shell { padding-bottom: 0; }
+  .mobile-floating { bottom: var(--desktop-floating-bottom, 1.5rem); }
+}
+@media (max-width: 639px) {
+  html { scroll-padding-top: calc(var(--site-header-height) + 1rem); }
+  main { min-width: 0; }
+  .chip { min-height: 44px; }
+}

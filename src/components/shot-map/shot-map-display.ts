@@ -7,7 +7,7 @@ export const SHOT_MAP_DELTA_BAND = .03;
 export const SHOT_MAP_VIEWBOX = '-270 -20 540 510';
 export const SHOT_MAP_PALETTE = { below: '#6c93a2', near: '#c6c3b9', above: '#c3836e', neutral: '#d7d8d4' } as const;
 // Presentation bins, not official NBA thresholds. Hex and density encodings stay separate.
-export const SHOT_MAP_ZONE_PALETTE = { farBelow: '#237ea5', below: '#85c9df', near: '#e6ca46', above: '#f4b36f', farAbove: '#e98232', neutral: SHOT_MAP_PALETTE.neutral } as const;
+export const SHOT_MAP_ZONE_PALETTE = { farBelow: '#5b879e', below: '#a2c4d0', near: '#e5d28a', above: '#edc6a2', farAbove: '#d58e63', neutral: SHOT_MAP_PALETTE.neutral } as const;
 export type ShotMapZoneBand = keyof typeof SHOT_MAP_ZONE_PALETTE;
 export type ShotMapView = 'hex' | 'density' | 'zones';
 export interface BinCounts { fgm: number; fga: number; fg3m: number; fg3a: number }

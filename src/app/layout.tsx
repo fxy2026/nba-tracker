@@ -115,7 +115,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://cdn.nba.com" />
         <link rel="dns-prefetch" href="https://cdn.nba.com" />
       </head>
-      <body className="min-h-full flex flex-col pb-14 sm:pb-0">
+      <body className="app-shell min-h-full flex flex-col">
         {/* Scroll-driven progress indicator — pure CSS, no JS listener */}
         <div className="scroll-progress-rail" aria-hidden="true" />
         <LocaleProvider initialLocale={locale}>

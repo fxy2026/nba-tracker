@@ -10,6 +10,7 @@ vi.mock("react", async original => ({ ...await original<typeof import("react")>(
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: (href: string) => { window.location.href = href; } }) }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: "en", t: en }) }));
+vi.mock('react-dom', () => ({ createPortal: (node: ReactNode) => node }));
 import SearchInput from "@/components/SearchInput";
 const base = { id: 201939, name: "Stephen Curry", aliases: [], sources: ["player-index"], href: "/player/201939", teamAbbr: "GSW", teamLabel: "Golden State Warriors", position: "G", indexProvenance: null, shotCoverage: null };
 const rows = [base, { ...base, id: 977, name: "Kobe Bryant" }, { ...base, id: 121, name: "Patrick Ewing" }, { ...base, id: 201607, name: "Patrick Ewing" }];
@@ -17,7 +18,7 @@ function nodes(node: ReactNode): { type: unknown; key: string | null; props: Rec
   const found: { type: unknown; key: string | null; props: Record<string, unknown> }[] = [];
   Children.forEach(node, child => { if (isValidElement<Record<string, unknown>>(child)) { found.push(child); found.push(...nodes(child.props.children as ReactNode)); } }); return found;
 }
-beforeEach(() => { runtime.cursor = 0; runtime.slots = ["Curry", rows, false, true, false, [], 0, false, 0]; vi.stubGlobal("window", { location: { href: "http://localhost/search", origin: "http://localhost" } }); });
+beforeEach(() => { vi.stubGlobal("document", { body: {} }); runtime.cursor = 0; runtime.slots = ["Curry", rows, false, true, false, [], 0, false, 0]; vi.stubGlobal("window", { location: { href: "http://localhost/search", origin: "http://localhost" } }); });
 afterEach(() => vi.unstubAllGlobals());
 
 it("all player anchors use canonical identities, including distinct players sharing a name", () => {

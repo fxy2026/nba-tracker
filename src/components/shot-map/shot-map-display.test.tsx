@@ -54,7 +54,7 @@ describe('refined product states and provenance',()=>{
  });
  it('adds five zone colors without altering Hex colors or its exact ±3 pp boundaries',()=>{
   expect(SHOT_MAP_PALETTE).toEqual({below:'#6c93a2',near:'#c6c3b9',above:'#c3836e',neutral:'#d7d8d4'});
-  expect(SHOT_MAP_ZONE_PALETTE).toEqual({farBelow:'#237ea5',below:'#85c9df',near:'#e6ca46',above:'#f4b36f',farAbove:'#e98232',neutral:'#d7d8d4'});
+  expect(SHOT_MAP_ZONE_PALETTE).toEqual({farBelow:'#5b879e',below:'#a2c4d0',near:'#e5d28a',above:'#edc6a2',farAbove:'#d58e63',neutral:'#d7d8d4'});
   for(const [made,expected] of [[54,'above'],[53,'near'],[47,'near'],[46,'below']] as const){
    expect(binColor(count(made,100),count(50,100),SHOT_MAP_ZONE_PALETTE)).toBe(SHOT_MAP_ZONE_PALETTE[expected]);
    expect(binColor(count(made,100),count(50,100))).toBe(SHOT_MAP_PALETTE[expected]);
@@ -74,7 +74,7 @@ describe('refined product states and provenance',()=>{
    expect(zoneReference(row)).toEqual({fgm:leagueFgm,fga:leagueFga});
    expect(zoneColor(row)).toBe(SHOT_MAP_ZONE_PALETTE[band]);
    const path=html.match(new RegExp(`<path[^>]*data-zone-id="${id}"[^>]*>`))?.[0];
-   expect(path).toContain(`fill="${SHOT_MAP_ZONE_PALETTE[band]}"`);
+   expect(path).toContain(`fill="var(--map-zone-${band}, ${SHOT_MAP_ZONE_PALETTE[band]})"`);expect(path).toContain(`data-zone-band="${band}"`);
    expect(path).toContain(`${fgm}/${fga}`);
   }
   for(const geometry of courtBasicGeometry){
@@ -115,24 +115,42 @@ describe('refined product states and provenance',()=>{
   for(const [band,color] of Object.entries(SHOT_MAP_ZONE_PALETTE).filter(([key])=>key!=='neutral')){
    expect(legend).toContain(`data-zone-legend-band="${band}"`);expect(legend).toContain(color);
   }
-  expect(legend).toContain(locale==='en'?'FG% difference Δ vs same-zone league archive (pp)':'与同分区联盟档案命中率之差 Δ（百分点）');
+  expect(legend).toContain(locale==='en'?'vs same-zone league archive · pp':'同分区联盟档案 · 百分点');
   for(const range of ['&lt; −10','−10 ≤ Δ &lt; −3','−3 ≤ Δ ≤ +3','+3 &lt; Δ ≤ +10','&gt; +10'])expect(legend).toContain(range);
   const html=explorer({locale,initialView:'zones'});
   expect(html).toContain(locale==='en'?'Five presentation bins, not official NBA thresholds':'五档颜色仅为展示分档，并非 NBA 官方阈值');
  });
- it('draws separate non-interactive two-tone statistical dividers with exact existing endpoints',()=>{
+ it('draws clean statistical dividers with exact existing endpoints, distinct from regulation markings',()=>{
   const sameColor={...zones,zones:zones.zones.map(row=>({...row,fgm:1,fga:1,leagueAverage:{displayedPct:'50.0',provenance:'weighted-archive-counts-not-official-displayed-LA' as const,leagueFgm:1,leagueFga:2}}))};
   const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={sameColor} view="zones" locale="en" selected={null} onSelect={()=>{}}/>);
   expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);
   expect((html.match(/data-zone-divider=/g)??[]).length).toBe(8);
-  for(const path of courtBasicStatisticalDividers)expect(html.split(`d="${path}"`).length-1).toBe(2);
+  for(const path of courtBasicStatisticalDividers)expect(html.split(`d="${path}"`).length-1).toBe(1);
   expect(html).toContain('pointer-events="none" aria-hidden="true" transform=');
-  expect(html).toContain('data-zone-court-halo="true"');
+  expect(html).not.toContain('data-zone-court-halo="true"');
   expect(html).toContain('vector-effect="non-scaling-stroke"');
   const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');
-  expect(css).toContain('stroke-dasharray:4 3');expect(css).toContain('stroke-width:1.1');expect(css).toContain('stroke-width:2.8');
-  expect(css).toContain('--map-zone-halo:#fff9eb');expect(css).toContain('--map-zone-halo:#fff4df');
+  expect(css).not.toContain('stroke-dasharray:4 3');expect(css).toContain('stroke-width:1.2');expect(css).toContain('stroke-width:2');
+  expect(css).toContain('--map-zone-divider:#fffcf6');expect(css).toContain('--map-zone-divider:#273238');
   expect(css).not.toContain('stroke-opacity:.35');
+ });
+ it('scopes the compact court and side legend to zones and shares theme-aware colors across map and legend',()=>{
+  const zoneHtml=explorer({initialView:'zones'});
+  expect(zoneHtml).toContain('zoneLayout');expect(zoneHtml).toContain('zoneVisual');
+  for(const view of ['hex','density'] as const){const html=explorer({initialView:view});expect(html).not.toContain('zoneLayout');expect(html).not.toContain('zoneVisual');}
+  const legend=renderToStaticMarkup(<ShotMapLegend view="zones" locale="en"/>);
+  for(const band of ['farBelow','below','near','above','farAbove'] as const)expect(legend).toContain(`var(--map-zone-${band}, ${SHOT_MAP_ZONE_PALETTE[band]})`);
+  const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');
+  expect(css).toContain('minmax(0,540px)');expect(css).toContain('@media(max-width:800px)');
+  expect(css).not.toMatch(/\.zone[^{}]*\{[^}]*filter:/);
+ });
+ it('draws the selected zone outline above markings without changing its metric color or adding a hit target',()=>{
+  const id='midrange-center';
+  const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={zones} view="zones" locale="en" selected={id} onSelect={()=>{}}/>);
+  expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);
+  expect((html.match(/data-selected-zone-outline=/g)??[]).length).toBe(1);
+  expect(html.indexOf('data-selected-zone-outline')).toBeGreaterThan(html.indexOf('data-court-markings'));
+  expect(html).not.toContain('fill-opacity=');
  });
  it('keeps zero, missing and invalid reference zones gray rather than guessing from displayed percentages',()=>{
   const base=zones.zones[0];
@@ -163,7 +181,7 @@ describe('refined product states and provenance',()=>{
  it('defaults to hex with true totals, compact legend and honest source scope',()=>{const html=explorer();expect(html).toContain('data-shot-map-view="hex"');for(const text of ['799','374','46.8%','39.3%','Area = attempts','fewer than 5 player or 20 league attempts','individual shots and league coverage are not fully verified','including this player']){expect(html).toContain(text);}expect(html).not.toContain('OFFICIAL AGGREGATES');});
  it('hides wrong-identity coordinate data and reports an error',()=>{const html=explorer({spatial:{status:'ready',data:{...data,playerId:99999}},aggregate:{status:'unavailable'}});expect(html).toContain('Unable to load this dataset');expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('46.8%');});
  it('separates loading, unavailable, and error without turning any into zeros',()=>{for(const status of ['loading','unavailable','error'] as const){const html=explorer({spatial:{status},aggregate:{status:'unavailable'}});expect(html).not.toContain('data-bin-id=');expect(html).not.toContain('0 / 0 FG');expect(html).toContain(status==='loading'?'Loading the shot archive':status==='error'?'Unable to load this dataset':'This view is not available');}});
- it('zone view uses source categories with the restored orange/yellow/blue palette and an accessible statistics list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).toContain('fill-opacity=".82"');expect(html).toContain('Five presentation bins, not official NBA thresholds');for(const color of Object.values(SHOT_MAP_ZONE_PALETTE).filter(color=>color!==SHOT_MAP_ZONE_PALETTE.neutral))expect(html).toContain(color);expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
+ it('zone view uses source categories with the restored orange/yellow/blue palette and an accessible statistics list',()=>{const html=explorer({initialView:'zones'});expect(html).toContain('data-shot-map-view="zones"');expect((html.match(/data-zone-id=/g)??[]).length).toBe(12);expect(html).not.toContain('fill-opacity=".82"');expect(html).toContain('Five presentation bins, not official NBA thresholds');for(const color of Object.values(SHOT_MAP_ZONE_PALETTE).filter(color=>color!==SHOT_MAP_ZONE_PALETTE.neutral))expect(html).toContain(color);expect(html).toContain('All zone statistics');expect(html).not.toContain('data-bin-id=');});
  it('keeps all geometry residuals and discrepancies separate from source BASIC zones',async()=>{
  const result=await loadHistoricalShotMap({playerId:201939,season:'2015-16',seasonType:'Regular Season'});if(result.status!=='ready')throw new Error('Missing2015');
  const html=explorer({selection:result.data,spatial:result,aggregate:{status:'unavailable'},datasets:[{...result.data,availability:'available'}]});
@@ -173,4 +191,31 @@ describe('refined product states and provenance',()=>{
  const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');expect(css).toContain("html[data-theme='dark']");expect(css).toContain('color-scheme:light');expect(css).not.toContain('html:not');expect(css).toContain('prefers-reduced-motion');expect(css).toContain('min-height:44px');
  const html=explorer();expect(html).not.toContain('Choose a shot location');expect(html).not.toContain('Previous location');expect(html).not.toContain('Next location');expect(html).toContain('aria-live="polite"');expect(css).toContain('max-width:720px');expect(css).toContain('.closeDetail');
  });
+ it.each(['en','zh'] as const)('provides readable compact mobile statistics without deleting full metric names (%s)',locale=>{
+  const html=explorer({locale,initialView:'zones',player:{id:201939,name:'Shai Gilgeous-Alexander / Alexander-Walker'}});
+  expect(html).toContain('Shai Gilgeous-Alexander / Alexander-Walker');
+  for(const label of locale==='en'?['Archived attempts','Field-goal percentage','Three-point percentage']:['档案出手','投篮命中率','三分命中率'])expect(html).toContain(`title="${label}"`);
+  for(const label of locale==='en'?['Attempts','FG%','3P%']:['出手','命中率','三分命中率'])expect(html).toContain(`>${label}</abbr>`);
+  expect(html).toContain('799');expect(html).toContain('46.8%');expect(html).toContain('39.3%');
+ });
+ it('keeps mobile controls, legends and details wrap-safe with readable minimum type and touch sizes',()=>{
+  const css=readFileSync(new URL('./shot-map.module.css',import.meta.url),'utf8');
+  const mobile=css.slice(css.indexOf('@media(max-width:700px)'));
+  expect(mobile).toContain('grid-template-columns:minmax(88px,.9fr) minmax(0,1.4fr)');
+  expect(mobile).toContain('min-height:52px');expect(mobile).toContain('min-height:44px');expect(mobile).toContain('min-height:48px');
+  expect(mobile).toContain('.detail dl { grid-template-columns:minmax(0,1fr); }');
+  expect(mobile).toContain('.modes svg { display:none; }');
+  expect(mobile).toContain('font-size:11px; white-space:normal; text-align:center;');
+  expect(mobile).not.toContain('font-size:9px');expect(mobile).not.toContain('overflow-x:hidden');
+  // Static breakpoint sizing contracts only, not a browser-layout assertion.
+  for(const viewport of [320,360,390,430]){
+   const content=viewport-2*16-2*12-2;
+   const season=(content-8)*.9/2.3;
+   const segment=((content-8)*1.4/2.3-8)/2;
+   expect(season).toBeGreaterThan(90);expect(segment).toBeGreaterThan(70);
+   expect((content-8-6)/3).toBeGreaterThan(80);
+   expect((content-20)/5).toBeGreaterThan(48);
+  }
+ });
+
 });

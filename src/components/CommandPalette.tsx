@@ -43,6 +43,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const baseId = useId();
   const listboxId = `${baseId}-results`;
 
@@ -53,7 +54,10 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
     const id = setTimeout(() => {
       setQuery("");
       setActiveIdx(0);
-      inputRef.current?.focus();
+      // Browsing the menu should not immediately cover it with a phone keyboard.
+      // Desktop retains the searchable-first keyboard workflow.
+      if (window.matchMedia?.("(max-width: 639px) and (pointer: coarse)").matches) dialogRef.current?.focus();
+      else inputRef.current?.focus();
     }, 0);
     return () => {
       clearTimeout(id);
@@ -67,6 +71,29 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
+  }, [open]);
+
+  // The on-screen keyboard can shrink the visual viewport without changing dvh.
+  useEffect(() => {
+    if (!open || !window.visualViewport) return;
+    const viewport = window.visualViewport;
+    const update = () => {
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+      const phone = window.matchMedia("(max-width: 639px)").matches;
+      overlay.style.top = phone ? `${viewport.offsetTop}px` : "";
+      overlay.style.height = phone ? `${viewport.height}px` : "";
+      overlay.style.bottom = phone ? "auto" : "";
+    };
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, [open]);
 
   // Filter once per query
@@ -144,7 +171,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         const last = focusables[focusables.length - 1];
         const active = document.activeElement as HTMLElement | null;
         if (e.shiftKey) {
-          if (active === first || !root.contains(active)) {
+          if (active === root || active === first || !root.contains(active)) {
             e.preventDefault();
             last.focus();
           }
@@ -174,7 +201,8 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 pt-[8vh]"
+      ref={overlayRef}
+      className="fixed inset-0 z-[100] flex items-start justify-center p-3 sm:p-6 pt-[max(12px,env(safe-area-inset-top))] sm:pt-[8vh]"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -186,11 +214,12 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
       {/* Panel */}
       <div
         ref={dialogRef}
-        className="relative w-full max-w-2xl max-h-[80vh] flex flex-col bg-bg-card border border-border rounded-2xl overflow-hidden shadow-2xl"
+        tabIndex={-1}
+        className="relative w-full min-w-0 max-w-2xl max-h-[min(100%,calc(100dvh-24px-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] sm:max-h-[80vh] flex flex-col bg-bg-card border border-border rounded-2xl overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 border-b border-border/60 shrink-0">
           <Search size={16} className="text-text-secondary shrink-0" />
           <input
             ref={inputRef}
@@ -204,7 +233,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             aria-controls={listboxId}
             aria-autocomplete="list"
             aria-activedescendant={activeIdx < flatItems.length ? `${baseId}-opt-${activeIdx}` : undefined}
-            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-base sm:text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
             autoComplete="off"
           />
           {query && (
@@ -221,7 +250,8 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             className="text-[12px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary border border-border px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
             aria-label={isZh ? "关闭 (Esc)" : "Close (Esc)"}
           >
-            ESC
+            <X size={18} aria-hidden="true" className="sm:hidden" />
+            <span className="hidden sm:inline">ESC</span>
           </button>
         </div>
 
@@ -231,7 +261,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
         </span>
 
         {/* Results scroll area */}
-        <div id={listboxId} role="listbox" className="flex-1 overflow-y-auto p-2" onMouseEnter={handleEnter}>
+        <div id={listboxId} role="listbox" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2" onMouseEnter={handleEnter}>
           {filtered.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-text-secondary">
@@ -267,7 +297,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
                           id={`${baseId}-opt-${globalIdx}`}
                           role="option"
                           aria-selected={isActive}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer ${
+                          className={`flex min-h-11 sm:min-h-0 items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer ${
                             isActive
                               ? "bg-accent/15 text-accent"
                               : isCurrentPage
@@ -295,7 +325,8 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
 
         {/* Footer hint */}
         <div className="border-t border-border/60 px-4 py-2 flex items-center justify-between text-[12px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 shrink-0">
-          <span className="flex items-center gap-3">
+          <span className="sm:hidden normal-case tracking-normal">{isZh ? "点击页面前往" : "Tap a page to open"}</span>
+          <span className="hidden sm:flex items-center gap-3">
             <span><kbd className="px-1 border border-border rounded">↑</kbd> <kbd className="px-1 border border-border rounded">↓</kbd> {isZh ? "切换" : "navigate"}</span>
             <span><kbd className="px-1 border border-border rounded">↵</kbd> {isZh ? "进入" : "open"}</span>
           </span>

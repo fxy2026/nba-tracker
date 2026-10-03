@@ -39,3 +39,5 @@
   .option[data-active='true'] { outline-color:Highlight; }
   .option[aria-selected='true'] { color:Highlight; }
 }
+
+@media(max-width:639px) { .option { min-height:44px; font-size:14px; } }

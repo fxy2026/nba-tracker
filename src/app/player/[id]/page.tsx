@@ -1,3 +1,4 @@
+import mobileStyles from "@/components/player/player-mobile.module.css";
 import { knownAverage, hasCompleteAverages, profileStatContext, type StatContext } from "@/lib/player-profile-stats";
 import { currentSeason } from "@/lib/constants";
 import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
@@ -200,7 +201,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       <div className="mt-2 flex flex-wrap gap-2">
         <Link
           href={`/compare?p1=${personId}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.15em] rounded-md bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors cursor-pointer"
+          className="inline-flex min-h-11 sm:min-h-0 items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.15em] rounded-md bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors cursor-pointer"
         >
           <GitCompareArrows size={12} />
           {isZh ? "对比此球员" : "Compare with…"}
@@ -215,11 +216,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       </nav>
 
       {/* ─── Bento Hero ─────────────────────────────────────── */}
-      <div id="overview" className="scroll-mt-24 mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">
+      <div id="overview" className={`${mobileStyles.overview} scroll-mt-24 mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]`}>
 
         {/* Tile 1 — HEADSHOT (Apple-card style: photo top + meta bottom, no bleed) */}
         <div
-          className="glass-tile glass-tile-featured col-span-2 sm:col-span-2 row-span-3 sm:row-span-3 group cursor-default bento-rise"
+          className={`${mobileStyles.portrait} glass-tile glass-tile-featured col-span-2 sm:col-span-2 row-span-3 sm:row-span-3 group cursor-default bento-rise`}
           style={{
             animationDelay: "0ms",
             // Team-color tinted halo on the featured ring
@@ -227,7 +228,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           }}
         >
           {/* Top: photo area — fixed height, image properly centered on face */}
-          <div className="relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary kenburns-parent">
+          <div className={`${mobileStyles.portraitImage} relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary kenburns-parent`}>
             {/* Team color gradient backdrop */}
             <div
               className="absolute inset-0 opacity-50"
@@ -257,7 +258,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
             />
           </div>
           {/* Bottom: meta */}
-          <div className="relative flex flex-col gap-1 p-4">
+          <div className={`${mobileStyles.portraitMeta} relative flex flex-col gap-1 p-4`}>
             <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-accent-amber">
               #{player.jersey} · {player.position}
             </p>
@@ -274,7 +275,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           </div>
           {/* Favorite + Share share one glass pill. Share embeds the canonical
               URL inside the text body so the link travels with the payload. */}
-          <div className="absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg">
+          <div className={`${mobileStyles.portraitActions} absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg`}>
             <FavoriteButton type="player" id={personId} />
             <ShareButton text={`${fullName} — ${playerIndexLabel(snapshot.provenance, locale)} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
           </div>
@@ -422,7 +423,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
                 ))}
               </div>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 auto-rows-[90px]">
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 auto-rows-[minmax(100px,auto)] sm:auto-rows-[90px]">
               <div className="glass-tile col-span-2 sm:col-span-3 row-span-1 p-3 flex items-center text-sm text-text-secondary">
                 {isZh ? "此数据源未提供两分、三分和罚球得分构成。" : "This source does not provide a two-point, three-point or free-throw scoring breakdown."}
               </div>
@@ -828,7 +829,7 @@ function SectionHeader({ icon: Icon, title, eyebrow, action }: {
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between mb-4 sm:mb-5">
+    <div className="flex flex-wrap items-end justify-between gap-3 mb-4 sm:mb-5">
       <div>
         {eyebrow && (
           <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-1">
@@ -857,7 +858,7 @@ function GlassFact({ icon: Icon, label, value, mono = false }: {
         <Icon size={11} className="text-text-secondary/70" />
         <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
       </div>
-      <p className={`text-sm sm:text-base font-semibold text-text-primary truncate ${mono ? "font-mono tabular-nums" : ""}`}>
+      <p className={`text-sm sm:text-base font-semibold text-text-primary break-words sm:truncate ${mono ? "font-mono tabular-nums" : ""}`}>
         {value}
       </p>
     </div>

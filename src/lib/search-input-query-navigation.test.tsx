@@ -71,6 +71,7 @@ vi.mock('react', async original => ({
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (href: string) => { window.location.href = href; } }) }));
 vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: 'en', t: en }) }));
+vi.mock('react-dom', () => ({ createPortal: (node: ReactNode) => node }));
 import SearchInput from '@/components/SearchInput';
 
 const curry = { id: 201939, name: 'Stephen Curry', aliases: [], sources: ['player-index'], href: '/player/201939', teamAbbr: 'GSW', teamLabel: 'Golden State Warriors', position: 'G', shotCoverage: null, indexProvenance: { source: 'bundled-archive', season: '2025-26', stale: true, retrievedAt: null } };
@@ -146,7 +147,7 @@ beforeEach(() => {
   storage = new Map();
   writeHistory = vi.fn();
   vi.stubGlobal('window', { location: { get href() { return url.href; }, set href(value: string) { url = new URL(value, url); } }, history: { replaceState: writeHistory, pushState: writeHistory } });
-  vi.stubGlobal('document', { addEventListener: (name: string, fn: (e: unknown) => void) => { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name)!.add(fn); }, removeEventListener: (name: string, fn: (e: unknown) => void) => listeners.get(name)?.delete(fn) });
+  vi.stubGlobal('document', { body: {}, addEventListener: (name: string, fn: (e: unknown) => void) => { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name)!.add(fn); }, removeEventListener: (name: string, fn: (e: unknown) => void) => listeners.get(name)?.delete(fn) });
   vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) });
   fetcher = vi.fn(async (request: string) => response(new URL(request, 'https://example.test').searchParams.get('q') === 'Curry' ? [curry] : [lebron]));
   vi.stubGlobal('fetch', fetcher);
@@ -350,4 +351,23 @@ describe('homepage player search keyboard, disclosure and errors', () => {
     (form.props.onSubmit as (event: unknown) => void)({ preventDefault }); flush();
     expect(preventDefault).toHaveBeenCalledTimes(1); expect(url.pathname).toBe('/search'); expect(url.searchParams.get('q')).toBe('Michael Jordan');
   });
+});
+
+it('Safari IME Enter keyCode229 does not select or submit a player', async () => {
+  mount('Curry'); await advance(); key('ArrowDown');
+  const preventDefault = vi.fn();
+  (input().props.onKeyDown as (event: unknown) => void)({ key: 'Enter', keyCode: 229, nativeEvent: { isComposing: false, keyCode: 229 }, preventDefault }); flush();
+  expect(preventDefault).not.toHaveBeenCalled(); expect(url.pathname).toBe('/search');
+});
+it.each(['pointerdown', 'focusin'])('portaled results retain the search on internal %s, while outside dismissal still works', async eventName => {
+  mount('Curry'); await advance();
+  const root = nodes(tree).find(n => n.props['data-player-search'])!;
+  const popup = nodes(tree).find(n => n.props['data-player-search-popup'])!;
+  const target = {};
+  (root.props.ref as { current: unknown }).current = { contains: () => false };
+  (popup.props.ref as { current: unknown }).current = { contains: (node: unknown) => node === target };
+  for (const listener of listeners.get(eventName) ?? []) listener({ target }); flush();
+  expect(destinations()).toContain('/player/201939');
+  for (const listener of listeners.get(eventName) ?? []) listener({ target: {} }); flush();
+  expect(destinations()).toEqual([]);
 });

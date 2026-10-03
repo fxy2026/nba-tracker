@@ -3,7 +3,7 @@ import type { SeasonShotMapDTO, ShotMapBin } from '@/lib/season-shot-map';
 import type { SeasonHeatmapRendererDTO } from '@/lib/season-heatmap';
 import { courtBasicGeometry, courtBasicStatisticalDividers } from '@/lib/season-heatmap-court-geometry';
 import { zoneName } from '../season-heatmap/season-heatmap-display';
-import { axialCenter, binColor, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE, SHOT_MAP_VIEWBOX, type ShotMapView } from './shot-map-display';
+import { axialCenter, binColor, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneBand, zoneColor, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE, SHOT_MAP_VIEWBOX, type ShotMapView } from './shot-map-display';
 import styles from './shot-map.module.css';
 export const binKey = (bin: Pick<ShotMapBin,'q'|'r'>) => `${bin.q}:${bin.r}`;
 export function CourtMarkings({zones=false}:{zones?:boolean}={}) {
@@ -19,15 +19,12 @@ export function CourtMarkings({zones=false}:{zones?:boolean}={}) {
     <g className={styles.hoop}><path d="M-30 430H30" strokeWidth="2.5" /><circle cx="0" cy="417.5" r="7.5" /></g>
   </>;
   return <g pointerEvents="none" aria-hidden="true" data-court-markings="regulation-50-by-47-feet" className={`${styles.courtLine}${zones?` ${styles.zoneCourtLine}`:''}`}>
-    {zones&&<g className={styles.zoneCourtHalo} data-zone-court-halo="true">{markings}</g>}{markings}
+    {markings}
   </g>;
 }
 function ZoneDividers() {
   return <g pointerEvents="none" aria-hidden="true" transform="translate(-250 470) scale(.8333333333 -.8333333333)" data-zone-dividers="schematic-source-categories">
-    {courtBasicStatisticalDividers.map((path,index)=><g key={path}>
-      <path d={path} className={styles.zoneDividerHalo} vectorEffect="non-scaling-stroke"/>
-      <path d={path} className={styles.zoneDivider} vectorEffect="non-scaling-stroke" data-zone-divider={index}/>
-    </g>)}
+    {courtBasicStatisticalDividers.map((path,index)=><path key={path} d={path} className={styles.zoneDivider} vectorEffect="non-scaling-stroke" data-zone-divider={index}/>)}
   </g>;
 }
 interface Props { data: SeasonShotMapDTO | null; zones: SeasonHeatmapRendererDTO | null; view: ShotMapView; locale: 'en'|'zh'; selected: string | null; onSelect: (key:string|null)=>void; detailsId?:string; courtRef?:Ref<SVGSVGElement> }
@@ -72,9 +69,9 @@ export default function ShotMapCourt({data,zones,view,locale,selected,onSelect,d
     <rect x="-270" y="-20" width="540" height="510" rx="12" fill="var(--map-court, #fafaf7)" />
     {view==='zones'&&zones&&<g transform="translate(-250 470) scale(.8333333333 -.8333333333)">{courtBasicGeometry.map(geometry=>{
       const row=zones.zones.find(z=>z.id===geometry.id); if(!row)return null;
-      const color=zoneColor(row);
-      return <path key={row.id} d={geometry.pathD} fill={color===SHOT_MAP_PALETTE.neutral?"var(--map-zone-neutral, #d7d8d4)":color} fillOpacity={selected===row.id?'.96':'.82'} fillRule="evenodd" className={styles.zone} role="button" tabIndex={0} aria-pressed={selected===row.id} aria-controls={detailsId}
-        aria-label={`${zoneName(row.id,locale)}: ${displayPct(fgRate(row))}, ${row.fgm}/${row.fga}`} data-zone-id={row.id}
+      const color=zoneColor(row), band=zoneBand(row);
+      return <path key={row.id} d={geometry.pathD} fill={color===SHOT_MAP_PALETTE.neutral?"var(--map-zone-neutral, #d7d8d4)":`var(--map-zone-${band}, ${color})`} vectorEffect="non-scaling-stroke" fillRule="evenodd" className={styles.zone} role="button" tabIndex={0} aria-pressed={selected===row.id} aria-controls={detailsId}
+        aria-label={`${zoneName(row.id,locale)}: ${displayPct(fgRate(row))}, ${row.fgm}/${row.fga}`} data-zone-id={row.id} data-zone-band={band}
         onClick={event=>{event.stopPropagation();onSelect(row.id);}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onSelect(row.id);}}}/>;
     })}</g>}
     {view==='density'&&<g clipPath={`url(#${clip})`}><g filter={`url(#${densityFilter})`} data-density-bandwidth="18-source-units-1.8-feet">{points.map(({bin,x,y})=><circle key={binKey(bin)} cx={x} cy={y} r={radius*.95} fill="var(--map-density, #789a97)" fillOpacity={max?bin.fga/max:0} data-density-attempts={bin.fga}/>)}</g></g>}
@@ -84,6 +81,7 @@ export default function ShotMapCourt({data,zones,view,locale,selected,onSelect,d
     </g>)}</g>}
     {view==='zones'&&zones&&<ZoneDividers/>}
     <CourtMarkings zones={view==='zones'} />
+    {view==='zones'&&selected&&<g transform="translate(-250 470) scale(.8333333333 -.8333333333)" pointerEvents="none" aria-hidden="true">{courtBasicGeometry.filter(geometry=>geometry.id===selected).map(geometry=><path key={geometry.id} d={geometry.pathD} className={styles.selectedZoneOutline} vectorEffect="non-scaling-stroke" data-selected-zone-outline={geometry.id}/>)}</g>}
     {selected&&view!=='zones'&&points.filter(p=>binKey(p.bin)===selected).map(({bin,x,y})=><g key="selected" clipPath={`url(#${clip})`} pointerEvents="none"><polygon points={hexPoints(x,y,radius)} fill="none" stroke="var(--map-focus, #477c84)" strokeWidth="2" strokeDasharray="3 3"/><title>{`${bin.fgm}/${bin.fga}`}</title></g>)}
   </svg>;
 }
@@ -98,8 +96,9 @@ export function ShotMapLegend({view,locale}:{view:ShotMapView;locale:'en'|'zh'})
       { band:'farAbove', label:'> +10' },
     ] as const;
     return <div className={`${styles.legend} ${styles.zoneLegend}`} aria-label={zh?'分区颜色图例':'Zone color legend'}>
-      <span className={styles.zoneLegendTitle}>{zh?'与同分区联盟档案命中率之差 Δ（百分点）':'FG% difference Δ vs same-zone league archive (pp)'}</span>
-      <div className={styles.zoneLegendBins}>{bands.map(({band,label})=><span key={band} data-zone-legend-band={band}><i style={{background:SHOT_MAP_ZONE_PALETTE[band]}}/>{label}</span>)}</div>
+      <span className={styles.zoneLegendTitle}>{zh?'命中率差值 Δ':'FG% difference Δ'}</span>
+      <span className={styles.zoneLegendSubtitle}>{zh?'同分区联盟档案 · 百分点':'vs same-zone league archive · pp'}</span>
+      <div className={styles.zoneLegendBins}>{bands.map(({band,label})=><span key={band} data-zone-legend-band={band} aria-label={label}><i style={{background:`var(--map-zone-${band}, ${SHOT_MAP_ZONE_PALETTE[band]})`}}/><span>{label}</span></span>)}</div>
       <div className={styles.zoneBoundaryKey}><span><i/>{zh?'球场标线':'Court markings'}</span><span><i/>{zh?'分区示意边界':'Illustrative zone boundaries'}</span></div>
     </div>;
   }

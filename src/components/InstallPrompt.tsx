@@ -110,7 +110,7 @@ export default function InstallPrompt() {
 
   return (
     <div
-      className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:max-w-sm z-40 glass-tile shadow-xl border-accent/30 p-3 flex items-center gap-3"
+      className="mobile-floating fixed right-4 left-4 sm:left-auto sm:max-w-sm z-40 glass-tile shadow-xl border-accent/30 p-3 flex items-center gap-3"
       role="dialog"
       aria-label={isZh ? "安装 NBA Tracker 应用" : "Install NBA Tracker app"}
     >

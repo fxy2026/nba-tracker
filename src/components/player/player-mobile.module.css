@@ -1,0 +1,14 @@
+/* Phone-only profile layout. Keep all desktop grid dimensions unchanged. */
+@media (max-width: 639px) {
+  .overview { grid-auto-rows: minmax(116px, auto); }
+  .overview > div { min-width: 0; grid-row: span 1; }
+  .overview > div:nth-child(2) { min-height: 164px; }
+  .overview .portrait { display: grid; grid-template-columns: 96px minmax(0, 1fr); min-height: 176px; }
+  .portrait .portraitImage { height: 100%; min-height: 176px; }
+  .portraitImage > img:first-of-type { object-fit: cover; object-position: 50% 15%; }
+  .portrait .portraitMeta { min-width: 0; padding: 18px 12px 58px; justify-content: center; }
+  .portraitMeta h1 { line-height: 1.1; overflow-wrap: anywhere; }
+  .portrait .portraitActions { top: auto; bottom: 8px; right: 8px; }
+  .overview p { overflow-wrap: anywhere; }
+  .overview [class~="text-[9px]"], .overview [class~="text-[10px]"] { font-size: 11px; letter-spacing: .04em; line-height: 1.4; }
+}

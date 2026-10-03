@@ -14,7 +14,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ eyebrow, icon: Icon, title, subtitle, action, className = "", updatedAt }: PageHeaderProps) {
   return (
-    <div className={`flex items-end justify-between gap-4 mb-6 ${className}`}>
+    <div className={`flex flex-col items-start sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-6 ${className}`}>
       <div className="min-w-0">
         {eyebrow && (
           <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">
@@ -30,7 +30,7 @@ export default function PageHeader({ eyebrow, icon: Icon, title, subtitle, actio
           <div className="mt-1.5"><UpdatedPill ageMs={updatedAt} /></div>
         )}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full min-w-0 sm:shrink-0">{action}</div>}
     </div>
   );
 }

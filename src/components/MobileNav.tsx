@@ -43,20 +43,21 @@ export default function MobileNav() {
         role="navigation"
         aria-label="Mobile navigation"
       >
-        <div className="flex items-center justify-around h-14">
+        <div className="grid grid-cols-6 items-center h-14 px-1">
           {mainLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center gap-0.5 min-w-[48px] min-h-[44px] justify-center px-2 py-1 rounded-lg transition-colors cursor-pointer relative ${
+                aria-current={active ? "page" : undefined}
+                className={`flex flex-col items-center gap-0.5 min-w-0 min-h-[48px] justify-center px-0.5 py-1 rounded-lg transition-colors cursor-pointer relative ${
                   active ? "text-accent" : "text-text-secondary"
                 }`}
               >
                 {active && <span className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />}
                 <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-                <span className={`text-[9px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
+                <span className={`text-[10px] leading-tight whitespace-nowrap ${active ? "font-bold" : "font-medium"}`}>{label}</span>
               </Link>
             );
           })}
@@ -65,13 +66,13 @@ export default function MobileNav() {
             aria-label={isZh ? "更多导航选项" : "More navigation options"}
             aria-haspopup="dialog"
             aria-expanded={moreOpen}
-            className={`flex flex-col items-center gap-0.5 min-w-[48px] min-h-[44px] justify-center px-2 py-1 rounded-lg transition-colors cursor-pointer relative ${
+            className={`flex flex-col items-center gap-0.5 min-w-0 min-h-[48px] justify-center px-0.5 py-1 rounded-lg transition-colors cursor-pointer relative ${
               moreOpen || isMoreActive ? "text-accent" : "text-text-secondary"
             }`}
           >
             {(moreOpen || isMoreActive) && <span className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />}
             <MoreHorizontal size={20} strokeWidth={moreOpen || isMoreActive ? 2.5 : 2} />
-            <span className={`text-[9px] ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>{t.nav.more}</span>
+            <span className={`text-[10px] leading-tight whitespace-nowrap ${moreOpen || isMoreActive ? "font-bold" : "font-medium"}`}>{t.nav.more}</span>
           </button>
         </div>
       </nav>
