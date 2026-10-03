@@ -24,10 +24,12 @@ vi.mock("@/lib/season-heatmap-catalog-server", () => ({
   loadPlayerSeasonHeatmapArchive: (...args: unknown[]) => { state.loadArchive(...args); return Promise.resolve(state.resource); },
 }));
 vi.mock("@/components/player/PlayerSeasonHeatmap", () => ({ default: () => <div data-testid="season-heatmap" /> }));
-vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NEXT_NOT_FOUND"); } }));
+vi.mock("@/lib/player-identity-server", () => ({ resolvePlayerIdentity: async (id: string) => parsePlayerId(id) !== null && state.player ? { id: state.player.playerId } : null }));
+vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NEXT_NOT_FOUND"); }, permanentRedirect: (url: string) => { throw new Error(`NEXT_REDIRECT:${url}`); } }));
 
 import Directory from "./page";
-import PlayerPage from "./[id]/page";
+import { GET as redirectPlayer } from "./[id]/route";
+import { parsePlayerId } from "@/lib/player-identity";
 
 function elements(node: ReactNode): React.ReactElement<Record<string, unknown>>[] {
   if (Array.isArray(node)) return node.flatMap(elements);
@@ -35,7 +37,7 @@ function elements(node: ReactNode): React.ReactElement<Record<string, unknown>>[
   return [node as React.ReactElement<Record<string, unknown>>, ...elements(node.props.children)];
 }
 const directory = (query: { q?: string | string[]; page?: string | string[] } = {}) => Directory({ searchParams: Promise.resolve(query) });
-const playerPage = (id = "977") => PlayerPage({ params: Promise.resolve({ id }) });
+const playerPage = (id = "977", query = "") => redirectPlayer(new Request(`https://nba.xpy.me/shot-archive/${id}${query}`), { params: Promise.resolve({ id }) });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -55,13 +57,13 @@ describe("historical shot archive directory", () => {
     const page = await directory();
     const html = renderToStaticMarkup(page);
     expect(html).toContain("Kobe Bryant");
-    expect(html).toContain('href="/shot-archive/977"');
+    expect(html).toContain('href="/player/977#shooting"');
     expect(html).toContain("2005–2025");
     expect(html).not.toContain("1996–2025");
     expect(html).toContain(locale === "zh" ? "并不表示零次出手" : "never zero attempts");
     expect(html).toContain(locale === "zh" ? "可能不完整" : "may be incomplete");
     expect(html).toContain(locale === "zh" ? "对应来源、赛季及赛事类型" : "corresponding source, season, and season type");
-    const link = elements(page).find(node => node.props.href === "/shot-archive/977");
+    const link = elements(page).find(node => node.props.href === "/player/977#shooting");
     expect(link?.props.prefetch).toBe(false);
     expect(state.searchPlayers).toHaveBeenCalledExactlyOnceWith("", 1);
     expect(state.loadArchive).not.toHaveBeenCalled();
@@ -93,7 +95,7 @@ describe("historical shot archive directory", () => {
     state.search.players = Array.from({ length: 48 }, (_, i) => ({ playerId: i + 1, name: `Archived Player ${i + 1}`, firstSeason: "2005-06", lastSeason: "2006-07", datasetCount: 2 }));
     const nodes = elements(await directory({ q: "a".repeat(150) }));
     expect(state.searchPlayers).toHaveBeenCalledExactlyOnceWith("a".repeat(100), 1);
-    expect(nodes.filter(node => typeof node.props.href === "string" && /^\/shot-archive\/\d+$/.test(node.props.href))).toHaveLength(48);
+    expect(nodes.filter(node => typeof node.props.href === "string" && /^\/player\/\d+#shooting$/.test(node.props.href))).toHaveLength(48);
     expect(state.getCatalog).not.toHaveBeenCalled();
     expect(state.loadArchive).not.toHaveBeenCalled();
   });
@@ -125,51 +127,24 @@ describe("historical shot archive directory", () => {
   });
 });
 
-describe("historical player shot page", () => {
-  it.each(["en", "zh"] as const)("loads a historical identity without consulting the active player index (%s)", async locale => {
-    state.locale = locale;
-    const page = await playerPage();
-    const html = renderToStaticMarkup(page);
-    const panel = elements(page).find(node => node.props.initialResource)!;
-    expect(state.getPlayer).toHaveBeenCalledExactlyOnceWith(977);
-    expect(state.getCatalog).toHaveBeenCalledExactlyOnceWith(977);
-    expect(state.loadArchive).toHaveBeenCalledExactlyOnceWith({ playerId: 977, season: "2015-16", seasonType: "Regular Season" });
-    expect(panel.props.player).toEqual({ id: 977, name: "Kobe Bryant" });
-    expect(panel.props.locale).toBe(locale);
-    expect(panel.props.initialSelection).toEqual({ playerId: 977, season: "2015-16", seasonType: "Regular Season" });
-    expect(panel.props.initialResource).toEqual({ status: "error" });
-    expect(panel.props.datasets).toEqual(state.catalog.map(({ playerId, season, seasonType, availability }) => ({ playerId, season, seasonType, availability })));
-    expect(JSON.stringify(panel.props)).not.toMatch(/privateEvidence|do-not-serialize|biography|teamLabel|fromYear|toYear/);
-    expect(html).toContain("Kobe Bryant");
-    expect(html).toContain(locale === "zh" ? "并非球员生涯起止年份" : "not the player&#x27;s career");
-  });
-
-  it("never seeds another player's identity or a private catalog field", async () => {
-    state.catalog.unshift({ playerId: 201939, season: "2025-26", seasonType: "Regular Season", availability: "available", privateEvidence: "private" });
-    const panel = elements(await playerPage()).find(node => node.props.initialResource)!;
-    expect(panel.props.datasets).toHaveLength(2);
-    expect(state.loadArchive).toHaveBeenCalledExactlyOnceWith({ playerId: 977, season: "2015-16", seasonType: "Regular Season" });
-    expect(JSON.stringify(panel.props)).not.toContain("201939");
-  });
-
-  it("renders unavailable when a listed player's catalog has no loadable entry", async () => {
-    state.catalog = [];
-    const page = await playerPage();
-    expect(elements(page).some(node => node.props.initialResource)).toBe(false);
-    expect(renderToStaticMarkup(page)).toContain("does not mean zero attempts");
+describe("legacy historical shot links", () => {
+  it("returns an actual HTTP 308 to the canonical player shooting section", async () => {
+    const response = await playerPage();
+    expect(response.status).toBe(308); expect(response.headers.get("location")).toBe("https://nba.xpy.me/player/977#shooting");
     expect(state.loadArchive).not.toHaveBeenCalled();
   });
-
+  it("preserves a valid season selection without forwarding other query fields", async () => {
+    const response = await playerPage("977", "?season=2014-15&seasonType=Regular+Season&next=https://untrusted.test");
+    expect(response.status).toBe(308); expect(response.headers.get("location")).toBe("https://nba.xpy.me/player/977?season=2014-15&seasonType=Regular+Season#shooting");
+  });
+  it("discards repeated query selections", async () => {
+    expect((await playerPage("977", "?season=2014-15&season=2015-16&seasonType=Playoffs")).headers.get("location")).toBe("https://nba.xpy.me/player/977#shooting");
+  });
   it.each(["abc", "977junk", "-977", "0", "0977", "9007199254740992"])("rejects malformed player identity %s before loading", async id => {
-    await expect(playerPage(id)).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(state.getPlayer).not.toHaveBeenCalled();
-    expect(state.getCatalog).not.toHaveBeenCalled();
+    expect((await playerPage(id)).status).toBe(404); expect(state.getCatalog).not.toHaveBeenCalled();
   });
-
-  it("returns not found for an unknown historical player without loading shot data", async () => {
+  it("returns not found for unknown players", async () => {
     state.player = null;
-    await expect(playerPage()).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(state.getCatalog).not.toHaveBeenCalled();
-    expect(state.loadArchive).not.toHaveBeenCalled();
+    expect((await playerPage()).status).toBe(404); expect(state.getCatalog).not.toHaveBeenCalled();
   });
 });

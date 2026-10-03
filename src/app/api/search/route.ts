@@ -4,7 +4,7 @@ import { expandQuery } from "@/lib/playerAliases";
 import { normalizePlayerSearchText } from "@/lib/player-search-text";
 import { TEAM_META } from "@/lib/teams";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
-import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { ICONIC_SEASONS, findIconicSeason } from "@/lib/iconicSeasons";
 import { getAccolades } from "@/lib/playerAccolades";
 
 export async function GET(request: Request) {
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   // (iconic-season composite id).
   if (id) {
     if (id.includes("-")) {
-      const season = ICONIC_SEASONS.find((s) => s.id === id);
+      const season = findIconicSeason(id);
       if (season) {
         const [firstName, ...rest] = season.name.split(" ");
         const team = TEAM_META[season.team];

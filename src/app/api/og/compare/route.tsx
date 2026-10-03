@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
-import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { findIconicSeason } from "@/lib/iconicSeasons";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ interface OgPlayer {
 
 function resolve(id: string): OgPlayer | null {
   if (id.includes("-")) {
-    const s = ICONIC_SEASONS.find((x) => x.id === id);
+    const s = findIconicSeason(id);
     if (s) return { name: s.name, season: s.season, team: s.team, ppg: s.ppg, rpg: s.rpg, apg: s.apg, personId: s.personId, isIconic: true };
   }
   if (!/^[1-9]\d*$/.test(id)) return null;

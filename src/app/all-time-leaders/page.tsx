@@ -214,7 +214,7 @@ export default function AllTimeLeadersPage() {
           // with a verified personId → /legends/[id] (static career stats).
           // Legacy stars without an NBA-CDN personId stay non-clickable.
           const href = p.personId > 0
-            ? (p.active ? `/player/${p.personId}` : `/legends/${p.personId}`)
+            ? `/player/${p.personId}`
             : null;
           return href ? (
             <Link key={`${p.name}-${i}`} href={href} className={`${cardCls} cursor-pointer`}>

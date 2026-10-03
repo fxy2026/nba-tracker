@@ -717,6 +717,15 @@ export interface PlayerIndexSnapshot {
   players: PlayerInfo[];
   provenance: PlayerIndexProvenance;
 }
+let bundledPlayerIndexSnapshot: PlayerIndexSnapshot | null = null;
+/** Immediate dated index for identity search; never starts an upstream request. */
+export function getBundledPlayerIndexSnapshot(): PlayerIndexSnapshot {
+  if (!bundledPlayerIndexSnapshot) bundledPlayerIndexSnapshot = {
+    players: mapPlayerIndexRows(archivePlayerIndex),
+    provenance: { source: "bundled-archive", season: playerIndexSeason(archivePlayerIndex), stale: true, retrievedAt: null },
+  };
+  return bundledPlayerIndexSnapshot;
+}
 const PLAYER_INDEX_TTL = 6 * 60 * 60 * 1000;
 const PLAYER_INDEX_RETRY = 15 * 60 * 1000;
 let playerIndexCache: PlayerIndexSnapshot | null = null;
@@ -809,10 +818,7 @@ async function fetchPlayerIndexSnapshot(): Promise<PlayerIndexSnapshot> {
     if (playerIndexCache) {
       playerIndexCache = { ...playerIndexCache, provenance: { ...playerIndexCache.provenance, stale: true } };
     } else {
-      playerIndexCache = {
-        players: mapPlayerIndexRows(archivePlayerIndex),
-        provenance: { source: "bundled-archive", season: playerIndexSeason(archivePlayerIndex), stale: true, retrievedAt: null },
-      };
+      playerIndexCache = getBundledPlayerIndexSnapshot();
     }
     playerIndexRetryAt = Date.now() + PLAYER_INDEX_RETRY;
   }

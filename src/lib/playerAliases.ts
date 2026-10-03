@@ -283,6 +283,14 @@ export const PLAYER_ALIASES: Record<string, string> = {
   "杨纳森": "wembanyama",
   "邓罗": "luke kennard",
 
+  // Historical identities remain tied to verified NBA IDs by the directory.
+  "巴克利": "charles barkley",
+  "查尔斯巴克利": "charles barkley",
+  "巴克莱": "charles barkley",
+  "格文": "george gervin",
+  "乔治格文": "george gervin",
+  "冰人": "george gervin",
+
   // Coaches / legends-as-coach references
   "禅师": "phil jackson",
   "phil jackson": "phil jackson",

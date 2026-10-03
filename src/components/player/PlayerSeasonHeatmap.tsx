@@ -13,7 +13,7 @@ interface PlayerSeasonHeatmapProps {
  player:{id:number;name:string;secondaryName?:string;teamLabel?:string};locale:'en'|'zh';datasets:readonly SeasonHeatmapDatasetMetadata[];
  initialSelection:HeatmapIdentity;initialResource:SeasonHeatmapArchiveResource;
 }
-export default function PlayerSeasonHeatmap(props:PlayerSeasonHeatmapProps) {return <HeatmapSession key={props.player.id} {...props}/>;}
+export default function PlayerSeasonHeatmap(props:PlayerSeasonHeatmapProps) {return <HeatmapSession key={datasetKey(props.initialSelection)} {...props}/>;}
 /** Selection-keyed resources prevent an older response from ever appearing under a newer label. */
 function useSeasonResource<T extends SeasonHeatmapResource|SpatialResource>(identity:HeatmapIdentity,available:boolean,retry:number,url:(id:HeatmapIdentity)=>string,decode:(value:unknown,id:HeatmapIdentity)=>T,initial?:{key:string;resource:T}):T|{status:'loading'}|{status:'unavailable'}|{status:'error'} {
  const key=datasetKey(identity),cache=useRef(new Map<string,T>(initial?[[initial.key,initial.resource]]:[]));

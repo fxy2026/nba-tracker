@@ -16,5 +16,5 @@ export function searchResultHref(result: SearchResultDestination): string {
     }
     return "/iconic-seasons";
   }
-  return result.isLegend ? `/legends/${result.personId}` : `/player/${result.personId}`;
+  return `/player/${result.personId}`;
 }

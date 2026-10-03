@@ -72,7 +72,7 @@ export const ICONIC_SEASONS: IconicSeason[] = [
     story: "Averaged 50.4 PPG and 48.5 MPG — both untouched records. Dropped 100 in a single game.",
     storyZh: "场均 50.4 分、48.5 分钟，至今无人逼近。单场 100 分。",
     scoringTitle: true },
-  { id: "77506-1961", personId: 77506, name: "Oscar Robertson", season: "1961-62", seasonYear: 1961, team: "CIN",
+  { id: "600015-1961", personId: 600015, name: "Oscar Robertson", season: "1961-62", seasonYear: 1961, team: "CIN",
     ppg: 30.8, rpg: 12.5, apg: 11.4,
     playoffPpg: 30.0, playoffRpg: 11.7, playoffApg: 12.2, playoffGp: 4,
     styles: ["do-it-all-wing", "elite-passer"],
@@ -242,7 +242,7 @@ export const ICONIC_SEASONS: IconicSeason[] = [
     story: "Player-coach. Last title of his 11. Beat the Lakers in 7 with Wilt on the other side.",
     storyZh: "球员兼教练。11 冠收官之作。G7 客场击败有张大帅的湖人。",
     champion: true },
-  { id: "78318-1977", personId: 78318, name: "Bill Walton", season: "1977-78", seasonYear: 1977, team: "POR",
+  { id: "78450-1977", personId: 78450, name: "Bill Walton", season: "1977-78", seasonYear: 1977, team: "POR",
     ppg: 18.9, rpg: 13.2, apg: 5.0, bpg: 2.5, fgPct: 0.522,
     styles: ["rim-protector", "playmaking-big"],
     story: "MVP. Foot injury cut the season short; otherwise would've been a likely repeat title.",
@@ -282,7 +282,7 @@ export const ICONIC_SEASONS: IconicSeason[] = [
     mvp: true, champion: true, finalsMvp: true },
 
   // ── 1990s addendum
-  { id: "901-1992", personId: 901, name: "Charles Barkley", season: "1992-93", seasonYear: 1992, team: "PHX",
+  { id: "787-1992", personId: 787, name: "Charles Barkley", season: "1992-93", seasonYear: 1992, team: "PHX",
     ppg: 25.6, rpg: 12.2, apg: 5.1, spg: 1.6, bpg: 1.0, fgPct: 0.520,
     playoffPpg: 26.6, playoffRpg: 13.6, playoffApg: 4.3, playoffGp: 24,
     styles: ["post-scorer", "rebound-machine", "do-it-all-wing"],
@@ -406,3 +406,15 @@ export const PLAY_STYLE_LABEL: Record<PlayStyle, { en: string; zh: string }> = {
   "switchable-big": { en: "Switchable Big", zh: "换防型内线" },
   "playmaking-big": { en: "Playmaking Big", zh: "组织型内线" },
 };
+
+/** Historical composite links refer to these specific curated season records.
+ * Never remap bare player IDs: each former number belongs to another real player. */
+const LEGACY_ICONIC_SEASON_IDS: Readonly<Record<string, string>> = {
+  "901-1992": "787-1992",
+  "77506-1961": "600015-1961",
+  "78318-1977": "78450-1977",
+};
+export function findIconicSeason(id: string): IconicSeason | undefined {
+  const canonical = LEGACY_ICONIC_SEASON_IDS[id] ?? id;
+  return ICONIC_SEASONS.find(season => season.id === canonical);
+}

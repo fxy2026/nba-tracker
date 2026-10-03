@@ -32,16 +32,16 @@ export const PLAYER_ACCOLADES: Record<number, PlayerAccolades> = {
   406: { championships: 4, mvps: 1, finalsMvps: 3, allStars: 15, allNba: 14, statTitles: 2 }, // Shaq
   165: { championships: 2, mvps: 1, finalsMvps: 2, allStars: 12, allNba: 12, dpoy: 2 }, // Hakeem
   78049: { championships: 11, mvps: 5, finalsMvps: 0, allStars: 12, allNba: 11 }, // B.Russell
-  77506: { championships: 1, mvps: 1, finalsMvps: 0, allStars: 12, allNba: 11 }, // O.Robertson
-  78491: { championships: 1, mvps: 0, finalsMvps: 1, allStars: 14, allNba: 12 }, // J.West
+  600015: { championships: 1, mvps: 1, finalsMvps: 0, allStars: 12, allNba: 11 }, // O.Robertson
+  78497: { championships: 1, mvps: 0, finalsMvps: 1, allStars: 14, allNba: 12 }, // J.West
   304: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 10, allNba: 11 }, // Stockton
   947: { championships: 0, mvps: 1, finalsMvps: 0, allStars: 11, allNba: 7, statTitles: 4 }, // Iverson
   1717: { championships: 1, mvps: 1, finalsMvps: 1, allStars: 14, allNba: 12 }, // Dirk
-  901: { championships: 0, mvps: 1, finalsMvps: 0, allStars: 11, allNba: 11 }, // Barkley
+  787: { championships: 0, mvps: 1, finalsMvps: 0, allStars: 11, allNba: 11 }, // Barkley
   708: { championships: 1, mvps: 1, finalsMvps: 0, allStars: 15, allNba: 9, dpoy: 1 }, // KG
-  76246: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 11, allNba: 10 }, // Baylor
-  76681: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 9, allNba: 7, statTitles: 4 }, // Gervin
-  77381: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 5, allNba: 4, statTitles: 1 }, // Maravich
+  76127: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 11, allNba: 10 }, // Baylor
+  76804: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 9, allNba: 7, statTitles: 4 }, // Gervin
+  77459: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 5, allNba: 4, statTitles: 1 }, // Maravich
   959: { championships: 0, mvps: 2, finalsMvps: 0, allStars: 8, allNba: 7, statTitles: 5 }, // Nash
   2548: { championships: 3, mvps: 0, finalsMvps: 1, allStars: 13, allNba: 8, statTitles: 1 }, // Wade
   2546: { championships: 0, mvps: 0, finalsMvps: 0, allStars: 10, allNba: 6, statTitles: 1 }, // Carmelo

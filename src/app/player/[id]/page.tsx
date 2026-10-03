@@ -9,6 +9,10 @@ import { formatGameDate } from "@/lib/dates";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
+import ArchivedPlayerProfile from "@/components/player/ArchivedPlayerProfile";
+import { resolvePlayerIdentity } from "@/lib/player-identity-server";
+import { parsePlayerId } from "@/lib/player-identity";
+import { playerShootingSelection, type PlayerProfileQuery } from "@/lib/player-profile-navigation";
 import { notFound } from "next/navigation";
 import { Ruler, Weight, MapPin, GraduationCap, Award, ExternalLink, Newspaper, Trophy, GitCompareArrows, TrendingUp, Users, ArrowUpRight, Activity, Globe, ArrowRight, Crown, Sparkles, type LucideIcon } from "lucide-react";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -40,13 +44,19 @@ const ShotHeatmap = nextDynamic(() => import("@/components/ShotHeatmap"));
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<PlayerProfileQuery>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const [snapshot, locale] = await Promise.all([getPlayerIndexSnapshot(), getLocale()]);
-  const player = snapshot.players.find(p => p.personId === parseInt(id, 10));
-  if (!player) return {};
+  const identity = await resolvePlayerIdentity(id, snapshot);
+  if (!identity) return {};
+  const player = snapshot.players.find(p => p.personId === identity.id);
+  if (!player) {
+    const desc = locale === "zh" ? `${identity.name} 球员主页：身份、已收录生涯数据与投篮分布。缺失资料会明确标注。` : `${identity.name} player profile: identity, available career records and shooting. Unavailable information is explicitly labelled.`;
+    return { title: `${identity.name} — NBA`, description: desc, alternates: { canonical: identity.href }, openGraph: { title: identity.name, description: desc, images: [getPlayerHeadshotUrl(identity.id)] } };
+  }
   const name = `${player.firstName} ${player.lastName}`;
   const provenanceLabel = playerIndexLabel(snapshot.provenance, locale);
   const desc = locale === "zh"
@@ -64,10 +74,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PlayerPage({ params }: PageProps) {
+export default async function PlayerPage({ params, searchParams }: PageProps) {
   const { id } = await params;
-  const personId = parseInt(id, 10);
-  if (isNaN(personId)) notFound();
+  const personId = parsePlayerId(id);
+  if (personId === null) notFound();
 
   // Player info + league index in parallel — the index is large and was
   // previously serialized after getPlayerInfo, adding ~100-300ms of TTFB.
@@ -76,8 +86,14 @@ export default async function PlayerPage({ params }: PageProps) {
     getLocale(),
   ]);
   const allPlayers = snapshot.players;
+  const identity = await resolvePlayerIdentity(id, snapshot);
+  if (!identity) notFound();
   const player = allPlayers.find(p => p.personId === personId);
-  if (!player) notFound();
+  const query = await searchParams ?? {};
+  const heatmapCatalog = (await getPlayerSeasonHeatmapCatalog(personId)).filter(entry => entry.playerId === personId).map(({ playerId, season, seasonType, availability }) => ({ playerId, season, seasonType, availability }));
+  const heatmapSelection = playerShootingSelection(personId, heatmapCatalog, query);
+  const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
+  if (!player) return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} />;
 
   const t = getTranslations(locale);
   const isZh = locale === "zh";
@@ -88,11 +104,6 @@ export default async function PlayerPage({ params }: PageProps) {
   // enters the browser bundle.
   const accolades = getAccolades(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
-  const heatmapCatalog = await getPlayerSeasonHeatmapCatalog(personId);
-  const heatmapEntry = heatmapCatalog[0];
-  const heatmapSelection = heatmapEntry ? { playerId: heatmapEntry.playerId, season: heatmapEntry.season, seasonType: heatmapEntry.seasonType } : null;
-  const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
-  const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
   // Client components will attempt fetch and show graceful fallback if blocked.
@@ -197,8 +208,14 @@ export default async function PlayerPage({ params }: PageProps) {
         </Link>
       </div>
 
+      <nav aria-label={isZh ? "球员页导航" : "Player page navigation"} className="mt-3 flex flex-wrap gap-2">
+        <a href="#overview" className="chip min-h-11 inline-flex items-center">{isZh ? "概览" : "Overview"}</a>
+        <a href="#shooting" className="chip min-h-11 inline-flex items-center">{isZh ? "投篮分布" : "Shooting"}</a>
+        <a href="#career" className="chip min-h-11 inline-flex items-center">{isZh ? "生涯数据" : "Career"}</a>
+      </nav>
+
       {/* ─── Bento Hero ─────────────────────────────────────── */}
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">
+      <div id="overview" className="scroll-mt-24 mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]">
 
         {/* Tile 1 — HEADSHOT (Apple-card style: photo top + meta bottom, no bleed) */}
         <div
@@ -316,11 +333,10 @@ export default async function PlayerPage({ params }: PageProps) {
         {/* Tile 4 — APG (with full context like PPG) */}
         <DataStatTile label="Assists" value={apg} ctx={astCtx} delayMs={180} />
 
-        {/* Tile 5 — Career arc (year range with progress + active dot) */}
+        {/* Tile 5 — Source-index season-start range; not played-season count */}
         <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: "240ms" }}>
           <div className="flex items-center justify-between">
-            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">Career</p>
-            <p className="text-[9px] font-mono tabular-nums text-accent-amber">{seasons || "—"} yrs</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "名录赛季起始年" : "Indexed season starts"}</p>
           </div>
           <div>
             <div className="flex items-baseline justify-between font-mono tabular-nums">
@@ -385,8 +401,6 @@ export default async function PlayerPage({ params }: PageProps) {
           if (rpg !== null && rpg >= 10) tags.push({ label: t.playerDetail.glassCleaner, tone: "green" });
           else if (rpg !== null && rpg >= 7) tags.push({ label: t.playerDetail.rebounder, tone: "green" });
           if (ppg >= 15 && rpg !== null && rpg >= 5 && apg !== null && apg >= 5) tags.push({ label: t.playerDetail.allAround, tone: "amber" });
-          if (seasons >= 15) tags.push({ label: t.playerDetail.veteran, tone: "amber" });
-          if (seasons <= 2 && ppg >= 10) tags.push({ label: t.playerDetail.risingStar, tone: "amber" });
         }
 
         return (
@@ -417,7 +431,7 @@ export default async function PlayerPage({ params }: PageProps) {
               <GlassFact icon={Weight} label={t.playerDetail.weight} value={player.weight ? `${player.weight} lbs` : "—"} />
               <GlassFact icon={MapPin} label={t.playerDetail.country} value={player.country || "—"} />
               <GlassFact icon={GraduationCap} label={t.playerDetail.college} value={player.college || "—"} />
-              <GlassFact icon={Award} label={t.playerDetail.statusLabel} value={seasons > 0 && player.toYear && parseInt(player.toYear) >= new Date().getFullYear() ? t.playerDetail.activeValue : "—"} />
+              <GlassFact icon={Award} label={t.playerDetail.statusLabel} value={isZh ? "状态未核实" : "Status not verified"} />
             </div>
           </section>
         );
@@ -426,12 +440,17 @@ export default async function PlayerPage({ params }: PageProps) {
       {/* ─── Stats Deep Dive (dynamic client sections — own styling) ─ */}
       <section className="mt-8 sm:mt-10 space-y-4">
         <SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" />
-        <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-        <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+        <div id="shooting" className="scroll-mt-24">
+        {identity.shotArchiveStatus === "error" && <p role="alert" className="mb-3 text-sm text-text-secondary">{isZh ? "投篮档案暂时加载失败；这不表示没有记录。请重新加载页面重试。" : "The shot archive could not load; this does not mean no records exist. Reload the page to retry."}</p>}
         {heatmapSelection && heatmapResource ? <PlayerSeasonHeatmap
           player={{ id: personId, name: fullName }} locale={locale}
           datasets={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource}
         /> : <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />}
+        </div>
+        <div id="career" className="scroll-mt-24 space-y-4">
+          <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+        </div>
         <PlayerMeasurements draftYear={player.draftYear} />
         <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
         <PlayerNews playerName={fullName} />

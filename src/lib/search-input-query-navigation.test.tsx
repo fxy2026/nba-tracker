@@ -35,6 +35,7 @@ vi.mock('react', async original => ({
     if (slot.kind !== 'state') throw new Error('Hook order changed');
     return [slot.value, slot.set];
   },
+  useId: () => 'player-search-test',
   useRef: (initial: unknown) => {
     const index = runtime.cursor++;
     runtime.hooks[index] ??= { kind: 'ref', value: { current: initial } };
@@ -50,6 +51,14 @@ vi.mock('react', async original => ({
     }
     return (runtime.hooks[index] as Extract<Hook, { kind: 'callback' }>).fn;
   },
+  useLayoutEffect: (run: Effect['run'], deps?: readonly unknown[]) => {
+    const index = runtime.cursor++;
+    const slot = runtime.hooks[index];
+    const old = slot?.kind === 'effect' ? slot.value : undefined;
+    if (!old || !deps || deps.length !== old.deps?.length || deps.some((d, i) => !Object.is(d, old.deps?.[i]))) {
+      runtime.effects.push({ index, effect: { run, deps }, old });
+    }
+  },
   useEffect: (run: Effect['run'], deps?: readonly unknown[]) => {
     const index = runtime.cursor++;
     const slot = runtime.hooks[index];
@@ -60,16 +69,18 @@ vi.mock('react', async original => ({
   },
 }));
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (href: string) => { window.location.href = href; } }) }));
 vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: 'en', t: en }) }));
 import SearchInput from '@/components/SearchInput';
 
-const curry = { personId: 201939, firstName: 'Stephen', lastName: 'Curry', teamAbbr: 'GSW', teamId: 1610612744, teamName: 'Warriors', teamCity: 'Golden State', jersey: '30', position: 'G', pts: null, reb: null, ast: null, indexProvenance: { source: 'bundled-archive', season: '2025-26', stale: true, retrievedAt: null } };
-const lebron = { ...curry, personId: 2544, firstName: 'LeBron', lastName: 'James' };
-const jordan = { ...curry, personId: 893, firstName: 'Michael', lastName: 'Jordan', isLegend: true };
-const currySeason = { ...curry, isIconicSeason: true, iconicId: '201939-2015', season: '2015-16' };
-type Row = typeof curry | typeof jordan | typeof currySeason;
+const curry = { id: 201939, name: 'Stephen Curry', aliases: [], sources: ['player-index'], href: '/player/201939', teamAbbr: 'GSW', teamLabel: 'Golden State Warriors', position: 'G', shotCoverage: null, indexProvenance: { source: 'bundled-archive', season: '2025-26', stale: true, retrievedAt: null } };
+const lebron = { ...curry, id: 2544, name: 'LeBron James', href: '/player/2544' };
+const jordan = { ...curry, id: 893, name: 'Michael Jordan', href: '/player/893', indexProvenance: null };
+const archiveOnly = { ...curry, id: 767, name: 'Manute Bol', href: '/player/767', indexProvenance: null, shotCoverage: { firstSeason: '1996-97', lastSeason: '1996-97', datasetCount: 1 } };
+type Row = typeof curry | typeof jordan | typeof archiveOnly;
 let tree: ReactNode;
 let committedQuery: string;
+let variant: "page" | "home";
 let url: URL;
 let history: string[];
 let historyIndex: number;
@@ -92,7 +103,7 @@ function flush() {
   for (let renders = 0; runtime.dirty; renders++) {
     if (renders > 40) throw new Error('Effects did not settle');
     runtime.dirty = false; runtime.cursor = 0; runtime.effects = [];
-    tree = SearchInput({ initialQuery: committedQuery });
+    tree = SearchInput({ initialQuery: committedQuery, variant });
     const effects = runtime.effects;
     for (const pending of effects) pending.old?.cleanup?.();
     for (const pending of effects) {
@@ -113,7 +124,7 @@ function forward() { expect(historyIndex).toBeLessThan(history.length - 1); move
 function mount(value = '') { history = [value]; historyIndex = 0; moveTo(value); }
 function type(value: string) { (input().props.onChange as (e: unknown) => void)({ target: { value } }); flush(); }
 function clear() {
-  const button = nodes(tree).find(n => n.type === 'button' && String(n.props.className).includes('absolute right-3'))!;
+  const button = nodes(tree).find(n => n.type === 'button' && n.props['aria-label'] === 'Clear search')!;
   (button.props.onClick as () => void)(); flush();
 }
 function key(value: string) { const preventDefault = vi.fn(); (input().props.onKeyDown as (e: unknown) => void)({ key: value, preventDefault }); flush(); return preventDefault; }
@@ -130,7 +141,7 @@ function replayEffects() {
 
 beforeEach(() => {
   runtime.hooks = []; runtime.cursor = 0; runtime.effects = []; runtime.dirty = true;
-  runtime.mounted = true; runtime.lateSetters = 0; committedQuery = ''; listeners.clear();
+  runtime.mounted = true; runtime.lateSetters = 0; committedQuery = ''; variant = 'page'; listeners.clear();
   vi.useFakeTimers();
   storage = new Map();
   writeHistory = vi.fn();
@@ -239,8 +250,8 @@ describe('SearchInput stale responses and cancellation', () => {
 
 describe('SearchInput existing result and history handlers', () => {
   it.each([
-    [curry, '/player/201939'], [jordan, '/legends/893'], [currySeason, '/compare?p1=201939-2015'],
-  ] as const)('preserves source-aware click and Enter destinations %#', async (row, href) => {
+    [curry, '/player/201939'], [jordan, '/player/893'], [archiveOnly, '/player/767'],
+  ] as const)('uses canonical click and Enter destinations %#', async (row, href) => {
     fetcher.mockResolvedValue(response([row])); mount('Curry'); await advance();
     expect(destinations()).toEqual([href]);
     (links()[0].props.onClick as () => void)(); flush(); expect(destinations()).toEqual([]);
@@ -253,12 +264,90 @@ describe('SearchInput existing result and history handlers', () => {
     (input().props.onFocus as () => void)(); flush();
     const chip = nodes(tree).find(n => n.type === 'button' && n.props.children === 'Curry')!;
     const preventDefault = vi.fn(); (chip.props.onMouseDown as (e: unknown) => void)({ preventDefault }); flush();
-    expect(preventDefault).toHaveBeenCalledTimes(1); expect(query()).toBe('Curry'); await advance();
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    (chip.props.onClick as () => void)(); flush(); expect(query()).toBe('Curry'); await advance();
     expect(destinations()).toEqual(['/player/201939']);
   });
   it('valid empty results finish loading and show no-result content', async () => {
     fetcher.mockResolvedValue(response([])); mount('Unknown'); await advance();
     expect(loading()).toBe(false); expect(destinations()).toEqual([]);
     expect(nodes(tree).some(n => n.props.children === en.searchPage.noResults)).toBe(true);
+  });
+});
+
+
+describe('homepage player search keyboard, disclosure and errors', () => {
+  it('uses a bounded homepage endpoint and accepts a one-digit NBA ID', async () => {
+    variant = 'home'; fetcher.mockResolvedValue(response([{ ...curry, id: 2, name: 'Small ID fixture' }])); mount();
+    expect(input().props.autoFocus).toBe(false); type('2'); await advance();
+    expect(fetcher.mock.calls[0][0]).toBe('/api/players/search?q=2&limit=8');
+    expect(destinations()).toEqual(['/player/2']);
+    expect(key('Enter')).toHaveBeenCalledTimes(1); expect(window.location.href).toContain('/player/2');
+  });
+  it('wraps arrow navigation, discloses the active option, and Escape preserves the query', async () => {
+    fetcher.mockResolvedValue(response([curry, jordan])); mount('Curry'); await advance();
+    key('ArrowUp'); expect(input().props['aria-activedescendant']).toBe('player-search-test-players-893');
+    key('ArrowDown'); expect(input().props['aria-activedescendant']).toBe('player-search-test-players-201939');
+    key('ArrowDown'); key('ArrowDown'); expect(input().props['aria-activedescendant']).toBe('player-search-test-players-201939');
+    key('Escape'); expect(destinations()).toEqual([]); expect(query()).toBe('Curry'); expect(input().props['aria-expanded']).toBe(false);
+    key('ArrowDown'); expect(destinations()).toEqual(['/player/201939', '/player/893']);
+    expect(input().props['aria-activedescendant']).toBe('player-search-test-players-201939');
+    key('Tab'); expect(destinations()).toEqual([]);
+  });
+  it('does not interpret an IME composition Enter as choosing a player', async () => {
+    mount('Curry'); await advance(); key('ArrowDown');
+    const preventDefault = vi.fn(); (input().props.onKeyDown as (event: unknown) => void)({ key: 'Enter', nativeEvent: { isComposing: true }, preventDefault }); flush();
+    expect(preventDefault).not.toHaveBeenCalled(); expect(url.pathname).toBe('/search');
+  });
+  it('an Escape during loading stops late results from reopening the dropdown', async () => {
+    const pending = deferred<ReturnType<typeof response>>(); fetcher.mockImplementationOnce(() => pending.promise);
+    mount('Curry'); await advance(); key('Escape'); pending.resolve(response([curry])); await settle();
+    expect(destinations()).toEqual([]); expect(query()).toBe('Curry');
+    (input().props.onFocus as () => void)(); flush(); expect(destinations()).toEqual(['/player/201939']);
+  });
+  it('outside pointer or focus dismissal also prevents a pending request from reopening', async () => {
+    const pending = deferred<ReturnType<typeof response>>(); fetcher.mockImplementationOnce(() => pending.promise);
+    mount('Curry'); await advance();
+    const root = nodes(tree).find(n => n.props['data-player-search'])!;
+    (root.props.ref as { current: unknown }).current = { contains: () => false };
+    for (const listener of listeners.get('pointerdown') ?? []) listener({ target: {} }); flush();
+    pending.resolve(response([curry])); await settle(); expect(destinations()).toEqual([]);
+    (input().props.onFocus as () => void)(); flush(); expect(destinations()).toEqual(['/player/201939']);
+    for (const listener of listeners.get('focusin') ?? []) listener({ target: {} }); flush(); expect(destinations()).toEqual([]);
+  });
+  it('a no-match response is explicit, remains dismissible and reopens on focus', async () => {
+    fetcher.mockResolvedValue(response([])); mount('Missing'); await advance();
+    expect(nodes(tree).some(n => n.props.children === en.searchPage.noResults)).toBe(true);
+    key('Escape'); (input().props.onFocus as () => void)(); flush();
+    expect(nodes(tree).some(n => n.props.children === en.searchPage.noResults)).toBe(true);
+  });
+  it('network failures provide a retry without discarding the query', async () => {
+    fetcher.mockRejectedValueOnce(new Error('offline')); mount('Curry'); await advance();
+    expect(query()).toBe('Curry'); expect(nodes(tree).some(n => n.props.children === 'Search is temporarily unavailable')).toBe(true);
+    const retry = nodes(tree).find(n => n.type === 'button' && n.props.children === 'Try again')!;
+    (retry.props.onClick as () => void)(); flush(); await advance();
+    expect(destinations()).toEqual(['/player/201939']); expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+  it('malformed and invalid-identity responses are unavailable, never a misleading no-match', async () => {
+    fetcher.mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: -1, name: 'Invalid' }] }) });
+    mount('Curry'); await advance(); expect(destinations()).toEqual([]);
+    expect(nodes(tree).some(n => n.props.children === 'Search is temporarily unavailable')).toBe(true);
+    expect(nodes(tree).some(n => n.props.children === en.searchPage.noResults)).toBe(false);
+  });
+  it('corrupt browser history is ignored and no history is read into server state', async () => {
+    storage.set('nba-search-history', JSON.stringify({ bad: true })); mount();
+    (input().props.onFocus as () => void)(); flush(); expect(query()).toBe('');
+    expect(nodes(tree).some(n => n.props.children === 'Start with a name or player ID')).toBe(true);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it('deduplicates repeated IDs without merging distinct namesakes', async () => {
+    fetcher.mockResolvedValue(response([curry, curry, { ...curry, id: 111 }])); mount('Curry'); await advance();
+    expect(destinations()).toEqual(['/player/201939', '/player/111']);
+  });
+  it('form submission keeps the dedicated search page for a query without a selected player', async () => {
+    variant = 'home'; mount(); type('Michael Jordan');
+    const form = nodes(tree).find(n => n.type === 'form')!; const preventDefault = vi.fn();
+    (form.props.onSubmit as (event: unknown) => void)({ preventDefault }); flush();
+    expect(preventDefault).toHaveBeenCalledTimes(1); expect(url.pathname).toBe('/search'); expect(url.searchParams.get('q')).toBe('Michael Jordan');
   });
 });

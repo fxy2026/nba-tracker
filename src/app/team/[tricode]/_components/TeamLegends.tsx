@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Crown, Flame, ArrowRight, Trophy } from "lucide-react";
+import PlayerHeadshot from "@/components/PlayerHeadshot";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
@@ -48,9 +49,8 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      {/* All-Time Starting 5 — hand-curated for the most storied 10 teams.
-          Each member can deep-link into /legends/[id] (retired w/ headshot)
-          or just render as a text tile (defunct era, no CDN photo). */}
+      {/* All-Time Starting 5 — hand-curated for 20 teams.
+          Each verified NBA identity links to its canonical player profile. */}
       {allTimeFive && (
         <div className="mb-6">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary mb-2 flex items-center gap-1.5">
@@ -59,20 +59,13 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {allTimeFive.five.map((p) => {
-              const hasHeadshot = p.personId > 0;
+              const hasIdentity = p.personId > 0;
               const bio = isZh && p.bioZh ? p.bioZh : p.bio;
               const inner = (
                 <div className="flex flex-col items-center text-center h-full">
-                  {hasHeadshot ? (
+                  {hasIdentity ? (
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary border border-accent-amber/40">
-                      <Image
-                        src={playerHeadshotUrl(p.personId, "260x190")}
-                        alt={p.name}
-                        width={56}
-                        height={56}
-                        unoptimized
-                        className="w-full h-full object-cover object-top"
-                      />
+                      <PlayerHeadshot personId={p.personId} name={p.name} size={56} />
                     </div>
                   ) : (
                     <div className="w-14 h-14 rounded-full bg-bg-secondary border border-border flex items-center justify-center text-[10px] font-bold text-text-secondary">
@@ -85,10 +78,10 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
                   <p className="text-[10px] text-text-secondary leading-tight mt-1.5 line-clamp-2">{bio}</p>
                 </div>
               );
-              return hasHeadshot ? (
+              return hasIdentity ? (
                 <Link
                   key={p.name}
-                  href={`/legends/${p.personId}`}
+                  href={`/player/${p.personId}`}
                   className="glass-tile p-2.5 cursor-pointer hover:border-accent-amber/40 transition-colors"
                   title={bio}
                 >
@@ -114,7 +107,7 @@ export default function TeamLegends({ tricode, legacyAliases = [], isZh }: Props
             {legends.map((p) => (
               <Link
                 key={p.personId}
-                href={`/legends/${p.personId}`}
+                href={`/player/${p.personId}`}
                 className="glass-tile p-2 flex flex-col items-center text-center cursor-pointer hover:border-accent/40 transition-colors group"
               >
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-secondary border border-border">

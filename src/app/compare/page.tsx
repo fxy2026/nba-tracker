@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
-import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
+import { findIconicSeason } from "@/lib/iconicSeasons";
 import CompareClient from "./CompareClient";
 
 interface PageProps {
@@ -10,7 +10,7 @@ interface PageProps {
 function lookupName(id: string | undefined): string | null {
   if (!id) return null;
   if (id.includes("-")) {
-    const s = ICONIC_SEASONS.find((x) => x.id === id);
+    const s = findIconicSeason(id);
     return s ? `${s.name} (${s.season})` : null;
   }
   if (!/^[1-9]\d*$/.test(id)) return null;

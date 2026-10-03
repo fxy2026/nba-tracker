@@ -1,284 +1,292 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import { useState, useEffect, useLayoutEffect, useRef, useId, type KeyboardEvent } from "react";
 import Link from "next/link";
-import { Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, X, UserRound, ArrowUpRight, LoaderCircle } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import { playerHeadshotUrl } from "@/lib/teamUrls";
-import { searchResultHref } from "@/lib/search-result-navigation";
-
-import { playerIndexLabel, playerIndexStat, type PlayerIndexProvenance } from "@/lib/player-index-provenance";
-
-interface SearchResult {
-  personId: number;
-  firstName: string;
-  lastName: string;
-  teamAbbr: string;
-  teamId: number;
-  teamName: string;
-  teamCity: string;
-  jersey: string;
-  position: string;
-  pts: number | null;
-  reb: number | null;
-  ast: number | null;
-  indexProvenance?: PlayerIndexProvenance;
-  isLegend?: boolean;
-  isIconicSeason?: boolean;
-  iconicId?: string;
-  season?: string;
-}
+import { playerIndexLabel } from "@/lib/player-index-provenance";
+import type { PlayerIdentity } from "@/lib/player-identity";
+import { canSearchPlayers, isPlayerSearchResult, playerNameMatch } from "@/lib/player-search-ui";
+import { positionSelectPopup, type SelectPopupPosition } from "./ui/select-behavior";
+import styles from "./player-search.module.css";
 
 const SEARCH_HISTORY_KEY = "nba-search-history";
 const MAX_HISTORY = 5;
 
 function getSearchHistory(): string[] {
   try {
-    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw: unknown = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || "[]");
+    return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string" && item.trim().length > 0 && item.length <= 100).slice(0, MAX_HISTORY) : [];
   } catch { return []; }
 }
-
 function saveSearchHistory(query: string) {
   try {
-    const history = getSearchHistory().filter((q) => q !== query);
-    history.unshift(query);
-    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
-  } catch { /* ignore */ }
+    const history = getSearchHistory().filter((item) => item !== query);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify([query, ...history].slice(0, MAX_HISTORY)));
+  } catch { /* Storage is optional. */ }
 }
 
-export default function SearchInput({ initialQuery = "" }: { initialQuery?: string }) {
+interface SearchInputProps {
+  initialQuery?: string;
+  variant?: "page" | "home";
+  autoFocus?: boolean;
+}
+
+function ResultName({ name, query }: { name: string; query: string }) {
+  const match = playerNameMatch(name, query);
+  return <span className={styles.name}>{match ? <>{name.slice(0, match.start)}<mark>{name.slice(match.start, match.end)}</mark>{name.slice(match.end)}</> : name}</span>;
+}
+
+export default function SearchInput({ initialQuery = "", variant = "page", autoFocus = variant === "page" }: SearchInputProps) {
   const { t, locale } = useLocale();
+  const router = useRouter();
+  const isZh = locale === "zh";
   const [query, setQuery] = useState(initialQuery);
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<PlayerIdentity[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [focused, setFocused] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [popupPosition, setPopupPosition] = useState<SelectPopupPosition | null>(null);
+  const id = useId();
+  const listId = `${id}-players`;
+  const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<AbortController | null>(null);
+  // Dismissing while a request is pending must not let its result reopen the menu.
+  const allowOpen = useRef(Boolean(initialQuery));
+  const limit = variant === "home" ? 8 : 30;
+  const popupOpen = (showDropdown && canSearchPlayers(query)) || (focused && !showDropdown && !canSearchPlayers(query));
 
-  // The page supplies the committed URL query. A same-route navigation reuses
-  // this component, so adopt new URL values without overwriting typing drafts.
   useEffect(() => {
     requestRef.current?.abort();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync a new committed URL query
+    allowOpen.current = Boolean(initialQuery);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- adopt a newly committed URL query, preserving unrelated typing drafts
     setQuery(initialQuery);
     setResults([]);
     setSelectedIndex(-1);
     setShowDropdown(false);
     setLoading(false);
+    setError(false);
   }, [initialQuery]);
 
   function changeQuery(next: string) {
-    // Cancel immediately, including between the input event and effect cleanup.
     requestRef.current?.abort();
-    setQuery(next);
+    allowOpen.current = true;
+    setQuery(next.slice(0, 100));
     setResults([]);
     setSelectedIndex(-1);
     setShowDropdown(false);
     setLoading(false);
+    setError(false);
+  }
+  function dismiss() {
+    allowOpen.current = false;
+    setShowDropdown(false);
+    setSelectedIndex(-1);
+    setFocused(false);
   }
 
-  // Hydration: search history from localStorage.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- optional browser storage only after hydration
     setSearchHistory(getSearchHistory());
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+    function outside(event: Event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        allowOpen.current = false;
         setShowDropdown(false);
+        setSelectedIndex(-1);
+        setFocused(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", outside, true);
+    document.addEventListener("focusin", outside, true);
+    return () => {
+      document.removeEventListener("pointerdown", outside, true);
+      document.removeEventListener("focusin", outside, true);
+    };
   }, []);
 
-  // Reset selected index when results change.
+  useLayoutEffect(() => {
+    if (!popupOpen || !inputRef.current || !popupRef.current) return;
+    const updatePosition = (event?: Event) => {
+      if (event?.target === popupRef.current || !inputRef.current || !popupRef.current) return;
+      const viewport = window.visualViewport;
+      const bounds = { left: viewport?.offsetLeft ?? 0, top: viewport?.offsetTop ?? 0, width: viewport?.width ?? window.innerWidth, height: viewport?.height ?? window.innerHeight };
+      const rect = inputRef.current.getBoundingClientRect();
+      // Apply width before measuring wrapped names. The shared Select helper
+      // flips above the field and bounds height around the mobile keyboard.
+      popupRef.current.style.width = `${positionSelectPopup(rect, bounds, 320).width}px`;
+      const next = positionSelectPopup(rect, bounds, popupRef.current.scrollHeight + 2);
+      setPopupPosition(previous => previous && Object.keys(next).every(key => previous[key as keyof SelectPopupPosition] === next[key as keyof SelectPopupPosition]) ? previous : next);
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    window.visualViewport?.addEventListener("resize", updatePosition);
+    window.visualViewport?.addEventListener("scroll", updatePosition);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => updatePosition());
+    observer?.observe(inputRef.current);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.visualViewport?.removeEventListener("resize", updatePosition);
+      window.visualViewport?.removeEventListener("scroll", updatePosition);
+      observer?.disconnect();
+    };
+  }, [popupOpen, query, results.length, loading, error, searchHistory.length]);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSelectedIndex(-1);
-  }, [results]);
+    if (!showDropdown || selectedIndex < 0 || !listRef.current) return;
+    const option = listRef.current.children[selectedIndex] as HTMLElement | undefined;
+    const panel = listRef.current.parentElement;
+    if (!option || !panel) return;
+    // Scroll only the dropdown, not the scoreboard underneath it.
+    if (option.offsetTop < panel.scrollTop) panel.scrollTop = option.offsetTop;
+    else if (option.offsetTop + option.offsetHeight > panel.scrollTop + panel.clientHeight) panel.scrollTop = option.offsetTop + option.offsetHeight - panel.clientHeight;
+  }, [showDropdown, selectedIndex]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || results.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
-    } else if (e.key === "Enter" && selectedIndex >= 0 && selectedIndex < results.length) {
-      e.preventDefault();
-      const selected = results[selectedIndex];
-      setShowDropdown(false);
-      window.location.href = searchResultHref(selected);
-    }
-  };
-
-  // Debounced search — clearing results below the threshold and setting them
-  // post-fetch are intentional state syncs for an external input.
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    const controller = new AbortController();
-    requestRef.current = controller;
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-
-    if (query.trim().length < 2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResults([]);
-      setShowDropdown(false);
-      setLoading(false);
+  function navigate(player: PlayerIdentity) {
+    dismiss();
+    router.push(`/player/${player.id}`);
+  }
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.nativeEvent?.isComposing) return;
+    if (event.key === "Escape") { event.preventDefault(); dismiss(); return; }
+    if (event.key === "Tab") { dismiss(); return; }
+    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && results.length > 0) {
+      event.preventDefault();
+      allowOpen.current = true;
+      setShowDropdown(true);
+      setSelectedIndex((previous) => event.key === "ArrowDown" ? (previous + 1) % results.length : (previous <= 0 ? results.length : previous) - 1);
       return;
     }
+    if (event.key === "Enter" && showDropdown && results.length > 0) {
+      const selected = selectedIndex >= 0 ? selectedIndex : results.length === 1 ? 0 : -1;
+      if (selected >= 0 && selected < results.length) { event.preventDefault(); navigate(results[selected]); }
+    }
+  }
 
-    debounceRef.current = setTimeout(async () => {
+  useEffect(() => {
+    const controller = new AbortController();
+    requestRef.current = controller;
+    let deadline: ReturnType<typeof setTimeout> | undefined;
+    if (!canSearchPlayers(query)) return () => controller.abort();
+
+    const debounce = setTimeout(async () => {
       if (controller.signal.aborted) return;
       setLoading(true);
-      timeout = setTimeout(() => {
+      setError(false);
+      setShowDropdown(allowOpen.current);
+      deadline = setTimeout(() => {
         controller.abort();
-        if (requestRef.current === controller) setLoading(false);
+        if (requestRef.current === controller) {
+          setLoading(false);
+          setError(true);
+          setShowDropdown(allowOpen.current);
+        }
       }, 8000);
       try {
-        const res = await fetch(`/api/search?context=1&q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
+        const response = await fetch(`/api/players/search?q=${encodeURIComponent(query.trim())}&limit=${limit}`, { signal: controller.signal });
+        if (!response.ok) throw new Error("Search unavailable");
+        const json: { data?: unknown } = await response.json();
         if (controller.signal.aborted) return;
-        if (res.ok) {
-          const json = await res.json();
-          if (controller.signal.aborted) return;
-          setResults(json.data || []);
-          setShowDropdown(true);
-          if ((json.data || []).length > 0) {
-            saveSearchHistory(query.trim());
-            setSearchHistory(getSearchHistory());
-          }
+        if (!Array.isArray(json.data)) throw new Error("Invalid search response");
+        if (json.data.some((row) => !isPlayerSearchResult(row))) throw new Error("Invalid player identity");
+        const unique = new Set<number>();
+        const rows = json.data.filter(isPlayerSearchResult).filter((row) => {
+          if (unique.has(row.id)) return false;
+          unique.add(row.id);
+          return true;
+        }).slice(0, limit);
+        setResults(rows);
+        setSelectedIndex(-1);
+        setShowDropdown(allowOpen.current);
+        if (rows.length > 0) {
+          saveSearchHistory(query.trim());
+          setSearchHistory(getSearchHistory());
         }
-      } catch { /* timeout or network error */ }
-      finally {
-        clearTimeout(timeout);
+      } catch {
+        if (!controller.signal.aborted) {
+          setError(true);
+          setShowDropdown(allowOpen.current);
+        }
+      } finally {
+        clearTimeout(deadline);
         if (!controller.signal.aborted) setLoading(false);
       }
     }, 250);
-
     return () => {
       controller.abort();
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      clearTimeout(timeout);
+      clearTimeout(debounce);
+      clearTimeout(deadline);
     };
-  }, [query, initialQuery]);
+  }, [query, initialQuery, limit, retry]);
+
+  const resultMenu = showDropdown && canSearchPlayers(query);
+  const helpMenu = focused && !showDropdown && !canSearchPlayers(query);
+  const hasResults = resultMenu && !loading && !error && results.length > 0;
+  const status = loading ? (isZh ? "正在搜索…" : "Searching…") : error ? (isZh ? "搜索暂时不可用" : "Search is temporarily unavailable") : `${results.length} ${isZh ? "位球员" : results.length === 1 ? "player" : "players"}`;
 
   return (
-    <div ref={wrapperRef} className="relative w-full max-w-xl mx-auto">
-      <div className="relative">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => changeQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => { setFocused(true); if (results.length > 0) setShowDropdown(true); }}
-          onBlur={() => setTimeout(() => setFocused(false), 200)}
-          placeholder={t.nav.searchPlaceholder}
-          aria-label={t.nav.searchPlaceholder}
-          className="w-full glass-tile pl-11 pr-10 py-3 text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
-          autoFocus
-        />
-        {query && (
-          <button
-            onClick={() => changeQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-          >
-            <X size={16} />
-          </button>
-        )}
-      </div>
-
-      {loading && (
-        <div className="absolute right-12 top-1/2 -translate-y-1/2">
-          <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+    <div ref={wrapperRef} className={`${styles.root} ${variant === "home" ? styles.home : ""}`} data-player-search={variant}>
+      <form role="search" aria-label={isZh ? "球员搜索" : "Player search"} onSubmit={(event) => {
+        event.preventDefault();
+        if (canSearchPlayers(query)) { dismiss(); router.push(`/search?q=${encodeURIComponent(query.trim())}`); }
+      }}>
+        <div className={styles.field}>
+          <Search size={20} aria-hidden="true" className={styles.icon} />
+          <input
+            ref={inputRef} type="search" role="combobox" autoComplete="off" spellCheck={false}
+            value={query} maxLength={100} onChange={(event) => changeQuery(event.target.value)} onKeyDown={handleKeyDown}
+            onFocus={() => { allowOpen.current = true; setFocused(true); if (canSearchPlayers(query)) setShowDropdown(true); }}
+            placeholder={isZh ? "球员姓名 / NBA ID" : "Player name or NBA ID"}
+            aria-label={isZh ? "搜索球员姓名或 NBA ID" : "Search player name or NBA ID"}
+            aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={Boolean(hasResults)}
+            aria-controls={hasResults ? listId : undefined}
+            aria-activedescendant={hasResults && selectedIndex >= 0 ? `${listId}-${results[selectedIndex]?.id}` : undefined}
+            aria-describedby={`${id}-hint`} className={styles.input} autoFocus={autoFocus}
+          />
+          {query && <button type="button" aria-label={isZh ? "清空搜索" : "Clear search"} onClick={() => { changeQuery(""); inputRef.current?.focus(); }} className={styles.clear}><X size={17} aria-hidden="true" /></button>}
         </div>
-      )}
-
-      {/* Recent search history */}
-      {focused && !query && searchHistory.length > 0 && !showDropdown && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {searchHistory.map((q) => (
-            <button
-              key={q}
-              onMouseDown={(e) => { e.preventDefault(); changeQuery(q); }}
-              className="chip cursor-pointer"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto animate-fade-in">
-          {/* Result count */}
-          <div className="px-4 py-2 border-b border-border/50 bg-bg-secondary/40" aria-live="polite">
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary"><span className="text-text-primary font-bold tabular-nums">{results.length}</span> {results.length !== 1 ? t.common.players : t.common.player}</span>
-          </div>
-          {results.map((p, idx) => (
-            <Link
-              key={searchResultHref(p)}
-              href={searchResultHref(p)}
-              onClick={() => setShowDropdown(false)}
-              className={`flex items-center gap-3 px-4 py-3 transition-colors border-b border-border/50 last:border-0 ${idx === selectedIndex ? "bg-accent/10" : "hover:bg-bg-hover"}`}
-            >
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-bg-secondary shrink-0">
-                <Image
-                  src={playerHeadshotUrl(p.personId)}
-                  alt={`${p.firstName} ${p.lastName}`}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover object-top"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-text-primary text-sm">
-                  {p.firstName} {p.lastName}
-                </p>
-                <p className="text-xs text-text-secondary">
-                  {p.teamCity} {p.teamName} &middot; #{p.jersey} {p.position}
-                </p>
-                  <p className="text-[10px] text-text-secondary break-words">{p.indexProvenance ? playerIndexLabel(p.indexProvenance, locale) : p.isIconicSeason ? `${p.season ?? "—"} · ${locale === "zh" ? "经典赛季" : "curated season"}` : p.isLegend ? (locale === "zh" ? "历史生涯场均" : "Curated career averages") : (locale === "zh" ? "数据来源未注明" : "Source unspecified")}</p>
-              </div>
-              <div className="text-right shrink-0 flex items-center gap-1.5">
-                {typeof p.pts === "number" && p.pts > 25 && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-bold">{t.searchPage.star}</span>
-                )}
-                <div>
-                  <p className="text-xs text-accent font-medium">{playerIndexStat(p.pts)} PPG</p>
-                  <p className="text-xs text-text-secondary">{playerIndexStat(p.reb)} RPG &middot; {playerIndexStat(p.ast)} APG</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {showDropdown && results.length === 0 && query.length >= 2 && !loading && (
-        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl p-6 text-center">
-          <svg viewBox="0 0 80 80" className="w-16 h-16 mx-auto mb-3 opacity-20">
-            <circle cx="40" cy="40" r="28" fill="none" stroke="currentColor" strokeWidth="2.5" />
-            <line x1="40" y1="12" x2="40" y2="68" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M12,40 Q40,18 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M12,40 Q40,62 68,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-          <p className="text-text-primary text-sm font-medium">{t.searchPage.noResults}</p>
-          <p className="text-text-secondary text-xs mt-1">
-            {t.searchPage.noResultsFor} &ldquo;{query}&rdquo;{t.searchPage.tryDifferent}
-          </p>
-        </div>
-      )}
+      </form>
+      <span id={`${id}-hint`} className="sr-only">{isZh ? "支持中英文姓名、昵称和 NBA ID。使用上下方向键选择，回车打开，Esc 关闭。" : "Search names, known aliases or NBA IDs. Use arrow keys to choose, Enter to open, Escape to close."}</span>
+      <span className="sr-only" aria-live="polite">{resultMenu ? status : ""}</span>
+      {helpMenu && <div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }}>
+        <div className={styles.hint}><strong>{isZh ? "从名字或球员 ID 开始" : "Start with a name or player ID"}</strong>{isZh ? "例如 Curry、乔丹、2544" : "Try Curry, Michael Jordan, or 2544"}</div>
+        {searchHistory.length > 0 && !query && <><div className={styles.caption}>{isZh ? "最近搜索" : "Recent searches"}</div>{searchHistory.map((item) => <button key={item} type="button" className={styles.history} onMouseDown={(event) => event.preventDefault()} onClick={() => { changeQuery(item); inputRef.current?.focus(); }}>{item}</button>)}</>}
+      </div>}
+      {resultMenu && <div ref={popupRef} className={styles.popup} style={popupPosition ?? { visibility: "hidden" }} data-player-search-popup="true">
+        {loading ? <div className={`${styles.hint} flex items-center gap-2`}><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{status}</div>
+          : error ? <div className={styles.hint}><strong>{status}</strong>{isZh ? "请稍后重试，输入的内容会保留。" : "Please try again. Your search is still here."}<div><button type="button" className={styles.retry} onClick={() => { allowOpen.current = true; setRetry((value) => value + 1); }}>{isZh ? "重试" : "Try again"}</button></div></div>
+          : results.length === 0 ? <div className={styles.hint}><strong>{t.searchPage.noResults}</strong>{isZh ? "试试完整姓名、英文拼写或 NBA ID。" : "Try the full name, another spelling, or an NBA ID."}</div>
+          : <>
+            <div className={styles.caption}><span>{status}</span><span>{isZh ? "打开球员档案" : "Open player profile"}</span></div>
+            <div id={listId} ref={listRef} role="listbox" aria-label={isZh ? "匹配的球员" : "Matching players"}>
+              {results.map((player, index) => {
+                const context = [player.teamLabel, player.position].filter(Boolean).join(" · ");
+                const years = player.sourceYears ? `${player.sourceYears.from}${player.sourceYears.from === player.sourceYears.to ? "" : `–${player.sourceYears.to}`} · ${isZh ? "NBA 赛季起始年" : "NBA season starts"}` : null;
+                const source = player.indexProvenance ? playerIndexLabel(player.indexProvenance, locale) : player.shotCoverage ? `${player.shotCoverage.firstSeason}–${player.shotCoverage.lastSeason} · ${isZh ? "投篮档案" : "shot archive"}` : (isZh ? "NBA 球员名录" : "NBA player index");
+                return <Link key={player.id} id={`${listId}-${player.id}`} href={`/player/${player.id}`} prefetch={false} role="option" aria-selected={index === selectedIndex} tabIndex={-1}
+                  onClick={dismiss} onPointerMove={(event) => { if (event.pointerType === "mouse") setSelectedIndex(index); }}
+                  onPointerDown={(event) => { if (event.pointerType === "mouse") event.preventDefault(); }}
+                  className={styles.option} data-active={index === selectedIndex || undefined}>
+                  <span className={styles.avatar} aria-hidden="true"><UserRound size={17} /></span>
+                  <span className="min-w-0 flex-1"><ResultName name={player.name} query={query} /><span className={styles.context}>{context ? `${context} · ` : ""}{!player.indexProvenance && years ? years : source}</span></span>
+                  <span className={styles.id}>ID {player.id}</span><ArrowUpRight size={15} aria-hidden="true" className="shrink-0 text-text-secondary" />
+                </Link>;
+              })}
+            </div>
+          </>}
+      </div>}
     </div>
   );
 }

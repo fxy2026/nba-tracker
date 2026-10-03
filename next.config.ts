@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/player-season-heatmap": ["./src/data/historical-shot-archive/**/*.gz"],
     "/api/player-season-shot-map": ["./src/data/historical-shot-archive/**/*.gz", "./src/data/historical-shot-spatial/**/*.gz"],
+    "/sitemap.xml": ["./src/data/historical-shot-archive/player-season-catalog.json.gz"],
+    "/api/players/search": ["./src/data/historical-shot-archive/player-season-catalog.json.gz"],
     "/player/*": ["./src/data/historical-shot-archive/**/*.gz"],
     "/shot-archive": ["./src/data/historical-shot-archive/player-season-catalog.json.gz"],
     "/shot-archive/*": ["./src/data/historical-shot-archive/**/*.gz"],

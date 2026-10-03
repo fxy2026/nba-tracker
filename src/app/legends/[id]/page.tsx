@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${player.name} — NBA Legend`,
     description: desc,
-    alternates: { canonical: `/legends/${id}` },
+    alternates: { canonical: `/player/${id}` },
     openGraph: {
       title: player.name,
       description: desc,
@@ -64,7 +64,6 @@ export default async function LegendPage({ params }: PageProps) {
   const isZh = locale === "zh";
   const team = TEAM_META[player.team];
   const teamColor = team?.primaryColor || "#94A3B8";
-  const seasons = player.toYear - player.fromYear + 1;
 
   // Iconic moments tied to this player — surfaces when our curated dataset
   // happens to contain seasons / games starring them. Sorted oldest-first.
@@ -105,7 +104,7 @@ export default async function LegendPage({ params }: PageProps) {
     affiliation: team
       ? { "@type": "SportsTeam", name: `${team.city} ${team.name}` }
       : undefined,
-    url: `https://nba.xpy.me/legends/${player.personId}`,
+    url: `https://nba.xpy.me/player/${player.personId}`,
     image: playerHeadshotUrl(player.personId),
     description: `${player.name} — ${player.ppg.toFixed(1)} career PPG, ${player.fromYear}-${player.toYear}.`,
   };
@@ -141,8 +140,8 @@ export default async function LegendPage({ params }: PageProps) {
         title={player.name}
         subtitle={
           isZh
-            ? `${player.fromYear}-${player.toYear} · ${player.team} · 生涯共 ${seasons} 个赛季`
-            : `${player.fromYear}-${player.toYear} · ${player.team} · ${seasons} NBA seasons`
+            ? `${player.fromYear}-${player.toYear} · ${player.team} · 已收录的生涯跨度`
+            : `${player.fromYear}-${player.toYear} · ${player.team} · Curated career span`
         }
       />
 
@@ -320,14 +319,13 @@ export default async function LegendPage({ params }: PageProps) {
         <p className="mt-2 text-text-primary">
           {isZh ? (
             <>
-              在 NBA 征战 <span className="font-bold text-accent-amber font-mono tabular-nums">{seasons}</span> 个赛季，从{" "}
+              本站记录的生涯跨度：{" "}
               <span className="font-mono tabular-nums">{player.fromYear}</span> 至{" "}
               <span className="font-mono tabular-nums">{player.toYear}</span> 年。
             </>
           ) : (
             <>
-              Played <span className="font-bold text-accent-amber font-mono tabular-nums">{seasons}</span> NBA seasons,
-              from <span className="font-mono tabular-nums">{player.fromYear}</span> to{" "}
+              Curated career span: <span className="font-mono tabular-nums">{player.fromYear}</span> to{" "}
               <span className="font-mono tabular-nums">{player.toYear}</span>.
             </>
           )}

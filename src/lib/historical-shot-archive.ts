@@ -21,7 +21,7 @@ const countKeys = ["fgm", "fga", "fg3m", "fg3a"] as const;
 type Counts = Record<(typeof countKeys)[number], number>;
 type ObjectValue = Record<string, unknown>;
 interface SummaryEntry { season: string; seasonType: HeatmapIdentity["seasonType"]; file: string; sha256: string; compressedBytes: number }
-export interface HistoricalShotPlayer { playerId: number; name: string; firstSeason: string; lastSeason: string; datasetCount: number }
+export interface HistoricalShotPlayer { playerId: number; name: string; aliases?: readonly string[]; firstSeason: string; lastSeason: string; datasetCount: number }
 interface CatalogPlayer { player: HistoricalShotPlayer; searchText: string; datasets: readonly SeasonHeatmapCatalogEntry[] }
 interface Catalog { players: Map<number, CatalogPlayer>; sorted: HistoricalShotPlayer[] }
 
@@ -241,7 +241,7 @@ export function createHistoricalShotArchiveStore(index: unknown, read: (file: st
           return { ...identity, availability: "available" };
         });
         datasets.sort((a, b) => b.season.localeCompare(a.season) || (a.seasonType === "Regular Season" ? -1 : 1));
-        const player = freeze({ playerId, name: source.names[0] as string, firstSeason: datasets[datasets.length - 1].season, lastSeason: datasets[0].season, datasetCount: datasets.length });
+        const player = freeze({ playerId, name: source.names[0] as string, aliases: source.names as string[], firstSeason: datasets[datasets.length - 1].season, lastSeason: datasets[0].season, datasetCount: datasets.length });
         players.set(playerId, { player, searchText: source.names.join(" ").normalize("NFKD").replace(/\p{M}/gu, "").toLocaleLowerCase("en"), datasets: freeze(datasets) });
       }
       return { players, sorted: [...players.values()].map(row => row.player).sort((a, b) => a.name.localeCompare(b.name, "en") || a.playerId - b.playerId) };
@@ -260,6 +260,7 @@ export function createHistoricalShotArchiveStore(index: unknown, read: (file: st
   }
   const resources = new Map<string, SeasonHeatmapArchiveResource>();
   return {
+    async getPlayers(): Promise<readonly HistoricalShotPlayer[]> { return (await catalog()).sorted; },
     async getPlayer(playerId: number): Promise<HistoricalShotPlayer | null> { return (await catalog()).players.get(playerId)?.player ?? null; },
     async getCatalog(playerId: number): Promise<readonly SeasonHeatmapCatalogEntry[]> { return (await catalog()).players.get(playerId)?.datasets ?? []; },
     async search(query: string, requestedPage: number) {
@@ -289,6 +290,7 @@ export const loadHistoricalShotArchive = (identity: unknown) => store.load(ident
 export const loadHistoricalCourtArchive = (identity: unknown) => store.load(identity, "court12");
 export const getHistoricalShotCatalog = store.getCatalog;
 export const getHistoricalShotPlayer = store.getPlayer;
+export const getHistoricalShotPlayers = store.getPlayers;
 export async function searchHistoricalShotPlayers(query: string, page: number) {
   try { return await store.search(query, page); } catch { return { status: "error" as const }; }
 }

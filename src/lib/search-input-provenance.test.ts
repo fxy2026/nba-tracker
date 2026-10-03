@@ -2,12 +2,30 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, expect, it, vi } from 'vitest';
 import en from '@/locales/en';
 import zh from '@/locales/zh';
-const runtime=vi.hoisted(()=>({cursor:0,slots:[] as unknown[],locale:'en'}));
-vi.mock('react',async original=>({...await original<typeof import('react')>(),useState:(initial:unknown)=>{const i=runtime.cursor++;return [i in runtime.slots?runtime.slots[i]:initial,vi.fn()];},useEffect:()=>{},useRef:()=>({current:null})}));
-vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:runtime.locale,t:runtime.locale==='zh'?zh:en})}));
+const runtime = vi.hoisted(() => ({ cursor: 0, slots: [] as unknown[], locale: 'en' }));
+vi.mock('react', async original => ({ ...await original<typeof import('react')>(), useState: (initial: unknown) => { const i = runtime.cursor++; return [i in runtime.slots ? runtime.slots[i] : initial, vi.fn()]; }, useEffect: () => {}, useLayoutEffect: () => {}, useRef: (initial: unknown) => ({ current: initial }), useId: () => 'search-test' }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: runtime.locale, t: runtime.locale === 'zh' ? zh : en }) }));
 import SearchInput from '@/components/SearchInput';
-const row={personId:202681,firstName:'Kyrie',lastName:'Irving',teamAbbr:'DAL',teamId:1,teamName:'Mavericks',teamCity:'Dallas',jersey:'11',position:'G',pts:null,reb:null,ast:null,indexProvenance:{source:'bundled-archive',season:'2025-26',stale:true,retrievedAt:null}};
-beforeEach(()=>{runtime.cursor=0;runtime.locale='en';runtime.slots=['Kyrie',[row],false,true,true];});
-it.each(['en','zh'])('null search stats display unavailable and source context in %s',locale=>{runtime.locale=locale;const result=renderToStaticMarkup(SearchInput({}));expect(result).toContain('—');expect(result).toContain('2025-26');expect(result).toContain(locale==='zh'?'存档快照':'archived snapshot');expect(result).not.toContain('0.0');});
-it('known zero remains zero',()=>{runtime.slots[1]=[{...row,pts:0,reb:0,ast:0}];expect(renderToStaticMarkup(SearchInput({}))).toContain('0.0');});
-it('legacy cached rows without metadata cannot claim a source season',()=>{runtime.slots[1]=[{...row,indexProvenance:undefined}];const result=renderToStaticMarkup(SearchInput({}));expect(result).toContain('Source unspecified');expect(result).not.toContain('2025-26');});
+const row = { id: 202681, name: 'Kyrie Irving', aliases: [], sources: ['player-index'], href: '/player/202681', teamAbbr: 'DAL', teamLabel: 'Dallas Mavericks', position: 'G', shotCoverage: null, indexProvenance: { source: 'bundled-archive', season: '2025-26', stale: true, retrievedAt: null } };
+beforeEach(() => { runtime.cursor = 0; runtime.locale = 'en'; runtime.slots = ['Kyrie', [row], false, true, true]; });
+it.each(['en', 'zh'])('search preserves source context without presenting identity metadata as current stats in %s', locale => {
+  runtime.locale = locale; const result = renderToStaticMarkup(SearchInput({}));
+  expect(result).toContain('2025-26'); expect(result).toContain(locale === 'zh' ? '存档快照' : 'archived snapshot'); expect(result).not.toContain('PPG'); expect(result).not.toContain('0.0');
+});
+it('registry-only identities do not infer a team, current status, career stats or retirement', () => {
+  runtime.slots[1] = [{ ...row, teamLabel: null, teamAbbr: null, position: null, indexProvenance: null, sources: ['all-time-registry'] }];
+  const result = renderToStaticMarkup(SearchInput({}));
+  expect(result).toContain('NBA player index'); expect(result).not.toContain('2025-26'); expect(result).not.toContain('Mavericks'); expect(result).not.toContain('retired');
+});
+it('archive-only results state the actual shot coverage without calling it career coverage', () => {
+  runtime.slots[1] = [{ ...row, indexProvenance: null, teamLabel: null, position: null, shotCoverage: { firstSeason: '1996-97', lastSeason: '1997-98', datasetCount: 2 } }];
+  const result = renderToStaticMarkup(SearchInput({}));
+  expect(result).toContain('1996-97–1997-98'); expect(result).toContain('shot archive'); expect(result).not.toContain('career');
+});
+
+it('known NBA season-start years distinguish namesakes without claiming retirement dates', () => {
+  runtime.slots[1] = [{ ...row, id: 121, name: 'Patrick Ewing', teamLabel: null, position: null, indexProvenance: null, sourceYears: { from: 1985, to: 2001 } }];
+  const result = renderToStaticMarkup(SearchInput({}));
+  expect(result).toContain('1985–2001 · NBA season starts'); expect(result).toContain('ID 121'); expect(result).not.toContain('retired');
+});

@@ -76,7 +76,7 @@ export default async function ShotArchivePage({ searchParams }: ArchivePageProps
 
       {result.players.length ? <ul className={styles.players}>
         {result.players.map(player => <li key={player.playerId}>
-          <Link href={`/shot-archive/${player.playerId}`} prefetch={false} className={styles.playerCard}>
+          <Link href={`/player/${player.playerId}#shooting`} prefetch={false} className={styles.playerCard}>
             <div className={styles.cardTop}><span className={styles.playerId}>NBA ID {player.playerId}</span><ArrowRight size={17} aria-hidden="true" /></div>
             <h3>{player.name}</h3>
             <p className={styles.seasonRange}>{player.firstSeason.replace("-", "–")}<span aria-hidden="true"> → </span><span className={styles.srOnly}>{isZh ? "至" : " to "}</span>{player.lastSeason.replace("-", "–")}</p>

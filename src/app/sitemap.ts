@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { TEAM_META } from "@/lib/teams";
-import { getFullSchedule, getPlayerIndex } from "@/lib/api";
+import { getFullSchedule } from "@/lib/api";
 import { isPlayoff, isPreseason } from "@/lib/games";
-import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
+import { getPlayerIdentityDirectory } from "@/lib/player-identity-server";
 import { GAME_DECADES, SEASON_DECADES } from "@/lib/decades";
 
 const BASE = "https://nba.xpy.me";
@@ -143,13 +143,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If schedule fetch fails during build, just skip game pages — they'll be indexed via crawl
   }
 
-  // Dynamic: every active player profile
+  // Canonical profiles for every known current and historical identity
   const playerPages: SitemapEntry[] = [];
   try {
-    const players = await getPlayerIndex();
+    const players = await getPlayerIdentityDirectory();
     for (const p of players) {
       playerPages.push({
-        url: `${BASE}/player/${p.personId}`,
+        url: `${BASE}/player/${p.id}`,
         changeFrequency: "weekly",
         priority: 0.5,
       });
@@ -157,15 +157,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // If player index fetch fails during build, skip — they'll be indexed via crawl
   }
-
-  // Static: every retired legend with a verified personId (career snapshot page)
-  const legendPages: SitemapEntry[] = ALL_TIME_LEADERS
-    .filter((p) => !p.active && p.personId > 0)
-    .map((p) => ({
-      url: `${BASE}/legends/${p.personId}`,
-      changeFrequency: "yearly" as ChangeFreq,
-      priority: 0.6,
-    }));
 
   // Iconic seasons + iconic games — gallery index pages. Individual cards
   // deep-link to /compare or /game from inside the gallery.
@@ -199,7 +190,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...gamePages,
     ...seriesPages,
     ...playerPages,
-    ...legendPages,
     ...iconicSeasonsIndex,
   ].map((p) => ({ ...p, lastModified: p.lastModified || now }));
 }

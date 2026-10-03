@@ -30,8 +30,8 @@ export interface AllTimeLeader {
   totalBlk?: number;
 }
 
-// 47 entries: 20 active superstars (with their real NBA personIds) + 27
-// retired legends (personId=0). Career averages from NBA-official sources.
+// NBA identities were reconciled against the official 2026-10-03 all-player
+// registry. Historical career statistics below retain their original snapshot.
 export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   // ─── Active superstars (real personIds for headshots + /player linking) ───
   { personId: 2544, name: "LeBron James", fromYear: 2003, toYear: 2026, active: true, team: "LAL",
@@ -85,11 +85,7 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
     ppg: 20.3, rpg: 5.4, apg: 2.9 },
 
   // ─── Retired legends — career averages are final ───
-  // personIds verified against cdn.nba.com headshot store (size > 50KB = real
-  // photo, < 15KB = silhouette fallback). Pre-1970s players + a handful of
-  // mid-era stars (Ewing, Rodman, D.Robinson, J.Kidd, Pettit, Maravich, etc.)
-  // genuinely don't have NBA-hosted headshots — those stay at personId 0 and
-  // render initials via PlayerHeadshot's onError fallback.
+  // Identity is independent of whether NBA hosts a headshot.
   { personId: 893, name: "Michael Jordan", fromYear: 1984, toYear: 2003, active: false, team: "CHI",
     ppg: 30.12, rpg: 6.2, apg: 5.3, spg: 2.3, bpg: 0.8,
     totalPts: 32292, totalReb: 6672, totalAst: 5633, totalStl: 2514 },
@@ -129,10 +125,10 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   { personId: 78049, name: "Bill Russell", fromYear: 1956, toYear: 1969, active: false, team: "BOS",
     ppg: 15.1, rpg: 22.5, apg: 4.3,
     totalPts: 14522, totalReb: 21620 },
-  { personId: 0, name: "Oscar Robertson", fromYear: 1960, toYear: 1974, active: false, team: "MIL",
+  { personId: 600015, name: "Oscar Robertson", fromYear: 1960, toYear: 1974, active: false, team: "MIL",
     ppg: 25.68, rpg: 7.5, apg: 9.51,
     totalPts: 26710, totalReb: 7804, totalAst: 9887 },
-  { personId: 0, name: "Jerry West", fromYear: 1960, toYear: 1974, active: false, team: "LAL",
+  { personId: 78497, name: "Jerry West", fromYear: 1960, toYear: 1974, active: false, team: "LAL",
     ppg: 27.03, rpg: 5.8, apg: 6.7,
     totalPts: 25192, totalReb: 5366, totalAst: 6238 },
   { personId: 304, name: "John Stockton", fromYear: 1984, toYear: 2003, active: false, team: "UTA",
@@ -144,48 +140,48 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   { personId: 1717, name: "Dirk Nowitzki", fromYear: 1998, toYear: 2019, active: false, team: "DAL",
     ppg: 20.7, rpg: 7.5, apg: 2.4, spg: 0.8, bpg: 0.8,
     totalPts: 31560, totalReb: 11489 },
-  { personId: 901, name: "Charles Barkley", fromYear: 1984, toYear: 2000, active: false, team: "PHX",
+  { personId: 787, name: "Charles Barkley", fromYear: 1984, toYear: 2000, active: false, team: "PHX",
     ppg: 22.1, rpg: 11.7, apg: 3.9, spg: 1.5,
     totalPts: 23757, totalReb: 12546 },
   { personId: 708, name: "Kevin Garnett", fromYear: 1995, toYear: 2016, active: false, team: "MIN",
     ppg: 17.8, rpg: 10.0, apg: 3.7, spg: 1.3, bpg: 1.4,
     totalPts: 26071, totalReb: 14662 },
-  { personId: 0, name: "Jason Kidd", fromYear: 1994, toYear: 2013, active: false, team: "NJN",
+  { personId: 467, name: "Jason Kidd", fromYear: 1994, toYear: 2013, active: false, team: "NJN",
     ppg: 12.6, rpg: 6.3, apg: 8.7, spg: 1.9,
     totalAst: 12091, totalStl: 2684 },
-  { personId: 0, name: "Bob Pettit", fromYear: 1954, toYear: 1965, active: false, team: "STL",
+  { personId: 77847, name: "Bob Pettit", fromYear: 1954, toYear: 1965, active: false, team: "STL",
     ppg: 26.36, rpg: 16.2, apg: 3.0,
     totalPts: 20880 },
-  { personId: 0, name: "Elgin Baylor", fromYear: 1958, toYear: 1972, active: false, team: "LAL",
+  { personId: 76127, name: "Elgin Baylor", fromYear: 1958, toYear: 1972, active: false, team: "LAL",
     ppg: 27.36, rpg: 13.55, apg: 4.3,
     totalPts: 23149, totalReb: 11463 },
-  { personId: 76681, name: "George Gervin", fromYear: 1976, toYear: 1986, active: false, team: "SAS",
+  { personId: 76804, name: "George Gervin", fromYear: 1976, toYear: 1986, active: false, team: "SAS",
     ppg: 26.18, rpg: 4.6, apg: 2.8,
     totalPts: 20708 },
-  { personId: 0, name: "Pete Maravich", fromYear: 1970, toYear: 1980, active: false, team: "NOJ",
+  { personId: 77459, name: "Pete Maravich", fromYear: 1970, toYear: 1980, active: false, team: "NOJ",
     ppg: 24.18, rpg: 4.2, apg: 5.4,
     totalPts: 15948 },
   { personId: 959, name: "Steve Nash", fromYear: 1996, toYear: 2014, active: false, team: "PHX",
     ppg: 14.3, rpg: 3.0, apg: 8.46, spg: 0.7,
     totalPts: 17387, totalAst: 10335 },
-  { personId: 0, name: "Isiah Thomas", fromYear: 1981, toYear: 1994, active: false, team: "DET",
+  { personId: 78318, name: "Isiah Thomas", fromYear: 1981, toYear: 1994, active: false, team: "DET",
     ppg: 19.2, rpg: 3.6, apg: 9.34, spg: 1.9,
     totalPts: 18822, totalAst: 9061 },
   { personId: 2548, name: "Dwyane Wade", fromYear: 2003, toYear: 2019, active: false, team: "MIA",
     ppg: 22.0, rpg: 4.7, apg: 5.4, spg: 1.5, bpg: 0.8,
     totalPts: 23165 },
-  { personId: 0, name: "Moses Malone", fromYear: 1976, toYear: 1995, active: false, team: "HOU",
+  { personId: 77449, name: "Moses Malone", fromYear: 1976, toYear: 1995, active: false, team: "HOU",
     ppg: 20.6, rpg: 12.3, apg: 1.4, bpg: 1.3,
     totalPts: 27409, totalReb: 16212 },
-  { personId: 0, name: "Dennis Rodman", fromYear: 1986, toYear: 2000, active: false, team: "CHI",
+  { personId: 23, name: "Dennis Rodman", fromYear: 1986, toYear: 2000, active: false, team: "CHI",
     ppg: 7.3, rpg: 13.1, apg: 1.8 },
   { personId: 2730, name: "Dwight Howard", fromYear: 2004, toYear: 2022, active: false, team: "ORL",
     ppg: 15.7, rpg: 12.7, apg: 1.4, bpg: 1.8,
     totalReb: 14627, totalBlk: 2228 },
-  { personId: 0, name: "Patrick Ewing", fromYear: 1985, toYear: 2002, active: false, team: "NYK",
+  { personId: 121, name: "Patrick Ewing", fromYear: 1985, toYear: 2002, active: false, team: "NYK",
     ppg: 21.0, rpg: 9.8, apg: 1.9, bpg: 2.4,
     totalPts: 24815, totalBlk: 2894 },
-  { personId: 0, name: "David Robinson", fromYear: 1989, toYear: 2003, active: false, team: "SAS",
+  { personId: 764, name: "David Robinson", fromYear: 1989, toYear: 2003, active: false, team: "SAS",
     ppg: 21.1, rpg: 10.6, apg: 2.5, spg: 1.4, bpg: 3.0,
     totalPts: 20790, totalBlk: 2954 },
   { personId: 2546, name: "Carmelo Anthony", fromYear: 2003, toYear: 2022, active: false, team: "DEN",
@@ -197,7 +193,7 @@ export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   { personId: 397, name: "Reggie Miller", fromYear: 1987, toYear: 2005, active: false, team: "IND",
     ppg: 18.2, rpg: 3.0, apg: 3.0, spg: 1.1,
     totalPts: 25279 },
-  { personId: 0, name: "Robert Parish", fromYear: 1976, toYear: 1997, active: false, team: "BOS",
+  { personId: 305, name: "Robert Parish", fromYear: 1976, toYear: 1997, active: false, team: "BOS",
     ppg: 14.5, rpg: 9.1, apg: 1.4, bpg: 1.5,
     totalPts: 23334, totalReb: 14715 },
 ];
