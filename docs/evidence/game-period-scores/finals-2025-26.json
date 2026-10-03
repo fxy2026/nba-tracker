@@ -1,0 +1,331 @@
+{
+  "scope": "Five 2025-26 Finals period-score records, separate from unchanged player-box data. All five original one-page NBA reports were visually reviewed and text-extracted. Each reported quarter row and final score reconciles with canonical schedule identity. No play-by-play is present in these reports.",
+  "games": [
+    {
+      "schemaVersion": 1,
+      "kind": "official-reported-period-scores",
+      "gameId": "0042500401",
+      "gameCode": "20260603/NYKSAS",
+      "gameDate": "2026-06-03",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "publisher": "NBA",
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260603/20260603_NYKSAS.pdf",
+        "reportSha256": "e7444a30715d765f9481dae2246321f41001819fa877384f893b2e95ca2be2db",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "verifiedOn": "2026-10-03",
+        "visualReviewCompleted": true
+      },
+      "identityEvidence": {
+        "scheduleFile": "src/data/schedule-2025-26.json",
+        "scheduleSha256": "00ac20a74f6b5acf4425d70de933d17c494f4376aaf63e9ce58a0da706bbc4ab",
+        "unchangedPlayerSnapshot": "src/data/recovered-player-boxes/0042500401.json",
+        "unchangedPlayerSnapshotSha256": "b10b451b368fe6b9ea84f3eadefe1538ac168d8ca508735163895aca26b73661"
+      },
+      "validation": {
+        "dateAndVisitorHomeHeadersMatch": true,
+        "printedLabelsMatchHistoricalScheduleTeams": true,
+        "periodCountsMatchPrintedHeader": true,
+        "periodSumsMatchPrintedFinalAndSchedule": true,
+        "overtimePeriods": 0
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedTeamLabel": "Knicks",
+        "periodPoints": [
+          19,
+          29,
+          28,
+          29
+        ],
+        "reportedFinalScore": 105,
+        "periodPointsSum": 105,
+        "sourceLineAsExtracted": "Knicks 19          29     28     29      105"
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedTeamLabel": "SPURS",
+        "periodPoints": [
+          27,
+          28,
+          21,
+          19
+        ],
+        "reportedFinalScore": 95,
+        "periodPointsSum": 95,
+        "sourceLineAsExtracted": "SPURS 27           28     21     19       95"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "official-reported-period-scores",
+      "gameId": "0042500402",
+      "gameCode": "20260605/NYKSAS",
+      "gameDate": "2026-06-05",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "publisher": "NBA",
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260605/20260605_NYKSAS.pdf",
+        "reportSha256": "fd3044b322edc0a558edf53ac0d041752ba81fbcc62f520f4488c0d983a754f1",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "verifiedOn": "2026-10-03",
+        "visualReviewCompleted": true
+      },
+      "identityEvidence": {
+        "scheduleFile": "src/data/schedule-2025-26.json",
+        "scheduleSha256": "00ac20a74f6b5acf4425d70de933d17c494f4376aaf63e9ce58a0da706bbc4ab",
+        "unchangedPlayerSnapshot": "src/data/recovered-player-boxes/0042500402.json",
+        "unchangedPlayerSnapshotSha256": "dc2ddb0dee8b006d314de1f4eff67edf00c5c8931365fe08655e0489247c2eb0"
+      },
+      "validation": {
+        "dateAndVisitorHomeHeadersMatch": true,
+        "printedLabelsMatchHistoricalScheduleTeams": true,
+        "periodCountsMatchPrintedHeader": true,
+        "periodSumsMatchPrintedFinalAndSchedule": true,
+        "overtimePeriods": 0
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedTeamLabel": "Knicks",
+        "periodPoints": [
+          25,
+          31,
+          28,
+          21
+        ],
+        "reportedFinalScore": 105,
+        "periodPointsSum": 105,
+        "sourceLineAsExtracted": "Knicks 25           31    28     21      105"
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedTeamLabel": "SPURS",
+        "periodPoints": [
+          34,
+          18,
+          23,
+          29
+        ],
+        "reportedFinalScore": 104,
+        "periodPointsSum": 104,
+        "sourceLineAsExtracted": "SPURS 34            18    23     29      104"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "official-reported-period-scores",
+      "gameId": "0042500403",
+      "gameCode": "20260608/SASNYK",
+      "gameDate": "2026-06-08",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "publisher": "NBA",
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260608/20260608_SASNYK.pdf",
+        "reportSha256": "0dbbf20f8ba3a87e1fdf6cedfa3126b8bae9ed5e4bb10e72cff25b39a7a7fa47",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "verifiedOn": "2026-10-03",
+        "visualReviewCompleted": true
+      },
+      "identityEvidence": {
+        "scheduleFile": "src/data/schedule-2025-26.json",
+        "scheduleSha256": "00ac20a74f6b5acf4425d70de933d17c494f4376aaf63e9ce58a0da706bbc4ab",
+        "unchangedPlayerSnapshot": "src/data/recovered-player-boxes/0042500403.json",
+        "unchangedPlayerSnapshotSha256": "22cfac4a4f9c1249b2d0501e4cccdcaa62f4f50e07417d8e8fb9c4c5654a4e44"
+      },
+      "validation": {
+        "dateAndVisitorHomeHeadersMatch": true,
+        "printedLabelsMatchHistoricalScheduleTeams": true,
+        "periodCountsMatchPrintedHeader": true,
+        "periodSumsMatchPrintedFinalAndSchedule": true,
+        "overtimePeriods": 0
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedTeamLabel": "Spurs",
+        "periodPoints": [
+          33,
+          24,
+          35,
+          23
+        ],
+        "reportedFinalScore": 115,
+        "periodPointsSum": 115,
+        "sourceLineAsExtracted": "Spurs 33           24     35     23      115"
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedTeamLabel": "KNICKS",
+        "periodPoints": [
+          22,
+          42,
+          27,
+          20
+        ],
+        "reportedFinalScore": 111,
+        "periodPointsSum": 111,
+        "sourceLineAsExtracted": "KNICKS 22           42     27     20      111"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "official-reported-period-scores",
+      "gameId": "0042500404",
+      "gameCode": "20260610/SASNYK",
+      "gameDate": "2026-06-10",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "publisher": "NBA",
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260610/20260610_SASNYK.pdf",
+        "reportSha256": "abcd52155641d16613146a0f51cd17c71296811baecfdf2a46cddc7da9749327",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "verifiedOn": "2026-10-03",
+        "visualReviewCompleted": true
+      },
+      "identityEvidence": {
+        "scheduleFile": "src/data/schedule-2025-26.json",
+        "scheduleSha256": "00ac20a74f6b5acf4425d70de933d17c494f4376aaf63e9ce58a0da706bbc4ab",
+        "unchangedPlayerSnapshot": "src/data/recovered-player-boxes/0042500404.json",
+        "unchangedPlayerSnapshotSha256": "9fd5ec3ebdbe6ff0b2f0da53997be4183333b25a02382354a0051cd024eb718a"
+      },
+      "validation": {
+        "dateAndVisitorHomeHeadersMatch": true,
+        "printedLabelsMatchHistoricalScheduleTeams": true,
+        "periodCountsMatchPrintedHeader": true,
+        "periodSumsMatchPrintedFinalAndSchedule": true,
+        "overtimePeriods": 0
+      },
+      "away": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedTeamLabel": "Spurs",
+        "periodPoints": [
+          41,
+          35,
+          14,
+          16
+        ],
+        "reportedFinalScore": 106,
+        "periodPointsSum": 106,
+        "sourceLineAsExtracted": "Spurs 41           35     14     16      106"
+      },
+      "home": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedTeamLabel": "KNICKS",
+        "periodPoints": [
+          22,
+          27,
+          26,
+          32
+        ],
+        "reportedFinalScore": 107,
+        "periodPointsSum": 107,
+        "sourceLineAsExtracted": "KNICKS 22           27     26     32      107"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "official-reported-period-scores",
+      "gameId": "0042500405",
+      "gameCode": "20260613/NYKSAS",
+      "gameDate": "2026-06-13",
+      "season": "2025-26",
+      "gameStatus": 3,
+      "source": {
+        "publisher": "NBA",
+        "reportUrl": "https://statsdmz.nba.com/pdfs/20260613/20260613_NYKSAS.pdf",
+        "reportSha256": "f75b932ecc949348a467e6aa0900b09dc9af07d387506e793c2b38522c1c632b",
+        "page": 1,
+        "pageCount": 1,
+        "periodLabelsAsPrinted": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "verifiedOn": "2026-10-03",
+        "visualReviewCompleted": true
+      },
+      "identityEvidence": {
+        "scheduleFile": "src/data/schedule-2025-26.json",
+        "scheduleSha256": "00ac20a74f6b5acf4425d70de933d17c494f4376aaf63e9ce58a0da706bbc4ab",
+        "unchangedPlayerSnapshot": "src/data/recovered-player-boxes/0042500405.json",
+        "unchangedPlayerSnapshotSha256": "ab4f25a4016eecb5875929430ee0abb05283b42712b5d3a4b975cd8564259591"
+      },
+      "validation": {
+        "dateAndVisitorHomeHeadersMatch": true,
+        "printedLabelsMatchHistoricalScheduleTeams": true,
+        "periodCountsMatchPrintedHeader": true,
+        "periodSumsMatchPrintedFinalAndSchedule": true,
+        "overtimePeriods": 0
+      },
+      "away": {
+        "teamId": 1610612752,
+        "teamTricode": "NYK",
+        "reportedTeamLabel": "Knicks",
+        "periodPoints": [
+          13,
+          24,
+          28,
+          29
+        ],
+        "reportedFinalScore": 94,
+        "periodPointsSum": 94,
+        "sourceLineAsExtracted": "Knicks 13          24     28     29       94"
+      },
+      "home": {
+        "teamId": 1610612759,
+        "teamTricode": "SAS",
+        "reportedTeamLabel": "SPURS",
+        "periodPoints": [
+          23,
+          19,
+          30,
+          18
+        ],
+        "reportedFinalScore": 90,
+        "periodPointsSum": 90,
+        "sourceLineAsExtracted": "SPURS 23           19     30     18       90"
+      }
+    }
+  ],
+  "sourceResearchSha256": "4b7c9bca8f1ed941cb6871528d9e67ee1f80f4daf94bfac1e9f218372b2cda05"
+}

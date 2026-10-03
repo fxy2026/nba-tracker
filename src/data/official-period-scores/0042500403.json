@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "official-reported-period-scores",
+  "gameId": "0042500403",
+  "gameCode": "20260608/SASNYK",
+  "gameDate": "2026-06-08",
+  "season": "2025-26",
+  "gameStatus": 3,
+  "source": {
+    "publisher": "NBA",
+    "reportUrl": "https://statsdmz.nba.com/pdfs/20260608/20260608_SASNYK.pdf",
+    "reportSha256": "0dbbf20f8ba3a87e1fdf6cedfa3126b8bae9ed5e4bb10e72cff25b39a7a7fa47",
+    "page": 1,
+    "pageCount": 1,
+    "periodLabelsAsPrinted": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "verifiedOn": "2026-10-03"
+  },
+  "away": {
+    "teamId": 1610612759,
+    "teamTricode": "SAS",
+    "periodPoints": [
+      33,
+      24,
+      35,
+      23
+    ],
+    "reportedFinalScore": 115
+  },
+  "home": {
+    "teamId": 1610612752,
+    "teamTricode": "NYK",
+    "periodPoints": [
+      22,
+      42,
+      27,
+      20
+    ],
+    "reportedFinalScore": 111
+  }
+}
