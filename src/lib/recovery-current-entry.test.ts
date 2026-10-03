@@ -3,7 +3,10 @@ import { OFFICIAL_RECOVERY_SCHEDULE_URL, projectOfficialRecoverySchedule, type O
 import type { ObservedFinalGame } from './observed-final-game';
 import type { ProviderBasicSnapshot } from './provider-player-normalizer';
 import fullArchive from '../data/schedule-2025-26.json';
-import savedBoxes from '../data/recovered-player-boxes.json';
+import savedFinal from '../data/recovered-player-boxes/0042500405.json';
+import savedRegular from '../data/recovered-player-boxes/0022500961.json';
+// Freeze admission fixtures; newly recovered archive rows must not alter this historical cursor test.
+const savedBoxes = { [savedFinal.gameId]: savedFinal, [savedRegular.gameId]: savedRegular };
 import { RECOVERY_KICKOFF_MESSAGE, RECOVERY_KICKOFF_NONCE, RECOVERY_KICKOFF_PATH } from './recovery-kickoff';
 import { selectRecoveryTargets } from './recovery-target-selection';
 

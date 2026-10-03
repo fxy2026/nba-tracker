@@ -48,7 +48,8 @@ export function findChasing(players: readonly MilestoneCandidate[], tiers: reado
     const threshold = ascending.find(t => t.value > cur);
     if (!threshold) continue;
     const needed = threshold.value - cur;
-    const gamesNeeded = needed / pg;
+    // A positive remaining amount requires at least one whole future game.
+    const gamesNeeded = Math.max(1, Math.ceil(needed / pg));
     if (!Number.isFinite(gamesNeeded) || gamesNeeded > GP_PER_SEASON * 2.5) continue;
     out.push({ player, current: cur, threshold, needed, gamesNeeded });
   }

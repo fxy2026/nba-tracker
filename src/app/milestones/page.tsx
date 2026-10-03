@@ -71,7 +71,7 @@ function MilestoneCard({ m, color, eyebrow, isZh }: { m: ChasingMilestone; color
         <p className="text-lg font-light font-mono tabular-nums" style={{ color }}>
           {m.needed.toLocaleString()}
         </p>
-        <p className="text-[9px] font-mono uppercase tracking-[0.1em] text-text-secondary/60 mt-0.5">{isZh ? `约 ${Math.round(m.gamesNeeded)} 场 · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} 个假设赛季` : `~${Math.round(m.gamesNeeded)} games · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} assumed seasons`}</p>
+        <p className="text-[9px] font-mono uppercase tracking-[0.1em] text-text-secondary/60 mt-0.5">{isZh ? `约 ${m.gamesNeeded} 场 · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} 个假设赛季` : `~${m.gamesNeeded} games · ${(m.gamesNeeded / GP_PER_SEASON).toFixed(1)} assumed seasons`}</p>
       </div>
     </Link>
   );

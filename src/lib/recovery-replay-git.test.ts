@@ -48,7 +48,7 @@ it('a second advancement rejects the sole replay without force or another candid
  expect(pushes).toBe(1);expect(()=>git(s.remote,['show',`master:${path}`])).toThrow();expect(calls.filter(a=>a[0]==='push').flat()).not.toContain('--force');
 });
 it('identical data plan creates no duplicate commit',()=>{const s=setup();const latest=s.advance(path,'{"validated":"fixture"}\n');expect(replayDataOnce({repository:s.work,temporaryRoot:s.root,baseSha:s.baseSha,prepareData:()=>[]})).toEqual({ok:true,status:'identical-present',commit:latest});expect(git(s.remote,['rev-parse','master']).trim()).toBe(latest);});
-it.each(['src/lib/provider-identity-quarantine.ts','scripts/recovery/pending-batch.ts','package-lock.json','tsconfig.json','.github/workflows/player-data-ingestion.yml','.gitattributes'])('changed validation or execution contract aborts before reading latest data: %s',file=>{
+it.each(['src/lib/provider-identity-quarantine.ts','src/lib/official-player-box.ts','scripts/recovery/pending-batch.ts','package-lock.json','tsconfig.json','.github/workflows/player-data-ingestion.yml','.gitattributes'])('changed validation or execution contract aborts before reading latest data: %s',file=>{
  const s=setup();s.advance(file,'changed\n');let called=false;
  expect(replayDataOnce({repository:s.work,temporaryRoot:s.root,baseSha:s.baseSha,prepareData:()=>{called=true;return[];}})).toEqual({ok:false,reason:'validator-changed'});expect(called).toBe(false);
 });

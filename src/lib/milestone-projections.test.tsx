@@ -43,6 +43,22 @@ describe("metric-independent projection model",()=>{
   expect(result).toMatchObject({current:14000,threshold:{value:15000},needed:1000,gamesNeeded:5});
   expect(tiers.map(t=>t.value)).toEqual([30000,15000,10000]);
  });
+ it.each([[9996,31.1,1],[9990,10,1],[9989,10,2],[8250,10,175]])("rounds positive remaining games upward: %s at %s",(current,average,games)=>{
+  const p=milestoneCandidates([base]);
+  const [result]=findChasing(p,[{value:10000,label:"10k"}],()=>current,()=>average);
+  expect(result.gamesNeeded).toBe(games);
+ });
+ it.each([null,0,-1,NaN,Infinity])("does not estimate from unusable average %s",average=>{
+  expect(findChasing(milestoneCandidates([base]),[{value:10000,label:"10k"}],()=>9996,()=>average)).toEqual([]);
+ });
+ it.each([10000,10001])("does not present reached tier %s as still needed",current=>{
+  expect(findChasing(milestoneCandidates([base]),[{value:10000,label:"10k"}],()=>current,()=>10)).toEqual([]);
+ });
+ it("keeps positive subnormal remaining amount at one game and excludes beyond horizon",()=>{
+  const p=milestoneCandidates([base]);
+  expect(findChasing(p,[{value:Number.MIN_VALUE,label:"tiny"}],()=>0,()=>Number.MAX_VALUE)[0].gamesNeeded).toBe(1);
+  expect(findChasing(p,[{value:10000,label:"10k"}],()=>8249,()=>10)).toEqual([]);
+ });
  it("known zero yields no division-by-zero estimate",()=>{
   const p=milestoneCandidates([{...base,pts:0}]);
   expect(findChasing(p,[{value:10000,label:"10k"}],x=>x.estCareerPoints,x=>x.ppg)).toEqual([]);
@@ -54,6 +70,15 @@ describe("metric-independent projection model",()=>{
 });
 
 describe("actual milestones page SSR",()=>{
+ it.each(["en","zh"])("positive remaining four never renders zero games (%s)",async lang=>{
+  locale.mockResolvedValue(lang);
+  seed([{...base,fromYear:"2020",toYear:"2020",pts:142.8,reb:null}]);
+  const html=await render();
+  expect(html).toContain(lang==="zh"?"约 1 场":"~1 games");
+  expect(html).not.toContain(lang==="zh"?"约 0 场":"~0 games");
+  expect(html).toContain(lang==="zh"?"每赛季 70 场":"70 games per season");
+  expect(html).toContain(lang==="zh"?"不是实际生涯累计":"not actual career totals");
+ });
  it.each(["en","zh"])("null PTS retains known rebounding target with source and visible model (%s)",async lang=>{
   locale.mockResolvedValue(lang);
   const html=await render();

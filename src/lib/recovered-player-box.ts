@@ -1,3 +1,4 @@
+import { validateOfficialPlayerBox, type OfficialPlayerBoxEvidence } from './official-player-box';
 import { isQuarantinedProviderIdentity } from "./provider-identity-quarantine";
 // Minimal structural identity keeps this validator usable by offline build
 // tooling without importing API code or either generated archive.
@@ -5,8 +6,8 @@ export interface RecoveredScheduleIdentity {
   gameId: string;
   gameStatus: number;
   gameCode: string;
-  homeTeam: { teamTricode: string; score: number };
-  awayTeam: { teamTricode: string; score: number };
+  homeTeam: { teamTricode: string; score: number; teamId?: number };
+  awayTeam: { teamTricode: string; score: number; teamId?: number };
 }
 
 export interface RecoveredPlayerLine {
@@ -63,8 +64,9 @@ export interface RecoveredPlayerBox {
   gameId: string;
   gameDate: string;
   season: string;
-  provider: "BigBallsData" | "BigBallsData + NBA official final report";
-  providerMatchId: string;
+  provider: "BigBallsData" | "BigBallsData + NBA official final report" | "NBA official final report";
+  providerMatchId: string | null;
+  officialReport?: OfficialPlayerBoxEvidence;
   retrievedAt: string;
   reportUrl: string;
   home: string;
@@ -100,6 +102,7 @@ const countFields = ["minutes", "rebounds", "assists", "fieldGoalsMade", "fieldG
 // This is a deliberately separate basic-stat contract, never a synthetic NBA
 // BoxScore. It cannot unlock play-by-play, shot coordinates or derived widgets.
 export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredScheduleIdentity): RecoveredPlayerBox | null {
+  if (object(raw) && raw.provider === "NBA official final report") return validateOfficialPlayerBox(raw,game);
   if (!object(raw) || game.gameStatus !== 3 || raw.gameId !== game.gameId || !["BigBallsData", "BigBallsData + NBA official final report"].includes(raw.provider as string) ||
     raw.season !== "2025-26" || typeof raw.providerMatchId !== "string" || !/^[0-9a-f-]{36}$/.test(raw.providerMatchId) ||
     typeof raw.retrievedAt !== "string" || !Number.isFinite(Date.parse(raw.retrievedAt)) ||
@@ -108,6 +111,7 @@ export function validateRecoveredPlayerBox(raw: unknown, game: RecoveredSchedule
     raw.home !== game.homeTeam.teamTricode || raw.away !== game.awayTeam.teamTricode || raw.home === raw.away ||
     !count(raw.homeScore) || !count(raw.awayScore) || raw.homeScore !== game.homeTeam.score || raw.awayScore !== game.awayTeam.score ||
     !Array.isArray(raw.players) || raw.players.length === 0) return null;
+  if (raw.officialReport !== undefined) return null;
   if (raw.excludedProviderRecords !== undefined && !count(raw.excludedProviderRecords)) return null;
   const mixed = raw.provider === "BigBallsData + NBA official final report";
   let officialRows = 0;

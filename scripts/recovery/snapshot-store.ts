@@ -62,8 +62,12 @@ export function readVerifiedSnapshotDirectory(directory:string,schedule:unknown)
     const id=file.slice(0,-5),game=games.get(id),raw:unknown=JSON.parse(readFileSync(join(directory,file),'utf8'));
     if(!record(game)||typeof game.gameCode!=='string'||typeof game.gameStatus!=='number'||!record(game.homeTeam)||!record(game.awayTeam)||typeof game.homeTeam.teamTricode!=='string'||typeof game.awayTeam.teamTricode!=='string'||typeof game.homeTeam.score!=='number'||typeof game.awayTeam.score!=='number')throw new Error('Missing verified schedule identity');
     const box=validateRecoveredPlayerBox(raw,game as unknown as RecoveredScheduleIdentity);
-    if(!box||box.gameId!==id||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(box.providerMatchId)||owners.has(box.providerMatchId.toLowerCase()))throw new Error('Invalid verified snapshot');
-    owners.add(box.providerMatchId.toLowerCase());result[id]=box;
+    if(!box||box.gameId!==id)throw new Error('Invalid verified snapshot');
+    if(box.providerMatchId!==null){
+      if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(box.providerMatchId)||owners.has(box.providerMatchId.toLowerCase()))throw new Error('Invalid verified snapshot');
+      owners.add(box.providerMatchId.toLowerCase());
+    }
+    result[id]=box;
   }
   return result;
 }
@@ -133,6 +137,7 @@ export function buildStoredSnapshotIndex(prior:Record<string,unknown>,verified:R
       const record=raw as Record<string,unknown>;
       const identity=kind==='verified'?record:record.game as Record<string,unknown>|undefined;
       const match=identity?.providerMatchId;
+      if(kind==='verified'&&record.provider==='NBA official final report'&&match===null&&identity?.gameId===id){existing.add(id);continue;}
       if(!identity||(kind==='verified'?identity.gameId:identity.nbaGameId)!==id||typeof match!=='string'||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(match)||existingMatches.has(match.toLowerCase()))throw new Error('Conflicting stored provider identity');
       existing.add(id);existingMatches.set(match.toLowerCase(),id);
     }
