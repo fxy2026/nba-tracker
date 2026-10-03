@@ -5,12 +5,25 @@ import json, sys, os, collections
 from datetime import datetime, timedelta
 from pathlib import Path
 from archive_schedule_identity import validate_schedule_identities
+from archive_synthetic_identities import (
+    canonicalize_verified_synthetic_games, synthetic_identity_corrections,
+    validate_verified_synthetic_sources,
+)
 
 tmp = sys.argv[1]
 wb = json.load(open(os.path.join(tmp, 'wb_games.json'), encoding='utf-8'))
 espn = json.load(open(os.path.join(tmp, 'espn_games.json'), encoding='utf-8'))
 assign = json.load(open(os.path.join(tmp, 'assign3.json'), encoding='utf-8'))
 still = json.load(open(os.path.join(tmp, 'still2.json'), encoding='utf-8'))
+
+# Unresolved inputs must not erase prior assignment evidence before validation.
+# Otherwise a stale still2 row can silently replace a known final with a new
+# arbitrary synthetic ID, hiding both its original identity and ESPN conflict.
+unresolved_indices = [str(row[0]) for row in still]
+if len(unresolved_indices) != len(set(unresolved_indices)):
+    raise ValueError('Duplicate unresolved source index')
+if set(unresolved_indices) & set(assign):
+    raise ValueError('Unresolved source index already assigned; refusing identity overwrite')
 
 NBA30 = set('ATL BOS BKN CHA CHI CLE DAL DEN DET GSW HOU IND LAC LAL MEM MIA MIL MIN NOP NYK OKC ORL PHI PHX POR SAC SAS TOR UTA WAS'.split())
 teams = {}
@@ -56,6 +69,11 @@ for i, date, away, home, st in still:
     assign[si] = gid
     syn += 1
 print('synthetic ids:', syn)
+
+root = Path(__file__).resolve().parents[1]
+synthetic_evidence = json.loads((root / 'scripts/archive-data/synthetic-identity-corrections.json').read_text())
+# Check each raw source before choosing fallback values or discarding residue.
+validate_verified_synthetic_sources(wb, espn, assign, synthetic_evidence)
 
 
 def norm_utc(s):
@@ -141,11 +159,13 @@ for gid, g in wb.items():
 # before writing either schedule or ESPN map, rather than silently rebinding IDs.
 # Validate before dropping ghosts so a known final cannot silently disappear
 # when an input incorrectly downgrades it to scheduled or live.
-root = Path(__file__).resolve().parents[1]
 final_archive = json.loads((root / 'src/data/season-2025-26-final.json').read_text())
 verified_identities = json.loads((root / 'scripts/archive-data/schedule-identity-corrections.json').read_text())
+verified_identities['corrections'] += synthetic_identity_corrections(synthetic_evidence)
 known_final_ids = {game['gameId'] for game in final_archive['finishedGames']}
 known_final_ids.update(entry['gameId'] for entry in verified_identities['corrections'])
+known_final_ids.update(entry['replacedSyntheticRecord']['game']['gameId']
+                       for entry in verified_identities['corrections'] if 'replacedSyntheticRecord' in entry)
 # Earlier cleanup can skip unusable source rows (unknown teams, missing dates,
 # or zero-score residue). It must never silently erase a known final supplied
 # by either input. Partial input fixtures remain valid; only supplied IDs count.
@@ -153,6 +173,7 @@ supplied_final_ids = (set(assign.values()) | set(wb)) & known_final_ids
 missing_final_ids = supplied_final_ids - set(games_out)
 if missing_final_ids:
     raise ValueError(f'Known final identities dropped before validation: {sorted(missing_final_ids)}')
+games_out, espn_map = canonicalize_verified_synthetic_games(games_out, espn_map, synthetic_evidence)
 validate_schedule_identities(
     games_out,
     final_archive,

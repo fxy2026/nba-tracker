@@ -59,3 +59,6 @@ article-images/frames/
 
 # Generated validated official final identity index
 /src/data/observed-final-games.json
+
+# Generated content identity for the shared slim schedule cache.
+/src/data/schedule-projection-revision.json

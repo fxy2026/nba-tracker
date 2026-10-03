@@ -4,6 +4,7 @@ import { observedFinalsToSchedule, mergeObservedFinalSchedule } from './observed
 // Data source: cdn.nba.com
 
 import archiveSchedule from "@/data/schedule-2025-26.json";
+import scheduleProjection from "@/data/schedule-projection-revision.json";
 import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { currentSeason } from "@/lib/constants";
 import { scheduleForSeason } from "@/lib/games";
@@ -494,9 +495,15 @@ export async function getCurrentSeasonSchedule(season = currentSeason()): Promis
 // route 503) falls back to the direct CDN fetch — never worse than before.
 async function fetchSlimRouteOnce(): Promise<ScheduleDate[] | null> {
   try {
-    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim?schema=2`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
+    // Next's Data Cache survives deploys. Bind both it and the CDN cache to
+    // the validated data baked into this build, rather than a fixed schema URL.
+    const { schema, revision } = scheduleProjection;
+    const res = await fetch(`${internalBaseUrl()}/api/schedule-slim?schema=${schema}&revision=${revision}`, { next: { revalidate: 7200 }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
-    const body = (await res.json()) as { seasonYear?: string; dates?: ScheduleDate[] };
+    const body = (await res.json()) as { schema?: number; revision?: string; seasonYear?: string; dates?: ScheduleDate[] };
+    // The response may come from an older production deployment during a
+    // preview/build, or an intermediary cache. Never relabel it as current.
+    if (body.schema !== schema || body.revision !== revision) return null;
     if (!Array.isArray(body.dates) || body.dates.length === 0) return null;
     scheduleCache = { data: mergeObservedFinalSchedule(body.dates, OBSERVED_FINAL_DATES), ts: Date.now() };
     if (body.seasonYear) scheduleSeasonYear = body.seasonYear;

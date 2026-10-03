@@ -1,6 +1,6 @@
-/** Independently verified identity, not a general synthetic-ID conversion.
- * Official April 24 LAL–HOU final: scripts/archive-data/schedule-identity-corrections.json.
- */
+import aliases from "@/data/archive-game-aliases.json";
+
+/** Fixed independently verified identities; never infer an NBA ID from user input. */
 export function resolveArchiveGameId(id: string): string {
-  return id === "9401869400" ? "0042500173" : id;
+  return Object.hasOwn(aliases, id) ? (aliases as Record<string, string>)[id] : id;
 }

@@ -1,4 +1,5 @@
 import { readObservedFinalDirectory } from './official-game-store';
+import { createScheduleProjectionRevision } from './schedule-projection-revision';
 import { observedFinalsToSchedule, mergeObservedFinalSchedule } from '../../src/lib/observed-final-schedule';
 import { existsSync, lstatSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -113,6 +114,13 @@ export function generateStoredArchives(root='src/data'){
   writeGeneratedAggregate(generic,join(root,'provider-player-boxes.json'),new Set([...Object.keys(verified),...Object.keys(quarantined)]));
   writeGeneratedAggregate(verified,join(root,'recovered-player-boxes.json'));
   writeGeneratedAggregate(observed,join(root,'observed-final-games.json'));
+  // Derived at every build/test/dev entrypoint, after validation. A corrected
+  // baked schedule or newly observed final gets a fresh shared-cache key.
+  const schedule=JSON.parse(readFileSync(join(root,'schedule-2025-26.json'),'utf8'));
+  const revision=createScheduleProjectionRevision(schedule,observed);
+  const revisionFile=join(root,'schedule-projection-revision.json');
+  const text=JSON.stringify(revision)+'\n';
+  if(!existsSync(revisionFile)||readFileSync(revisionFile,'utf8')!==text)writeFileSync(revisionFile,text);
 }
 
 export function readQuarantinedSnapshots(directory:string,metadataFile:string):Record<string,ProviderBasicSnapshot> {

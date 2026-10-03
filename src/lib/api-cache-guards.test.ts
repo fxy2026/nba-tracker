@@ -1,3 +1,4 @@
+import scheduleProjection from "@/data/schedule-projection-revision.json";
 import archivePlayerIndex from "@/data/playerindex-2025-26.json";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
@@ -108,6 +109,7 @@ describe("schedule cache degradation guards", () => {
 
 describe("schedule slim-route consumer path", () => {
   const slimFeed = {
+    ...scheduleProjection,
     seasonYear: "2025",
     dates: [{ gameDate: "10/21/2025 00:00:00", games: [] }],
   };
@@ -160,7 +162,7 @@ describe("schedule slim-route consumer path", () => {
 
   it("treats a 200 slim response with empty dates as a miss instead of committing it", async () => {
     const cdn = vi.fn().mockResolvedValue(jsonResponse(goodSchedule));
-    vi.stubGlobal("fetch", scheduleFetch(cdn, () => jsonResponse({ seasonYear: "2025", dates: [] })));
+    vi.stubGlobal("fetch", scheduleFetch(cdn, () => jsonResponse({ ...scheduleProjection, seasonYear: "2025", dates: [] })));
     const api = await loadApi();
 
     const dates = await api.getFullSchedule();

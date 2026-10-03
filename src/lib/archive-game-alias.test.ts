@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { resolveArchiveGameId } from "./archive-game-alias";
+import aliases from "@/data/archive-game-aliases.json";
 import schedule from "@/data/schedule-2025-26.json";
 const mocks = vi.hoisted(() => ({ box: vi.fn(), schedule: vi.fn(), redirect: vi.fn((url: string): never => { throw new Error(`permanent:${url}`); }) }));
 vi.mock("next/navigation", () => ({ permanentRedirect: mocks.redirect }));
@@ -7,7 +8,7 @@ vi.mock("@/lib/api", async original => ({ ...await original<typeof import("./api
 vi.mock("@/lib/locale", () => ({ getLocale: async () => "en" }));
 beforeEach(() => { vi.clearAllMocks(); mocks.box.mockResolvedValue(null); mocks.schedule.mockResolvedValue(schedule.dates); });
 
-it.each(["0042500173", "0022500989", "9401810012", "__proto__", "unknown"])("leaves unlisted identity %s untouched", id => {
+it.each(["0042500173", "0022500989", "9400000001", "__proto__", "unknown"])("leaves unlisted identity %s untouched", id => {
   expect(resolveArchiveGameId(id)).toBe(id);
 });
 it("the actual legacy game page permanently redirects before requesting any game data", async () => {
@@ -23,4 +24,24 @@ it("metadata resolves the alias to the canonical playoff ID and source", async (
   expect(mocks.box).toHaveBeenCalledWith("0042500173");
   expect(metadata.alternates?.canonical).toBe("/game/0042500173");
   expect(metadata.title).toBe("LAL vs HOU");
+});
+
+const aliasPairs = Object.entries(aliases);
+it("includes exactly the 67 regular-season mappings and the prior playoff alias", () => {
+  expect(aliasPairs).toHaveLength(68);
+  expect(new Set(aliasPairs.map(([, target]) => target)).size).toBe(68);
+});
+it.each(aliasPairs)("legacy %s permanently redirects to %s before data access", async (oldId, canonicalId) => {
+  expect(resolveArchiveGameId(oldId)).toBe(canonicalId);
+  expect(resolveArchiveGameId(canonicalId)).toBe(canonicalId);
+  const { default: Page } = await import("@/app/game/[id]/page");
+  await expect(Page({ params: Promise.resolve({ id: oldId }) })).rejects.toThrow(`permanent:/game/${canonicalId}`);
+  expect(mocks.box).not.toHaveBeenCalled();
+  expect(mocks.schedule).not.toHaveBeenCalled();
+});
+it.each(aliasPairs)("legacy %s metadata uses canonical %s", async (oldId, canonicalId) => {
+  const { generateMetadata } = await import("@/app/game/[id]/page");
+  const metadata = await generateMetadata({ params: Promise.resolve({ id: oldId }) });
+  expect(mocks.box).toHaveBeenCalledWith(canonicalId);
+  expect(metadata.alternates?.canonical).toBe(`/game/${canonicalId}`);
 });

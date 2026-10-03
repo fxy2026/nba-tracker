@@ -1,0 +1,3490 @@
+{
+  "schemaVersion": 1,
+  "scope": "67 official top-level NBA game identities, independently verified; legacy ESPN same-event bindings retained",
+  "mappings": [
+    {
+      "from": "9401810012",
+      "to": "0022500157",
+      "original": {
+        "dateBucket": "11/03/2025 00:00:00",
+        "game": {
+          "gameId": "9401810012",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20251103/MILIND",
+          "gameDateTimeUTC": "2025-11-04T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612754,
+            "teamTricode": "IND",
+            "teamName": "Pacers",
+            "teamCity": "Indiana",
+            "teamSlug": "pacers",
+            "score": 115,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612749,
+            "teamTricode": "MIL",
+            "teamName": "Bucks",
+            "teamCity": "Milwaukee",
+            "teamSlug": "bucks",
+            "score": 117,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2025-11-03",
+        "gameDateTimeUTC": "2025-11-04T00:00:00Z",
+        "away": "MIL",
+        "awayTeamId": 1610612749,
+        "home": "IND",
+        "homeTeamId": 1610612754,
+        "awayScore": 117,
+        "homeScore": 115
+      },
+      "espnEventId": "401810012",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mil-vs-ind-0022500157",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "2d7e41575c6967571b3193c2c16e9cada591cd2a6a645c2d3a8233bb6b072e22",
+      "verifiedAt": "2026-10-03T02:12:08.458394+00:00"
+    },
+    {
+      "from": "9401810013",
+      "to": "0022500158",
+      "original": {
+        "dateBucket": "11/03/2025 00:00:00",
+        "game": {
+          "gameId": "9401810013",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20251103/UTABOS",
+          "gameDateTimeUTC": "2025-11-04T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 103,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2025-11-03",
+        "gameDateTimeUTC": "2025-11-04T00:30:00Z",
+        "away": "UTA",
+        "awayTeamId": 1610612762,
+        "home": "BOS",
+        "homeTeamId": 1610612738,
+        "awayScore": 105,
+        "homeScore": 103
+      },
+      "espnEventId": "401810013",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/uta-vs-bos-0022500158",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "9c8219e5a5014dd54f067fc25757e0eb07c3cb5598677a00e03c134c6c4c8ab7",
+      "verifiedAt": "2026-10-03T02:12:08.459068+00:00"
+    },
+    {
+      "from": "9401810019",
+      "to": "0022500164",
+      "original": {
+        "dateBucket": "11/03/2025 00:00:00",
+        "game": {
+          "gameId": "9401810019",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20251103/MIALAC",
+          "gameDateTimeUTC": "2025-11-04T03:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612746,
+            "teamTricode": "LAC",
+            "teamName": "Clippers",
+            "teamCity": "LA",
+            "teamSlug": "clippers",
+            "score": 119,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 120,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2025-11-03",
+        "gameDateTimeUTC": "2025-11-04T03:30:00Z",
+        "away": "MIA",
+        "awayTeamId": 1610612748,
+        "home": "LAC",
+        "homeTeamId": 1610612746,
+        "awayScore": 120,
+        "homeScore": 119
+      },
+      "espnEventId": "401810019",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mia-vs-lac-0022500164",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "555ce1998e0c5b3f8f63085a5de27af87333fc9b021ae83eb090aeb63839d9b1",
+      "verifiedAt": "2026-10-03T02:12:08.473737+00:00"
+    },
+    {
+      "from": "9401810333",
+      "to": "0022500478",
+      "original": {
+        "dateBucket": "01/02/2026 00:00:00",
+        "game": {
+          "gameId": "9401810333",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260102/DENCLE",
+          "gameDateTimeUTC": "2026-01-03T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612739,
+            "teamTricode": "CLE",
+            "teamName": "Cavaliers",
+            "teamCity": "Cleveland",
+            "teamSlug": "cavaliers",
+            "score": 113,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612743,
+            "teamTricode": "DEN",
+            "teamName": "Nuggets",
+            "teamCity": "Denver",
+            "teamSlug": "nuggets",
+            "score": 108,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-01-02",
+        "gameDateTimeUTC": "2026-01-03T00:30:00Z",
+        "away": "DEN",
+        "awayTeamId": 1610612743,
+        "home": "CLE",
+        "homeTeamId": 1610612739,
+        "awayScore": 108,
+        "homeScore": 113
+      },
+      "espnEventId": "401810333",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/den-vs-cle-0022500478",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "9880335e07f8ef9b33793dba930f6d6613a56a48b81f1fd8ab306709b69882e7",
+      "verifiedAt": "2026-10-03T02:12:15.107353+00:00"
+    },
+    {
+      "from": "9401810335",
+      "to": "0022500480",
+      "original": {
+        "dateBucket": "01/02/2026 00:00:00",
+        "game": {
+          "gameId": "9401810335",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260102/ORLCHI",
+          "gameDateTimeUTC": "2026-01-03T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612741,
+            "teamTricode": "CHI",
+            "teamName": "Bulls",
+            "teamCity": "Chicago",
+            "teamSlug": "bulls",
+            "score": 121,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 114,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-01-02",
+        "gameDateTimeUTC": "2026-01-03T01:00:00Z",
+        "away": "ORL",
+        "awayTeamId": 1610612753,
+        "home": "CHI",
+        "homeTeamId": 1610612741,
+        "awayScore": 114,
+        "homeScore": 121
+      },
+      "espnEventId": "401810335",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/orl-vs-chi-0022500480",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "ab08d6fbef9b32a2ea45dcc3857767a616dfe0eed0d421be99f53be9f4a6059b",
+      "verifiedAt": "2026-10-03T02:12:16.098404+00:00"
+    },
+    {
+      "from": "9401810576",
+      "to": "0022500721",
+      "original": {
+        "dateBucket": "02/03/2026 00:00:00",
+        "game": {
+          "gameId": "9401810576",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260203/BOSDAL",
+          "gameDateTimeUTC": "2026-02-04T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612742,
+            "teamTricode": "DAL",
+            "teamName": "Mavericks",
+            "teamCity": "Dallas",
+            "teamSlug": "mavericks",
+            "score": 100,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 110,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-03",
+        "gameDateTimeUTC": "2026-02-04T01:00:00Z",
+        "away": "BOS",
+        "awayTeamId": 1610612738,
+        "home": "DAL",
+        "homeTeamId": 1610612742,
+        "awayScore": 110,
+        "homeScore": 100
+      },
+      "espnEventId": "401810576",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/bos-vs-dal-0022500721",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "aa4a05a6ac66dd154f5e88740466402cdb77a1e1a9e9107a2d651f5d3234c408",
+      "verifiedAt": "2026-10-03T02:12:20.393373+00:00"
+    },
+    {
+      "from": "9401810612",
+      "to": "0022500757",
+      "original": {
+        "dateBucket": "02/08/2026 00:00:00",
+        "game": {
+          "gameId": "9401810612",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260208/NYKBOS",
+          "gameDateTimeUTC": "2026-02-08T17:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 89,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612752,
+            "teamTricode": "NYK",
+            "teamName": "Knicks",
+            "teamCity": "New York",
+            "teamSlug": "knicks",
+            "score": 111,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-08",
+        "gameDateTimeUTC": "2026-02-08T17:30:00Z",
+        "away": "NYK",
+        "awayTeamId": 1610612752,
+        "home": "BOS",
+        "homeTeamId": 1610612738,
+        "awayScore": 111,
+        "homeScore": 89
+      },
+      "espnEventId": "401810612",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/nyk-vs-bos-0022500757",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "2b13b08d6ef61e714464221355b3eb3107ad80e76c2c28936e756a82237cbf72",
+      "verifiedAt": "2026-10-03T02:12:25.057268+00:00"
+    },
+    {
+      "from": "9401810613",
+      "to": "0022500758",
+      "original": {
+        "dateBucket": "02/08/2026 00:00:00",
+        "game": {
+          "gameId": "9401810613",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260208/MIAWAS",
+          "gameDateTimeUTC": "2026-02-08T19:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 101,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 132,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-08",
+        "gameDateTimeUTC": "2026-02-08T19:00:00Z",
+        "away": "MIA",
+        "awayTeamId": 1610612748,
+        "home": "WAS",
+        "homeTeamId": 1610612764,
+        "awayScore": 132,
+        "homeScore": 101
+      },
+      "espnEventId": "401810613",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mia-vs-was-0022500758",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "7a513046f260b66e5240f979a1cfff557ed1998b8f1afb0e7402203b02c901f1",
+      "verifiedAt": "2026-10-03T02:12:27.276480+00:00"
+    },
+    {
+      "from": "9401810658",
+      "to": "0022500803",
+      "original": {
+        "dateBucket": "02/20/2026 00:00:00",
+        "game": {
+          "gameId": "9401810658",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260220/INDWAS",
+          "gameDateTimeUTC": "2026-02-21T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 131,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612754,
+            "teamTricode": "IND",
+            "teamName": "Pacers",
+            "teamCity": "Indiana",
+            "teamSlug": "pacers",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-20",
+        "gameDateTimeUTC": "2026-02-21T00:00:00Z",
+        "away": "IND",
+        "awayTeamId": 1610612754,
+        "home": "WAS",
+        "homeTeamId": 1610612764,
+        "awayScore": 118,
+        "homeScore": 131
+      },
+      "espnEventId": "401810658",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/ind-vs-was-0022500803",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "6e3da0d43f04d994f178b44acda323ee018b08480e5072dac3626d964d05f9a6",
+      "verifiedAt": "2026-10-03T02:12:29.661945+00:00"
+    },
+    {
+      "from": "9401810659",
+      "to": "0022500804",
+      "original": {
+        "dateBucket": "02/20/2026 00:00:00",
+        "game": {
+          "gameId": "9401810659",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260220/UTAMEM",
+          "gameDateTimeUTC": "2026-02-21T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612763,
+            "teamTricode": "MEM",
+            "teamName": "Grizzlies",
+            "teamCity": "Memphis",
+            "teamSlug": "grizzlies",
+            "score": 123,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 114,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-20",
+        "gameDateTimeUTC": "2026-02-21T00:00:00Z",
+        "away": "UTA",
+        "awayTeamId": 1610612762,
+        "home": "MEM",
+        "homeTeamId": 1610612763,
+        "awayScore": 114,
+        "homeScore": 123
+      },
+      "espnEventId": "401810659",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/uta-vs-mem-0022500804",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "97bc67b9708dd6c3bd46501eb6ff74ad3450a11cd32a7e31d9fd74196bfd02ab",
+      "verifiedAt": "2026-10-03T02:12:30.653943+00:00"
+    },
+    {
+      "from": "9401810661",
+      "to": "0022500806",
+      "original": {
+        "dateBucket": "02/20/2026 00:00:00",
+        "game": {
+          "gameId": "9401810661",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260220/DALMIN",
+          "gameDateTimeUTC": "2026-02-21T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612750,
+            "teamTricode": "MIN",
+            "teamName": "Timberwolves",
+            "teamCity": "Minnesota",
+            "teamSlug": "timberwolves",
+            "score": 122,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612742,
+            "teamTricode": "DAL",
+            "teamName": "Mavericks",
+            "teamCity": "Dallas",
+            "teamSlug": "mavericks",
+            "score": 111,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-20",
+        "gameDateTimeUTC": "2026-02-21T00:30:00Z",
+        "away": "DAL",
+        "awayTeamId": 1610612742,
+        "home": "MIN",
+        "homeTeamId": 1610612750,
+        "awayScore": 111,
+        "homeScore": 122
+      },
+      "espnEventId": "401810661",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/dal-vs-min-0022500806",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "cba959f1f0a1ee0247798da290f7ffe90acbdaa518016934bebc73fec2e7d9b0",
+      "verifiedAt": "2026-10-03T02:12:35.461519+00:00"
+    },
+    {
+      "from": "9401810664",
+      "to": "0022500809",
+      "original": {
+        "dateBucket": "02/20/2026 00:00:00",
+        "game": {
+          "gameId": "9401810664",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260220/LACLAL",
+          "gameDateTimeUTC": "2026-02-21T03:15:00Z",
+          "homeTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 125,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612746,
+            "teamTricode": "LAC",
+            "teamName": "Clippers",
+            "teamCity": "LA",
+            "teamSlug": "clippers",
+            "score": 122,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-20",
+        "gameDateTimeUTC": "2026-02-21T03:00:00Z",
+        "away": "LAC",
+        "awayTeamId": 1610612746,
+        "home": "LAL",
+        "homeTeamId": 1610612747,
+        "awayScore": 122,
+        "homeScore": 125
+      },
+      "espnEventId": "401810664",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/lac-vs-lal-0022500809",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "142265009979e3d199367ceaf54db789d139a37cec9082f7254910309dcfd139",
+      "verifiedAt": "2026-10-03T02:12:36.903283+00:00"
+    },
+    {
+      "from": "9401810704",
+      "to": "0022500849",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810704",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/MIAPHI",
+          "gameDateTimeUTC": "2026-02-27T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612755,
+            "teamTricode": "PHI",
+            "teamName": "76ers",
+            "teamCity": "Philadelphia",
+            "teamSlug": "76ers",
+            "score": 124,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 117,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T00:00:00Z",
+        "away": "MIA",
+        "awayTeamId": 1610612748,
+        "home": "PHI",
+        "homeTeamId": 1610612755,
+        "awayScore": 117,
+        "homeScore": 124
+      },
+      "espnEventId": "401810704",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mia-vs-phi-0022500849",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "2c3c31b32a640bcb3b9cf6dbde8e4b21719e6a654036182aa05149bcafbaacca",
+      "verifiedAt": "2026-10-03T02:12:40.025274+00:00"
+    },
+    {
+      "from": "9401810705",
+      "to": "0022500850",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810705",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/WASATL",
+          "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612737,
+            "teamTricode": "ATL",
+            "teamName": "Hawks",
+            "teamCity": "Atlanta",
+            "teamSlug": "hawks",
+            "score": 126,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 96,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+        "away": "WAS",
+        "awayTeamId": 1610612764,
+        "home": "ATL",
+        "homeTeamId": 1610612737,
+        "awayScore": 96,
+        "homeScore": 126
+      },
+      "espnEventId": "401810705",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/was-vs-atl-0022500850",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "e1221f3fb9f181ccf8463c7f94d3160e206c8f8656eb8be996807c4bf4341f05",
+      "verifiedAt": "2026-10-03T02:12:40.596245+00:00"
+    },
+    {
+      "from": "9401810706",
+      "to": "0022500851",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810706",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/SASBKN",
+          "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612751,
+            "teamTricode": "BKN",
+            "teamName": "Nets",
+            "teamCity": "Brooklyn",
+            "teamSlug": "nets",
+            "score": 110,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612759,
+            "teamTricode": "SAS",
+            "teamName": "Spurs",
+            "teamCity": "San Antonio",
+            "teamSlug": "spurs",
+            "score": 126,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+        "away": "SAS",
+        "awayTeamId": 1610612759,
+        "home": "BKN",
+        "homeTeamId": 1610612751,
+        "awayScore": 126,
+        "homeScore": 110
+      },
+      "espnEventId": "401810706",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/sas-vs-bkn-0022500851",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "2cb0bbab13faaf10fb0b06a1445e8fd71f22818cf3c3d908d203c33744d131e0",
+      "verifiedAt": "2026-10-03T02:12:47.479126+00:00"
+    },
+    {
+      "from": "9401810707",
+      "to": "0022500852",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810707",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/HOUORL",
+          "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 108,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 113,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T00:30:00Z",
+        "away": "HOU",
+        "awayTeamId": 1610612745,
+        "home": "ORL",
+        "homeTeamId": 1610612753,
+        "awayScore": 113,
+        "homeScore": 108
+      },
+      "espnEventId": "401810707",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/hou-vs-orl-0022500852",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "9c2840068118120ec168c9d21d9ab5874e15f8cea99894d14e7df0af6c3aefd5",
+      "verifiedAt": "2026-10-03T02:12:48.064367+00:00"
+    },
+    {
+      "from": "9401810708",
+      "to": "0022500853",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810708",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/PORCHI",
+          "gameDateTimeUTC": "2026-02-27T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612741,
+            "teamTricode": "CHI",
+            "teamName": "Bulls",
+            "teamCity": "Chicago",
+            "teamSlug": "bulls",
+            "score": 112,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612757,
+            "teamTricode": "POR",
+            "teamName": "Trail Blazers",
+            "teamCity": "Portland",
+            "teamSlug": "trail-blazers",
+            "score": 121,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T01:00:00Z",
+        "away": "POR",
+        "awayTeamId": 1610612757,
+        "home": "CHI",
+        "homeTeamId": 1610612741,
+        "awayScore": 121,
+        "homeScore": 112
+      },
+      "espnEventId": "401810708",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/por-vs-chi-0022500853",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "eb37c512f55307a1d61e6aee61956ee8c6dc80c4879e9fbedaf867ca19471ef4",
+      "verifiedAt": "2026-10-03T02:12:51.415181+00:00"
+    },
+    {
+      "from": "9401810709",
+      "to": "0022500854",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810709",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/SACDAL",
+          "gameDateTimeUTC": "2026-02-27T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612742,
+            "teamTricode": "DAL",
+            "teamName": "Mavericks",
+            "teamCity": "Dallas",
+            "teamSlug": "mavericks",
+            "score": 121,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612758,
+            "teamTricode": "SAC",
+            "teamName": "Kings",
+            "teamCity": "Sacramento",
+            "teamSlug": "kings",
+            "score": 130,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T01:30:00Z",
+        "away": "SAC",
+        "awayTeamId": 1610612758,
+        "home": "DAL",
+        "homeTeamId": 1610612742,
+        "awayScore": 130,
+        "homeScore": 121
+      },
+      "espnEventId": "401810709",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/sac-vs-dal-0022500854",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f47fc9b0ecc512c2ea888cc7fabe3d52f9a33fe26ac8092707da51e05d201c45",
+      "verifiedAt": "2026-10-03T02:12:51.641274+00:00"
+    },
+    {
+      "from": "9401810711",
+      "to": "0022500856",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810711",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/NOPUTA",
+          "gameDateTimeUTC": "2026-02-27T02:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612740,
+            "teamTricode": "NOP",
+            "teamName": "Pelicans",
+            "teamCity": "New Orleans",
+            "teamSlug": "pelicans",
+            "score": 129,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T02:00:00Z",
+        "away": "NOP",
+        "awayTeamId": 1610612740,
+        "home": "UTA",
+        "homeTeamId": 1610612762,
+        "awayScore": 129,
+        "homeScore": 118
+      },
+      "espnEventId": "401810711",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/nop-vs-uta-0022500856",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "6cbf456d9f773165ba213aabaded6aa7d9c66bd746ffb24e3055aac5bf12f179",
+      "verifiedAt": "2026-10-03T02:12:55.302828+00:00"
+    },
+    {
+      "from": "9401810712",
+      "to": "0022500857",
+      "original": {
+        "dateBucket": "02/26/2026 00:00:00",
+        "game": {
+          "gameId": "9401810712",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260226/MINLAC",
+          "gameDateTimeUTC": "2026-02-27T03:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612746,
+            "teamTricode": "LAC",
+            "teamName": "Clippers",
+            "teamCity": "LA",
+            "teamSlug": "clippers",
+            "score": 88,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612750,
+            "teamTricode": "MIN",
+            "teamName": "Timberwolves",
+            "teamCity": "Minnesota",
+            "teamSlug": "timberwolves",
+            "score": 94,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-26",
+        "gameDateTimeUTC": "2026-02-27T03:00:00Z",
+        "away": "MIN",
+        "awayTeamId": 1610612750,
+        "home": "LAC",
+        "homeTeamId": 1610612746,
+        "awayScore": 94,
+        "homeScore": 88
+      },
+      "espnEventId": "401810712",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/min-vs-lac-0022500857",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f9f3f07babcc93c7fb9aed5717b057883a21d6ff7ec6e7959eeb19484850d60e",
+      "verifiedAt": "2026-10-03T02:12:55.731540+00:00"
+    },
+    {
+      "from": "9401810718",
+      "to": "0022500863",
+      "original": {
+        "dateBucket": "02/28/2026 00:00:00",
+        "game": {
+          "gameId": "9401810718",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260228/PORCHA",
+          "gameDateTimeUTC": "2026-02-28T18:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 109,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612757,
+            "teamTricode": "POR",
+            "teamName": "Trail Blazers",
+            "teamCity": "Portland",
+            "teamSlug": "trail-blazers",
+            "score": 93,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-28",
+        "gameDateTimeUTC": "2026-02-28T18:00:00Z",
+        "away": "POR",
+        "awayTeamId": 1610612757,
+        "home": "CHA",
+        "homeTeamId": 1610612766,
+        "awayScore": 93,
+        "homeScore": 109
+      },
+      "espnEventId": "401810718",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/por-vs-cha-0022500863",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "272d37309f39de926fd65e51dc08cc5a0672525fcc069b34303934d958b7ccd6",
+      "verifiedAt": "2026-10-03T02:13:01.177259+00:00"
+    },
+    {
+      "from": "9401810719",
+      "to": "0022500864",
+      "original": {
+        "dateBucket": "02/28/2026 00:00:00",
+        "game": {
+          "gameId": "9401810719",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260228/HOUMIA",
+          "gameDateTimeUTC": "2026-02-28T20:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 115,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-28",
+        "gameDateTimeUTC": "2026-02-28T20:30:00Z",
+        "away": "HOU",
+        "awayTeamId": 1610612745,
+        "home": "MIA",
+        "homeTeamId": 1610612748,
+        "awayScore": 105,
+        "homeScore": 115
+      },
+      "espnEventId": "401810719",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/hou-vs-mia-0022500864",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1dfaa1c4017b59fd8773ab16e438f918aac101f9a50b19395a08dbf4ee991d8a",
+      "verifiedAt": "2026-10-03T02:13:01.780746+00:00"
+    },
+    {
+      "from": "9401810720",
+      "to": "0022500865",
+      "original": {
+        "dateBucket": "02/28/2026 00:00:00",
+        "game": {
+          "gameId": "9401810720",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260228/TORWAS",
+          "gameDateTimeUTC": "2026-03-01T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 125,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612761,
+            "teamTricode": "TOR",
+            "teamName": "Raptors",
+            "teamCity": "Toronto",
+            "teamSlug": "raptors",
+            "score": 134,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-28",
+        "gameDateTimeUTC": "2026-03-01T00:00:00Z",
+        "away": "TOR",
+        "awayTeamId": 1610612761,
+        "home": "WAS",
+        "homeTeamId": 1610612764,
+        "awayScore": 134,
+        "homeScore": 125
+      },
+      "espnEventId": "401810720",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/tor-vs-was-0022500865",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "8b872dcc6f0aa16acb519a69ec955c20983e39a560851dc85e19c801ba472291",
+      "verifiedAt": "2026-10-03T02:13:11.168753+00:00"
+    },
+    {
+      "from": "9401810722",
+      "to": "0022500867",
+      "original": {
+        "dateBucket": "02/28/2026 00:00:00",
+        "game": {
+          "gameId": "9401810722",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260228/NOPUTA",
+          "gameDateTimeUTC": "2026-03-01T02:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612740,
+            "teamTricode": "NOP",
+            "teamName": "Pelicans",
+            "teamCity": "New Orleans",
+            "teamSlug": "pelicans",
+            "score": 115,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-02-28",
+        "gameDateTimeUTC": "2026-03-01T02:30:00Z",
+        "away": "NOP",
+        "awayTeamId": 1610612740,
+        "home": "UTA",
+        "homeTeamId": 1610612762,
+        "awayScore": 115,
+        "homeScore": 105
+      },
+      "espnEventId": "401810722",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/nop-vs-uta-0022500867",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f9974dce7d2d758049cd5468b953c7e4bbde797c1865db13ff3db39b3e18b860",
+      "verifiedAt": "2026-10-03T02:13:11.307704+00:00"
+    },
+    {
+      "from": "9401810756",
+      "to": "0022500901",
+      "original": {
+        "dateBucket": "03/05/2026 00:00:00",
+        "game": {
+          "gameId": "9401810756",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260305/BKNMIA",
+          "gameDateTimeUTC": "2026-03-06T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 126,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612751,
+            "teamTricode": "BKN",
+            "teamName": "Nets",
+            "teamCity": "Brooklyn",
+            "teamSlug": "nets",
+            "score": 110,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-05",
+        "gameDateTimeUTC": "2026-03-06T00:30:00Z",
+        "away": "BKN",
+        "awayTeamId": 1610612751,
+        "home": "MIA",
+        "homeTeamId": 1610612748,
+        "awayScore": 110,
+        "homeScore": 126
+      },
+      "espnEventId": "401810756",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/bkn-vs-mia-0022500901",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "8cbff81575dcc6dd198d2984dcd6ea22e86b2ee80abb6bfa0693e86d972c9c22",
+      "verifiedAt": "2026-10-03T02:13:15.953110+00:00"
+    },
+    {
+      "from": "9401810757",
+      "to": "0022500902",
+      "original": {
+        "dateBucket": "03/05/2026 00:00:00",
+        "game": {
+          "gameId": "9401810757",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260305/GSWHOU",
+          "gameDateTimeUTC": "2026-03-06T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 113,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612744,
+            "teamTricode": "GSW",
+            "teamName": "Warriors",
+            "teamCity": "Golden State",
+            "teamSlug": "warriors",
+            "score": 115,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-05",
+        "gameDateTimeUTC": "2026-03-06T00:30:00Z",
+        "away": "GSW",
+        "awayTeamId": 1610612744,
+        "home": "HOU",
+        "homeTeamId": 1610612745,
+        "awayScore": 115,
+        "homeScore": 113
+      },
+      "espnEventId": "401810757",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/gsw-vs-hou-0022500902",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "0dfde28044da64ec39a329331846457a0ae359183aa5671a7b6ac148dcc7b614",
+      "verifiedAt": "2026-10-03T02:13:16.219343+00:00"
+    },
+    {
+      "from": "9401810770",
+      "to": "0022500915",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810770",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/ORLMIN",
+          "gameDateTimeUTC": "2026-03-07T20:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612750,
+            "teamTricode": "MIN",
+            "teamName": "Timberwolves",
+            "teamCity": "Minnesota",
+            "teamSlug": "timberwolves",
+            "score": 92,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 119,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-07T20:00:00Z",
+        "away": "ORL",
+        "awayTeamId": 1610612753,
+        "home": "MIN",
+        "homeTeamId": 1610612750,
+        "awayScore": 119,
+        "homeScore": 92
+      },
+      "espnEventId": "401810770",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/orl-vs-min-0022500915",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "d06f10ba3c190ba3c7b49bffbd16503ba2b25065c7d29e28aa7e6a236e8423d8",
+      "verifiedAt": "2026-10-03T02:13:22.980258+00:00"
+    },
+    {
+      "from": "9401810771",
+      "to": "0022500916",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810771",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/BKNDET",
+          "gameDateTimeUTC": "2026-03-07T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612765,
+            "teamTricode": "DET",
+            "teamName": "Pistons",
+            "teamCity": "Detroit",
+            "teamSlug": "pistons",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612751,
+            "teamTricode": "BKN",
+            "teamName": "Nets",
+            "teamCity": "Brooklyn",
+            "teamSlug": "nets",
+            "score": 107,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-07T23:00:00Z",
+        "away": "BKN",
+        "awayTeamId": 1610612751,
+        "home": "DET",
+        "homeTeamId": 1610612765,
+        "awayScore": 107,
+        "homeScore": 105
+      },
+      "espnEventId": "401810771",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/bkn-vs-det-0022500916",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1af96dc4e88656cba8c3ec4335c466d11cd42a62deb1936646c4a7a291d65052",
+      "verifiedAt": "2026-10-03T02:13:23.656145+00:00"
+    },
+    {
+      "from": "9401810772",
+      "to": "0022500917",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810772",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/PHIATL",
+          "gameDateTimeUTC": "2026-03-07T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612737,
+            "teamTricode": "ATL",
+            "teamName": "Hawks",
+            "teamCity": "Atlanta",
+            "teamSlug": "hawks",
+            "score": 125,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612755,
+            "teamTricode": "PHI",
+            "teamName": "76ers",
+            "teamCity": "Philadelphia",
+            "teamSlug": "76ers",
+            "score": 116,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-07T23:00:00Z",
+        "away": "PHI",
+        "awayTeamId": 1610612755,
+        "home": "ATL",
+        "homeTeamId": 1610612737,
+        "awayScore": 116,
+        "homeScore": 125
+      },
+      "espnEventId": "401810772",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phi-vs-atl-0022500917",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "4d029b27ef38176d17bcd77052ac13d7fa1fb68fe02f2040355542ebb2238956",
+      "verifiedAt": "2026-10-03T02:13:30.589631+00:00"
+    },
+    {
+      "from": "9401810773",
+      "to": "0022500918",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810773",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/LACMEM",
+          "gameDateTimeUTC": "2026-03-08T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612763,
+            "teamTricode": "MEM",
+            "teamName": "Grizzlies",
+            "teamCity": "Memphis",
+            "teamSlug": "grizzlies",
+            "score": 120,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612746,
+            "teamTricode": "LAC",
+            "teamName": "Clippers",
+            "teamCity": "LA",
+            "teamSlug": "clippers",
+            "score": 123,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-08T01:00:00Z",
+        "away": "LAC",
+        "awayTeamId": 1610612746,
+        "home": "MEM",
+        "homeTeamId": 1610612763,
+        "awayScore": 123,
+        "homeScore": 120
+      },
+      "espnEventId": "401810773",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/lac-vs-mem-0022500918",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "0c7b7248c5160212457f244180fe32ee29bcf2acdd2211cbae2f778bf6cc1d67",
+      "verifiedAt": "2026-10-03T02:13:30.607626+00:00"
+    },
+    {
+      "from": "9401810774",
+      "to": "0022500919",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810774",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/UTAMIL",
+          "gameDateTimeUTC": "2026-03-08T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612749,
+            "teamTricode": "MIL",
+            "teamName": "Bucks",
+            "teamCity": "Milwaukee",
+            "teamSlug": "bucks",
+            "score": 113,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 99,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-08T01:00:00Z",
+        "away": "UTA",
+        "awayTeamId": 1610612762,
+        "home": "MIL",
+        "homeTeamId": 1610612749,
+        "awayScore": 99,
+        "homeScore": 113
+      },
+      "espnEventId": "401810774",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/uta-vs-mil-0022500919",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "553f5fe8f0c47af3cf075354bf4bcfe12f308c284677c34c36f1a6f4c7766cee",
+      "verifiedAt": "2026-10-03T02:13:36.600115+00:00"
+    },
+    {
+      "from": "9401810775",
+      "to": "0022500920",
+      "original": {
+        "dateBucket": "03/07/2026 00:00:00",
+        "game": {
+          "gameId": "9401810775",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260307/GSWOKC",
+          "gameDateTimeUTC": "2026-03-08T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612760,
+            "teamTricode": "OKC",
+            "teamName": "Thunder",
+            "teamCity": "Oklahoma City",
+            "teamSlug": "thunder",
+            "score": 104,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612744,
+            "teamTricode": "GSW",
+            "teamName": "Warriors",
+            "teamCity": "Golden State",
+            "teamSlug": "warriors",
+            "score": 97,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-07",
+        "gameDateTimeUTC": "2026-03-08T01:30:00Z",
+        "away": "GSW",
+        "awayTeamId": 1610612744,
+        "home": "OKC",
+        "homeTeamId": 1610612760,
+        "awayScore": 97,
+        "homeScore": 104
+      },
+      "espnEventId": "401810775",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/gsw-vs-okc-0022500920",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f6b213157a66f7a2586ecabac8538b7d83dc1374b1d427ce0687ff899cf259b0",
+      "verifiedAt": "2026-10-03T02:13:36.601288+00:00"
+    },
+    {
+      "from": "9401810831",
+      "to": "0022500976",
+      "original": {
+        "dateBucket": "03/15/2026 00:00:00",
+        "game": {
+          "gameId": "9401810831",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260315/MINOKC",
+          "gameDateTimeUTC": "2026-03-15T17:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612760,
+            "teamTricode": "OKC",
+            "teamName": "Thunder",
+            "teamCity": "Oklahoma City",
+            "teamSlug": "thunder",
+            "score": 116,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612750,
+            "teamTricode": "MIN",
+            "teamName": "Timberwolves",
+            "teamCity": "Minnesota",
+            "teamSlug": "timberwolves",
+            "score": 103,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-15",
+        "gameDateTimeUTC": "2026-03-15T17:00:00Z",
+        "away": "MIN",
+        "awayTeamId": 1610612750,
+        "home": "OKC",
+        "homeTeamId": 1610612760,
+        "awayScore": 103,
+        "homeScore": 116
+      },
+      "espnEventId": "401810831",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/min-vs-okc-0022500976",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f7cab6db9ff6ab95d8214bad4c046ed44a8384ca253cd9afde360a14e5e8b6f2",
+      "verifiedAt": "2026-10-03T02:13:45.726748+00:00"
+    },
+    {
+      "from": "9401810834",
+      "to": "0022500979",
+      "original": {
+        "dateBucket": "03/15/2026 00:00:00",
+        "game": {
+          "gameId": "9401810834",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260315/INDMIL",
+          "gameDateTimeUTC": "2026-03-15T19:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612749,
+            "teamTricode": "MIL",
+            "teamName": "Bucks",
+            "teamCity": "Milwaukee",
+            "teamSlug": "bucks",
+            "score": 134,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612754,
+            "teamTricode": "IND",
+            "teamName": "Pacers",
+            "teamCity": "Indiana",
+            "teamSlug": "pacers",
+            "score": 123,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-15",
+        "gameDateTimeUTC": "2026-03-15T19:30:00Z",
+        "away": "IND",
+        "awayTeamId": 1610612754,
+        "home": "MIL",
+        "homeTeamId": 1610612749,
+        "awayScore": 123,
+        "homeScore": 134
+      },
+      "espnEventId": "401810834",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/ind-vs-mil-0022500979",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f6c352a9097a5b969ef64e72a7f6ad562f0565904d6bf73e1c483eb9bf0b8fe8",
+      "verifiedAt": "2026-10-03T02:13:46.405888+00:00"
+    },
+    {
+      "from": "9401810836",
+      "to": "0022500981",
+      "original": {
+        "dateBucket": "03/15/2026 00:00:00",
+        "game": {
+          "gameId": "9401810836",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260315/GSWNYK",
+          "gameDateTimeUTC": "2026-03-16T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612752,
+            "teamTricode": "NYK",
+            "teamName": "Knicks",
+            "teamCity": "New York",
+            "teamSlug": "knicks",
+            "score": 110,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612744,
+            "teamTricode": "GSW",
+            "teamName": "Warriors",
+            "teamCity": "Golden State",
+            "teamSlug": "warriors",
+            "score": 107,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-15",
+        "gameDateTimeUTC": "2026-03-16T00:00:00Z",
+        "away": "GSW",
+        "awayTeamId": 1610612744,
+        "home": "NYK",
+        "homeTeamId": 1610612752,
+        "awayScore": 107,
+        "homeScore": 110
+      },
+      "espnEventId": "401810836",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/gsw-vs-nyk-0022500981",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "7cc065598e52e50b2bbcd6b06154dc9bb6082e631e2ad08ea3ef7af7048ef08f",
+      "verifiedAt": "2026-10-03T02:13:50.922212+00:00"
+    },
+    {
+      "from": "9401810841",
+      "to": "0022500986",
+      "original": {
+        "dateBucket": "03/16/2026 00:00:00",
+        "game": {
+          "gameId": "9401810841",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260316/PHXBOS",
+          "gameDateTimeUTC": "2026-03-16T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 120,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612756,
+            "teamTricode": "PHX",
+            "teamName": "Suns",
+            "teamCity": "Phoenix",
+            "teamSlug": "suns",
+            "score": 112,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-16",
+        "gameDateTimeUTC": "2026-03-16T23:30:00Z",
+        "away": "PHX",
+        "awayTeamId": 1610612756,
+        "home": "BOS",
+        "homeTeamId": 1610612738,
+        "awayScore": 112,
+        "homeScore": 120
+      },
+      "espnEventId": "401810841",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phx-vs-bos-0022500986",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "855e5023c0ba0b2b0e8c4d54f3ff292ec8456583968d689262ccef31f4cd524d",
+      "verifiedAt": "2026-10-03T02:13:52.091874+00:00"
+    },
+    {
+      "from": "9401810843",
+      "to": "0022500988",
+      "original": {
+        "dateBucket": "03/16/2026 00:00:00",
+        "game": {
+          "gameId": "9401810843",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260316/DALNOP",
+          "gameDateTimeUTC": "2026-03-17T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612740,
+            "teamTricode": "NOP",
+            "teamName": "Pelicans",
+            "teamCity": "New Orleans",
+            "teamSlug": "pelicans",
+            "score": 129,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612742,
+            "teamTricode": "DAL",
+            "teamName": "Mavericks",
+            "teamCity": "Dallas",
+            "teamSlug": "mavericks",
+            "score": 111,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-16",
+        "gameDateTimeUTC": "2026-03-17T00:00:00Z",
+        "away": "DAL",
+        "awayTeamId": 1610612742,
+        "home": "NOP",
+        "homeTeamId": 1610612740,
+        "awayScore": 111,
+        "homeScore": 129
+      },
+      "espnEventId": "401810843",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/dal-vs-nop-0022500988",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f30a1343e94d399c1b15331b492375dad333b37d94c01cdff62906eeaa801eb8",
+      "verifiedAt": "2026-10-03T02:13:56.133250+00:00"
+    },
+    {
+      "from": "9401810863",
+      "to": "0022501008",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810863",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/ORLCHA",
+          "gameDateTimeUTC": "2026-03-19T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 130,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 111,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-19T23:00:00Z",
+        "away": "ORL",
+        "awayTeamId": 1610612753,
+        "home": "CHA",
+        "homeTeamId": 1610612766,
+        "awayScore": 111,
+        "homeScore": 130
+      },
+      "espnEventId": "401810863",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/orl-vs-cha-0022501008",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "034d21f48e2f87815f6902f88e7617bc81191e02423ccf0ca23b4bb75606eca0",
+      "verifiedAt": "2026-10-03T02:13:56.279896+00:00"
+    },
+    {
+      "from": "9401810864",
+      "to": "0022501009",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810864",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/DETWAS",
+          "gameDateTimeUTC": "2026-03-19T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 95,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612765,
+            "teamTricode": "DET",
+            "teamName": "Pistons",
+            "teamCity": "Detroit",
+            "teamSlug": "pistons",
+            "score": 117,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-19T23:00:00Z",
+        "away": "DET",
+        "awayTeamId": 1610612765,
+        "home": "WAS",
+        "homeTeamId": 1610612764,
+        "awayScore": 117,
+        "homeScore": 95
+      },
+      "espnEventId": "401810864",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/det-vs-was-0022501009",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "d933cc4dab682809a69ff736ef8e4cca9e236138f05087ef5674252fde71f485",
+      "verifiedAt": "2026-10-03T02:14:03.691340+00:00"
+    },
+    {
+      "from": "9401810865",
+      "to": "0022501010",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810865",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/LALMIA",
+          "gameDateTimeUTC": "2026-03-20T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 126,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 134,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-20T00:00:00Z",
+        "away": "LAL",
+        "awayTeamId": 1610612747,
+        "home": "MIA",
+        "homeTeamId": 1610612748,
+        "awayScore": 134,
+        "homeScore": 126
+      },
+      "espnEventId": "401810865",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/lal-vs-mia-0022501010",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "d91254c3c1d1e624b8723ff72fd170e7558fa878791f29407ea86dc286d26452",
+      "verifiedAt": "2026-10-03T02:14:03.862480+00:00"
+    },
+    {
+      "from": "9401810868",
+      "to": "0022501013",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810868",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/PHXSAS",
+          "gameDateTimeUTC": "2026-03-20T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612759,
+            "teamTricode": "SAS",
+            "teamName": "Spurs",
+            "teamCity": "San Antonio",
+            "teamSlug": "spurs",
+            "score": 101,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612756,
+            "teamTricode": "PHX",
+            "teamName": "Suns",
+            "teamCity": "Phoenix",
+            "teamSlug": "suns",
+            "score": 100,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-20T00:00:00Z",
+        "away": "PHX",
+        "awayTeamId": 1610612756,
+        "home": "SAS",
+        "homeTeamId": 1610612759,
+        "awayScore": 100,
+        "homeScore": 101
+      },
+      "espnEventId": "401810868",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phx-vs-sas-0022501013",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "5f1c81b2f283fce3963443fa6d941a5615b33d0acaf01823627e626385e8a959",
+      "verifiedAt": "2026-10-03T02:14:09.027441+00:00"
+    },
+    {
+      "from": "9401810869",
+      "to": "0022501014",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810869",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/MILUTA",
+          "gameDateTimeUTC": "2026-03-20T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 128,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612749,
+            "teamTricode": "MIL",
+            "teamName": "Bucks",
+            "teamCity": "Milwaukee",
+            "teamSlug": "bucks",
+            "score": 96,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-20T01:00:00Z",
+        "away": "MIL",
+        "awayTeamId": 1610612749,
+        "home": "UTA",
+        "homeTeamId": 1610612762,
+        "awayScore": 96,
+        "homeScore": 128
+      },
+      "espnEventId": "401810869",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mil-vs-uta-0022501014",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1781752d7e5eaab2305c637693cdcd4950490d9a3373ccd3e6d3b85a2c20476c",
+      "verifiedAt": "2026-10-03T02:14:09.195950+00:00"
+    },
+    {
+      "from": "9401810870",
+      "to": "0022501015",
+      "original": {
+        "dateBucket": "03/19/2026 00:00:00",
+        "game": {
+          "gameId": "9401810870",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260319/PHISAC",
+          "gameDateTimeUTC": "2026-03-20T02:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612758,
+            "teamTricode": "SAC",
+            "teamName": "Kings",
+            "teamCity": "Sacramento",
+            "teamSlug": "kings",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612755,
+            "teamTricode": "PHI",
+            "teamName": "76ers",
+            "teamCity": "Philadelphia",
+            "teamSlug": "76ers",
+            "score": 139,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-19",
+        "gameDateTimeUTC": "2026-03-20T02:00:00Z",
+        "away": "PHI",
+        "awayTeamId": 1610612755,
+        "home": "SAC",
+        "homeTeamId": 1610612758,
+        "awayScore": 139,
+        "homeScore": 118
+      },
+      "espnEventId": "401810870",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phi-vs-sac-0022501015",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1d7edace565e4f797f88c71f629dfe219a7b4be9ec35cac56448a3ddbcd55069",
+      "verifiedAt": "2026-10-03T02:14:14.371527+00:00"
+    },
+    {
+      "from": "9401810902",
+      "to": "0022501047",
+      "original": {
+        "dateBucket": "03/24/2026 00:00:00",
+        "game": {
+          "gameId": "9401810902",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260324/SACCHA",
+          "gameDateTimeUTC": "2026-03-24T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 134,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612758,
+            "teamTricode": "SAC",
+            "teamName": "Kings",
+            "teamCity": "Sacramento",
+            "teamSlug": "kings",
+            "score": 90,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-24",
+        "gameDateTimeUTC": "2026-03-24T23:00:00Z",
+        "away": "SAC",
+        "awayTeamId": 1610612758,
+        "home": "CHA",
+        "homeTeamId": 1610612766,
+        "awayScore": 90,
+        "homeScore": 134
+      },
+      "espnEventId": "401810902",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/sac-vs-cha-0022501047",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "f620fd71c18681f1842577b9f8daba3f9d350ceec5b190ced62e7bacdfcd7ccd",
+      "verifiedAt": "2026-10-03T02:14:14.436937+00:00"
+    },
+    {
+      "from": "9401810903",
+      "to": "0022501048",
+      "original": {
+        "dateBucket": "03/24/2026 00:00:00",
+        "game": {
+          "gameId": "9401810903",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260324/NOPNYK",
+          "gameDateTimeUTC": "2026-03-24T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612752,
+            "teamTricode": "NYK",
+            "teamName": "Knicks",
+            "teamCity": "New York",
+            "teamSlug": "knicks",
+            "score": 121,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612740,
+            "teamTricode": "NOP",
+            "teamName": "Pelicans",
+            "teamCity": "New Orleans",
+            "teamSlug": "pelicans",
+            "score": 116,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-24",
+        "gameDateTimeUTC": "2026-03-24T23:30:00Z",
+        "away": "NOP",
+        "awayTeamId": 1610612740,
+        "home": "NYK",
+        "homeTeamId": 1610612752,
+        "awayScore": 116,
+        "homeScore": 121
+      },
+      "espnEventId": "401810903",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/nop-vs-nyk-0022501048",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "58c7fe6d5d5eba3907eb3a3593c2a36e27ac6af4a367f590063893278548e6e0",
+      "verifiedAt": "2026-10-03T02:14:26.604497+00:00"
+    },
+    {
+      "from": "9401810904",
+      "to": "0022501049",
+      "original": {
+        "dateBucket": "03/24/2026 00:00:00",
+        "game": {
+          "gameId": "9401810904",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260324/ORLCLE",
+          "gameDateTimeUTC": "2026-03-25T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612739,
+            "teamTricode": "CLE",
+            "teamName": "Cavaliers",
+            "teamCity": "Cleveland",
+            "teamSlug": "cavaliers",
+            "score": 136,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 131,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-24",
+        "gameDateTimeUTC": "2026-03-25T00:00:00Z",
+        "away": "ORL",
+        "awayTeamId": 1610612753,
+        "home": "CLE",
+        "homeTeamId": 1610612739,
+        "awayScore": 131,
+        "homeScore": 136
+      },
+      "espnEventId": "401810904",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/orl-vs-cle-0022501049",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "2b4bf24c56403b6feb5d06defb195ea42171ab0616840484749cb5ccefd88866",
+      "verifiedAt": "2026-10-03T02:14:27.371823+00:00"
+    },
+    {
+      "from": "9401810905",
+      "to": "0022501050",
+      "original": {
+        "dateBucket": "03/24/2026 00:00:00",
+        "game": {
+          "gameId": "9401810905",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260324/DENPHX",
+          "gameDateTimeUTC": "2026-03-25T03:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612756,
+            "teamTricode": "PHX",
+            "teamName": "Suns",
+            "teamCity": "Phoenix",
+            "teamSlug": "suns",
+            "score": 123,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612743,
+            "teamTricode": "DEN",
+            "teamName": "Nuggets",
+            "teamCity": "Denver",
+            "teamSlug": "nuggets",
+            "score": 125,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-24",
+        "gameDateTimeUTC": "2026-03-25T03:00:00Z",
+        "away": "DEN",
+        "awayTeamId": 1610612743,
+        "home": "PHX",
+        "homeTeamId": 1610612756,
+        "awayScore": 125,
+        "homeScore": 123
+      },
+      "espnEventId": "401810905",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/den-vs-phx-0022501050",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "11a550f69e1dc97a5094ec554fb6970f948adc7980b73643ba4e70763522b40c",
+      "verifiedAt": "2026-10-03T02:14:31.493783+00:00"
+    },
+    {
+      "from": "9401810946",
+      "to": "0022501091",
+      "original": {
+        "dateBucket": "03/30/2026 00:00:00",
+        "game": {
+          "gameId": "9401810946",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260330/PHIMIA",
+          "gameDateTimeUTC": "2026-03-30T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 119,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612755,
+            "teamTricode": "PHI",
+            "teamName": "76ers",
+            "teamCity": "Philadelphia",
+            "teamSlug": "76ers",
+            "score": 109,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-30",
+        "gameDateTimeUTC": "2026-03-30T23:00:00Z",
+        "away": "PHI",
+        "awayTeamId": 1610612755,
+        "home": "MIA",
+        "homeTeamId": 1610612748,
+        "awayScore": 109,
+        "homeScore": 119
+      },
+      "espnEventId": "401810946",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phi-vs-mia-0022501091",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "27f241276404f83842163f86e606cc3ab596cf1fa5ef3d153a3ead47f3fc0ab8",
+      "verifiedAt": "2026-10-03T02:14:31.494721+00:00"
+    },
+    {
+      "from": "9401810947",
+      "to": "0022501092",
+      "original": {
+        "dateBucket": "03/30/2026 00:00:00",
+        "game": {
+          "gameId": "9401810947",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260330/BOSATL",
+          "gameDateTimeUTC": "2026-03-30T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612737,
+            "teamTricode": "ATL",
+            "teamName": "Hawks",
+            "teamCity": "Atlanta",
+            "teamSlug": "hawks",
+            "score": 112,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 102,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-30",
+        "gameDateTimeUTC": "2026-03-30T23:30:00Z",
+        "away": "BOS",
+        "awayTeamId": 1610612738,
+        "home": "ATL",
+        "homeTeamId": 1610612737,
+        "awayScore": 102,
+        "homeScore": 112
+      },
+      "espnEventId": "401810947",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/bos-vs-atl-0022501092",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "92ef71ce4db467c7d06760874b4f07dfe03926356161ad826b066ab93cc942fb",
+      "verifiedAt": "2026-10-03T02:14:36.983882+00:00"
+    },
+    {
+      "from": "9401810948",
+      "to": "0022501093",
+      "original": {
+        "dateBucket": "03/30/2026 00:00:00",
+        "game": {
+          "gameId": "9401810948",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260330/PHXMEM",
+          "gameDateTimeUTC": "2026-03-31T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612763,
+            "teamTricode": "MEM",
+            "teamName": "Grizzlies",
+            "teamCity": "Memphis",
+            "teamSlug": "grizzlies",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612756,
+            "teamTricode": "PHX",
+            "teamName": "Suns",
+            "teamCity": "Phoenix",
+            "teamSlug": "suns",
+            "score": 131,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-30",
+        "gameDateTimeUTC": "2026-03-31T00:00:00Z",
+        "away": "PHX",
+        "awayTeamId": 1610612756,
+        "home": "MEM",
+        "homeTeamId": 1610612763,
+        "awayScore": 131,
+        "homeScore": 105
+      },
+      "espnEventId": "401810948",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phx-vs-mem-0022501093",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "82e4c49aa1cf49af3094b4ea7ece8793954b1eb75d6eba5624fd4e9664113031",
+      "verifiedAt": "2026-10-03T02:14:37.963128+00:00"
+    },
+    {
+      "from": "9401810952",
+      "to": "0022501097",
+      "original": {
+        "dateBucket": "03/30/2026 00:00:00",
+        "game": {
+          "gameId": "9401810952",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260330/DETOKC",
+          "gameDateTimeUTC": "2026-03-31T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612760,
+            "teamTricode": "OKC",
+            "teamName": "Thunder",
+            "teamCity": "Oklahoma City",
+            "teamSlug": "thunder",
+            "score": 114,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612765,
+            "teamTricode": "DET",
+            "teamName": "Pistons",
+            "teamCity": "Detroit",
+            "teamSlug": "pistons",
+            "score": 110,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-30",
+        "gameDateTimeUTC": "2026-03-31T01:30:00Z",
+        "away": "DET",
+        "awayTeamId": 1610612765,
+        "home": "OKC",
+        "homeTeamId": 1610612760,
+        "awayScore": 110,
+        "homeScore": 114
+      },
+      "espnEventId": "401810952",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/det-vs-okc-0022501097",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "6797cb04498699dc14fe572f9d50174a076b9e6bf59d3bfa17d7528691f05b8d",
+      "verifiedAt": "2026-10-03T02:14:42.216936+00:00"
+    },
+    {
+      "from": "9401810953",
+      "to": "0022501098",
+      "original": {
+        "dateBucket": "03/30/2026 00:00:00",
+        "game": {
+          "gameId": "9401810953",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260330/WASLAL",
+          "gameDateTimeUTC": "2026-03-31T02:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 120,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 101,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-30",
+        "gameDateTimeUTC": "2026-03-31T02:00:00Z",
+        "away": "WAS",
+        "awayTeamId": 1610612764,
+        "home": "LAL",
+        "homeTeamId": 1610612747,
+        "awayScore": 101,
+        "homeScore": 120
+      },
+      "espnEventId": "401810953",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/was-vs-lal-0022501098",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1a48f1c4a265e29b6ec878cd16622929256e723c205b3665ba932aa53cc17cea",
+      "verifiedAt": "2026-10-03T02:14:42.308808+00:00"
+    },
+    {
+      "from": "9401811026",
+      "to": "0022501171",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811026",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/DETCHA",
+          "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 100,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612765,
+            "teamTricode": "DET",
+            "teamName": "Pistons",
+            "teamCity": "Detroit",
+            "teamSlug": "pistons",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+        "away": "DET",
+        "awayTeamId": 1610612765,
+        "home": "CHA",
+        "homeTeamId": 1610612766,
+        "awayScore": 118,
+        "homeScore": 100
+      },
+      "espnEventId": "401811026",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/det-vs-cha-0022501171",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "8c5eeafe51c9a3eaeadb0d0f1b44e7ed333e77a3d34fe8a70d20545352993322",
+      "verifiedAt": "2026-10-03T02:14:48.685288+00:00"
+    },
+    {
+      "from": "9401811027",
+      "to": "0022501172",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811027",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/MIAWAS",
+          "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612764,
+            "teamTricode": "WAS",
+            "teamName": "Wizards",
+            "teamCity": "Washington",
+            "teamSlug": "wizards",
+            "score": 117,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612748,
+            "teamTricode": "MIA",
+            "teamName": "Heat",
+            "teamCity": "Miami",
+            "teamSlug": "heat",
+            "score": 140,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+        "away": "MIA",
+        "awayTeamId": 1610612748,
+        "home": "WAS",
+        "homeTeamId": 1610612764,
+        "awayScore": 140,
+        "homeScore": 117
+      },
+      "espnEventId": "401811027",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mia-vs-was-0022501172",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "ca48d6b73aed96b2b668ae3300fc21fd7222d3bcab6e3420042bf10d2025bcaf",
+      "verifiedAt": "2026-10-03T02:14:49.297645+00:00"
+    },
+    {
+      "from": "9401811028",
+      "to": "0022501173",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811028",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/CLEATL",
+          "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612737,
+            "teamTricode": "ATL",
+            "teamName": "Hawks",
+            "teamCity": "Atlanta",
+            "teamSlug": "hawks",
+            "score": 124,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612739,
+            "teamTricode": "CLE",
+            "teamName": "Cavaliers",
+            "teamCity": "Cleveland",
+            "teamSlug": "cavaliers",
+            "score": 102,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:00:00Z",
+        "away": "CLE",
+        "awayTeamId": 1610612739,
+        "home": "ATL",
+        "homeTeamId": 1610612737,
+        "awayScore": 102,
+        "homeScore": 124
+      },
+      "espnEventId": "401811028",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/cle-vs-atl-0022501173",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "b4c3d0b5e5ae0ae96bba67b441e11fa57c0f0e903fbb2a24595caa84ea571e0c",
+      "verifiedAt": "2026-10-03T02:14:53.936399+00:00"
+    },
+    {
+      "from": "9401811029",
+      "to": "0022501174",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811029",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/NOPBOS",
+          "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612738,
+            "teamTricode": "BOS",
+            "teamName": "Celtics",
+            "teamCity": "Boston",
+            "teamSlug": "celtics",
+            "score": 144,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612740,
+            "teamTricode": "NOP",
+            "teamName": "Pelicans",
+            "teamCity": "New Orleans",
+            "teamSlug": "pelicans",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+        "away": "NOP",
+        "awayTeamId": 1610612740,
+        "home": "BOS",
+        "homeTeamId": 1610612738,
+        "awayScore": 118,
+        "homeScore": 144
+      },
+      "espnEventId": "401811029",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/nop-vs-bos-0022501174",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "268f124085453f9dc9027b67b2f9e0f4c163ebe847ea7bb262027240cdedf4e8",
+      "verifiedAt": "2026-10-03T02:14:54.451448+00:00"
+    },
+    {
+      "from": "9401811030",
+      "to": "0022501175",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811030",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/PHIIND",
+          "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612754,
+            "teamTricode": "IND",
+            "teamName": "Pacers",
+            "teamCity": "Indiana",
+            "teamSlug": "pacers",
+            "score": 94,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612755,
+            "teamTricode": "PHI",
+            "teamName": "76ers",
+            "teamCity": "Philadelphia",
+            "teamSlug": "76ers",
+            "score": 105,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+        "away": "PHI",
+        "awayTeamId": 1610612755,
+        "home": "IND",
+        "homeTeamId": 1610612754,
+        "awayScore": 105,
+        "homeScore": 94
+      },
+      "espnEventId": "401811030",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phi-vs-ind-0022501175",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "99bf2704dfb85d8d71ee4f6a3d7c604a781735c60827850d95a243be64185c00",
+      "verifiedAt": "2026-10-03T02:14:59.142888+00:00"
+    },
+    {
+      "from": "9401811031",
+      "to": "0022501176",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811031",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/TORNYK",
+          "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612752,
+            "teamTricode": "NYK",
+            "teamName": "Knicks",
+            "teamCity": "New York",
+            "teamSlug": "knicks",
+            "score": 112,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612761,
+            "teamTricode": "TOR",
+            "teamName": "Raptors",
+            "teamCity": "Toronto",
+            "teamSlug": "raptors",
+            "score": 95,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-10T23:30:00Z",
+        "away": "TOR",
+        "awayTeamId": 1610612761,
+        "home": "NYK",
+        "homeTeamId": 1610612752,
+        "awayScore": 95,
+        "homeScore": 112
+      },
+      "espnEventId": "401811031",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/tor-vs-nyk-0022501176",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "0396b0a3b0e9358a8915eabf2156c4a7811223761471618582d19fdda5138c57",
+      "verifiedAt": "2026-10-03T02:14:59.354699+00:00"
+    },
+    {
+      "from": "9401811032",
+      "to": "0022501177",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811032",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/ORLCHI",
+          "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612741,
+            "teamTricode": "CHI",
+            "teamName": "Bulls",
+            "teamCity": "Chicago",
+            "teamSlug": "bulls",
+            "score": 103,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612753,
+            "teamTricode": "ORL",
+            "teamName": "Magic",
+            "teamCity": "Orlando",
+            "teamSlug": "magic",
+            "score": 127,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+        "away": "ORL",
+        "awayTeamId": 1610612753,
+        "home": "CHI",
+        "homeTeamId": 1610612741,
+        "awayScore": 127,
+        "homeScore": 103
+      },
+      "espnEventId": "401811032",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/orl-vs-chi-0022501177",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "36f1794dc9bfc80bdb3742b37b88612458b4075afe72e09866c7efc1e1585a57",
+      "verifiedAt": "2026-10-03T02:15:04.921091+00:00"
+    },
+    {
+      "from": "9401811034",
+      "to": "0022501179",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811034",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/BKNMIL",
+          "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612749,
+            "teamTricode": "MIL",
+            "teamName": "Bucks",
+            "teamCity": "Milwaukee",
+            "teamSlug": "bucks",
+            "score": 125,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612751,
+            "teamTricode": "BKN",
+            "teamName": "Nets",
+            "teamCity": "Brooklyn",
+            "teamSlug": "nets",
+            "score": 108,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+        "away": "BKN",
+        "awayTeamId": 1610612751,
+        "home": "MIL",
+        "homeTeamId": 1610612749,
+        "awayScore": 108,
+        "homeScore": 125
+      },
+      "espnEventId": "401811034",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/bkn-vs-mil-0022501179",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "c6891b1a6bfeac98d67419714b87acadaa7a6afeb315fb5771db866d6504f21b",
+      "verifiedAt": "2026-10-03T02:15:06.745391+00:00"
+    },
+    {
+      "from": "9401811035",
+      "to": "0022501180",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811035",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/DALSAS",
+          "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612759,
+            "teamTricode": "SAS",
+            "teamName": "Spurs",
+            "teamCity": "San Antonio",
+            "teamSlug": "spurs",
+            "score": 139,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612742,
+            "teamTricode": "DAL",
+            "teamName": "Mavericks",
+            "teamCity": "Dallas",
+            "teamSlug": "mavericks",
+            "score": 120,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T00:00:00Z",
+        "away": "DAL",
+        "awayTeamId": 1610612742,
+        "home": "SAS",
+        "homeTeamId": 1610612759,
+        "awayScore": 120,
+        "homeScore": 139
+      },
+      "espnEventId": "401811035",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/dal-vs-sas-0022501180",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "5392c76a2202eff7cd2939049cbd599a663275a876780de318e2eccde725c265",
+      "verifiedAt": "2026-10-03T02:15:11.697244+00:00"
+    },
+    {
+      "from": "9401811037",
+      "to": "0022501182",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811037",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/OKCDEN",
+          "gameDateTimeUTC": "2026-04-11T01:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612743,
+            "teamTricode": "DEN",
+            "teamName": "Nuggets",
+            "teamCity": "Denver",
+            "teamSlug": "nuggets",
+            "score": 127,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612760,
+            "teamTricode": "OKC",
+            "teamName": "Thunder",
+            "teamCity": "Oklahoma City",
+            "teamSlug": "thunder",
+            "score": 107,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T01:00:00Z",
+        "away": "OKC",
+        "awayTeamId": 1610612760,
+        "home": "DEN",
+        "homeTeamId": 1610612743,
+        "awayScore": 107,
+        "homeScore": 127
+      },
+      "espnEventId": "401811037",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/okc-vs-den-0022501182",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "8dae2f9710284170b3aa3100812c02fec915436837db7fa7a3fe0114db7024dd",
+      "verifiedAt": "2026-10-03T02:15:12.497798+00:00"
+    },
+    {
+      "from": "9401811033",
+      "to": "0022501178",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811033",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/MINHOU",
+          "gameDateTimeUTC": "2026-04-11T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 132,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612750,
+            "teamTricode": "MIN",
+            "teamName": "Timberwolves",
+            "teamCity": "Minnesota",
+            "teamSlug": "timberwolves",
+            "score": 136,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T01:30:00Z",
+        "away": "MIN",
+        "awayTeamId": 1610612750,
+        "home": "HOU",
+        "homeTeamId": 1610612745,
+        "awayScore": 136,
+        "homeScore": 132
+      },
+      "espnEventId": "401811033",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/min-vs-hou-0022501178",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "17c7733b97f8e1599cfe536e2a6ffb2cda41220b85300dc6c12376bd95ff0f36",
+      "verifiedAt": "2026-10-03T02:15:18.340386+00:00"
+    },
+    {
+      "from": "9401811036",
+      "to": "0022501181",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811036",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/MEMUTA",
+          "gameDateTimeUTC": "2026-04-11T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612762,
+            "teamTricode": "UTA",
+            "teamName": "Jazz",
+            "teamCity": "Utah",
+            "teamSlug": "jazz",
+            "score": 147,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612763,
+            "teamTricode": "MEM",
+            "teamName": "Grizzlies",
+            "teamCity": "Memphis",
+            "teamSlug": "grizzlies",
+            "score": 101,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T01:30:00Z",
+        "away": "MEM",
+        "awayTeamId": 1610612763,
+        "home": "UTA",
+        "homeTeamId": 1610612762,
+        "awayScore": 101,
+        "homeScore": 147
+      },
+      "espnEventId": "401811036",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/mem-vs-uta-0022501181",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "be06c7cf7f14b9f01b6a1e33478c26ab5722cb22896614d757b9d1077c8cea15",
+      "verifiedAt": "2026-10-03T02:15:20.724643+00:00"
+    },
+    {
+      "from": "9401811038",
+      "to": "0022501183",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811038",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/LACPOR",
+          "gameDateTimeUTC": "2026-04-11T02:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612757,
+            "teamTricode": "POR",
+            "teamName": "Trail Blazers",
+            "teamCity": "Portland",
+            "teamSlug": "trail-blazers",
+            "score": 116,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612746,
+            "teamTricode": "LAC",
+            "teamName": "Clippers",
+            "teamCity": "LA",
+            "teamSlug": "clippers",
+            "score": 97,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T02:00:00Z",
+        "away": "LAC",
+        "awayTeamId": 1610612746,
+        "home": "POR",
+        "homeTeamId": 1610612757,
+        "awayScore": 97,
+        "homeScore": 116
+      },
+      "espnEventId": "401811038",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/lac-vs-por-0022501183",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "61cd7d4e4fd07e29642357c811a24039c83e9a1620cbad9cc7cdb4b6a7c20a4d",
+      "verifiedAt": "2026-10-03T02:15:27.547336+00:00"
+    },
+    {
+      "from": "9401811039",
+      "to": "0022501184",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811039",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/GSWSAC",
+          "gameDateTimeUTC": "2026-04-11T02:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612758,
+            "teamTricode": "SAC",
+            "teamName": "Kings",
+            "teamCity": "Sacramento",
+            "teamSlug": "kings",
+            "score": 124,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612744,
+            "teamTricode": "GSW",
+            "teamName": "Warriors",
+            "teamCity": "Golden State",
+            "teamSlug": "warriors",
+            "score": 118,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T02:00:00Z",
+        "away": "GSW",
+        "awayTeamId": 1610612744,
+        "home": "SAC",
+        "homeTeamId": 1610612758,
+        "awayScore": 118,
+        "homeScore": 124
+      },
+      "espnEventId": "401811039",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/gsw-vs-sac-0022501184",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "36e31cf444164abe9fcfc11beef164b2d97ce109f992102a08e427d279338bf1",
+      "verifiedAt": "2026-10-03T02:15:27.654837+00:00"
+    },
+    {
+      "from": "9401811040",
+      "to": "0022501185",
+      "original": {
+        "dateBucket": "04/10/2026 00:00:00",
+        "game": {
+          "gameId": "9401811040",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260410/PHXLAL",
+          "gameDateTimeUTC": "2026-04-11T02:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 101,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612756,
+            "teamTricode": "PHX",
+            "teamName": "Suns",
+            "teamCity": "Phoenix",
+            "teamSlug": "suns",
+            "score": 73,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-10",
+        "gameDateTimeUTC": "2026-04-11T02:30:00Z",
+        "away": "PHX",
+        "awayTeamId": 1610612756,
+        "home": "LAL",
+        "homeTeamId": 1610612747,
+        "awayScore": 73,
+        "homeScore": 101
+      },
+      "espnEventId": "401811040",
+      "espnBasis": "Existing archived event binding retained; synthetic ID is the builder encoding of this exact event ID. No new ESPN ID inferred.",
+      "officialGameUrl": "https://www.nba.com/game/phx-vs-lal-0022501185",
+      "sourcePath": "props.pageProps.game",
+      "htmlSha256": "1f1b32ef041be191bee47f4cedab80a827a62d95e226af92b76982675259761d",
+      "verifiedAt": "2026-10-03T02:15:35.139842+00:00"
+    }
+  ]
+}

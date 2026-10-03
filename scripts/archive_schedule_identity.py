@@ -45,6 +45,9 @@ def validate_schedule_identities(games, final_archive, verified_identities, espn
             expected = (evidence['gameDate'], evidence['away'], evidence['home'], evidence['awayScore'], evidence['homeScore'])
             if actual != expected or game['gameStatus'] != 3:
                 errors.append(f'{gid}: official game identity mismatch')
+            for side in ('home', 'away'):
+                if side + 'TeamId' in evidence and game[side + 'Team']['teamId'] != evidence[side + 'TeamId']:
+                    errors.append(f'{gid}: official team ID mismatch')
             if game['gameDateTimeUTC'] != evidence['gameDateTimeUTC']:
                 errors.append(f'{gid}: official UTC kickoff mismatch')
         utc = game.get('gameDateTimeUTC')
