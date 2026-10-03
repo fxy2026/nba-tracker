@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
+import { resolveArchiveGameId } from "@/lib/archive-game-alias";
 import { Suspense } from "react";
 import Link from "next/link";
 import { getBoxScore, getPlayerIndex, getFullSchedule, toBeijingTime, type PlayerInfo, type ScoringShot } from "@/lib/api";
@@ -48,7 +50,8 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { id: requestedId } = await params;
+  const id = resolveArchiveGameId(requestedId);
   const [box, locale] = await Promise.all([getBoxScore(id), getLocale()]);
   const t = getTranslations(locale);
   if (!box) {
@@ -100,7 +103,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function GamePage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: requestedId } = await params;
+  const id = resolveArchiveGameId(requestedId);
+  if (id !== requestedId) permanentRedirect(`/game/${id}`);
   const locale = await getLocale();
   const t = getTranslations(locale);
 

@@ -75,3 +75,78 @@ it('an initially empty career can recover on explicit retry',async()=>{
   const fetcher=vi.fn().mockResolvedValueOnce(ok({careerSeasons:[]})).mockResolvedValue(ok());const load=createPlayerCareerLoader(fetcher);
   await load('/one');expect(await load('/one',true)).toEqual({data,unavailable:false,stale:false});
 });
+
+it('retains the complete last-good snapshot and source when a nonempty refresh loses a season', async () => {
+  const history = {
+    careerSeasons: [{ ...row, SEASON_ID: '2024-25' }, row],
+    careerShooting: { source: 'nba-career-totals', FG_PCT: .48, FG3_PCT: null, FT_PCT: .79 },
+  };
+  const recovered = { ...history, careerSeasons: [history.careerSeasons[0], { ...row, GP: 72, PTS: 21 }] };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history))
+    .mockResolvedValueOnce(ok({ careerSeasons: [{ ...row, PTS: 99 }] }))
+    .mockResolvedValue(ok(recovered));
+  const load = createPlayerCareerLoader(fetcher);
+  const table = vi.fn(), advanced = vi.fn();
+  load.subscribe('/one', table); load.subscribe('/one', advanced);
+
+  const accepted = await load('/one');
+  await vi.advanceTimersByTimeAsync(CAREER_SUCCESS_TTL_MS);
+  const retained = { data: history, unavailable: true, stale: true };
+  const refresh = load('/one');
+  expect(load('/one', true)).toBe(refresh);
+  expect(await refresh).toEqual(retained);
+  // Do not merge the new partial data into the old provider snapshot.
+  expect((await refresh).data).toBe(accepted.data);
+  expect(table).toHaveBeenLastCalledWith(retained);
+  expect(advanced).toHaveBeenLastCalledWith(retained);
+  expect(await load('/one')).toEqual(retained);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+
+  // A rejected refresh expires the cache: a normal mount can recover after
+  // the failure cooldown, rather than treating the truncated data as fresh.
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/one')).toEqual({ data: recovered, unavailable: false, stale: false });
+  expect(fetcher).toHaveBeenCalledTimes(3);
+});
+
+it('detects missing season identities even when the row count stays the same', async () => {
+  const history = { careerSeasons: [{ ...row, SEASON_ID: '2024-25' }, row] };
+  const replacement = { careerSeasons: [row, { ...row, SEASON_ID: '2026-27' }] };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history)).mockResolvedValue(ok(replacement));
+  const load = createPlayerCareerLoader(fetcher);
+  await load('/one');
+  expect(await load('/one', true)).toEqual({ data: history, unavailable: true, stale: true });
+});
+
+it('accepts current-season corrections, new seasons, and provider team-split changes with complete season coverage', async () => {
+  const history = { careerSeasons: [
+    { ...row, SEASON_ID: '2024-25', TEAM_ABBREVIATION: 'TOT' },
+    { ...row, SEASON_ID: '2024-25', TEAM_ABBREVIATION: 'LAL' },
+    { ...row, SEASON_ID: '2024-25', TEAM_ABBREVIATION: 'NYK' },
+    row,
+  ] };
+  const updated = { careerSeasons: [
+    { ...row, SEASON_ID: '2024-25', TEAM_ABBREVIATION: 'TOT' },
+    { ...row, GP: 69, PTS: 21 },
+  ] };
+  const extended = { careerSeasons: [...updated.careerSeasons, { ...row, SEASON_ID: '2026-27', GP: 1 }] };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history)).mockResolvedValueOnce(ok(updated)).mockResolvedValue(ok(extended));
+  const load = createPlayerCareerLoader(fetcher);
+  await load('/one');
+  expect(await load('/one', true)).toEqual({ data: updated, unavailable: false, stale: false });
+  expect(await load('/one', true)).toEqual({ data: extended, unavailable: false, stale: false });
+});
+
+it('keeps season coverage scoped to the exact player and request contract', async () => {
+  const history = { careerSeasons: [{ ...row, SEASON_ID: '2024-25' }, row] };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(history)).mockResolvedValue(ok(data));
+  const load = createPlayerCareerLoader(fetcher);
+  const regular = '/api/player?id=2544&context=2&seasonType=Regular+Season';
+  await load(regular);
+  // Career currently returns regular-season rows only. If a separate contract
+  // is introduced, its URL must not inherit another season type's coverage.
+  expect(await load('/api/player?id=2544&context=2&seasonType=Playoffs'))
+    .toEqual({ data, unavailable: false, stale: false });
+  expect(await load('/api/player?id=201939&context=2&seasonType=Regular+Season'))
+    .toEqual({ data, unavailable: false, stale: false });
+});

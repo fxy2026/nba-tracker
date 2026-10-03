@@ -3,6 +3,8 @@
 # Inputs live in the temp dir produced during the 2026-07 recovery session.
 import json, sys, os, collections
 from datetime import datetime, timedelta
+from pathlib import Path
+from archive_schedule_identity import validate_schedule_identities
 
 tmp = sys.argv[1]
 wb = json.load(open(os.path.join(tmp, 'wb_games.json'), encoding='utf-8'))
@@ -111,6 +113,8 @@ for si, gid in assign.items():
     }
     # Do not promote potentially in-progress Wayback leaders to final leaders.
     # Only final team totals are reconstructed/verified here.
+    if gid in games_out:
+        raise ValueError(f'Duplicate assigned NBA identity: {gid}')
     games_out[gid] = (e['date'], game)
     espn_map[gid] = e['espnId']
 
@@ -132,6 +136,29 @@ for gid, g in wb.items():
         'awayTeam': mk_team(atc, at.get('score') or 0, (at.get('wins') or 0, at.get('losses') or 0)),
     }
     games_out[gid] = (d, game)
+
+# Mixed-source assignment indices are not identity evidence. Reject bad mappings
+# before writing either schedule or ESPN map, rather than silently rebinding IDs.
+# Validate before dropping ghosts so a known final cannot silently disappear
+# when an input incorrectly downgrades it to scheduled or live.
+root = Path(__file__).resolve().parents[1]
+final_archive = json.loads((root / 'src/data/season-2025-26-final.json').read_text())
+verified_identities = json.loads((root / 'scripts/archive-data/schedule-identity-corrections.json').read_text())
+known_final_ids = {game['gameId'] for game in final_archive['finishedGames']}
+known_final_ids.update(entry['gameId'] for entry in verified_identities['corrections'])
+# Earlier cleanup can skip unusable source rows (unknown teams, missing dates,
+# or zero-score residue). It must never silently erase a known final supplied
+# by either input. Partial input fixtures remain valid; only supplied IDs count.
+supplied_final_ids = (set(assign.values()) | set(wb)) & known_final_ids
+missing_final_ids = supplied_final_ids - set(games_out)
+if missing_final_ids:
+    raise ValueError(f'Known final identities dropped before validation: {sorted(missing_final_ids)}')
+validate_schedule_identities(
+    games_out,
+    final_archive,
+    verified_identities,
+    espn_map,
+)
 
 # Drop ghosts: unplayed playoff/play-in placeholders and 0-0 preseason
 # shells captured pre-tipoff that ESPN never finalized.

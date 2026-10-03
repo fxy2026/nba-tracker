@@ -5,6 +5,7 @@ import { gameSeasonKey, scheduleForGameSeason } from "./games";
 import type { ScheduleDate, ScheduleGame } from "./api";
 import archiveSchedule from "@/data/schedule-2025-26.json";
 import archiveGameSeasons from "@/data/archive-game-seasons.json";
+import { resolveArchiveGameId } from "./archive-game-alias";
 
 const { getFullSchedule } = vi.hoisted(() => ({ getFullSchedule: vi.fn() }));
 vi.mock("@/lib/api", () => ({ getFullSchedule, toBeijingTime: (value: string) => value }));
@@ -104,10 +105,10 @@ describe("season ranks across merged seasons", () => {
     const finals = dates.flatMap((date) => date.games).filter((game) =>
       game.gameStatus === 3 && game.homeTeam.score + game.awayTeam.score > 0);
     const synthetic = finals.filter((game) => game.gameId.startsWith("9"));
-    expect(synthetic).toHaveLength(68);
-    expect(Object.keys(archiveGameSeasons).sort()).toEqual(synthetic.map((game) => game.gameId).sort());
+    expect(Object.keys(archiveGameSeasons).filter(id => resolveArchiveGameId(id) === id).sort()).toEqual(synthetic.map((game) => game.gameId).sort());
     const ranks = buildSeasonRanks(dates);
     expect(ranks.size).toBe(finals.length);
+    for (const id of Object.keys(archiveGameSeasons)) expect(ranks.has(resolveArchiveGameId(id))).toBe(true);
     for (const game of synthetic) expect(ranks.get(game.gameId)?.totalGames).toBe(finals.length);
   });
   it("omits unfinished/zero-score games and non-season IDs", async () => {

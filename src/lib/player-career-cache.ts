@@ -35,12 +35,16 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
         if (!res.ok) throw new Error(`player api ${res.status}`);
         const data = normalizePlayerCareerData(await res.json());
         if (controller.signal.aborted || !data) throw new Error("unavailable career data");
-        // A career cannot lose all previously observed seasons on refresh.
-        // Treat an empty refresh as uncertain, retaining last-good rows with
-        // the same visible stale state/cooldown used for a source failure.
-        // A first successful empty response still means no available history.
-        if (entry?.data?.careerSeasons.length && data.careerSeasons.length === 0) {
-          throw new Error("empty career refresh");
+        // A complete career cannot silently lose previously observed seasons.
+        // Providers can change team splits or correct stats within a season,
+        // so compare season identities rather than row counts or GP totals.
+        // Retain the entire last-good snapshot (including source metadata)
+        // with the failure/stale state instead of mixing provider snapshots.
+        // Entries remain scoped to this exact player/request URL; a first
+        // successful empty response still means no available history.
+        const seasons = new Set(data.careerSeasons.map(row => row.SEASON_ID));
+        if (entry?.data?.careerSeasons.some(row => !seasons.has(row.SEASON_ID))) {
+          throw new Error("incomplete career refresh");
         }
         cache.set(url, { data, expiresAt: now() + CAREER_SUCCESS_TTL_MS, retryAt: 0 });
         return publish(url, { data, unavailable: false, stale: false });

@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "a53ec1d",
+  "scope": "Official game identity corrections preserve March16 regular-season game and April24 playoff game separately; no player-box records changed.",
+  "corrections": [
+    {
+      "gameId": "0022500071",
+      "original": {
+        "dateBucket": "12/12/2025 00:00:00",
+        "game": {
+          "gameId": "0022500071",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20251212/CHICHA",
+          "gameDateTimeUTC": "2025-12-13T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 126,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612741,
+            "teamTricode": "CHI",
+            "teamName": "Bulls",
+            "teamCity": "Chicago",
+            "teamSlug": "bulls",
+            "score": 129,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2025-11-28",
+        "gameDateTimeUTC": "2025-11-29T00:30:00Z",
+        "away": "CHI",
+        "home": "CHA",
+        "awayScore": 116,
+        "homeScore": 123,
+        "gameStatusText": "Final"
+      },
+      "sources": {
+        "officialGameUrl": "https://www.nba.com/game/chi-vs-cha-0022500071",
+        "officialGameHtmlSha256": "fa80afb81c8cb3d9e39aaee68a16c7fc1a22ac4429621137323e46c7699743a0",
+        "jsonPath": "props.pageProps.game (top-level game only; excludes lastFiveMeetings)",
+        "officialReportUrl": "https://statsdmz.nba.com/pdfs/20251128/20251128_CHICHA.pdf"
+      },
+      "verifiedAt": "2026-10-03T01:53:33.073725+00:00",
+      "rejectedEspnId": "401836750",
+      "espnMappingDisposition": "Removed known mismatched event mapping; no replacement ESPN ID inferred."
+    },
+    {
+      "gameId": "0022501209",
+      "original": {
+        "dateBucket": "11/28/2025 00:00:00",
+        "game": {
+          "gameId": "0022501209",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20251128/CHICHA",
+          "gameDateTimeUTC": "2025-11-29T00:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612766,
+            "teamTricode": "CHA",
+            "teamName": "Hornets",
+            "teamCity": "Charlotte",
+            "teamSlug": "hornets",
+            "score": 123,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612741,
+            "teamTricode": "CHI",
+            "teamName": "Bulls",
+            "teamCity": "Chicago",
+            "teamSlug": "bulls",
+            "score": 116,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2025-12-12",
+        "gameDateTimeUTC": "2025-12-13T00:00:00Z",
+        "away": "CHI",
+        "home": "CHA",
+        "awayScore": 129,
+        "homeScore": 126,
+        "gameStatusText": "Final"
+      },
+      "sources": {
+        "officialGameUrl": "https://www.nba.com/game/chi-vs-cha-0022501209",
+        "officialGameHtmlSha256": "b3f5debad19455dafb842bc24af14921eed31fbf61ad4e83a1e1d35236b30c32",
+        "jsonPath": "props.pageProps.game (top-level game only; excludes lastFiveMeetings)",
+        "officialReportUrl": "https://statsdmz.nba.com/pdfs/20251212/20251212_CHICHA.pdf"
+      },
+      "verifiedAt": "2026-10-03T01:53:33.079742+00:00",
+      "rejectedEspnId": "401809813",
+      "espnMappingDisposition": "Removed known mismatched event mapping; no replacement ESPN ID inferred."
+    },
+    {
+      "gameId": "0042500173",
+      "original": {
+        "dateBucket": "03/16/2026 00:00:00",
+        "game": {
+          "gameId": "0042500173",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260316/LALHOU",
+          "gameDateTimeUTC": "2026-03-17T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 92,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 100,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-04-24",
+        "gameDateTimeUTC": "2026-04-25T00:00:00Z",
+        "away": "LAL",
+        "home": "HOU",
+        "awayScore": 112,
+        "homeScore": 108,
+        "gameStatusText": "Final/OT"
+      },
+      "sources": {
+        "officialGameUrl": "https://www.nba.com/game/lal-vs-hou-0042500173",
+        "officialGameHtmlSha256": "c01a97fca6489cb90a18dd4bccdd6c757a25fffb01da3062d66f135af651acc6",
+        "jsonPath": "props.pageProps.game (top-level game only; excludes lastFiveMeetings)",
+        "officialReportUrl": "https://statsdmz.nba.com/pdfs/20260424/20260424_LALHOU.pdf"
+      },
+      "verifiedAt": "2026-10-03T01:53:33.089442+00:00",
+      "rejectedEspnId": "401810844",
+      "espnMappingDisposition": "Removed known mismatched event mapping; no replacement ESPN ID inferred.",
+      "replacedSyntheticRecord": {
+        "dateBucket": "04/24/2026 00:00:00",
+        "game": {
+          "gameId": "9401869400",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260424/LALHOU",
+          "gameDateTimeUTC": "2026-04-25T00:00:00Z",
+          "homeTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 108,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 112,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "resolution": "Retain March16 game as verified0022500989; replace April24 synthetic9401869400 with canonical0042500173. One physical game per date/opponents/score; legacy synthetic route redirects."
+    },
+    {
+      "gameId": "0022500989",
+      "original": {
+        "dateBucket": "03/16/2026 00:00:00",
+        "game": {
+          "gameId": "0042500173",
+          "gameStatus": 3,
+          "gameStatusText": "Final",
+          "gameCode": "20260316/LALHOU",
+          "gameDateTimeUTC": "2026-03-17T01:30:00Z",
+          "homeTeam": {
+            "teamId": 1610612745,
+            "teamTricode": "HOU",
+            "teamName": "Rockets",
+            "teamCity": "Houston",
+            "teamSlug": "rockets",
+            "score": 92,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          },
+          "awayTeam": {
+            "teamId": 1610612747,
+            "teamTricode": "LAL",
+            "teamName": "Lakers",
+            "teamCity": "Los Angeles",
+            "teamSlug": "lakers",
+            "score": 100,
+            "wins": 0,
+            "losses": 0,
+            "seed": 0
+          }
+        }
+      },
+      "verified": {
+        "gameDate": "2026-03-16",
+        "gameDateTimeUTC": "2026-03-17T01:30:00Z",
+        "away": "LAL",
+        "home": "HOU",
+        "awayScore": 100,
+        "homeScore": 92,
+        "gameStatusText": "Final"
+      },
+      "sources": {
+        "officialGameUrl": "https://www.nba.com/game/lal-vs-hou-0022500989",
+        "officialGameHtmlSha256": "25da934513ed3656084608504f972dc15d7687f560d9bc7bf7f17f89678011f0",
+        "jsonPath": "props.pageProps.game (top-level game only; excludes lastFiveMeetings)"
+      },
+      "verifiedAt": "2026-10-03T02:08:32.942954+00:00",
+      "espnMappingDisposition": "Unknown; no ESPN event ID inferred or transferred."
+    }
+  ],
+  "originalEspnMapSha256": "d1d625b797f80dee39667da7d97d499499d907ac801b4bbc7ea37a2ae2999fe2"
+}
