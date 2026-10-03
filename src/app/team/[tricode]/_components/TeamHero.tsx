@@ -98,7 +98,7 @@ export default function TeamHero({
             <FavoriteButton type="team" id={team.tricode} />
             {/* Share embeds the canonical URL inside the text body so the link
                 travels with the share/clipboard payload. */}
-            <ShareButton text={`${team.city} ${team.name} · ${season} · ${hasRecord ? `${wins}-${losses}` : t.teamPage.noRegularData} | NBA Tracker\nhttps://nba.xpy.me/team/${team.tricode}`} />
+            <ShareButton subject="team" text={`${team.city} ${team.name} · ${season} · ${hasRecord ? `${wins}-${losses}` : t.teamPage.noRegularData} | NBA Tracker\nhttps://nba.xpy.me/team/${team.tricode}`} />
           </div>
         </div>
       </div>

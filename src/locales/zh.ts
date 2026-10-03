@@ -598,6 +598,9 @@ const zh: Translations = {
 
   share: {
     shareGame: "分享比赛结果",
+    sharePlayer: "分享球员主页",
+    shareTeam: "分享球队页面",
+    shareQuiz: "分享答题成绩",
     copied: "已复制！",
   },
 

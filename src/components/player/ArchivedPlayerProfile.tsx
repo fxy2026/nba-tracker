@@ -44,7 +44,7 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
         </div>
         <div className="flex flex-row gap-1">
           <FavoriteButton type="player" id={player.id} />
-          <ShareButton text={`${player.name} · ${title} · https://nba.xpy.me/player/${player.id}`} />
+          <ShareButton subject="player" text={`${player.name} · ${title} · https://nba.xpy.me/player/${player.id}`} />
         </div>
       </div>
       <nav aria-label={isZh ? "球员页导航" : "Player page navigation"} className="mt-5 flex flex-wrap gap-2">

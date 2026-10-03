@@ -598,6 +598,9 @@ const en: Translations = {
 
   share: {
     shareGame: "Share game result",
+    sharePlayer: "Share player profile",
+    shareTeam: "Share team page",
+    shareQuiz: "Share quiz score",
     copied: "Copied!",
   },
 

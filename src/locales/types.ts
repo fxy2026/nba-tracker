@@ -639,6 +639,9 @@ export interface Translations {
   // ---- Share ----
   share: {
     shareGame: string;
+    sharePlayer: string;
+    shareTeam: string;
+    shareQuiz: string;
     copied: string;
   };
 

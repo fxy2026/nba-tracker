@@ -454,7 +454,7 @@ export default function QuizPage() {
           </p>
           {/* Share the score — text built client-side from this session + streak. */}
           <div className="ml-auto shrink-0">
-            <ShareButton text={shareText} />
+            <ShareButton subject="quiz" text={shareText} />
           </div>
         </div>
       )}

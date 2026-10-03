@@ -277,7 +277,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
               URL inside the text body so the link travels with the payload. */}
           <div className={`${mobileStyles.portraitActions} absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg`}>
             <FavoriteButton type="player" id={personId} />
-            <ShareButton text={`${fullName} — ${playerIndexLabel(snapshot.provenance, locale)} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
+            <ShareButton subject="player" text={`${fullName} — ${playerIndexLabel(snapshot.provenance, locale)} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
           </div>
         </div>
 
