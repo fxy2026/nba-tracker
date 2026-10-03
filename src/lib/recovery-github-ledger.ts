@@ -52,7 +52,9 @@ export async function readRecoveryRunLedger(get:JsonReader,currentRun:{id:number
         }
         if(attempts.length===run.runAttempt)run.ingestionSkippedProof={source:'complete-github-job-metadata',runId:run.id,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,allAttemptsChecked:true,attempts};
       }
-      if(run.id!==currentRun.id&&raw.event==='push'&&!run.reviewedPilotProof)priorPushRun=true;
+      // A dated kickoff is single-use for its UTC day, including reviewed pushes.
+      // Older unknown runs still retain their conservative budget treatment.
+      if(run.id!==currentRun.id&&raw.event==='push'&&(relevant||run.status!=='completed'))priorPushRun=true;
       runs.push(run);
     }
     return {ok:true,providerVerified,priorPushRun,input:{now,repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,currentRun,ledger:{repository:RECOVERY_REPOSITORY,workflowPath:RECOVERY_WORKFLOW_PATH,complete:true,allPagesFetched:true,totalCount:list.total,fetchedPages:list.pages,runs}}};

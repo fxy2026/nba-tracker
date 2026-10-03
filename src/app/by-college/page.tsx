@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { School, Globe, Users, GraduationCap, Activity, TrendingUp } from "lucide-react";
-import { getPlayerIndex } from "@/lib/api";
+import { getPlayerIndexSnapshot } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import PlayerHeadshot from "@/components/PlayerHeadshot";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
+import { PlayerDirectorySource } from "@/components/PlayerDirectoryContext";
+import { directoryStats } from "@/lib/player-directory";
+import { playerIndexStat } from "@/lib/player-index-provenance";
+import { collegeSourceLabel } from "@/lib/college-source";
 
 export const metadata: Metadata = {
-  title: "Players By College",
-  description: "Colleges that produce the most NBA talent — ranked by current league representation.",
+  title: "Schools & Background Teams",
+  description: "Player groups from the NBA index college field, including schools and team backgrounds, with snapshot provenance.",
 };
 
 interface CollegePlayer {
@@ -18,41 +22,39 @@ interface CollegePlayer {
   firstName: string;
   lastName: string;
   teamAbbr: string;
-  pts: number;
-  reb: number;
-  ast: number;
+  pts: number | null;
+  reb: number | null;
+  ast: number | null;
 }
 
 interface CollegeGroup {
   college: string;
   count: number;
   topThree: CollegePlayer[];
-  bestPpg: number;
-  avgPpg: number;
-}
-
-function score(p: { pts: number; reb: number; ast: number }) {
-  return p.pts + p.reb * 1.2 + p.ast * 1.5;
+  bestPpg: number | null;
+  avgPpg: number | null;
 }
 
 export default async function ByCollegePage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const players = await getPlayerIndex().catch(() => []);
+  const snapshot = await getPlayerIndexSnapshot().catch(() => null);
+  const players = snapshot?.players ?? [];
 
   if (players.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={School} title={isZh ? "按大学榜" : "Players By College"} />
+        <PageHeader eyebrow={isZh ? "球员" : "Players"} icon={School} title={isZh ? "学校与球队背景" : "Schools & Background Teams"} />
         <EmptyState icon={School} title={isZh ? "暂无数据" : "No data"} description={isZh ? "无法加载球员索引。" : "Could not load player index."} />
       </div>
     );
   }
 
   const byCollege = new Map<string, CollegePlayer[]>();
+  let unspecified = 0;
   for (const p of players) {
-    const c = (p.college || "").trim();
-    if (!c) continue;
+    const c = collegeSourceLabel(p.college);
+    if (!c) { unspecified++; continue; }
     const row: CollegePlayer = {
       personId: p.personId,
       firstName: p.firstName,
@@ -69,10 +71,10 @@ export default async function ByCollegePage() {
 
   const groups: CollegeGroup[] = [];
   for (const [college, list] of byCollege) {
-    const ranked = [...list].sort((a, b) => score(b) - score(a));
-    const ppgList = list.filter((p) => p.pts > 0);
-    const avgPpg = ppgList.length > 0 ? ppgList.reduce((s, p) => s + p.pts, 0) / ppgList.length : 0;
-    const bestPpg = list.reduce((m, p) => p.pts > m ? p.pts : m, 0);
+    const stats = directoryStats(list);
+    const ranked = [...stats.ranked, ...stats.unranked];
+    const avgPpg = stats.avgPts;
+    const bestPpg = stats.bestPpg;
     groups.push({
       college,
       count: list.length,
@@ -85,9 +87,9 @@ export default async function ByCollegePage() {
   // Top 3+ representation
   const topColleges = groups.filter((g) => g.count >= 3).sort((a, b) => b.count - a.count);
   // Mid-tier — 2 players
-  const midColleges = groups.filter((g) => g.count === 2).sort((a, b) => b.bestPpg - a.bestPpg);
+  const midColleges = groups.filter((g) => g.count === 2).sort((a, b) => (b.bestPpg ?? -1) - (a.bestPpg ?? -1));
   // Singletons
-  const singles = groups.filter((g) => g.count === 1).sort((a, b) => b.bestPpg - a.bestPpg);
+  const singles = groups.filter((g) => g.count === 1).sort((a, b) => (b.bestPpg ?? -1) - (a.bestPpg ?? -1));
 
   const maxCount = topColleges[0]?.count || 1;
 
@@ -96,23 +98,29 @@ export default async function ByCollegePage() {
       <PageHeader
         eyebrow={isZh ? "球员" : "Players"}
         icon={School}
-        title={isZh ? "按大学榜" : "Players By College"}
+        title={isZh ? "学校与球队背景" : "Schools & Background Teams"}
         subtitle={
           isZh
-            ? `代表 ${groups.length} 所院校 · ${topColleges.length} 所有 3 名以上 NBA 球员 · 场均数据为上赛季`
-            : `${groups.length} schools represented · ${topColleges.length} with 3+ players in the league · per-game stats from last season`
+            ? `${groups.length} 个来源分组 · ${topColleges.length} 组有至少 3 名快照球员`
+            : `${groups.length} background groups · ${topColleges.length} with 3+ snapshot players`
         }
       />
+
+      <PlayerDirectorySource provenance={snapshot?.provenance ?? null} locale={locale} />
+      <p className="mb-4 text-xs text-text-secondary">{isZh
+        ? "按 NBA 球员索引 COLLEGE 字段分组，可能包含学校、职业球队或其他背景；保留来源标签，不将其认定为已核实的教育经历。均值包含已知的真实零分，缺失数据不按零计算。"
+        : "Groups follow the NBA index COLLEGE field, which may list schools, professional teams or other backgrounds. Source labels are not verified education histories. Averages include known zeros; missing statistics are not treated as zero."}</p>
+      {unspecified > 0 && <p className="mb-4 text-xs text-text-secondary">{isZh ? `${unspecified} 名球员的来源未注明，未计入分组。` : `${unspecified} players have unspecified backgrounds and are excluded from group counts.`}</p>}
 
       {/* Power schools — 3+ players */}
       <section className="mb-8">
         <div className="mb-4 flex items-center gap-3">
           <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
             <School size={14} className="text-accent-amber" />
-            {isZh ? "NBA 培养院校" : "NBA Pipelines"}
+            {isZh ? "多人来源分组" : "Larger Background Groups"}
           </h2>
           <span className="h-px flex-1 bg-accent-amber/30" />
-          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{topColleges.length} {isZh ? "所院校 · 联盟内 3+ 球员" : "schools · 3+ in NBA"}</span>
+          <span className="text-[10px] font-mono tabular-nums text-text-secondary">{topColleges.length} {isZh ? "组 · 3+ 名快照球员" : "groups · 3+ snapshot players"}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {topColleges.map((g, i) => {
@@ -130,9 +138,9 @@ export default async function ByCollegePage() {
                     </p>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mt-0.5">
                       {isZh ? (
-                        <><span className="tabular-nums">{g.count}</span> 现役 · 最高得分 <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · 均值 <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span> · 上赛季</>
+                        <><span className="tabular-nums">{g.count}</span> 名快照球员 · 最高场均 <span className="tabular-nums">{playerIndexStat(g.bestPpg)}</span> · 均值 <span className="tabular-nums">{playerIndexStat(g.avgPpg)}</span></>
                       ) : (
-                        <><span className="tabular-nums">{g.count}</span> active · best PPG <span className="tabular-nums">{g.bestPpg.toFixed(1)}</span> · avg <span className="tabular-nums">{g.avgPpg.toFixed(1)}</span> · last season</>
+                        <><span className="tabular-nums">{g.count}</span> snapshot players · best PPG <span className="tabular-nums">{playerIndexStat(g.bestPpg)}</span> · avg <span className="tabular-nums">{playerIndexStat(g.avgPpg)}</span></>
                       )}
                     </p>
                   </div>
@@ -155,7 +163,7 @@ export default async function ByCollegePage() {
                         {p.firstName} {p.lastName}
                       </span>
                       <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary shrink-0">{p.teamAbbr}</span>
-                      <span className="text-[10px] font-mono tabular-nums text-accent-amber shrink-0">{p.pts.toFixed(1)}</span>
+                      <span className="text-[10px] font-mono tabular-nums text-accent-amber shrink-0">{playerIndexStat(p.pts)}</span>
                     </Link>
                   ))}
                 </div>
@@ -171,17 +179,17 @@ export default async function ByCollegePage() {
           <div className="mb-4 flex items-center gap-3">
             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
               <School size={14} className="text-accent" />
-              {isZh ? "双子院校" : "Tandem Schools"}
+              {isZh ? "双人来源分组" : "Two-player Groups"}
             </h2>
             <span className="h-px flex-1 bg-accent/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{midColleges.length} {isZh ? "所院校 · 联盟内 2 球员" : "schools · 2 in NBA"}</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{midColleges.length} {isZh ? "组 · 2 名快照球员" : "groups · 2 snapshot players"}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {midColleges.map((g) => (
               <div key={g.college} className="glass-tile p-3">
                 <p className="text-xs font-bold text-text-primary truncate">{g.college}</p>
                 <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mb-1.5">
-                  {isZh ? "最高得分 · 上赛季" : "Best PPG · last season"} <span className="tabular-nums text-text-secondary">{g.bestPpg.toFixed(1)}</span>
+                  {isZh ? "最高场均得分" : "Best snapshot PPG"} <span className="tabular-nums text-text-secondary">{playerIndexStat(g.bestPpg)}</span>
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {g.topThree.map((p) => (
@@ -209,7 +217,7 @@ export default async function ByCollegePage() {
               {isZh ? "独苗" : "Solo Reps"}
             </h2>
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{singles.length} {isZh ? "所院校 · 1 名现役" : "schools · 1 active"}</span>
+            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{singles.length} {isZh ? "组 · 1 名快照球员" : "groups · 1 snapshot player"}</span>
           </div>
           <div className="glass-tile p-4">
             <div className="flex flex-wrap gap-1.5">
@@ -218,7 +226,7 @@ export default async function ByCollegePage() {
                   key={g.college}
                   href={`/player/${g.topThree[0].personId}`}
                   className="text-[10px] font-mono px-2 py-1 rounded-md bg-bg-hover/60 hover:bg-accent/15 hover:text-accent text-text-secondary transition-colors cursor-pointer truncate max-w-[200px]"
-                  title={`${g.college} · ${g.topThree[0].firstName} ${g.topThree[0].lastName} (${g.bestPpg.toFixed(1)} PPG)`}
+                  title={`${g.college} · ${g.topThree[0].firstName} ${g.topThree[0].lastName} (${playerIndexStat(g.bestPpg)} PPG)`}
                 >
                   {g.college}
                 </Link>

@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 interface PageProps {
-  searchParams: Promise<{ t1?: string; t2?: string }>;
+  searchParams: Promise<{ t1?: string | string[]; t2?: string | string[] }>;
 }
 
 export default async function H2HPage({ searchParams }: PageProps) {
@@ -29,8 +29,17 @@ export default async function H2HPage({ searchParams }: PageProps) {
   const isZh = locale === "zh";
   const t = getTranslations(locale);
   const params = await searchParams;
-  const t1 = params.t1?.toUpperCase();
-  const t2 = params.t2?.toUpperCase();
+  // Next returns arrays for repeated query keys. Accept only one known team,
+  // and never let inherited object keys or malformed values reach TEAM_META.
+  const normalizeTeam = (raw: string | string[] | undefined): string | undefined => {
+    if (typeof raw !== "string") return undefined;
+    const key = raw.trim().toUpperCase();
+    return Object.prototype.hasOwnProperty.call(TEAM_META, key) ? key : undefined;
+  };
+  const t1 = normalizeTeam(params.t1);
+  const t2 = normalizeTeam(params.t2);
+  const invalidSelection = (params.t1 !== undefined && !t1) || (params.t2 !== undefined && !t2);
+  const sameTeam = Boolean(t1 && t1 === t2);
 
   const teams = Object.values(TEAM_META).sort((a, b) => a.city.localeCompare(b.city));
 
@@ -85,10 +94,18 @@ export default async function H2HPage({ searchParams }: PageProps) {
 
       {/* Team Selectors */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
-        <TeamSelector teams={teams} selected={t1} paramName="t1" other={t2} />
+        <TeamSelector teams={teams} selected={t1} paramName="t1" other={t2} isZh={isZh} />
         <span className="text-base font-light font-mono uppercase tracking-[0.25em] text-accent-amber">{t.common.vs}</span>
-        <TeamSelector teams={teams} selected={t2} paramName="t2" other={t1} />
+        <TeamSelector teams={teams} selected={t2} paramName="t2" other={t1} isZh={isZh} />
       </div>
+
+      {(invalidSelection || sameTeam) && (
+        <p role="status" className="glass-tile p-4 mb-6 text-sm text-text-secondary">
+          {sameTeam
+            ? (isZh ? "请选择两支不同的球队。" : "Please select two different teams.")
+            : (isZh ? "球队选择无效，请从上方重新选择球队。" : "Invalid team selection. Choose a team again using the selectors above.")}
+        </p>
+      )}
 
       {/* Results */}
       {t1 && t2 && t1 !== t2 && TEAM_META[t1] && TEAM_META[t2] && (
@@ -401,15 +418,29 @@ export default async function H2HPage({ searchParams }: PageProps) {
   );
 }
 
-function TeamSelector({ teams, selected, paramName, other }: {
+function TeamSelector({ teams, selected, paramName, other, isZh }: {
   teams: { tricode: string; city: string; name: string; teamId: number }[];
-  selected?: string; paramName: string; other?: string;
+  selected?: string; paramName: string; other?: string; isZh: boolean;
 }) {
   return (
     <div className="flex-1 w-full">
       <div className="flex flex-wrap gap-1.5 justify-center">
         {teams.map((t) => {
           const isSelected = selected === t.tricode;
+          if (other === t.tricode) {
+            return (
+              <button
+                key={t.tricode}
+                type="button"
+                disabled
+                title={isZh ? "另一侧已选择此球队" : "Already selected on the other side"}
+                className={`chip font-mono opacity-50 cursor-not-allowed ${isSelected ? "chip-active" : ""}`}
+              >
+                <TeamLogo teamId={t.teamId} tricode={t.tricode} size={16} />
+                {t.tricode}
+              </button>
+            );
+          }
           const otherParam = paramName === "t1" ? "t2" : "t1";
           const href = `/h2h?${paramName}=${t.tricode}${other ? `&${otherParam}=${other}` : ""}`;
           return (

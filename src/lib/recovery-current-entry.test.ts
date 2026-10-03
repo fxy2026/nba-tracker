@@ -2,6 +2,10 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { OFFICIAL_RECOVERY_SCHEDULE_URL, projectOfficialRecoverySchedule, type OfficialScheduleResult } from './recovery-official-schedule';
 import type { ObservedFinalGame } from './observed-final-game';
 import type { ProviderBasicSnapshot } from './provider-player-normalizer';
+import fullArchive from '../data/schedule-2025-26.json';
+import savedBoxes from '../data/recovered-player-boxes.json';
+import { RECOVERY_KICKOFF_MESSAGE, RECOVERY_KICKOFF_NONCE, RECOVERY_KICKOFF_PATH } from './recovery-kickoff';
+import { selectRecoveryTargets } from './recovery-target-selection';
 
 const h = vi.hoisted(() => ({
   read: vi.fn(), write: vi.fn(), rename: vi.fn(), append: vi.fn(), archives: vi.fn(), index: vi.fn(),
@@ -98,9 +102,9 @@ it('actual backfill entrypoint loads once, queues current identities ahead of hi
   expect(writtenState()).toMatchObject({ version: 2, cursor: oldCursor, observedRetries: {}, lastBatch: { requests: 3, accepted: 1 } });
   expect(JSON.stringify(vi.mocked(console.log).mock.calls)).not.toContain('TEST_ONLY_KEY');
 });
-it.each(['verify', 'diagnose', 'membership', 'restore'] as const)('%s entrypoint does not instantiate or call the new schedule source', async mode => {
-  vi.stubEnv('RECOVERY_MODE', mode); vi.stubEnv('GITHUB_EVENT_NAME', mode === 'membership' ? 'push' : 'workflow_dispatch');
-  vi.stubEnv('RECOVERY_REQUEST_LIMIT', mode === 'membership' ? '2' : '3'); vi.stubEnv('RECOVERY_MAX_REQUESTS', mode === 'membership' ? '2' : '230');
+it.each(['verify', 'diagnose', 'restore'] as const)('%s entrypoint does not instantiate or call the new schedule source', async mode => {
+  vi.stubEnv('RECOVERY_MODE', mode); vi.stubEnv('GITHUB_EVENT_NAME', 'workflow_dispatch');
+  vi.stubEnv('RECOVERY_REQUEST_LIMIT', '3'); vi.stubEnv('RECOVERY_MAX_REQUESTS', '230');
   await execute(); expect(process.exitCode).toBe(0); expect(h.loader).not.toHaveBeenCalled(); expect(h.load).not.toHaveBeenCalled(); expect(h.batch).not.toHaveBeenCalled();
   const selected = { verify: h.verify, diagnose: h.diagnose, membership: h.membershipRun, restore: h.restore }[mode]; expect(selected).toHaveBeenCalledTimes(1);
   expect(h.pending).not.toHaveBeenCalled(); expect(h.saveFinals).not.toHaveBeenCalled(); expect(h.savePlayers).not.toHaveBeenCalled(); expect(h.write).not.toHaveBeenCalled();
@@ -160,3 +164,33 @@ it('validates a delayed discovery against the post-fetch clock instead of reject
   expect(h.pending.mock.calls[0][4][0]).toMatchObject({ game: fresh.game, source: { observedAt } });
   expect(writtenState().lastRunAt).toBe(observedAt);
 });
+
+function setupPilot(){
+ vi.setSystemTime(new Date('2026-10-03T01:00:00Z'));
+ vi.stubEnv('GITHUB_EVENT_NAME','push');vi.stubEnv('GITHUB_EVENT_PATH','/TEST_EVENT');vi.stubEnv('RECOVERY_KICKOFF_ADMITTED','true');vi.stubEnv('RECOVERY_MAX_REQUESTS','60');vi.stubEnv('RECOVERY_REQUEST_LIMIT','60');vi.stubEnv('RECOVERY_EXPIRES_AT','2026-10-04T00:00:00Z');
+ h.archives.mockReturnValue({generic:{},verified:savedBoxes,quarantined:{},observed:{}});
+ for(const id of Object.keys(savedBoxes))existing.add(id);
+ h.load.mockResolvedValue({status:'wrong-season',reason:'fixture-old-feed'});
+ h.read.mockImplementation((path:string)=>{
+  if(path==='src/data/provider-recovery-state.json')return JSON.stringify({version:2,cursor:oldCursor});
+  if(path==='src/data/schedule-2025-26.json')return JSON.stringify(fullArchive);
+  if(path===RECOVERY_KICKOFF_PATH)return JSON.stringify({version:1,nonce:RECOVERY_KICKOFF_NONCE,maxRequests:60});
+  if(path==='/TEST_EVENT')return JSON.stringify({ref:'refs/heads/master',after:sha,deleted:false,repository:{full_name:'fxy2026/nba-tracker'},head_commit:{id:sha,message:RECOVERY_KICKOFF_MESSAGE}});
+  throw Error('Unexpected fixture read');
+ });
+}
+it('exact admitted Oct3 push retries twenty remaining playoff targets with one schedule load and provider cap60',async()=>{
+ setupPilot();await execute();expect(process.exitCode).toBe(0);
+ expect(h.load).toHaveBeenCalledExactlyOnceWith({mode:'backfill',expectedSeason:'2026-27'});
+ expect(h.provider).toHaveBeenCalledExactlyOnceWith({apiKey:'TEST_ONLY_KEY',maxRequests:60,expiresAt:'2026-10-04T00:00:00Z'});
+ const targets=h.batch.mock.calls[0][0] as {nbaGameId:string}[];
+ expect(targets).toEqual(selectRecoveryTargets(fullArchive,existing,null,20));expect(targets).toHaveLength(20);
+ expect(targets.every(row=>row.nbaGameId.startsWith('00425')&&!existing.has(row.nbaGameId))).toBe(true);
+ expect(targets).not.toEqual(selectRecoveryTargets(fullArchive,existing,oldCursor,20));
+ expect(h.batch.mock.calls[0][2]).toBe(60);expect(h.membership).not.toHaveBeenCalled();expect(h.membershipRun).not.toHaveBeenCalled();
+ expect(h.write).not.toHaveBeenCalled(); // selection reset alone never rewrites stored cursor
+});
+it.each([['RECOVERY_KICKOFF_ADMITTED','false'],['RECOVERY_REQUEST_LIMIT','61'],['RECOVERY_MAX_REQUESTS','230'],['RECOVERY_MODE','membership'],['GITHUB_SHA','b'.repeat(40)],['GITHUB_RUN_ATTEMPT','2']])('pilot rejects changed context %s before schedule/provider access',async(key,value)=>{
+ setupPilot();vi.stubEnv(key,value);await execute();expect(process.exitCode).toBe(1);expect(h.load).not.toHaveBeenCalled();expect(h.provider).not.toHaveBeenCalled();expect(h.membership).not.toHaveBeenCalled();expect(h.write).not.toHaveBeenCalled();
+});
+it('a next-day delayed pilot cannot instantiate either source',async()=>{setupPilot();vi.setSystemTime(new Date('2026-10-04T00:00:00Z'));await execute();expect(process.exitCode).toBe(1);expect(h.load).not.toHaveBeenCalled();expect(h.provider).not.toHaveBeenCalled();});

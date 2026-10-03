@@ -12,27 +12,25 @@ import { verifyKnownProviderSnapshots } from '../../src/lib/recovery-verificatio
 import { runPlayoffMetadataDiagnostic } from '../../src/lib/recovery-diagnostic-run';
 import { recoverFinalsSample } from '../../src/lib/recovery-finals-sample';
 import { runRecoveryBatch } from '../../src/lib/recovery-batch';
-import { createRecoveryMembershipClient } from '../../src/lib/recovery-membership-client';
-import { runMembershipDiagnostic } from '../../src/lib/recovery-membership-run';
+import { validRecoveryKickoffContext, RECOVERY_KICKOFF_PATH, RECOVERY_KICKOFF_REQUEST_LIMIT } from '../../src/lib/recovery-kickoff';
 
 async function main(){
   const mode=process.env.RECOVERY_MODE;
-  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose'&&mode!=='restore'&&mode!=='membership')throw new Error('Invalid recovery mode');
+  if(mode!=='verify'&&mode!=='backfill'&&mode!=='diagnose'&&mode!=='restore')throw new Error('Invalid recovery mode');
   const key=process.env.BIGBALLSDATA_API_KEY;
   if(!key){console.log('Provider secret is not configured; no requests made.');if(mode!=='backfill')throw new Error('Verification requires configured secret');return;}
   if(process.env.GITHUB_REPOSITORY!=='fxy2026/nba-tracker'||process.env.GITHUB_REF!=='refs/heads/master'||process.env.GITHUB_RUN_ATTEMPT!=='1')throw new Error('Invalid ingestion context');
   const allowance=Number(process.env.RECOVERY_MAX_REQUESTS),requested=Number(process.env.RECOVERY_REQUEST_LIMIT),expiresAt=process.env.RECOVERY_EXPIRES_AT??'';
   if(!Number.isSafeInteger(allowance)||allowance<1||allowance>RECOVERY_DAILY_LIMIT||!Number.isSafeInteger(requested)||requested<1||requested>RECOVERY_DAILY_LIMIT)throw new Error('Invalid request bound');
-  if((process.env.GITHUB_EVENT_NAME==='push')!==(mode==='membership') || (mode==='membership'&&(requested!==2||allowance!==2)))throw new Error('Invalid kickoff bounds');
-  const maxRequests=Math.min(allowance,requested,mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:mode==='membership'?2:3);
+  const kickoff=process.env.GITHUB_EVENT_NAME==='push';
+  if(kickoff){
+    const eventPath=process.env.GITHUB_EVENT_PATH;
+    if(mode!=='backfill'||process.env.RECOVERY_KICKOFF_ADMITTED!=='true'||requested!==RECOVERY_KICKOFF_REQUEST_LIMIT||allowance!==RECOVERY_KICKOFF_REQUEST_LIMIT||!eventPath
+      ||!validRecoveryKickoffContext(JSON.parse(readFileSync(eventPath,'utf8')),JSON.parse(readFileSync(RECOVERY_KICKOFF_PATH,'utf8')),{repository:process.env.GITHUB_REPOSITORY??'',ref:process.env.GITHUB_REF??'',sha:process.env.GITHUB_SHA??'',attempt:Number(process.env.GITHUB_RUN_ATTEMPT),now:new Date().toISOString()}))throw new Error('Invalid kickoff bounds');
+  }else if(!['schedule','workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME??''))throw new Error('Invalid ingestion event');
+  const maxRequests=Math.min(allowance,requested,kickoff?RECOVERY_KICKOFF_REQUEST_LIMIT:mode==='backfill'?RECOVERY_DAILY_LIMIT:mode==='restore'?1:3);
   const read=(path:string):unknown=>JSON.parse(readFileSync(path,'utf8'));
   const {generic:prior,verified,quarantined,observed}=readStoredArchives();
-  if(mode==='membership'){
-    const client=createRecoveryMembershipClient({apiKey:key,maxRequests,expiresAt});
-    const result=await runMembershipDiagnostic(verified,client);
-    const summary=JSON.stringify(result);
-    console.log(summary);if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');return;
-  }
   if(mode==='verify'){
     const client=createRecoveryProviderClient({apiKey:key,maxRequests,expiresAt});
     const checked=await verifyKnownProviderSnapshots(verified,client);
@@ -55,7 +53,7 @@ async function main(){
   // above and restore does not instantiate a schedule loader.
   const discovery=mode==='backfill'?await createOfficialRecoveryScheduleLoader().load({mode,expectedSeason:selectedSeason}):null;
   const now=new Date().toISOString();
-  const plan=discovery?planCurrentRecovery({archive,observed,discovery,currentSeason:selectedSeason,existingIds:existing,historicalCursor:cursor,retries,now}):null;
+  const plan=discovery?planCurrentRecovery({archive,observed,discovery,currentSeason:selectedSeason,existingIds:existing,historicalCursor:kickoff?null:cursor,retries,now}):null;
   const sourceSummary=discovery?`Official final discovery: ${discovery.status}; ${plan?.newObservationCount??0} new identities selected.\n`:'';
   if(sourceSummary){console.log(sourceSummary.trim());if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,sourceSummary);}
   if(plan&&!plan.targets.length){console.log('No eligible unarchived games; saved identities and snapshots retained.');return;}
