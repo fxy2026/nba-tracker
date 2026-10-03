@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { SeasonHeatmapBody, type SeasonHeatmapResource } from "@/components/SeasonHeatmapExplorer";
+import type { SeasonHeatmapResource } from "@/components/SeasonHeatmapExplorer";
 import { startSeasonRequest } from "@/components/shot-map/shot-map-request-state";
-import { datasetKey, heatmapCopy, percent, type HeatmapLocale, type HeatmapMode } from "@/components/season-heatmap/season-heatmap-display";
+import { datasetKey, heatmapCopy, percent, type HeatmapLocale } from "@/components/season-heatmap/season-heatmap-display";
 import { courtSeasonHeatmapUrl, decodeCourtSeasonHeatmapResource } from "@/lib/season-heatmap-request";
 import type { HeatmapIdentity, SeasonHeatmapDisplayRow } from "@/lib/season-heatmap";
-import styles from "@/components/season-heatmap/season-heatmap.module.css";
+import styles from "@/components/shot-map/shot-map.module.css";
+import CareerArchiveCourt from "./CareerArchiveCourt";
 import linkedStyles from "./career-season-heatmap.module.css";
 
 interface Props { playerId: number; season: string; locale: HeatmapLocale }
@@ -19,13 +20,13 @@ export default function CareerSeasonHeatmap({ playerId, season, locale }: Props)
 function LinkedSeason({ identity, locale }: { identity: HeatmapIdentity; locale: HeatmapLocale }) {
   const [resource, setResource] = useState<SeasonHeatmapResource>({ status: "loading" });
   const [retry, setRetry] = useState(0);
-  const [mode, setMode] = useState<HeatmapMode>("percentage");
   const [selectedId, setSelectedId] = useState<SeasonHeatmapDisplayRow["id"] | null>(null);
   const [selectionRevision, setSelectionRevision] = useState(0);
   const id = useId();
   const root = useRef<HTMLElement>(null);
-  const selectZone = (zone: SeasonHeatmapDisplayRow["id"]) => {
-    setSelectedId(zone);
+  const selectZone = (zone: string | null) => {
+    if (!zone || resource.status !== "ready" || ![...resource.data.zones, ...resource.data.residuals].some(row => row.id === zone)) return;
+    setSelectedId(zone as SeasonHeatmapDisplayRow["id"]);
     setSelectionRevision(value => value + 1);
   };
   useEffect(() => {
@@ -53,12 +54,12 @@ function LinkedSeason({ identity, locale }: { identity: HeatmapIdentity; locale:
   return <section ref={root} onKeyDown={event => { if (event.key === "Escape" && selectedId) { event.stopPropagation(); dismissDetails(); } }} className={`${styles.explorer} ${linkedStyles.linked}`} lang={locale === "zh" ? "zh-CN" : "en"}
     aria-label={locale === "zh" ? "所选赛季投篮档案" : "Selected-season shot archive"}
     data-career-shot-archive={datasetKey(identity)} data-season-heatmap={data ? "archive-summary" : "unresolved-archive"}>
-    <div className={styles.sectionHeading}>
+    <div className={linkedStyles.heading}>
       <h3>{season} · {t.regular}</h3>
       {data && <span data-season-total="true">{percent(data.totals.fga ? data.totals.fgm / data.totals.fga : null)} · {data.totals.fgm} / {data.totals.fga}</span>}
     </div>
-    {data ? <SeasonHeatmapBody data={data} locale={locale} mode={mode} onModeChange={setMode}
-      selectedId={selectedId} onSelect={selectZone} onDismissDetails={dismissDetails} showZoneList={false} detailsId={`${id}-details`} /> :
+    {data ? <CareerArchiveCourt data={data} locale={locale}
+      selectedId={selectedId} onSelect={selectZone} onDismissDetails={dismissDetails} detailsId={`${id}-details`} /> :
       <div className={styles.state} role={status === "error" ? "alert" : "status"} aria-busy={status === "loading"}>
         <p>{status === "loading" ? t.loading : status === "error" ? t.error : t.unavailable}</p>
         {status === "error" && <button type="button" onClick={() => setRetry(value => value + 1)}>{t.retry}</button>}

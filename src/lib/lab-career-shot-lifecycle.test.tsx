@@ -67,7 +67,7 @@ vi.mock('@/components/LocaleProvider',()=>({useLocale:()=>({locale:runtime.local
 import CareerArc from '@/app/lab/career-arc/CareerArc';
 import CareerTrendChart from '@/app/lab/career-arc/CareerTrendChart';
 import CareerSeasonHeatmap from '@/app/lab/career-arc/CareerSeasonHeatmap';
-import { SeasonHeatmapBody } from '@/components/SeasonHeatmapExplorer';
+import CareerArchiveCourt from '@/app/lab/career-arc/CareerArchiveCourt';
 import { loadPlayerSeasonHeatmapArchive } from '@/lib/season-heatmap-catalog-server';
 import { decodeCourtSeasonHeatmapResource } from '@/lib/season-heatmap-request';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -97,7 +97,7 @@ async function settle(){for(let i=0;i<12;i++){await Promise.resolve();flush();}}
 function select(index:number){const trend=nodes(tree).find(n=>n.type===CareerTrendChart)!;(trend.props.onSelectIndex as(index:number)=>void)(index);flush();}
 function unmount(){runtime.mounted=false;cleanup(parentHooks);cleanup(childHooks);}
 const response=(value: unknown,status=200)=>({ok:status===200,status,json:async()=>value});
-const body=()=>nodes(linkedTree).find(n=>n.type===SeasonHeatmapBody);
+const body=()=>nodes(linkedTree).find(n=>n.type===CareerArchiveCourt);
 beforeEach(async()=>{
  ready=await loadPlayerSeasonHeatmapArchive({playerId:201939,season:'2015-16',seasonType:'Regular Season'});
  if(ready.status!=='ready')throw Error('Missing local archive fixture');
@@ -136,7 +136,7 @@ it('8-second archive deadline settles, retry bypasses cache, and late body canno
 it('court taps show the selected validated archive zone and preserve source/control/residual context',async()=>{
  flush();await settle();const first=body()!;const data=first.props.data as Extract<typeof ready,{status:'ready'}>['data'];
  (first.props.onSelect as(id:string)=>void)(data.zones[0].id);flush();expect(body()?.props.selectedId).toBe(data.zones[0].id);
- const html=renderToStaticMarkup(body()!);for(const text of ['data-display-geometry="nba-court-basic12-v1"','data-archive-shortfall="true"','804 / 1596','805 / 1598 FG','Archive-wide game dates','Source metadata observed','data-list-zone="backcourt"'])expect(html).toContain(text);
+ const html=renderToStaticMarkup(body()!);for(const text of ['data-shot-map-view="zones"','data-archive-shortfall="true"','804 / 1596','805 / 1598 FG','Archive-wide game dates','Source metadata observed','data-list-zone="backcourt"'])expect(html).toContain(text);
  expect(html).not.toContain('Full-season aggregates reconciled');
 });
 it('a missing team or traded season does not block the player-season archive',async()=>{
@@ -159,9 +159,9 @@ it('details start closed, open on zone selection, and dismiss with Close or Esca
  const data=body()!.props.data as Extract<typeof ready,{status:'ready'}>['data'];
  (body()!.props.onSelect as(id:string)=>void)(data.zones[0].id);flush();
  expect(renderToStaticMarkup(body()!)).toContain('<aside');
- let content=SeasonHeatmapBody(body()!.props as unknown as Parameters<typeof SeasonHeatmapBody>[0]);
- const close=nodes(content).find(n=>n.type==='button'&&text(n)==='Close details')!;(close.props.onClick as()=>void)();flush();expect(renderToStaticMarkup(body()!)).not.toContain('<aside');
- (body()!.props.onSelect as(id:string)=>void)(data.zones[0].id);flush();content=SeasonHeatmapBody(body()!.props as unknown as Parameters<typeof SeasonHeatmapBody>[0]);
+ let content=CareerArchiveCourt(body()!.props as unknown as Parameters<typeof CareerArchiveCourt>[0]);
+ const close=nodes(content).find(n=>n.type==='button'&&n.props['aria-label']==='Close details')!;(close.props.onClick as()=>void)();flush();expect(renderToStaticMarkup(body()!)).not.toContain('<aside');
+ (body()!.props.onSelect as(id:string)=>void)(data.zones[0].id);flush();content=CareerArchiveCourt(body()!.props as unknown as Parameters<typeof CareerArchiveCourt>[0]);
  const container=nodes(content).find(n=>n.props['data-click-details']==='true')!;
  const stopPropagation=vi.fn();(container.props.onKeyDown as(event:unknown)=>void)({key:'Escape',stopPropagation});flush();expect(stopPropagation).toHaveBeenCalledOnce();expect(renderToStaticMarkup(body()!)).not.toContain('<aside');
 });
@@ -171,7 +171,7 @@ it('selecting another season clears an open detail without waiting for the next 
  fetcher.mockResolvedValue(response(ready));select(1);await settle();expect(body()!.props.selectedId).toBeNull();
 });
 it.each([false,true])('only an explicit zone selection reveals offscreen details, reduced motion=%s',async reduced=>{
- flush();await settle();expect(body()!.props.showZoneList).toBe(false);expect(renderToStaticMarkup(body()!)).not.toContain('<details');
+ flush();await settle();expect(renderToStaticMarkup(body()!)).not.toContain('All zone statistics');expect(renderToStaticMarkup(body()!)).toContain('Archive sources, coverage');
  const panel={getBoundingClientRect:()=>({top:900,bottom:1200}),scrollIntoView:vi.fn()},focus=vi.fn();
  const querySelector=vi.fn((selector:string)=>selector==='[data-heatmap-details="true"]'?panel:{focus});
  const root=nodes(linkedTree).find(n=>n.type==='section')!.props.ref as {current:unknown};root.current={querySelector};
@@ -179,6 +179,17 @@ it.each([false,true])('only an explicit zone selection reveals offscreen details
  expect(panel.scrollIntoView).not.toHaveBeenCalled();
  const data=body()!.props.data as Extract<typeof ready,{status:'ready'}>['data'];(body()!.props.onSelect as(id:string)=>void)(data.zones[0].id);flush();
  expect(panel.scrollIntoView).toHaveBeenLastCalledWith({block:'nearest',behavior:reduced?'instant':'auto'});
- (body()!.props.onModeChange as(mode:string)=>void)('volume');flush();expect(panel.scrollIntoView).toHaveBeenCalledOnce();
+ runtime.locale='zh';runtime.dirty=true;flush();expect(panel.scrollIntoView).toHaveBeenCalledOnce();
  (body()!.props.onDismissDetails as()=>void)();flush();expect(focus).toHaveBeenCalledOnce();expect(panel.scrollIntoView).toHaveBeenCalledOnce();
+});
+
+it('reuses the canonical warm court and five-band legend without spatial data or old mode controls',async()=>{
+ flush();await settle();const html=renderToStaticMarkup(body()!);
+ expect(html).toContain('data-shot-map-view="zones"');expect(html).not.toContain('data-spatial-geometry');expect(html).not.toContain('data-bin-id');
+ expect((html.match(/data-zone-legend-band=/g)||[])).toHaveLength(5);expect((html.match(/data-zone-id=/g)||[])).toHaveLength(12);
+ expect(html).toContain('var(--map-zone-');expect(html).not.toContain('aria-label="Color mode"');expect(html).not.toContain('All zone statistics');
+ expect(html.indexOf('<svg')).toBeLessThan(html.indexOf('<details'));
+ expect(html.indexOf('data-archive-shortfall')).toBeGreaterThan(html.indexOf('<details'));
+ expect(html.indexOf('data-archive-coverage')).toBeLessThan(html.indexOf('<svg'));
+ expect(fetcher).toHaveBeenCalledOnce();
 });

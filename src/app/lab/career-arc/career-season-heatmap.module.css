@@ -1,7 +1,11 @@
-.linked { min-width: 0; padding: 12px; }
+.linked { --heat-muted:var(--map-muted); --heat-panel:var(--map-soft); --heat-active-border:var(--map-border); --heat-warning:var(--warning, #b45309); min-width: 0; padding: 12px; }
 .linked.linked button, .linked.linked summary { min-height: 44px; }
 .linked h3 { font-size: 14px; }
 @media (max-width: 600px) {
   .linked { padding: 10px; }
   .linked button { white-space: normal; }
 }
+
+.heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 12px; margin-bottom:10px; font-variant-numeric:tabular-nums; }
+.heading h3 { margin:0; }
+.heading span { font-size:13px; color:var(--map-muted); }

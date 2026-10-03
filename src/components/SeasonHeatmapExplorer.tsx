@@ -140,7 +140,7 @@ function ZoneDetails({ row, data, locale }: { row: SeasonHeatmapDisplayRow; data
   </>;
 }
 
-function ArchiveContext({ data, locale }: { data: SeasonHeatmapRendererDTO; locale: HeatmapLocale }) {
+export function ArchiveContext({ data, locale }: { data: SeasonHeatmapRendererDTO; locale: HeatmapLocale }) {
   const archive = data.archive!;
   const zh = locale === "zh";
   const control = archive.officialControl;
