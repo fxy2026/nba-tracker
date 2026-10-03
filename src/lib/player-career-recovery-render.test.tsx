@@ -82,3 +82,32 @@ it.each(['en', 'zh'])('keeps retained empty attribution visible after a failed r
   expect(html).toContain(locale === 'zh' ? '重试' : 'Retry');
   expect(html).not.toContain(locale === 'zh' ? '数据源已响应' : 'The source responded');
 });
+
+import archivedLeBron from '@/data/player-career-archives/2544-2026-10-03.json';
+it.each(['en', 'zh'])('renders dated archive coverage, fixed capture time and direct Overall values honestly, %s', locale => {
+  state.locale = locale;
+  state.result = { data: archivedLeBron.data, loading: false, error: true, stale: true, retry: vi.fn() };
+  const html = render();
+  expect(html).toContain('https://www.nba.com/stats/player/2544/career');
+  expect(html).toContain('2003-04'); expect(html).toContain('2025-26');
+  expect(html).toContain('dateTime="2026-10-03T03:05:29.326Z"');
+  expect(html).toContain('2026-10-03 03:05:29 UTC');
+  expect(html).toContain(locale === 'zh' ? '23 个赛季' : '23 seasons');
+  expect(html).toContain(locale === 'zh' ? '可能缺少后续更新' : 'may miss later updates');
+  expect(html).toContain(locale === 'zh' ? '不是本 API 获取时间' : 'not API retrieval');
+  expect(html).toContain(locale === 'zh' ? 'Overall 行' : 'Overall row directly');
+  expect(html).not.toContain(locale === 'zh' ? '本 API 获取时间：' : 'Retrieved by this API:');
+  expect(html).not.toMatch(/verified|已核实|独立核验/i);
+  const career = html.match(/<tr class="border-t-2[^>]*>[\s\S]*?<\/tr>/)![0];
+  for (const value of ['1622', '37.6', '26.8', '7.5', '50.7%', '34.8%', '73.7%']) expect(career).toContain(`>${value}</td>`);
+});
+
+import PlayerAdvancedStats from '@/components/player/PlayerAdvancedStats';
+it.each(['en', 'zh'])('labels supplementary advanced metrics with archived season coverage, %s', locale => {
+  state.locale = locale;
+  state.result = { data: archivedLeBron.data, loading: false, error: true, stale: true, retry: vi.fn() };
+  const html = renderToStaticMarkup(createElement(PlayerAdvancedStats, { playerId: 2544 }));
+  expect(html).toContain('2025-26');
+  expect(html).toContain(locale === 'zh' ? '已存档快照' : 'dated archive');
+  expect(html).toContain(locale === 'zh' ? '可能缺少后续更新' : 'later updates may be missing');
+});

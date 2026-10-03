@@ -1,9 +1,9 @@
 import type { CareerSeasonRow } from './player-career-data';
-export interface CareerShootingRates { source:'nba-career-totals'; FG_PCT:number|null; FG3_PCT:number|null; FT_PCT:number|null; }
+export interface CareerShootingRates { source:'nba-career-totals'|'nba-browser-overall'; FG_PCT:number|null; FG3_PCT:number|null; FT_PCT:number|null; }
 export function normalizeCareerShooting(raw:unknown): CareerShootingRates|null {
  if(!raw||typeof raw!=='object')return null;const r=raw as Record<string,unknown>;
- if(r.source!=='nba-career-totals'||!['FG_PCT','FG3_PCT','FT_PCT'].every(k=>r[k]===null||(typeof r[k]==='number'&&Number.isFinite(r[k])&&(r[k] as number)>=0&&(r[k] as number)<=1)))return null;
- return {source:'nba-career-totals',FG_PCT:r.FG_PCT as number|null,FG3_PCT:r.FG3_PCT as number|null,FT_PCT:r.FT_PCT as number|null};
+ if((r.source!=='nba-career-totals'&&r.source!=='nba-browser-overall')||!['FG_PCT','FG3_PCT','FT_PCT'].every(k=>r[k]===null||(typeof r[k]==='number'&&Number.isFinite(r[k])&&(r[k] as number)>=0&&(r[k] as number)<=1)))return null;
+ return {source:r.source,FG_PCT:r.FG_PCT as number|null,FG3_PCT:r.FG3_PCT as number|null,FT_PCT:r.FT_PCT as number|null};
 }
 // Same existing playercareerstats response; no extra endpoint/request. Provider
 // aggregate percentages avoid guessing attempts from rounded season averages.

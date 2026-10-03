@@ -21,9 +21,16 @@ export interface CareerSeasonRow {
   FTA?: number | null;
 }
 
+export interface CareerAverage {
+  source: "nba-browser-overall";
+  GP: number; MIN: number; PTS: number; REB: number; AST: number; STL: number; BLK: number;
+}
 export interface PlayerCareerData {
   careerSeasons: CareerSeasonRow[];
   careerShooting?: CareerShootingRates;
+  careerAverage?: CareerAverage;
+  // True only for a fixed dated archive; live success omits this field.
+  stale?: true;
   // Older cached responses may have no attribution. Never guess their source.
   provenance?: PlayerCareerProvenance;
 }
@@ -50,9 +57,30 @@ export function normalizePlayerCareerData(raw: unknown): PlayerCareerData | null
   // replace a last-good snapshot or be silently presented as unattributed data.
   if ("provenance" in raw && !provenance) return null;
   if (provenance?.source === "espn" && rates) return null; // No mixed-provider snapshot.
+  const archived = provenance?.source === "nba-com";
+  let careerAverage: CareerAverage | undefined;
+  if ("careerAverage" in raw) {
+    if (!archived || !raw.careerAverage || typeof raw.careerAverage !== "object") return null;
+    const avg = raw.careerAverage as Record<string, unknown>;
+    if (avg.source !== "nba-browser-overall" || !Number.isSafeInteger(avg.GP) || (avg.GP as number) <= 0
+      || !["MIN", "PTS", "REB", "AST", "STL", "BLK"].every(key => nonnegative(avg[key]))) return null;
+    careerAverage = { source: "nba-browser-overall", GP: avg.GP as number, MIN: avg.MIN as number,
+      PTS: avg.PTS as number, REB: avg.REB as number, AST: avg.AST as number, STL: avg.STL as number, BLK: avg.BLK as number };
+  }
+  if ((archived && (!("stale" in raw) || raw.stale !== true)) || (!archived && "stale" in raw && raw.stale !== false)) return null;
+  if (rates?.source === "nba-browser-overall" && !archived) return null;
+  if (archived) {
+    if (!rates || rates.source !== "nba-browser-overall" || !careerAverage) return null;
+    const seasons = [...new Set((rows as CareerSeasonRow[]).map(row => row.SEASON_ID))].sort();
+    const coverage = provenance.coverage;
+    if (coverage.rowCount !== rows.length || coverage.seasonCount !== seasons.length
+      || coverage.firstSeason !== seasons[0] || coverage.lastSeason !== seasons.at(-1)) return null;
+  }
   return {
     careerSeasons: rows as CareerSeasonRow[],
     ...(rates ? { careerShooting: rates } : {}),
+    ...(careerAverage ? { careerAverage } : {}),
     ...(provenance ? { provenance } : {}),
+    ...(archived ? { stale: true as const } : {}),
   };
 }

@@ -33,15 +33,20 @@ async function fetchJSON(url: string, signal?: AbortSignal): Promise<unknown | n
 // Find ESPN athlete ID by looking up the team roster and matching by name
 export async function findESPNId(playerName: string, teamTricode: string, signal?: AbortSignal): Promise<string | null> {
   const espnTeamId = ESPN_TEAMS[teamTricode];
-  if (!espnTeamId) return null;
+  if (!espnTeamId || typeof playerName !== "string" || !playerName.trim()) return null;
 
   const data = await fetchJSON(
     `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/roster`, signal,
   ) as { athletes?: { id: string; fullName: string }[] } | null;
 
   if (!Array.isArray(data?.athletes)) return null;
-  const nameLower = playerName.toLowerCase();
-  const match = data.athletes.find(a => typeof a?.fullName === "string" && a.fullName.toLowerCase() === nameLower);
+  // NBA uses spellings such as Jokić while ESPN may use Jokic. Fold only
+  // diacritics/case for an exact full-name match; never use fuzzy matching or
+  // silently select one of multiple identities with the same normalized name.
+  const normalizeName = (name: string) => name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const normalizedName = normalizeName(playerName);
+  const matches = data.athletes.filter(a => typeof a?.fullName === "string" && normalizeName(a.fullName) === normalizedName);
+  const match = matches.length === 1 ? matches[0] : null;
   return typeof match?.id === "string" && /^\d+$/.test(match.id) ? match.id : null;
 }
 

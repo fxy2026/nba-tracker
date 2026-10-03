@@ -57,6 +57,7 @@ describe("career response attribution", () => {
     const meta = normalizeCareerProvenance({ ...provenance, sourceUrl: "https://invalid.example", verified: true })!;
     expect(meta).toEqual(provenance);
     expect(careerSourceUrl(meta)).toBe("https://stats.nba.com/stats/playercareerstats?PlayerID=2544&PerMode=PerGame");
+    if (meta.retrievalKind !== "api-response") throw new Error("expected live provenance");
     expect(careerSourceUrl({ ...meta, source: "espn", providerPlayerId: "1966" }))
       .toBe("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/stats");
   });

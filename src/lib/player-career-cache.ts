@@ -1,5 +1,7 @@
 import { normalizePlayerCareerData, type PlayerCareerData } from "./player-career-data";
 
+import { containsCareerSeasons, coversArchivedCareer } from "./player-career-coverage";
+
 export const CAREER_CLIENT_TIMEOUT_MS = 18_000;
 export const CAREER_SUCCESS_TTL_MS = 5 * 60_000;
 export const CAREER_FAILURE_COOLDOWN_MS = 30_000;
@@ -25,7 +27,7 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
     const entry = cache.get(url);
     if (entry && now() < entry.retryAt) return Promise.resolve(snapshot(entry));
     if (!retry && entry?.data && now() < entry.expiresAt) {
-      return Promise.resolve({ data: entry.data, unavailable: false, stale: false });
+      return Promise.resolve({ data: entry.data, unavailable: entry.data.stale === true, stale: entry.data.stale === true });
     }
     const request = (async (): Promise<CareerLoadResult> => {
       const controller = new AbortController();
@@ -35,19 +37,27 @@ export function createPlayerCareerLoader(fetcher: typeof fetch = fetch, now = Da
         if (!res.ok) throw new Error(`player api ${res.status}`);
         const data = normalizePlayerCareerData(await res.json());
         if (controller.signal.aborted || !data) throw new Error("unavailable career data");
+        const requestedId = new URL(url, "http://local.invalid").searchParams.get("id");
+        if (requestedId && data.provenance?.source === "nba-com" && data.provenance.providerPlayerId !== requestedId) {
+          throw new Error("archive player identity mismatch");
+        }
         // A complete career cannot silently lose previously observed seasons.
         // Providers can change team splits or correct stats within a season,
-        // so compare season identities rather than row counts or GP totals.
+        // so live-to-live refreshes compare season identities. An archive also
+        // protects the already observed game coverage against older snapshots.
         // Retain the entire last-good snapshot (including source metadata)
         // with the failure/stale state instead of mixing provider snapshots.
         // Entries remain scoped to this exact player/request URL; a first
         // successful empty response still means no available history.
-        const seasons = new Set(data.careerSeasons.map(row => row.SEASON_ID));
-        if (entry?.data?.careerSeasons.some(row => !seasons.has(row.SEASON_ID))) {
+        if (entry?.data && (!containsCareerSeasons(data, entry.data)
+          || (entry.data.stale && !coversArchivedCareer(data, entry.data))
+          || (data.stale && !coversArchivedCareer(data, entry.data))
+          || (data.stale && !entry.data.stale && coversArchivedCareer(entry.data, data)))) {
           throw new Error("incomplete career refresh");
         }
-        cache.set(url, { data, expiresAt: now() + CAREER_SUCCESS_TTL_MS, retryAt: 0 });
-        return publish(url, { data, unavailable: false, stale: false });
+        cache.set(url, { data, expiresAt: now() + CAREER_SUCCESS_TTL_MS,
+          retryAt: data.stale ? now() + CAREER_FAILURE_COOLDOWN_MS : 0 });
+        return publish(url, { data, unavailable: data.stale === true, stale: data.stale === true });
       } catch {
         cache.set(url, { data: entry?.data ?? null, expiresAt: 0, retryAt: now() + CAREER_FAILURE_COOLDOWN_MS });
         return publish(url, snapshot(entry));

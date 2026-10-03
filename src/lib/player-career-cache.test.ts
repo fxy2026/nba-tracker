@@ -182,3 +182,41 @@ it('retains an attributed empty snapshot on failure without inventing career row
   await load('/empty');
   expect(await load('/empty', true)).toEqual({ data: history, unavailable: true, stale: true });
 });
+
+// Reviewed JSON is imported only by this test, never by the client loader.
+import archivedLeBron from '@/data/player-career-archives/2544-2026-10-03.json';
+const archived = normalizePlayerCareerData(archivedLeBron.data)!;
+const live = { careerSeasons: archived.careerSeasons, provenance: { source: 'nba-stats', providerPlayerId: '2544', scope: 'regular-season', retrievalKind: 'api-response', retrievedAt: '2026-10-03T04:00:00.000Z' } };
+it('keeps a dated archive stale on initial load, cooldown, and successful cache hit without polling', async () => {
+  const fetcher = vi.fn().mockResolvedValue(ok(archived)); const load = createPlayerCareerLoader(fetcher);
+  const expected = { data: archived, unavailable: true, stale: true };
+  expect(await load('/api/player?id=2544')).toEqual(expected);
+  expect(await load('/api/player?id=2544', true)).toEqual(expected);
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/api/player?id=2544')).toEqual(expected);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(86400000); expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it('retains a complete live snapshot rather than replacing it with the archived response', async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(live)).mockResolvedValue(ok(archived)); const load = createPlayerCareerLoader(fetcher);
+  await load('/api/player?id=2544');
+  expect(await load('/api/player?id=2544', true)).toEqual({ data: live, unavailable: true, stale: true });
+});
+it('an archive can recover to complete live data on explicit retry, keeping sources unmixed', async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(archived)).mockResolvedValue(ok(live)); const load = createPlayerCareerLoader(fetcher);
+  await load('/api/player?id=2544');
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/api/player?id=2544', true)).toEqual({ data: live, unavailable: false, stale: false });
+});
+it('archive failure and older live coverage retain the archive timestamp and complete rows', async () => {
+  const older = { ...live, careerSeasons: live.careerSeasons.map((r, i) => i === 22 ? { ...r, GP: 59 } : r) };
+  const fetcher = vi.fn().mockResolvedValueOnce(ok(archived)).mockResolvedValueOnce({ ok: false }).mockResolvedValue(ok(older)); const load = createPlayerCareerLoader(fetcher);
+  await load('/api/player?id=2544'); await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/api/player?id=2544', true)).toEqual({ data: archived, unavailable: true, stale: true });
+  await vi.advanceTimersByTimeAsync(CAREER_FAILURE_COOLDOWN_MS);
+  expect(await load('/api/player?id=2544', true)).toEqual({ data: archived, unavailable: true, stale: true });
+});
+it('cannot cache one player archived history under another player URL', async () => {
+  const fetcher = vi.fn().mockResolvedValue(ok(archived)); const load = createPlayerCareerLoader(fetcher);
+  expect(await load('/api/player?id=203999')).toEqual({ data: null, unavailable: true, stale: false });
+});

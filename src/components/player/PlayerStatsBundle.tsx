@@ -8,6 +8,7 @@ import { usePlayerCareer, type CareerSeasonRow } from "@/lib/usePlayerCareer";
 import type { Translations } from "@/locales/types";
 import PlayerCareerChart from "@/components/player/PlayerCareerChart";
 import PlayerRankBadges from "@/components/player/PlayerRankBadges";
+import type { CareerAverage } from "@/lib/player-career-data";
 import PlayerCareerSource from "@/components/player/PlayerCareerSource";
 
 interface Props {
@@ -67,7 +68,9 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   return (
     <div className="space-y-6">
       {stale && <div role="status" className="text-xs text-text-secondary">
-        {locale === "zh" ? "刷新暂不可用，保留上次成功加载的数据。请在 30 秒后重试。" : "Refresh unavailable. Showing the last successfully loaded data. Retry after 30 seconds."}
+        {data?.stale
+          ? (locale === "zh" ? "显示已存档快照。可在 30 秒后重试实时来源。" : "Showing an archived snapshot. Retry live sources after 30 seconds.")
+          : (locale === "zh" ? "刷新暂不可用，保留上次成功加载的数据。请在 30 秒后重试。" : "Refresh unavailable. Showing the last successfully loaded data. Retry after 30 seconds.")}
         <button onClick={retry} className="ml-2 text-accent">{t.common.retry}</button>
       </div>}
       {/* Current-season league-rank badges (silent-hide when not a leader) */}
@@ -76,14 +79,14 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
       {/* Career Stats — table by default, with an opt-in chart view */}
       <div className="space-y-3">
         <PlayerCareerSource provenance={data?.provenance} isZh={locale === "zh"} />
-        <CareerSection careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
+        <CareerSection careerAverage={data?.careerAverage} careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
       </div>
     </div>
   );
 }
 
 // Owns the 表格/图表 view state so the default table render stays untouched.
-function CareerSection({ seasons, t, isZh, careerShooting }: { seasons: CareerSeasonRow[]; t: Translations; isZh: boolean; careerShooting?: CareerShootingRates }) {
+function CareerSection({ seasons, t, isZh, careerShooting, careerAverage }: { careerAverage?: CareerAverage; seasons: CareerSeasonRow[]; t: Translations; isZh: boolean; careerShooting?: CareerShootingRates }) {
   const [view, setView] = useState<"table" | "chart">("table");
   const canChart = seasons.length >= 2;
 
@@ -107,7 +110,7 @@ function CareerSection({ seasons, t, isZh, careerShooting }: { seasons: CareerSe
   if (view === "chart" && canChart) {
     return <PlayerCareerChart seasons={seasons} headerExtra={toggle} />;
   }
-  return <CareerStatsTable isZh={isZh} careerShooting={careerShooting} seasons={seasons} t={t} headerExtra={toggle} />;
+  return <CareerStatsTable careerAverage={careerAverage} isZh={isZh} careerShooting={careerShooting} seasons={seasons} t={t} headerExtra={toggle} />;
 }
 
 // Compare current to career average
@@ -117,7 +120,7 @@ function CompareArrow({ current, career }: { current: number; career: number }) 
   return null;
 }
 
-function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh }: { seasons: CareerSeasonRow[]; t: Translations; headerExtra?: ReactNode; careerShooting?: CareerShootingRates; isZh: boolean }) {
+function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh, careerAverage }: { careerAverage?: CareerAverage; seasons: CareerSeasonRow[]; t: Translations; headerExtra?: ReactNode; careerShooting?: CareerShootingRates; isZh: boolean }) {
   // Find best season by PPG
   let bestIdx = 0;
   let bestPts = 0;
@@ -144,7 +147,12 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh }: { s
 
   }
 
-  const careerAvg = totalGP > 0 ? {
+  const careerAvg = careerAverage ? {
+    ...careerAverage,
+    FG_PCT: careerShooting?.FG_PCT ?? null,
+    FG3_PCT: careerShooting?.FG3_PCT ?? null,
+    FT_PCT: careerShooting?.FT_PCT ?? null,
+  } : totalGP > 0 ? {
     GP: totalGP,
     MIN: totalMIN / totalGP,
     PTS: totalPTS / totalGP,
@@ -171,6 +179,9 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh }: { s
       <p className="px-4 py-2 text-xs text-text-secondary">{isZh
         ? "生涯命中率仅采用数据源提供的常规赛生涯汇总；缺失时显示 —，不按比赛场数平均各季命中率。"
         : "Career shooting rates use the source's regular-season career aggregate. Missing rates are unavailable, not game-weighted averages of season percentages."}</p>
+      {careerAverage && <p className="px-4 pb-2 text-xs text-text-secondary">{isZh
+        ? "存档生涯汇总直接采用 NBA 网页的 Overall 行；不根据四舍五入后的赛季均值重建。"
+        : "Archived career averages use the NBA page's Overall row directly, without reconstructing them from rounded season averages."}</p>}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -232,7 +243,7 @@ function CareerStatsTable({ seasons, t, headerExtra, careerShooting, isZh }: { s
             {/* Current Season vs Career Comparison */}
             {currentSeason && careerAvg && seasons.length > 1 && (
               <tr className="bg-bg-hover/30 text-[10px]">
-                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>{t.playerStats.vsCareerAvg}</td>
+                <td className="py-1.5 px-3 sticky left-0 bg-bg-hover/30 text-text-secondary italic" colSpan={4}>{latestYear} · {t.playerStats.vsCareerAvg}</td>
                 <td className="text-center py-1.5 px-2 font-medium">
                   {currentSeason.PTS > careerAvg.PTS ? "+" : ""}{(currentSeason.PTS - careerAvg.PTS).toFixed(1)}
                   <CompareArrow current={currentSeason.PTS} career={careerAvg.PTS} />

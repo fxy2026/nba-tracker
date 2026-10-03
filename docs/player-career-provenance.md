@@ -30,8 +30,9 @@ validated empty history, using an optional `provenance` object:
   integer; a malformed or contradictory value rejects that provider response
   through the normal fallback path. Tables without the optional identity column
   remain supported; the requested provider ID is attribution, not identity proof.
-  Failure responses remain HTTP 503/no-store with null data and no provenance;
-  valid empty results remain successful and attributed.
+  Failures without a reviewed archive remain HTTP 503/no-store with null data and
+  no provenance; valid empty results remain successful for unarchived players.
+  Reviewed known-player coverage is protected against truncated live histories.
 - The normalizer preserves valid attribution and strips unknown metadata fields.
   Malformed declared attribution rejects the response, allowing the browser
   loader to retain its complete last-good snapshot and timestamp. Legacy
@@ -45,6 +46,9 @@ validated empty history, using an optional `provenance` object:
   provenance together on failed/malformed/truncated refreshes. A complete
   successful provider switch replaces the whole snapshot without mixing sources.
 
-This adds no database, disk/browser persistence, credentials, endpoint calls,
-polling, or paid service. It records source lineage for a later persistence
-decision without treating retrieval as proof of freshness or correctness.
+Live attribution adds no endpoint calls and does not treat retrieval as proof
+of freshness or correctness. Dated NBA.com browser-capture fallback records now
+use the separate `archived-browser-capture` provenance contract and `stale: true`.
+They have a fixed `capturedAt`, exact coverage and no API `retrievedAt`; see
+[player-career-archives.md](player-career-archives.md) for the independent review,
+server-only persistence, coverage guards and maintenance process.

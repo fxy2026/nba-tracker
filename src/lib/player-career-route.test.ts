@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+// Existing provider contract when no reviewed archive is available.
+vi.mock("@/lib/player-career-archive", () => ({ getReviewedCareerArchive: async () => null }));
+
 const row = {
   SEASON_ID: "2025-26", TEAM_ABBREVIATION: "LAL", GP: 70, MIN: 32, PTS: 25,
   REB: 8, AST: 7, STL: 1, BLK: 0, FG_PCT: .5, FG3_PCT: .35, FT_PCT: .8,

@@ -57,7 +57,9 @@ export default function PlayerAdvancedStats({ playerId, playerName, teamTricode 
           {t.playerAdvanced.title}
         </h3>
       </div>
-      {stale && <p className="text-xs text-text-secondary mb-2">{locale === "zh" ? "基于上次成功加载的数据" : "Based on the last successfully loaded data"}</p>}
+      {stale && <p className="text-xs text-text-secondary mb-2">{data?.provenance?.source === "nba-com"
+        ? (locale === "zh" ? `基于截至 ${data.provenance.coverage.lastSeason} 的已存档快照，可能缺少后续更新。` : `Based on the dated archive through ${data.provenance.coverage.lastSeason}; later updates may be missing.`)
+        : (locale === "zh" ? "基于上次成功加载的数据" : "Based on the last successfully loaded data")}</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.TS_PCT != null && (
           <div className="glass-tile p-3 text-center">
