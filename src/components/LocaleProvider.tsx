@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useEffect, type ReactNode } from "react";
 import type { Locale, Translations } from "@/locales/types";
 import zh from "@/locales/zh";
 import en from "@/locales/en";
@@ -26,18 +26,19 @@ export function LocaleProvider({
   initialLocale: Locale;
   children: ReactNode;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  // The cookie-derived server locale also owns the client UI. Switching only
+  // client consumers would leave them out of sync with server-rendered content.
+  const locale = initialLocale;
 
-  // Hydration: server SSR'd with cookie-derived initialLocale; localStorage is
-  // the source of truth on the client. Runs once and only when divergence exists.
   useEffect(() => {
-    const stored = localStorage.getItem("locale");
-    if (stored === "en" || stored === "zh") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (stored !== locale) setLocaleState(stored);
+    try {
+      if (localStorage.getItem("locale") !== locale) {
+        localStorage.setItem("locale", locale);
+      }
+    } catch {
+      // Storage is only a best-effort mirror (it can be blocked or full).
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [locale]);
 
   // PERF: setLocale identity is stable across renders. Without useCallback,
   // the context value reference changes on every render even when locale
@@ -45,10 +46,13 @@ export function LocaleProvider({
   // client component on the site — Navbar, Footer, GamesList, every t.x
   // call) to re-render unnecessarily.
   const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-    localStorage.setItem("locale", next);
     document.cookie = `locale=${next};path=/;max-age=31536000;SameSite=Lax`;
-    // Reload so server components re-render with new locale
+    try {
+      localStorage.setItem("locale", next);
+    } catch {
+      // Storage failures must not prevent the cookie-backed reload.
+    }
+    // Keep the current UI consistent until server and client reload together.
     window.location.reload();
   }, []);
 

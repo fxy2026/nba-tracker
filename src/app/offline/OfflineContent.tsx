@@ -4,10 +4,8 @@ import Link from "next/link";
 import { WifiOff } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
-// Client-localized offline body. The SW precaches the offline HTML in ONE
-// server-rendered locale, so reading the locale at runtime (mirroring
-// OnlineStatus.tsx) is the only way the text reconciles to the user's actual
-// language — the LocaleProvider hydrates from localStorage.
+// The offline body shares the provider's server locale with the rest of the
+// cached page. The SW can serve an older locale while the network is unavailable.
 export default function OfflineContent() {
   const { locale } = useLocale();
   const isZh = locale === "zh";
