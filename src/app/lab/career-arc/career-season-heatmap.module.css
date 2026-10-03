@@ -1,0 +1,7 @@
+.linked { min-width: 0; padding: 12px; }
+.linked.linked button, .linked.linked summary { min-height: 44px; }
+.linked h3 { font-size: 14px; }
+@media (max-width: 600px) {
+  .linked { padding: 10px; }
+  .linked button { white-space: normal; }
+}

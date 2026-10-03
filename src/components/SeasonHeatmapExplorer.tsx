@@ -44,9 +44,7 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
   const matches = resource?.status !== "ready" || sameIdentity(resource.data, selection);
   const data = resource?.status === "ready" && matches ? resource.data : null;
   const t = heatmapCopy(data, locale);
-  const selected = data ? [...data.zones, ...data.residuals].find(row => row.id === selectedId) ?? null : null;
   const status = !matches ? "error" : resource?.status ?? "unavailable";
-  const noBaseline = data && (!data.benchmark || data.zones.some(row => !row.leagueAverage));
   function choose(next: HeatmapIdentity) {
     if (sameIdentity(next, selection)) return;
     setSelection(next); setSelectedId(null);
@@ -67,43 +65,60 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
       </div>
     </div>
     <div className={styles.sectionHeading}><h3>{t.title}</h3>{data && <span data-season-total="true">{percent(data.totals.fga ? data.totals.fgm / data.totals.fga : null)} · {data.totals.fgm} / {data.totals.fga}</span>}</div>
-    {data ? <>
-      <div className={styles.modeSelector} role="group" aria-label={t.mode}>
-        {(["reference", "percentage", "volume"] as const).map(value => <button type="button" key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>{t[value]}</button>)}
-      </div>
-      {data.status === "archive-summary" && data.archive && <ArchiveContext data={data} locale={locale} />}
-      <div className={styles.content}>
-        <div className={styles.visual}>
-          <SeasonHeatmapCourt data={data} mode={mode} locale={locale} selectedId={selected?.id ?? null} onSelect={setSelectedId} detailsId={detailsId} />
-          <Legend mode={mode} locale={locale} neutral={Boolean(noBaseline) || data.zones.some(row => row.fga === 0)} />
-          <div className={styles.reading}><span>{mode === "volume" ? t.shareRead : t.read}</span><span>{t.low}</span></div>
-          <p className={styles.note}>{mode === "reference" ? t.benchmark : mode === "volume" ? `${t.attempts}: ${data.coverage.seasonAttemptDenominator} ${locale === "zh" ? "次出手" : "attempts"}.` : locale === "zh" ? "颜色表示实际命中率，不与联盟基准比较。" : "Colors show absolute FG%, without a league comparison."}</p>
-          {mode === "reference" && noBaseline && <p className={styles.note}>{t.noBaseline}</p>}
-          <p className={styles.note}>{t.schematic}</p>
-        </div>
-        <aside className={styles.details} id={detailsId} aria-label={t.details} aria-live="polite" aria-atomic="true">
-          {selected ? <ZoneDetails row={selected} data={data} locale={locale} /> : <div className={styles.emptyDetails}><span className={styles.detailEyebrow}>{t.details}</span><h4>{t.hint}</h4><p>{locale === "zh" ? "点击球场分区，或使用下方分区列表。" : "Tap the court or use the zone list below."}</p><p>{t.low}</p></div>}
-        </aside>
-      </div>
-      {data.residuals.length > 0 && <section className={styles.residuals} aria-label={t.residual}>
-        <h4>{t.residual}</h4><p className={styles.note}>{t.residualNote}</p>
-        <div>{data.residuals.map(row => <ZoneButton row={row} data={data} mode={mode} selectedId={selected?.id ?? null} locale={locale} onSelect={setSelectedId} detailsId={detailsId} key={row.id} />)}</div>
-      </section>}
-      <details className={styles.zoneList}>
-        <summary>{t.allZones} <span>{data.zones.length}</span></summary>
-        <div className={styles.listRows}>{data.zones.map(row => <ZoneButton row={row} data={data} mode={mode} selectedId={selected?.id ?? null} locale={locale} onSelect={setSelectedId} detailsId={detailsId} key={row.id} />)}</div>
-      </details>
-      <footer className={styles.footer}><span>{data.coverage.aggregate === "full-season-reconciled" ? t.full : t.partial}</span><span>{data.coverage.normalZoneAttempts} {locale === "zh" ? "分区出手" : "mapped attempts"}{data.coverage.residualAttempts > 0 ? ` + ${data.coverage.residualAttempts} ${locale === "zh" ? "未映射出手" : "unmapped"}` : ""} = {data.coverage.seasonAttemptDenominator}</span><p>{t.point}</p>{data.source && <p><a className={styles.sourceLink} href={data.source.url} target="_blank" rel="noreferrer">{t.source}</a><span> · {t.sourceDate}: {data.source.capturedAtUtc?.slice(0, 10) ?? data.source.observedAtWindowUtc?.[0].slice(0, 10) ?? t.missing} UTC</span></p>}{data.status === "archive-summary" && data.archive && <>
-        <p>{locale === "zh" ? "档案整体比赛日期" : "Archive-wide game dates"}: {data.archive.sourceCoverage.from} – {data.archive.sourceCoverage.to} · {locale === "zh" ? "来源元数据核验日期" : "Source metadata observed"}: {data.archive.metadataObservedAtUtc.slice(0, 10)} UTC</p>
-        {data.benchmark?.kind === "weighted-archive-counts-not-official-displayed-LA" && <p>{locale === "zh" ? "联盟参考范围" : "League reference period"}: {data.benchmark.season} · {typeName(data.benchmark.seasonType)} · {data.benchmark.from} – {data.benchmark.to}. {data.benchmark.shotBearingGames} {locale === "zh" ? "场有投篮记录的比赛" : "shot-bearing games"}; {data.benchmark.leagueFgm} / {data.benchmark.leagueFga} {locale === "zh" ? "联盟命中 / 出手" : "league makes / attempts"}.</p>}
-      </>}</footer>
-    </> : <div className={styles.state} role={status === "error" ? "alert" : "status"} aria-busy={status === "loading"}>
+    {data ? <SeasonHeatmapBody data={data} locale={locale} mode={mode} onModeChange={setMode} selectedId={selectedId} onSelect={setSelectedId} detailsId={detailsId} /> : <div className={styles.state} role={status === "error" ? "alert" : "status"} aria-busy={status === "loading"}>
       <span className={styles.detailEyebrow}>{selection.season} · {typeName(selection.seasonType)}</span>
       <p>{!seasons.length ? t.empty : !matches ? t.wrong : status === "loading" ? t.loading : status === "error" ? t.error : t.unavailable}</p>
       {status === "error" && onRequest && <button type="button" onClick={() => onRequest(selection, "retry")}>{t.retry}</button>}
       <small>{t.known}</small>
     </div>}
   </section>;
+}
+
+/** Shared validated court presentation, without player/season controls or fetching. */
+export function SeasonHeatmapBody({ data, locale, mode, onModeChange, selectedId, onSelect, detailsId, onDismissDetails, showZoneList = true }: {
+  data: SeasonHeatmapRendererDTO; locale: HeatmapLocale; mode: HeatmapMode;
+  onModeChange: (mode: HeatmapMode) => void; selectedId: string | null;
+  onSelect: (id: SeasonHeatmapDisplayRow["id"]) => void; detailsId: string;
+  /** Opt-in compact host: details appear only after a court/list click. */
+  onDismissDetails?: () => void;
+  showZoneList?: boolean;
+}) {
+  const t = heatmapCopy(data, locale);
+  const selected = [...data.zones, ...data.residuals].find(row => row.id === selectedId) ?? null;
+  const noBaseline = !data.benchmark || data.zones.some(row => !row.leagueAverage);
+  const typeName = (type: HeatmapSeasonType) => type === "Regular Season" ? t.regular : t.playoffs;
+  return <>
+      <div className={styles.modeSelector} role="group" aria-label={t.mode}>
+        {(["reference", "percentage", "volume"] as const).map(value => <button type="button" key={value} aria-pressed={mode === value} onClick={() => onModeChange(value)}>{t[value]}</button>)}
+      </div>
+      {data.status === "archive-summary" && data.archive && <ArchiveContext data={data} locale={locale} />}
+      <div className={styles.content} data-click-details={onDismissDetails ? "true" : undefined} onKeyDown={event => { if (event.key === "Escape" && onDismissDetails) { event.stopPropagation(); onDismissDetails(); } }}>
+        <div className={styles.visual}>
+          <SeasonHeatmapCourt data={data} mode={mode} locale={locale} selectedId={selected?.id ?? null} onSelect={onSelect} detailsId={detailsId} />
+          <Legend mode={mode} locale={locale} neutral={Boolean(noBaseline) || data.zones.some(row => row.fga === 0)} />
+          <div className={styles.reading}><span>{mode === "volume" ? t.shareRead : t.read}</span><span>{t.low}</span></div>
+          <p className={styles.note}>{mode === "reference" ? t.benchmark : mode === "volume" ? `${t.attempts}: ${data.coverage.seasonAttemptDenominator} ${locale === "zh" ? "次出手" : "attempts"}.` : locale === "zh" ? "颜色表示实际命中率，不与联盟基准比较。" : "Colors show absolute FG%, without a league comparison."}</p>
+          {mode === "reference" && noBaseline && <p className={styles.note}>{t.noBaseline}</p>}
+          <p className={styles.note}>{t.schematic}</p>
+        </div>
+        {(!onDismissDetails || selected) && <aside data-heatmap-details="true" className={styles.details} id={detailsId} aria-label={t.details} aria-live="polite" aria-atomic="true">
+          {onDismissDetails && <button type="button" onClick={onDismissDetails} className="min-h-11 min-w-11 text-accent">{locale === "zh" ? "关闭详情" : "Close details"}</button>}
+          {selected ? <ZoneDetails row={selected} data={data} locale={locale} /> : <div className={styles.emptyDetails}><span className={styles.detailEyebrow}>{t.details}</span><h4>{t.hint}</h4><p>{locale === "zh" ? "点击球场分区，或使用下方分区列表。" : "Tap the court or use the zone list below."}</p><p>{t.low}</p></div>}
+        </aside>}
+      </div>
+      {data.residuals.length > 0 && <section className={styles.residuals} aria-label={t.residual}>
+        <h4>{t.residual}</h4><p className={styles.note}>{t.residualNote}</p>
+        <div>{data.residuals.map(row => <ZoneButton row={row} data={data} mode={mode} selectedId={selected?.id ?? null} locale={locale} onSelect={onSelect} detailsId={detailsId} key={row.id} />)}</div>
+      </section>}
+      {showZoneList && <details className={styles.zoneList}>
+        <summary>{t.allZones} <span>{data.zones.length}</span></summary>
+        <div className={styles.listRows}>{data.zones.map(row => <ZoneButton row={row} data={data} mode={mode} selectedId={selected?.id ?? null} locale={locale} onSelect={onSelect} detailsId={detailsId} key={row.id} />)}</div>
+      </details>}
+      <footer className={styles.footer}><span>{data.coverage.aggregate === "full-season-reconciled" ? t.full : t.partial}</span><span>{data.coverage.normalZoneAttempts} {locale === "zh" ? "分区出手" : "mapped attempts"}{data.coverage.residualAttempts > 0 ? ` + ${data.coverage.residualAttempts} ${locale === "zh" ? "未映射出手" : "unmapped"}` : ""} = {data.coverage.seasonAttemptDenominator}</span><p>{t.point}</p>{data.source && <p><a className={styles.sourceLink} href={data.source.url} target="_blank" rel="noreferrer">{t.source}</a><span> · {t.sourceDate}: {data.source.capturedAtUtc?.slice(0, 10) ?? data.source.observedAtWindowUtc?.[0].slice(0, 10) ?? t.missing} UTC</span></p>}{data.status === "archive-summary" && data.archive && <>
+        <p>{locale === "zh" ? "档案整体比赛日期" : "Archive-wide game dates"}: {data.archive.sourceCoverage.from} – {data.archive.sourceCoverage.to} · {locale === "zh" ? "来源元数据核验日期" : "Source metadata observed"}: {data.archive.metadataObservedAtUtc.slice(0, 10)} UTC</p>
+        {data.benchmark?.kind === "weighted-archive-counts-not-official-displayed-LA" && <p>{locale === "zh" ? "联盟参考范围" : "League reference period"}: {data.benchmark.season} · {typeName(data.benchmark.seasonType)} · {data.benchmark.from} – {data.benchmark.to}. {data.benchmark.shotBearingGames} {locale === "zh" ? "场有投篮记录的比赛" : "shot-bearing games"}; {data.benchmark.leagueFgm} / {data.benchmark.leagueFga} {locale === "zh" ? "联盟命中 / 出手" : "league makes / attempts"}.</p>}
+      </>}</footer>
+    </>;
 }
 function Legend({ mode, locale, neutral }: { mode: HeatmapMode; locale: HeatmapLocale; neutral: boolean }) {
   const t = copy[locale];

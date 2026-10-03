@@ -1,24 +1,15 @@
 "use client";
 
-// Career Arc — the interactive heart of the tool. Two linked visualizations:
-//   (1) CareerTrendChart — per-season stat trend (metric toggle, peak season)
-//   (2) a season SCRUBBER driving CareerCourt — a half-court shot-zone heatmap
-//       for the scrubbed season, with that season's shooting splits beside it.
-// Career rows come from /api/player (the proxy with the breaker + ESPN
-// fallback); per-season shots come from /api/player-shots. Both endpoints work
-// from the browser; stats.nba.com blocks the server, so all fetching is here.
+// The career scrubber owns selection; the linked court reads validated local
+// archive summaries for that exact player and regular season.
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { usePlayerCareer } from "@/lib/usePlayerCareer";
-import { playerShotRequestUrl, requestPlayerShotData } from "@/lib/player-shot-request";
-import { createLatestRequestGate } from "@/lib/latest-request";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
-import { aggregateZoneStats } from "@/lib/shot-zones";
 import CareerTrendChart, { type MetricKey } from "./CareerTrendChart";
-import CareerCourt from "./CareerCourt";
-import { AbsoluteShotLegend, ShotSampleCoverage } from "@/components/ShotSampleContext";
+import CareerSeasonHeatmap from "./CareerSeasonHeatmap";
 import PlayerPicker from "./PlayerPicker";
 import type { CareerSeason } from "./types";
 
@@ -26,13 +17,6 @@ interface Props {
   playerId: number;
   playerName: string;
   teamTricode: string;
-}
-
-interface ShotRow {
-  x: number;
-  y: number;
-  shotDistance: number;
-  shotResult: string;
 }
 
 // Traded seasons yield one row per team plus a combined "TOT" row. Keep one
@@ -70,71 +54,9 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
   const selectedIndex = Math.min(selection ?? Math.max(0, seasons.length - 1), Math.max(0, seasons.length - 1));
   const setSelectedIndex = (value: number) => setSelection(value);
 
-  // ---- Shots for the selected season ----
-  const [rawShots, setShots] = useState<ShotRow[]>([]);
-  const [shotContext, setShotContext] = useState("");
-  const [shotLoading, setShotLoading] = useState(false);
-  const [shotError, setShotError] = useState("");
-  const [shotGames, setShotGames] = useState<{ loaded: number; total: number } | null>(null);
-  const shotGate = useRef(createLatestRequestGate());
-
-  const selectedSeason = seasons && seasons[selectedIndex] ? seasons[selectedIndex] : null;
+  const selectedSeason = seasons[selectedIndex] ?? null;
   const seasonId = selectedSeason?.SEASON_ID ?? "";
   const seasonTeam = selectedSeason?.TEAM_ABBREVIATION ?? "";
-  // "TOT" (traded) has no single team for the shot API — fall back to the
-  // player's current tricode so we at least try the current season.
-  const shotTeam = seasonTeam && seasonTeam !== "TOT" ? seasonTeam : teamTricode;
-  const shotKey = `${playerId}:${seasonId}:${shotTeam}`;
-  const shots = useMemo(() => shotContext === shotKey ? rawShots : [], [shotContext, shotKey, rawShots]);
-  const displayShotLoading = shotLoading || (!!seasonId && shotContext !== shotKey);
-  const displayShotError = shotContext === shotKey ? shotError : "";
-
-  const fetchShots = useCallback(async () => {
-    setShotContext(shotKey);
-    setShots([]);
-    setShotGames(null);
-    if (!seasonId || !shotTeam) {
-      shotGate.current.cancel();
-      setShotLoading(false);
-      setShots([]);
-      setShotError(isZh ? "该赛季无投篮数据" : "No shot data for this season");
-      return;
-    }
-    const request = shotGate.current.begin();
-    setShotLoading(true);
-    setShotError("");
-    try {
-      const data = await requestPlayerShotData(playerShotRequestUrl(playerId, seasonTeam === "TOT" ? "TOT" : shotTeam, seasonId, "regular"), request.signal);
-      if (!request.isCurrent()) return;
-      const list = data.shots;
-      setShots(list);
-      setShotGames({ loaded: data.gamesLoaded, total: data.totalGames });
-      if (list.length === 0) {
-        setShotError(isZh ? "可用比赛中没有该球员的投篮出手记录。" : "No field-goal shot records for this player in the available games.");
-      }
-    } catch {
-      if (!request.isCurrent()) return;
-      setShots([]);
-      setShotError(isZh ? "加载投篮数据失败" : "Failed to load shot data");
-    } finally {
-      if (request.isCurrent()) setShotLoading(false);
-    }
-  }, [playerId, shotTeam, seasonTeam, seasonId, shotKey, isZh]);
-
-  useEffect(() => {
-    if (!seasonId) return;
-    // fetchShots is memoized on [playerId, shotTeam, seasonId, isZh], so this
-    // re-runs exactly when the scrubbed season changes. It toggles its own
-    // loading state — intentional dep-change refetch.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchShots();
-    const gate = shotGate.current;
-    return () => gate.cancel();
-  }, [fetchShots, seasonId]);
-
-  const zoneStats = useMemo(() => aggregateZoneStats(shots), [shots]);
-  const overallMade = useMemo(() => shots.filter((s) => s.shotResult === "Made").length, [shots]);
-  const overallPct = shots.length > 0 ? (overallMade / shots.length) * 100 : 0;
 
   const fmtPct = (v: number | null | undefined) =>
     typeof v === "number" && Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : "—";
@@ -249,16 +171,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
             <span className="w-1 h-4 bg-accent rounded-full" />
             {isZh ? "赛季投篮热区" : "Season Shot Zones"}
           </h3>
-          {shots.length > 0 && (
-            <span className="text-xs text-text-secondary">
-              {overallMade}/{shots.length} FG ({overallPct.toFixed(1)}%)
-              {shotGames && shotGames.loaded > 0 && (
-                <span className="text-text-secondary/60 ml-1">
-                  · {shotGames.loaded}/{shotGames.total} {isZh ? "场" : "games"}
-                </span>
-              )}
-            </span>
-          )}
+
         </div>
 
         {/* Scrubber */}
@@ -300,42 +213,8 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
           </div>
         </div>
 
-        <ShotSampleCoverage
-          requestUrl={playerShotRequestUrl(playerId, seasonTeam === "TOT" ? "TOT" : shotTeam, seasonId, "regular")}
-          games={shotContext === shotKey && !shotLoading ? shotGames ?? undefined : undefined}
-          isZh={isZh}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(200px,260px)] gap-4 items-start">
-          {/* Court */}
-          <div className="relative min-h-[260px]">
-            {displayShotLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-card/60 rounded-lg text-text-secondary text-sm">
-                {isZh ? "加载投篮数据…" : "Loading shots…"}
-              </div>
-            )}
-            {!displayShotLoading && shots.length === 0 ? (
-              <div className="h-[300px] flex flex-col items-center justify-center text-center gap-2 border border-dashed border-border rounded-lg">
-                <p className="text-text-secondary text-sm">{displayShotError || (isZh ? "该赛季无投篮数据" : "No shot data for this season")}</p>
-                {displayShotError && <button type="button" onClick={() => void fetchShots()} className="text-accent text-xs hover:underline">{isZh ? "重试投篮数据" : "Retry shot data"}</button>}
-                <p className="text-text-secondary/60 text-xs max-w-[280px]">
-                  {isZh
-                    ? "投篮覆盖取决于可用的比赛数据；图表留空不表示没有出手。"
-                    : "Shot coverage depends on available game feeds; an empty chart does not mean zero attempts."}
-                </p>
-              </div>
-            ) : !displayShotLoading && !displayShotError && shots.length > 0 ? (
-              <>
-                <AbsoluteShotLegend isZh={isZh} />
-                <CareerCourt
-                  zoneStats={zoneStats}
-                  overallPct={overallPct}
-                  isZh={isZh}
-                  seasonLabel={seasonId}
-                />
-              </>
-            ) : null}
-          </div>
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_220px] gap-4 items-start">
+          <CareerSeasonHeatmap playerId={playerId} season={seasonId} locale={isZh ? "zh" : "en"} />
 
           {/* Season shooting splits */}
           <div className="space-y-2">
@@ -359,16 +238,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
                 </div>
               ))}
             </div>
-            {shots.length > 0 && (
-              <div className="bg-accent/5 border border-accent/15 rounded-lg px-2.5 py-2 mt-2">
-                <p className="text-[9px] font-mono uppercase tracking-wider text-text-secondary/70">
-                  {isZh ? "可用样本命中率" : "Available-sample FG"}
-                </p>
-                <p className="text-sm font-bold font-mono tabular-nums text-accent">
-                  {overallPct.toFixed(1)}% <span className="text-text-secondary font-normal">({overallMade}/{shots.length})</span>
-                </p>
-              </div>
-            )}
+
           </div>
         </div>
       </div>

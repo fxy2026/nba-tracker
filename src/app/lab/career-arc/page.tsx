@@ -9,11 +9,9 @@ import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RelatedPages from "@/components/RelatedPages";
 
-// The interactive arc (career trend + season-scrubbed shot zones) fetches all
-// of its data on the client through /api/player + /api/player-shots — the
-// stats.nba.com career/shot endpoints block Vercel IPs server-side, exactly
-// like the /player/[id] page. So we resolve only the player's NAME on the
-// server (for metadata + header) and hand the heavy chart off to the client.
+// Resolve the name for metadata here. The client loads career rows through
+// /api/player and links the scrubber to validated local archive summaries
+// through /api/player-season-heatmap, without per-game shot requests.
 const CareerArc = nextDynamic(() => import("./CareerArc"));
 
 // LeBron James — the default subject when no ?id is supplied.

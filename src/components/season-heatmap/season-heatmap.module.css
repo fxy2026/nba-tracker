@@ -76,3 +76,6 @@
 /* Three narrow categories keep normal-size labels above the real baseline. */
 .courtCallout { cursor: pointer; }
 .explorer { --heat-callout-line: var(--border-strong, #ccd5e1); }
+
+/* Linked career court keeps optional click-open details below the court. */
+.content[data-click-details="true"] { grid-template-columns: minmax(0, 1fr); }
