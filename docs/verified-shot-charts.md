@@ -30,11 +30,14 @@ feet relative to the basket: `xFeet = xLegacy / 10`, `yFeet = yLegacy / 10`.
 Positive x is right in the official top-hoop view; positive y goes toward
 midcourt. This exactly follows the NBA site's own served chart code.
 
-Both teams share a normalized basket. The scene does not claim the teams were
-attacking the same physical end. Negative y positions and six genuine (0,0)
-tip-layups remain unchanged. No jitter, mirroring by team/period or point
-clamping is permitted. The source supplies no flight path, release height or
-tracking coordinates above the floor, so none are represented as real data.
+Source coordinates share a normalized basket; they are never rewritten to infer
+attacking direction. The full-court display applies an explicitly standardized
+rigid transform in feet: away `(5.25 + y, 25 - x)`, home `(88.75 - y, 25 + x)`
+on a 94 × 50 court. SVG adds 3 ft of border and scales by 10. Thus away is always
+left and home right, not a claim about the actual attacking end in any period.
+Negative y and genuine (0,0) positions remain exact. No jitter, clamping, record
+dropping or inferred ball flight is permitted. Display bounds expand for genuine
+outliers instead of clipping them. Half focus uses the original top-hoop view.
 
 The source's `shotDistance` has 21 zero entries, including 15 three-pointers.
 It is deliberately excluded from the display contract. The official numeric
@@ -84,8 +87,9 @@ including fractional seconds at the boundary. Per-team period field-goal points
 plus independently verified made free throws equal the official period scores;
 period totals exactly reconcile to the final. Source row order remains intact.
 The existing OT1 / 加时1 filter, shot selection and list labels are tested with
-these real records. The primary court stays top-down and Three is still loaded
-only after the optional 3D control is chosen.
+these real records. The comparison explorer is entirely SVG, with no canvas,
+Three import, WebGL probe or animation loop in its dependency path. The older
+optional 3D component is retained separately but is not mounted by this explorer.
 
 New evidence files record 350 exact shot rows / 3,500 fields, 57 official roster
 identities, and 42 played-player PDF rows. Numeric NBA person IDs come from the
@@ -99,3 +103,22 @@ No new source/PBP payload, trajectory, provider request or paid quota is added.
 Every original score sequence, period archive, player/career archive, screenshot
 asset, dependency and top-down rendering file is preserved unchanged. New captures
 still need independent review and an explicit integrity allowlist entry.
+
+## Full-court comparison UI
+
+The shared period/result controls are always visible, with independent away/home
+player selectors. Per-team FG made/attempts/percentage follows player + period
+selection and deliberately ignores the result visibility filter. The separately
+labeled shown-shot count follows every filter and the current focus. Zero attempts
+show a dash plus 0/0 and “No attempts,” never an invented percentage.
+
+Full / away-half / home-half switches preserve both player selections. Team colors
+identify sides; filled circles mean made and hollow circles mean missed. Lakers
+purple and Spurs charcoal remain readable against maple. The court is one keyboard
+stop: arrows browse every filtered shot, Home/End jump, Escape clears. A separately
+accessible list and exact-location cycling expose genuine overlaps without moving
+points. Mobile full-view glyphs enlarge without changing their centers.
+
+The static court and marker layers are memoized. Hover updates only selection and
+tooltip presentation. Source and coverage disclosures, source clocks, OT labels,
+existing scores and unavailable-game behavior remain unchanged.

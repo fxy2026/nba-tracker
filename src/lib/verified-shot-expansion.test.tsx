@@ -161,7 +161,7 @@ describe("reviewed overtime clocks, presentation and source provenance", () => {
   it.each(["en", "zh"] as const)("renders exact coverage and top-down-first without initial Three (%s)", locale => {
     const data = getVerifiedShotChart(getGame("0042500173"))!;
     const html = renderToStaticMarkup(<LocaleProvider initialLocale={locale}><ShotChartExplorer data={data} /></LocaleProvider>);
-    expect(html).not.toContain('<option value="5">'); // Extra filters start closed.
+    expect(html).toContain('<option value="5">'); // Shared period filters remain visible.
     expect(html).not.toContain("Q5");
     expect(html).toContain("177/177");
     expect(html).toContain('data-court-state="flat"');

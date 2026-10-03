@@ -38,13 +38,13 @@ describe("3D shot court geometry and interaction",()=>{
   });
   it("server-renders useful filters, source, coverage, and top-down points without loading WebGL",()=>{
     const html=renderToStaticMarkup(<LocaleProvider initialLocale="en"><ShotChartExplorer data={chart}/></LocaleProvider>);
-    expect(html).toContain("Both teams");expect(html).toContain("All players");expect(html).toContain("2/2");expect(html).toContain("NBA official game charts");
-    expect(html).toContain("not ball flight");expect(html).toContain("Browse every shot");expect(html).toContain("data-court-state=\"flat\"");expect(html).toContain("Solid circles: made. Crosses: missed.");
+    expect(html).toContain("Two teams. One court.");expect(html).toContain("All players");expect(html).toContain("2/2");expect(html).toContain("NBA official game charts");
+    expect(html).toContain("not ball flight");expect(html).toContain("Browse every shot");expect(html).toContain("data-court-state=\"flat\"");expect(html).toContain("Filled circles: made. Hollow circles: missed.");
     expect(html).not.toContain("PT11M");expect(html).not.toContain("<canvas");expect(html).not.toContain("Loading the 3D court");
   });
   it("provides Chinese controls and explicit normalization copy",()=>{
     const html=renderToStaticMarkup(<LocaleProvider initialLocale="zh"><ShotChartExplorer data={chart}/></LocaleProvider>);
-    expect(html).toContain("3D 球场");expect(html).toContain("两队统一朝向同一篮筐");expect(html).toContain("查看逐次投篮");
+    expect(html).toContain("全场对比");expect(html).toContain("客队在左、主队在右");expect(html).toContain("查看逐次投篮");
   });
   it("keeps server archives outside client imports and lazy-loads Three",()=>{
     const view=fs.readFileSync(path.resolve("src/components/shot-chart/CourtView.tsx"),"utf8");

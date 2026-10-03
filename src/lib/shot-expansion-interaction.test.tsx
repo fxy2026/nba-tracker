@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import schedule from "@/data/schedule-2025-26.json";
 import ShotChartExplorer from "@/components/ShotChartExplorer";
-import CourtView from "@/components/shot-chart/CourtView";
+import CourtView from "@/components/shot-chart/ComparisonCourtView";
 import { getVerifiedShotChart } from "./verified-shot-chart-archive";
 import type { CourtShot } from "./court-shots";
 
@@ -39,9 +39,7 @@ describe("reviewed OT1 filters and truthful shot details", () => {
   it.each(["en", "zh"] as const)("keeps all 15 OT attempts, source clocks and correct result counts (%s)", locale => {
     harness.locale = locale;
     let tree = render();
-    click(tree, locale === "en" ? "Filters" : "筛选");
-    tree = render();
-    const period = elements(tree, "select")[1];
+    const period = elements(tree, "select").find(select=>select.props["aria-label"]===(locale === "en" ? "Period" : "节次"))!;
     expect(elements(period, "option").map(text)).toEqual(locale === "en" ? ["Whole game", "Q1", "Q2", "Q3", "Q4", "OT1"] : ["全场", "第 1 节", "第 2 节", "第 3 节", "第 4 节", "加时1"]);
     period.props.onChange!({ target: { value: "5" } });
     tree = render();
@@ -58,7 +56,7 @@ describe("reviewed OT1 filters and truthful shot details", () => {
     tree = render();
     expect(elements(tree, "li")).toHaveLength(15);
     expect(elements(tree, "li").every(row => text(row).includes(locale === "en" ? "OT1" : "加时1"))).toBe(true);
-    elements(tree, "select")[2].props.onChange!({ target: { value: "Made" } });
+    elements(tree, "select").find(select=>select.props["aria-label"]===(locale === "en" ? "Result" : "结果"))!.props.onChange!({ target: { value: "Made" } });
     tree = render();
     expect(elements(tree, CourtView)[0].props.shots).toHaveLength(5);
     expect(elements(tree, CourtView)[0].props.selectedId).toBeNull();

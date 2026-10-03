@@ -96,3 +96,70 @@
 .hoverCard { position: absolute; z-index: 4; width: 212px; pointer-events: none; display: grid; gap: 3px; padding: 10px 12px; color: var(--text-primary); background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px; box-shadow: var(--shadow-elevated); font-size: 11px; }
 .hoverCard strong { font-size: 12px; }
 .hoverCard > span { color: var(--text-secondary); }
+
+/* Full-court comparison: quiet ink, regulation maple, two equal team columns. */
+.comparisonHeader { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 0 0 18px; }
+.comparisonEyebrow { color: var(--text-secondary); font-size: 9px; letter-spacing: .2em; font-weight: 700; }
+.comparisonHeader p { margin: 3px 0 0; font-size: 18px; font-weight: 550; letter-spacing: -.035em; }
+.sharedFilters { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.sharedFilters label { min-width: 0; }
+.sharedFilters select { height: 38px; max-width: 145px; padding: 0 26px 0 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 12px; }
+.sharedFilters option,.comparisonPlayer option { color: var(--text-primary); background: var(--bg-card); }
+.comparisonClear { min-height: 38px; padding: 5px; border: 0; background: none; font-size: 11px !important; color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; }
+.teamComparison { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.teamComparisonCard { min-width: 0; position: relative; padding: 15px 18px 13px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); }
+.teamComparisonTitle { display: flex; align-items: center; justify-content: space-between; gap: 6px; color: var(--text-secondary); font-size: 9px; letter-spacing: .08em; }
+.teamIdentity { display: flex; align-items: center; gap: 7px; color: var(--text-primary); font-size: 14px; font-weight: 700; letter-spacing: .06em; }
+.teamIdentity i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--team-color); }
+.comparisonPlayer { display: block; padding: 9px 0 10px; }
+.comparisonPlayer select { width: 100%; min-width: 0; min-height: 40px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; color: var(--text-primary); background: transparent; padding: 5px 20px 5px 0; font-size: 13px; }
+.teamShooting { display: flex; align-items: center; gap: 13px; padding: 3px 0 13px; font-variant-numeric: tabular-nums; }
+.teamShooting strong { font-size: clamp(26px,3.7vw,36px); line-height: 1; font-weight: 550; letter-spacing: -.06em; }
+.teamShooting small { margin-left: 2px; font-size: .44em; font-weight: 400; color: var(--text-secondary); }
+.teamShooting > span { display: grid; gap: 1px; color: var(--text-secondary); font-size: 9px; }
+.teamShooting b { color: var(--text-primary); font-size: 12px; font-weight: 500; }
+.shootingTrack { width: 100%; height: 3px; overflow: hidden; border-radius: 2px; background: var(--border); }
+.shootingTrack i { display: block; height: 100%; background: var(--team-color); border-radius: inherit; }
+.comparisonControls { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0 8px; flex-wrap: wrap; }
+.focusModes { display: flex; padding: 3px; gap: 3px; border-radius: 9px; background: var(--bg-secondary); }
+.focusModes button { min-height: 37px; padding: 7px 13px; border: 0; border-radius: 6px; color: var(--text-secondary); background: transparent; font-size: 11px; white-space: nowrap; }
+.focusModes button[aria-pressed="true"] { color: var(--text-primary); background: var(--bg-hover); box-shadow: var(--shadow-sm); }
+.comparisonLegend { display: flex; align-items: center; gap: 13px; font-size: 10px; color: var(--text-secondary); }
+.comparisonLegend span { display: inline-flex; align-items: center; gap: 5px; }
+.comparisonLegend i { display: inline-block; width: 7px; height: 7px; border: 1.5px solid currentColor; border-radius: 50%; background: currentColor; }
+.comparisonLegend .hollowDot { background: transparent; }
+.comparisonCount { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 10px; padding: 2px 1px 11px; color: var(--text-secondary); font-size: 10px; line-height: 1.5; }
+.comparisonCount > span:last-child { opacity: .8; }
+.comparisonVisual { border: 1px solid var(--border); border-radius: 13px; background: var(--bg-secondary); padding: 8px 8px 0; overflow: hidden; }
+.comparisonViewport { position: relative; width: 100%; }
+.comparisonOverlay { display: block; width: 100%; height: 100%; touch-action: pan-y pinch-zoom; user-select: none; cursor: crosshair; }
+.comparisonOverlay:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 9px; }
+.comparisonHint { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 10px; padding: 8px 6px 11px; font-size: 10px; color: var(--text-secondary); }
+.focusVisual .comparisonViewport { width: min(100%,620px); margin-inline: auto; }
+@media(max-width:640px) {
+  .comparisonHeader { align-items: flex-start; gap: 11px; padding-bottom: 13px; }
+  .comparisonHeader p { font-size: 16px; }
+  .sharedFilters { gap: 6px; }
+  .sharedFilters select { min-height: 44px; font-size: 16px; max-width: 150px; padding-left: 9px; }
+  .teamComparison { gap: 9px; }
+  .teamComparisonCard { padding: 12px 11px 11px; border-radius: 10px; }
+  .teamComparisonTitle { align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px; }
+  .teamIdentity { font-size: 13px; }
+  .comparisonPlayer { padding: 5px 0 8px; }
+  .comparisonPlayer select { font-size: 16px; min-height: 44px; padding-right: 10px; }
+  .teamShooting { flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-bottom: 10px; }
+  .teamShooting strong { font-size: 28px; }
+  .teamShooting > span { font-size: 8px; }
+  .teamShooting b { font-size: 11px; }
+  .comparisonControls { gap: 9px; padding-top: 13px; }
+  .focusModes { width: 100%; gap: 1px; }
+  .focusModes button { min-height: 44px; flex: 1; font-size: 10px; padding: 7px 5px; }
+  .comparisonLegend { margin-left: auto; }
+  .comparisonCount { font-size: 9px; }
+  .comparisonVisual { padding: 3px 3px 0; border-radius: 9px; }
+  .comparisonHint { font-size: 9px; gap: 3px; padding: 7px 6px 9px; }
+}
+
+@media(max-width:640px) { .comparisonViewport[data-court-focus="full"] .comparisonGlyph { r: 6; stroke-width: 1.8; } }
+
+.comparisonResult { color: var(--text-primary); white-space: nowrap; font-size: 11px; }
