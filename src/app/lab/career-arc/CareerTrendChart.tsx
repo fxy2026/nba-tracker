@@ -9,6 +9,7 @@
 //    click-to-jump so the chart drives the scrubber too (two-way link).
 
 import { memo, useMemo } from "react";
+import { useChartWidth } from "@/lib/use-chart-width";
 import type { CareerSeason } from "./types";
 
 export type MetricKey = "PTS" | "REB" | "AST" | "FG_PCT" | "MIN";
@@ -39,6 +40,7 @@ export default memo(function CareerTrendChart({
   onSelectIndex,
   isZh,
 }: Props) {
+  const chart = useChartWidth(600);
   const m = METRICS.find((x) => x.key === metric)!;
 
   // Keep every season on the x-axis (the scrubber indexes the same array), but
@@ -64,7 +66,7 @@ export default memo(function CareerTrendChart({
       key={mt.key}
       onClick={() => onMetricChange(mt.key)}
       aria-pressed={metric === mt.key}
-      className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+      className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 py-1 text-xs sm:text-[11px] font-medium rounded-md transition-all cursor-pointer ${
         metric === mt.key
           ? "bg-accent text-white shadow-md"
           : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
@@ -96,9 +98,9 @@ export default memo(function CareerTrendChart({
     );
   }
 
-  const w = 600;
-  const h = 200;
-  const pad = { top: 16, right: 14, bottom: 28, left: 38 };
+  const w = chart.mobile ? chart.width : 600;
+  const h = chart.mobile ? 240 : 200;
+  const pad = chart.mobile ? { top: 16, right: 24, bottom: 32, left: 42 } : { top: 16, right: 14, bottom: 28, left: 38 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
 
@@ -118,7 +120,13 @@ export default memo(function CareerTrendChart({
   const areaPath = `${linePath} L${x(lastP.i).toFixed(1)},${pad.top + plotH} L${x(first.i).toFixed(1)},${pad.top + plotH} Z`;
 
   const labelStep = Math.max(1, Math.ceil(n / 8));
-  const showLabel = (i: number) => i === n - 1 || i === selectedIndex || (i % labelStep === 0 && n - 1 - i >= labelStep);
+  // Reserve space for the selected season first, then accept only labels
+  // whose full season strings fit. Every season remains in the plot/scrubber.
+  const mobileLabels = new Set<number>();
+  for (const i of [selectedIndex, n - 1, 0, ...seasons.map((_, i) => i)]) {
+    if (i >= 0 && i < n && [...mobileLabels].every(j => Math.abs(x(i) - x(j)) >= 52)) mobileLabels.add(i);
+  }
+  const showLabel = (i: number) => chart.mobile ? mobileLabels.has(i) : i === n - 1 || i === selectedIndex || (i % labelStep === 0 && n - 1 - i >= labelStep);
 
   const selValue = values[selectedIndex];
 
@@ -136,6 +144,7 @@ export default memo(function CareerTrendChart({
       <div className="p-4">
         <div className="flex flex-wrap items-center gap-1 mb-3">{pillButtons}</div>
         <svg
+          ref={chart.ref}
           viewBox={`0 0 ${w} ${h}`}
           className="w-full"
           preserveAspectRatio="xMidYMid meet"
@@ -150,7 +159,7 @@ export default memo(function CareerTrendChart({
           {[0, domainMax / 2, domainMax].map((v, i) => (
             <g key={i}>
               <line x1={pad.left} y1={y(v)} x2={w - pad.right} y2={y(v)} stroke="var(--border)" strokeWidth={0.5} />
-              <text x={pad.left - 4} y={y(v)} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={9}>
+              <text x={pad.left - 4} y={y(v)} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={chart.mobile ? 12 : 9}>
                 {fmtTick(v)}
               </text>
             </g>
@@ -224,7 +233,7 @@ export default memo(function CareerTrendChart({
                 y={h - 8}
                 textAnchor="middle"
                 fill={i === selectedIndex ? "var(--accent-amber)" : "var(--text-secondary)"}
-                fontSize={8}
+                fontSize={chart.mobile ? 11 : 8}
                 fontWeight={i === selectedIndex ? 700 : 400}
               >
                 {s.SEASON_ID}

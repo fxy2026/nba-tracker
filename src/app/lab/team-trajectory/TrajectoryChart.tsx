@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
+import { useChartWidth } from "@/lib/use-chart-width";
 import { useLocale } from "@/components/LocaleProvider";
 import type { TeamTrajectory, TrajectoryPoint } from "@/lib/team-trajectory";
 
@@ -49,6 +50,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
   const [selected, setSelected] = useState<string | null>(null);
   const [hover, setHover] = useState<Hover | null>(null);
 
+  const chart = useChartWidth(720);
   const m = METRICS.find((x) => x.key === metric)!;
 
   // Teams shown for the active conference filter, keeping only those with data.
@@ -71,11 +73,11 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
   // when the plotted data changes, or it floats at a position with no line.
   useEffect(() => {
     setHover(null);
-  }, [metric, conf, selected]);
+  }, [metric, conf, selected, chart.width]);
 
   // SVG geometry — viewBox scales to container width; pad leaves room for axes.
-  const w = 720;
-  const h = 320;
+  const w = chart.mobile ? chart.width : 720;
+  const h = chart.mobile ? 300 : 320;
   const pad = { top: 16, right: 16, bottom: 30, left: 42 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
@@ -117,7 +119,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
       }),
     // toX/toY close over yMin/yMax/xMax which all derive from these deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [visible, metric, yMin, yMax, xMax]
+    [visible, metric, yMin, yMax, xMax, plotW, plotH]
   );
 
   const fmtMetric = (v: number) =>
@@ -141,8 +143,14 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
     return ticks;
   }, [xMax]);
 
+  const shownXTicks: number[] = [];
+  for (let i = xTicks.length - 1; i >= 0; i--) {
+    const g = xTicks[i];
+    if (!chart.mobile || shownXTicks.length === 0 || toX(shownXTicks[0]) - toX(g) >= 30) shownXTicks.unshift(g);
+  }
+
   const pillBase =
-    "px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer";
+    "min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer";
 
   if (visible.length === 0) {
     return (
@@ -245,7 +253,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
           {effectiveSelected && (
             <button
               onClick={() => setSelected(null)}
-              className="ml-auto text-[11px] text-text-secondary hover:text-accent transition-colors cursor-pointer underline underline-offset-2"
+              className="min-h-11 sm:min-h-0 ml-auto text-[11px] text-text-secondary hover:text-accent transition-colors cursor-pointer underline underline-offset-2"
             >
               {isZh ? "清除高亮" : "Clear highlight"}
             </button>
@@ -256,6 +264,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
       {/* Chart */}
       <div className="relative">
         <svg
+          ref={chart.ref}
           viewBox={`0 0 ${w} ${h}`}
           className="w-full touch-none"
           preserveAspectRatio="xMidYMid meet"
@@ -290,7 +299,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
                   textAnchor="end"
                   dominantBaseline="central"
                   fill="var(--text-secondary)"
-                  fontSize={9}
+                  fontSize={chart.mobile ? 12 : 9}
                 >
                   {fmtTick(v)}
                 </text>
@@ -298,7 +307,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
             );
           })}
           {/* X-axis ticks + labels */}
-          {xTicks.map((g) => (
+          {shownXTicks.map((g) => (
             <g key={`x-${g}`}>
               <line
                 x1={toX(g)}
@@ -314,7 +323,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
                 y={h - 8}
                 textAnchor="middle"
                 fill="var(--text-secondary)"
-                fontSize={9}
+                fontSize={chart.mobile ? 12 : 9}
               >
                 {g}
               </text>
@@ -416,7 +425,7 @@ export default memo(function TrajectoryChart({ trajectories, maxGames }: Props) 
                   ? `${t.city} ${t.name} · ${last.wins}-${last.losses}`
                   : `${t.city} ${t.name}`
               }
-              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium transition-all cursor-pointer ${
+              className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium transition-all cursor-pointer ${
                 isSel
                   ? "bg-bg-hover text-text-primary ring-1 ring-accent"
                   : effectiveSelected !== null

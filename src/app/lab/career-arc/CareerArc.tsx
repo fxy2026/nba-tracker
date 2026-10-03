@@ -274,7 +274,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
               onChange={(e) => setSelectedIndex(Number(e.target.value))}
               disabled={singleSeason}
               aria-label={isZh ? "选择赛季" : "Select season"}
-              className="flex-1 accent-[var(--accent)] cursor-pointer disabled:cursor-default"
+              className="min-h-11 sm:min-h-0 flex-1 accent-[var(--accent)] cursor-pointer disabled:cursor-default"
             />
             <span className="text-xs font-mono text-text-secondary shrink-0 w-14 text-right">{lastSeason}</span>
           </div>
@@ -283,7 +283,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
               onClick={() => setSelectedIndex(Math.max(0, selectedIndex - 1))}
               disabled={selectedIndex === 0}
               aria-label={isZh ? "上一个赛季" : "Previous season"}
-              className="px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
+              className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
             >
               ‹
             </button>
@@ -293,7 +293,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
               onClick={() => setSelectedIndex(Math.min(seasons.length - 1, selectedIndex + 1))}
               disabled={selectedIndex === seasons.length - 1}
               aria-label={isZh ? "下一个赛季" : "Next season"}
-              className="px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
+              className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 py-0.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-default"
             >
               ›
             </button>
@@ -324,7 +324,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
                     : "Shot coverage depends on available game feeds; an empty chart does not mean zero attempts."}
                 </p>
               </div>
-            ) : (
+            ) : !displayShotLoading && !displayShotError && shots.length > 0 ? (
               <>
                 <AbsoluteShotLegend isZh={isZh} />
                 <CareerCourt
@@ -334,7 +334,7 @@ export default function CareerArc({ playerId, playerName, teamTricode }: Props) 
                   seasonLabel={seasonId}
                 />
               </>
-            )}
+            ) : null}
           </div>
 
           {/* Season shooting splits */}

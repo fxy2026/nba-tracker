@@ -3,6 +3,7 @@
 import { memo, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useChartWidth } from "@/lib/use-chart-width";
 import { useLocale } from "@/components/LocaleProvider";
 import { playerHeadshotUrl } from "@/lib/teamUrls";
 
@@ -28,17 +29,18 @@ interface Props {
   steps: number;
 }
 
-const W = 760;
-const H = 360;
-const PAD = { top: 18, right: 16, bottom: 30, left: 34 };
-const PLOT_W = W - PAD.left - PAD.right;
-const PLOT_H = H - PAD.top - PAD.bottom;
-
 export default memo(function TakeoverChart({ series, quarterStarts, steps }: Props) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   // Hovered x-step (action index). null = nothing hovered.
   const [hover, setHover] = useState<number | null>(null);
+
+  const chart = useChartWidth(760);
+  const W = chart.mobile ? chart.width : 760;
+  const H = chart.mobile ? 280 : 360;
+  const PAD = { top: 18, right: 16, bottom: 30, left: 34 };
+  const PLOT_W = W - PAD.left - PAD.right;
+  const PLOT_H = H - PAD.top - PAD.bottom;
 
   // Navigating between games is a soft nav that reuses this instance — clear a
   // stale hover index or it reads `points[oldIndex]` (undefined → NaN coords).
@@ -63,6 +65,18 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
   const tickStep = maxPts <= 20 ? 5 : maxPts <= 40 ? 10 : 15;
   for (let v = 0; v <= maxPts; v += tickStep) yTicks.push(v);
 
+  // Keep every period boundary, but avoid overlapping localized labels and
+  // clamp their centers so the final overtime label stays inside the SVG.
+  const labelWidth = (label: string) => Array.from(label).length * 12;
+  const labelX = (q: { index: number; label: string }) => chart.mobile
+    ? Math.max(labelWidth(q.label) / 2 + 2, Math.min(W - labelWidth(q.label) / 2 - 2, toX(q.index)))
+    : toX(q.index);
+  const mobileLabels = new Set<number>();
+  for (let i = quarterStarts.length - 1; i >= 0; i--) {
+    const q = quarterStarts[i];
+    if ([...mobileLabels].every(j => Math.abs(labelX(q) - labelX(quarterStarts[j])) >= (labelWidth(q.label) + labelWidth(quarterStarts[j].label)) / 2 + 8)) mobileLabels.add(i);
+  }
+
   const hoverX = hover != null ? toX(hover) : 0;
 
   // Map a pointer x onto the nearest x-step. Shared by move + down so a tap
@@ -83,7 +97,7 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
             <Link
               key={s.personId}
               href={`/player/${s.personId}`}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="min-h-11 sm:min-h-0 flex items-center gap-2 group cursor-pointer"
             >
               <span
                 className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 bg-bg-hover"
@@ -112,6 +126,7 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
       </div>
 
       <svg
+        ref={chart.ref}
         viewBox={`0 0 ${W} ${H}`}
         className="w-full select-none touch-none"
         preserveAspectRatio="xMidYMid meet"
@@ -129,7 +144,7 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
           return (
             <g key={`y${v}`}>
               <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--border)" strokeWidth={0.3} />
-              <text x={PAD.left - 4} y={y} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={8}>
+              <text x={PAD.left - 4} y={y} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={chart.mobile ? 12 : 8}>
                 {v}
               </text>
             </g>
@@ -137,7 +152,7 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
         })}
 
         {/* Quarter boundary lines */}
-        {quarterStarts.map((q) => (
+        {quarterStarts.map((q, i) => (
           <g key={q.label}>
             <line
               x1={toX(q.index)}
@@ -148,9 +163,9 @@ export default memo(function TakeoverChart({ series, quarterStarts, steps }: Pro
               strokeWidth={0.5}
               strokeDasharray="3,3"
             />
-            <text x={toX(q.index)} y={H - 8} textAnchor="middle" fill="var(--text-secondary)" fontSize={8}>
+            {(!chart.mobile || mobileLabels.has(i)) && <text x={labelX(q)} y={H - 8} textAnchor="middle" fill="var(--text-secondary)" fontSize={chart.mobile ? 12 : 8}>
               {q.label}
-            </text>
+            </text>}
           </g>
         ))}
 

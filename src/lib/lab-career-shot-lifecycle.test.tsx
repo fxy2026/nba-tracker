@@ -107,3 +107,21 @@ it('failed Career Arc request never preserves previous selection coverage',async
  fetcher.mockRejectedValueOnce(new Error('unavailable'));select(0);await settle();
  expect(nodes(tree).find(n=>n.type===ShotSampleCoverage)?.props.games).toBeUndefined();expect(text(tree)).toContain('Failed to load shot data');
 });
+
+it('pending shots never render a zero-percent court or color legend, including a season switch',async()=>{
+ let resolve!:(value:unknown)=>void;
+ fetcher.mockImplementationOnce(()=>new Promise(done=>resolve=done));
+ flush();await settle();
+ expect(text(tree)).toContain('Loading shots');
+ expect(nodes(tree).some(n=>n.type===CareerCourt||n.type===AbsoluteShotLegend)).toBe(false);
+ resolve(response(made));await settle();
+ expect(nodes(tree).find(n=>n.type===CareerCourt)?.props.overallPct).toBe(100);
+ fetcher.mockImplementationOnce(()=>new Promise(()=>{}));select(0);await settle();
+ expect(text(tree)).toContain('Loading shots');
+ expect(nodes(tree).some(n=>n.type===CareerCourt||n.type===AbsoluteShotLegend)).toBe(false);
+});
+it('failed shots keep the honest error and retry without rendering a zero-percent court',async()=>{
+ fetcher.mockRejectedValue(new Error('unavailable'));flush();await settle();
+ expect(text(tree)).toContain('Failed to load shot data');expect(text(tree)).toContain('Retry shot data');
+ expect(nodes(tree).some(n=>n.type===CareerCourt||n.type===AbsoluteShotLegend)).toBe(false);
+});
