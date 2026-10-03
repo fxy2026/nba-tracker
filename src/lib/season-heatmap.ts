@@ -1,4 +1,5 @@
 import type { Advanced14ZoneId } from "./season-heatmap-geometry";
+import type { CourtBasic12ZoneId } from "./season-heatmap-court-zones";
 
 export type HeatmapSeasonType = "Regular Season" | "Playoffs";
 export interface HeatmapIdentity {
@@ -87,7 +88,7 @@ export interface HeatmapReconciliation {
   aggregateCoverage: "full-season-reconciled" | "source-overall-only";
 }
 export interface SeasonHeatmapDisplayRow extends HeatmapCounts {
-  id: Advanced14ZoneId | "backcourt" | "unclassified";
+  id: Advanced14ZoneId | CourtBasic12ZoneId | "backcourt" | "unclassified" | "classification-conflict";
   sourceZoneId: string;
   fgPct: number | null;
   fgPctDisplay: string | null;
@@ -96,12 +97,49 @@ export interface SeasonHeatmapDisplayRow extends HeatmapCounts {
   attemptShare: number;
   attemptShareDisplay: string | null;
   status: "has-attempts" | "no-attempts";
-  leagueAverage: { displayedPct: string; provenance: "source-displayed-unverified-scope" } | null;
+  /** Archive summaries use explicit SHOT_TYPE counts, never 24+ ft. membership. */
+  fg3m?: number;
+  fg3a?: number;
+  leagueAverage: { displayedPct: string; provenance: "source-displayed-unverified-scope" } | {
+    displayedPct: string;
+    provenance: "weighted-archive-counts-not-official-displayed-LA";
+    leagueFgm: number;
+    leagueFga: number;
+  } | null;
+}
+export type HeatmapArchiveCoverageStatus = "not-officially-reconciled" | "official-shooting-totals-match" | "official-shooting-totals-mismatch";
+/** Source-summary context only. No original rows, coordinates or private evidence. */
+export interface HeatmapArchiveMetadata {
+  fg3m: number;
+  fg3a: number;
+  shotBearingGames: number;
+  officialGp: number | null;
+  coverageStatus: HeatmapArchiveCoverageStatus;
+  /** Archive-wide game dates, not this player's individual game-date range. */
+  sourceCoverage: { from: string; to: string };
+  metadataObservedAtUtc: string;
+  officialControl: (HeatmapCounts & {
+    fg3m: number;
+    fg3a: number;
+    url: string;
+    capturedAtUtc: string;
+  }) | null;
+}
+export interface HeatmapArchiveBenchmark {
+  kind: "weighted-archive-counts-not-official-displayed-LA";
+  season: string;
+  seasonType: HeatmapSeasonType;
+  from: string;
+  to: string;
+  shotBearingGames: number;
+  leagueFgm: number;
+  leagueFga: number;
 }
 /** Safe, explicit projection for a future renderer. Contains neither evidence nor raw points. */
 export interface SeasonHeatmapRendererDTO extends HeatmapIdentity {
-  geometryVersion: "nba-advanced14-svg-v1";
-  status: "private-preview-only" | "verified-aggregate";
+  /** Legacy official source-chart geometry stays distinct from archive court zones. */
+  geometryVersion: "nba-advanced14-svg-v1" | "nba-court-basic12-v1";
+  status: "private-preview-only" | "verified-aggregate" | "archive-summary";
   source?: {
     url: string;
     capturedAtUtc: string | null;
@@ -111,7 +149,7 @@ export interface SeasonHeatmapRendererDTO extends HeatmapIdentity {
   residuals: SeasonHeatmapDisplayRow[];
   totals: HeatmapCounts;
   coverage: {
-    aggregate: HeatmapReconciliation["aggregateCoverage"];
+    aggregate: HeatmapReconciliation["aggregateCoverage"] | "archive-source-only";
     rawPoints: "not-captured";
     normalZoneAttempts: number;
     residualAttempts: number;
@@ -122,7 +160,9 @@ export interface SeasonHeatmapRendererDTO extends HeatmapIdentity {
     independentlyVerifiedScope: null;
     leagueFgm: null;
     leagueFga: null;
-  } | null;
+  } | HeatmapArchiveBenchmark | null;
+  /** Present only for archive-summary; official renderer DTOs remain unchanged. */
+  archive?: HeatmapArchiveMetadata;
 }
 
 export type SeasonHeatmapArchiveResource =

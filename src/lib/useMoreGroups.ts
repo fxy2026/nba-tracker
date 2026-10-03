@@ -83,6 +83,7 @@ export function useMoreGroups(): PaletteGroup[] {
       color: "#3B82F6",
       items: [
         { href: "/search", label: t.nav.playerSearch, icon: Search, keywords: "search player" },
+        { href: "/shot-archive", label: isZh ? "历史投篮档案" : "Historical Shot Archive", icon: Target, keywords: "historical shot archive shooting heatmap player season 历史 投篮 热区" },
         { href: "/rookie-watch", label: isZh ? "新秀榜" : "Rookie Watch", icon: Sparkles, keywords: "rookie watch first year" },
         { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", icon: GraduationCap, keywords: "draft classes year" },
         { href: "/draft/2026", label: isZh ? "2026 选秀" : "2026 Draft", icon: Sparkles, keywords: "2026 draft picks board lottery" },

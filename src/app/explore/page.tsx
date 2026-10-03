@@ -104,6 +104,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
       color: "#3B82F6",
       features: [
         { href: "/search", label: isZh ? "球员搜索" : "Player Search", description: isZh ? "按姓名查找任意现役球员" : "Find any active player by name", icon: Sparkles },
+        { href: "/shot-archive", label: isZh ? "历史投篮档案" : "Historical Shot Archive", description: isZh ? "2005–2025 赛季起始年 · 有记录球员的逐赛季投篮热区" : "2005–2025 season starts · available player-season shooting zones", icon: Target },
         { href: "/rookie-watch", label: isZh ? "新秀关注" : "Rookie Watch", description: isZh ? "顶级一年级与二年级球员" : "Top first- and second-year players", icon: Sparkles },
         { href: "/draft-classes", label: isZh ? "选秀届" : "Draft Classes", description: isZh ? "按选秀年份分组球员" : "Players grouped by draft year", icon: GraduationCap },
         { href: "/draft/2026", label: isZh ? "2026 选秀" : "2026 Draft", description: isZh ? "2026 年选秀逐顺位结果" : "Every pick of the 2026 Draft", icon: Sparkles },

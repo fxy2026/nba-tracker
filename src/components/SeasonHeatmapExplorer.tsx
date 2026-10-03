@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import type { HeatmapIdentity, HeatmapSeasonType, SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from "@/lib/season-heatmap";
 import SeasonHeatmapCourt from "./season-heatmap/SeasonHeatmapCourt";
-import { copy, datasetKey, HEATMAP_COLORS, LOW_SAMPLE_ATTEMPTS, percent, rate, referenceDifference, sameIdentity, share, zoneColor, zoneName, type HeatmapLocale, type HeatmapMode } from "./season-heatmap/season-heatmap-display";
+import { copy, datasetKey, heatmapCopy, HEATMAP_COLORS, LOW_SAMPLE_ATTEMPTS, percent, rate, referenceDifference, sameIdentity, share, zoneColor, zoneName, type HeatmapLocale, type HeatmapMode } from "./season-heatmap/season-heatmap-display";
 import styles from "./season-heatmap/season-heatmap.module.css";
 
 export type SeasonHeatmapResource =
@@ -32,7 +32,7 @@ export default function SeasonHeatmapExplorer(props: SeasonHeatmapExplorerProps)
   return <Explorer key={props.player.id} {...props} />;
 }
 function Explorer({ player, locale = "en", datasets, resources, initialSelection, initialMode = "reference", publication = "preview", onRequest }: SeasonHeatmapExplorerProps) {
-  const t = copy[locale], id = useId(), detailsId = `${id}-details`;
+  const id = useId(), detailsId = `${id}-details`;
   const metadata = datasets.filter(dataset => dataset.playerId === player.id);
   const seasons = [...new Set(metadata.map(dataset => dataset.season))].sort().reverse();
   const [selection, setSelection] = useState<HeatmapIdentity>(() => ({ playerId: player.id, season: initialSelection?.season ?? seasons[0] ?? "", seasonType: initialSelection?.seasonType ?? "Regular Season" }));
@@ -42,6 +42,7 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
   const resource = currentMetadata?.availability === "available" ? resources[datasetKey(selection)] : undefined;
   const matches = resource?.status !== "ready" || sameIdentity(resource.data, selection);
   const data = resource?.status === "ready" && matches ? resource.data : null;
+  const t = heatmapCopy(data, locale);
   const selected = data ? [...data.zones, ...data.residuals].find(row => row.id === selectedId) ?? null : null;
   const status = !matches ? "error" : resource?.status ?? "unavailable";
   const noBaseline = data && (!data.benchmark || data.zones.some(row => !row.leagueAverage));
@@ -51,9 +52,9 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
     if (metadata.some(dataset => sameIdentity(dataset, next) && dataset.availability === "available")) onRequest?.(next, "select");
   }
   const typeName = (type: HeatmapSeasonType) => type === "Regular Season" ? t.regular : t.playoffs;
-  return <section className={styles.explorer} aria-labelledby={`${id}-heading`} lang={locale === "zh" ? "zh-CN" : "en"} data-season-heatmap={publication === "verified" ? "verified-aggregate" : "private-preview"}>
+  return <section className={styles.explorer} aria-labelledby={`${id}-heading`} lang={locale === "zh" ? "zh-CN" : "en"} data-season-heatmap={!data && publication === "verified" ? "unresolved-archive" : data?.status === "archive-summary" ? "archive-summary" : publication === "verified" ? "verified-aggregate" : "private-preview"}>
     <header className={styles.header}>
-      <div className={styles.eyebrow}><span>{t.archive}</span><span>{publication === "verified" ? t.verified : t.preview}</span></div>
+      <div className={styles.eyebrow}><span>{t.archive}</span><span>{!data && publication === "verified" ? locale === "zh" ? "投篮档案" : "SHOT ARCHIVE" : data?.status === "archive-summary" || publication === "verified" ? t.verified : t.preview}</span></div>
       <h2 id={`${id}-heading`}>{player.name}</h2>
       <div className={styles.identity}><span>{player.secondaryName}</span><span>{player.teamLabel}</span></div>
     </header>
@@ -71,6 +72,7 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
       <div className={styles.modeSelector} role="group" aria-label={t.mode}>
         {(["reference", "percentage", "volume"] as const).map(value => <button type="button" key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>{t[value]}</button>)}
       </div>
+      {data.status === "archive-summary" && data.archive && <ArchiveContext data={data} locale={locale} />}
       <div className={styles.content}>
         <div className={styles.visual}>
           <SeasonHeatmapCourt data={data} mode={mode} locale={locale} selectedId={selected?.id ?? null} onSelect={setSelectedId} detailsId={detailsId} />
@@ -92,7 +94,10 @@ function Explorer({ player, locale = "en", datasets, resources, initialSelection
         <summary>{t.allZones} <span>{data.zones.length}</span></summary>
         <div className={styles.listRows}>{data.zones.map(row => <ZoneButton row={row} data={data} mode={mode} selectedId={selected?.id ?? null} locale={locale} onSelect={setSelectedId} detailsId={detailsId} key={row.id} />)}</div>
       </details>
-      <footer className={styles.footer}><span>{data.coverage.aggregate === "full-season-reconciled" ? t.full : t.partial}</span><span>{data.coverage.normalZoneAttempts} {locale === "zh" ? "分区出手" : "mapped attempts"}{data.coverage.residualAttempts > 0 ? ` + ${data.coverage.residualAttempts} ${locale === "zh" ? "未映射出手" : "unmapped"}` : ""} = {data.coverage.seasonAttemptDenominator}</span><p>{t.point}</p>{data.source && <p><a className={styles.sourceLink} href={data.source.url} target="_blank" rel="noreferrer">{t.source}</a><span> · {t.sourceDate}: {data.source.capturedAtUtc?.slice(0, 10) ?? data.source.observedAtWindowUtc?.[0].slice(0, 10) ?? t.missing} UTC</span></p>}</footer>
+      <footer className={styles.footer}><span>{data.coverage.aggregate === "full-season-reconciled" ? t.full : t.partial}</span><span>{data.coverage.normalZoneAttempts} {locale === "zh" ? "分区出手" : "mapped attempts"}{data.coverage.residualAttempts > 0 ? ` + ${data.coverage.residualAttempts} ${locale === "zh" ? "未映射出手" : "unmapped"}` : ""} = {data.coverage.seasonAttemptDenominator}</span><p>{t.point}</p>{data.source && <p><a className={styles.sourceLink} href={data.source.url} target="_blank" rel="noreferrer">{t.source}</a><span> · {t.sourceDate}: {data.source.capturedAtUtc?.slice(0, 10) ?? data.source.observedAtWindowUtc?.[0].slice(0, 10) ?? t.missing} UTC</span></p>}{data.status === "archive-summary" && data.archive && <>
+        <p>{locale === "zh" ? "档案整体比赛日期" : "Archive-wide game dates"}: {data.archive.sourceCoverage.from} – {data.archive.sourceCoverage.to} · {locale === "zh" ? "来源元数据核验日期" : "Source metadata observed"}: {data.archive.metadataObservedAtUtc.slice(0, 10)} UTC</p>
+        {data.benchmark?.kind === "weighted-archive-counts-not-official-displayed-LA" && <p>{locale === "zh" ? "联盟参考范围" : "League reference period"}: {data.benchmark.season} · {typeName(data.benchmark.seasonType)} · {data.benchmark.from} – {data.benchmark.to}. {data.benchmark.shotBearingGames} {locale === "zh" ? "场有投篮记录的比赛" : "shot-bearing games"}; {data.benchmark.leagueFgm} / {data.benchmark.leagueFga} {locale === "zh" ? "联盟命中 / 出手" : "league makes / attempts"}.</p>}
+      </>}</footer>
     </> : <div className={styles.state} role={status === "error" ? "alert" : "status"} aria-busy={status === "loading"}>
       <span className={styles.detailEyebrow}>{selection.season} · {typeName(selection.seasonType)}</span>
       <p>{!seasons.length ? t.empty : !matches ? t.wrong : status === "loading" ? t.loading : status === "error" ? t.error : t.unavailable}</p>
@@ -113,10 +118,38 @@ function ZoneButton({ row, data, mode, selectedId, locale, onSelect, detailsId }
   </button>;
 }
 function ZoneDetails({ row, data, locale }: { row: SeasonHeatmapDisplayRow; data: SeasonHeatmapRendererDTO; locale: HeatmapLocale }) {
-  const t = copy[locale], delta = referenceDifference(row, data.benchmark), residual = row.id === "backcourt" || row.id === "unclassified";
+  const t = heatmapCopy(data, locale), delta = referenceDifference(row, data.benchmark), residual = row.id === "backcourt" || row.id === "unclassified" || row.id === "classification-conflict";
   return <><span className={styles.detailEyebrow}>{t.details}</span><h4>{zoneName(row.id, locale)}</h4><div className={styles.detailRate}>{rate(row)}</div>
-    <dl><div><dt>{t.made}</dt><dd>{row.fgm} / {row.fga}</dd></div><div><dt>{t.attempts}</dt><dd>{share(row)}<small>{row.fga} / {data.coverage.seasonAttemptDenominator}</small></dd></div><div><dt>{t.la}</dt><dd>{data.benchmark && row.leagueAverage ? `${row.leagueAverage.displayedPct}%` : t.missing}</dd></div><div><dt>{t.difference}</dt><dd>{delta === null ? t.missing : `${delta > 0 ? "+" : ""}${delta.toFixed(1)} ${t.pp}`}</dd></div></dl>
+    <dl><div><dt>{t.made}</dt><dd>{row.fgm} / {row.fga}</dd></div>{data.status === "archive-summary" && <div><dt>{locale === "zh" ? "明确三分命中 / 出手" : "Explicit 3P made / attempts"}</dt><dd>{row.fg3m} / {row.fg3a}</dd></div>}<div><dt>{t.attempts}</dt><dd>{share(row)}<small>{row.fga} / {data.coverage.seasonAttemptDenominator}</small></dd></div><div><dt>{t.la}</dt><dd>{data.benchmark && row.leagueAverage ? `${row.leagueAverage.displayedPct}%` : t.missing}{row.leagueAverage?.provenance === "weighted-archive-counts-not-official-displayed-LA" && <small>{row.leagueAverage.leagueFgm} / {row.leagueAverage.leagueFga}</small>}</dd></div><div><dt>{t.difference}</dt><dd>{delta === null ? t.missing : `${delta > 0 ? "+" : ""}${delta.toFixed(1)} ${t.pp}`}</dd></div></dl>
     {row.fga === 0 ? <p className={styles.note}>{t.none}</p> : row.fga < LOW_SAMPLE_ATTEMPTS && <p className={styles.lowSample}>{t.lowDetail}</p>}
     {residual && <p className={styles.note}>{t.residualNote}</p>}<p className={styles.note}>{t.benchmark}</p>
   </>;
+}
+
+function ArchiveContext({ data, locale }: { data: SeasonHeatmapRendererDTO; locale: HeatmapLocale }) {
+  const archive = data.archive!;
+  const zh = locale === "zh";
+  const control = archive.officialControl;
+  const shortfall = control && archive.coverageStatus === "official-shooting-totals-mismatch" ? {
+    fgm: control.fgm - data.totals.fgm,
+    fga: control.fga - data.totals.fga,
+    fg3m: control.fg3m - archive.fg3m,
+    fg3a: control.fg3a - archive.fg3a,
+  } : null;
+  const hasShortfall = shortfall && Object.values(shortfall).every(value => value >= 0) && Object.values(shortfall).some(value => value > 0);
+  const status = archive.coverageStatus === "official-shooting-totals-match"
+    ? zh ? "四项投篮总数与官方核验值一致；逐次投篮、分区与联盟覆盖完整性尚未独立核验。" : "The four shooting totals match the official control. Individual shots, zones and complete league coverage are not independently verified."
+    : archive.coverageStatus === "official-shooting-totals-mismatch"
+      ? zh ? "档案总数与官方核验值不一致；本图保留原始档案统计，不补造缺失投篮。" : "Archive totals differ from the official control. This chart preserves archive counts; missing shots are not invented."
+      : zh ? "档案总数尚未与官方赛季总数核验；不宣称全赛季完整覆盖。" : "Archive totals have not been reconciled to official season totals; complete season coverage is not claimed.";
+  return <div className={styles.archiveContext} data-archive-coverage={archive.coverageStatus}>
+    <p>{status}</p>
+    {hasShortfall && <p data-archive-shortfall="true">{zh
+      ? `档案较官方核验值少 ${shortfall.fgm} 次投篮命中、${shortfall.fga} 次出手；其中三分少 ${shortfall.fg3m} 次命中、${shortfall.fg3a} 次出手。缺口不分配到球场分区。`
+      : `Archive shortfall vs official control: ${shortfall.fgm} made field ${shortfall.fgm === 1 ? "goal" : "goals"} and ${shortfall.fga} ${shortfall.fga === 1 ? "attempt" : "attempts"}; ${shortfall.fg3m} made ${shortfall.fg3m === 1 ? "three-pointer" : "three-pointers"} and ${shortfall.fg3a} three-point ${shortfall.fg3a === 1 ? "attempt" : "attempts"}. The shortfall is not assigned to court zones.`}</p>}
+    <p>{zh ? "档案投篮命中 / 出手" : "Archive FG made / attempts"}: {data.totals.fgm} / {data.totals.fga}</p>
+    <p>{zh ? "档案三分命中 / 出手" : "Archive 3P made / attempts"}: {archive.fg3m} / {archive.fg3a} · {zh ? "有投篮记录的比赛" : "Shot-bearing games"}: {archive.shotBearingGames} · {zh ? "官方 GP" : "Official GP"}: {archive.officialGp ?? (zh ? "未提供" : "unavailable")}</p>
+    <p>{zh ? "有投篮记录的场数并非出场数，零出手比赛可能不在档案中。三分仅按明确 SHOT_TYPE 统计，不由 24+ 英尺分区推断。" : "Shot-bearing games are not GP: zero-attempt games may be absent. Three-pointers use explicit SHOT_TYPE, never 24+ ft. zone membership."}</p>
+    {archive.officialControl && <p><a className={styles.sourceLink} href={archive.officialControl.url} target="_blank" rel="noreferrer">{zh ? "官方投篮总数核验来源" : "Official shooting-total control"}</a>: {archive.officialControl.fgm} / {archive.officialControl.fga} FG · {archive.officialControl.fg3m} / {archive.officialControl.fg3a} 3P · {archive.officialControl.capturedAtUtc.slice(0, 10)} UTC</p>}
+  </div>;
 }

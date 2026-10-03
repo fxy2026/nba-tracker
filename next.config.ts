@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Compressed archives are server-only; never put them under public or import into client code.
+  outputFileTracingIncludes: {
+    "/api/player-season-heatmap": ["./src/data/historical-shot-archive/**/*.gz"],
+    "/api/player-season-shot-map": ["./src/data/historical-shot-archive/**/*.gz", "./src/data/historical-shot-spatial/**/*.gz"],
+    "/player/*": ["./src/data/historical-shot-archive/**/*.gz"],
+    "/shot-archive": ["./src/data/historical-shot-archive/player-season-catalog.json.gz"],
+    "/shot-archive/*": ["./src/data/historical-shot-archive/**/*.gz"],
+  },
   images: {
     remotePatterns: [
       {

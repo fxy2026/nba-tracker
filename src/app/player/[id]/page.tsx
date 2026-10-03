@@ -24,7 +24,7 @@ import { getAccolades } from "@/lib/playerAccolades";
 import nextDynamic from "next/dynamic";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
-import { getSeasonHeatmapCatalog, loadSeasonHeatmapArchive } from "@/lib/verified-season-heatmap-archive";
+import { getPlayerSeasonHeatmapCatalog, loadPlayerSeasonHeatmapArchive } from "@/lib/season-heatmap-catalog-server";
 
 // Heavy player subcomponents are code-split — each ships its own chunk
 // instead of bloating the player page bundle. They all fetch on mount,
@@ -88,10 +88,10 @@ export default async function PlayerPage({ params }: PageProps) {
   // enters the browser bundle.
   const accolades = getAccolades(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
-  const heatmapCatalog = getSeasonHeatmapCatalog(personId);
+  const heatmapCatalog = await getPlayerSeasonHeatmapCatalog(personId);
   const heatmapEntry = heatmapCatalog[0];
   const heatmapSelection = heatmapEntry ? { playerId: heatmapEntry.playerId, season: heatmapEntry.season, seasonType: heatmapEntry.seasonType } : null;
-  const heatmapResource = heatmapSelection ? loadSeasonHeatmapArchive(heatmapSelection) : null;
+  const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
   const seasons = player.toYear && player.fromYear ? parseInt(player.toYear) - parseInt(player.fromYear) + 1 : 0;
 
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.

@@ -14,6 +14,16 @@ function fixture(): SeasonHeatmapRendererDTO {
     benchmark: { kind: "source-displayed-unverified-scope", independentlyVerifiedScope: null, leagueFgm: null, leagueFga: null } };
 }
 function render(data = fixture(), locale: "en" | "zh" = "en") { return renderToStaticMarkup(<SeasonHeatmapExplorer player={{ id: data.playerId, name: "Test Player" }} datasets={[{ playerId: data.playerId, season: data.season, seasonType: data.seasonType, availability: "available" }]} resources={{ [datasetKey(data)]: { status: "ready", data } }} locale={locale} />); }
+function archiveFixture(): SeasonHeatmapRendererDTO {
+  const data = fixture();
+  data.status = "archive-summary"; data.coverage.aggregate = "archive-source-only";
+  data.source = { url: "https://raw.githubusercontent.com/fxy2026/nba_data/e829d4678be1e075f99e5d41a1c5f97089be446b/datasets/shotdetail_2001.tar.xz", capturedAtUtc: "2026-10-03T09:45:03Z", observedAtWindowUtc: null };
+  data.archive = { fg3m: 2, fg3a: 4, shotBearingGames: 35, officialGp: 36, coverageStatus: "official-shooting-totals-match", sourceCoverage: { from: "2001-10-01", to: "2002-06-30" }, metadataObservedAtUtc: "2026-10-03T10:47:00Z", officialControl: { ...data.totals, fg3m: 2, fg3a: 4, url: "https://www.nba.com/stats/player/999999/career?PerMode=Totals", capturedAtUtc: "2026-10-02T03:21:09Z" } };
+  data.benchmark = { kind: "weighted-archive-counts-not-official-displayed-LA", season: data.season, seasonType: data.seasonType, from: "2001-10-01", to: "2002-06-30", shotBearingGames: 1230, leagueFgm: 1440, leagueFga: 2940 };
+  for (const row of [...data.zones, ...data.residuals]) { row.fg3m = 0; row.fg3a = 0; row.leagueAverage = { provenance: "weighted-archive-counts-not-official-displayed-LA", displayedPct: "40.0", leagueFgm: 40, leagueFga: 100 }; }
+  Object.assign(data.residuals[0], { fg3m: 2, fg3a: 4 });
+  return data;
+}
 describe("season heatmap display rules", () => {
   it.each([["43.0", "40.0", 3, "near"], ["37.0", "40.0", -3, "near"], ["43.1", "40.0", 3.1, "above"], ["36.9", "40.0", -3.1, "below"], ["56.3", "53.3", 3, "near"], ["53.3", "56.3", -3, "near"]] as const)("compares displayed tenths exactly: %s vs %s", (fg, la, difference, color) => {
     const data = fixture(), row = { ...data.zones[0], fgPctDisplay: fg, leagueAverage: { ...data.zones[0].leagueAverage!, displayedPct: la } };
@@ -52,14 +62,13 @@ describe("season heatmap display rules", () => {
     expect(svg).not.toMatch(/textLength|lengthAdjust|scaleX/); expect(svg).not.toMatch(/<text[^>]*transform=/);
     const labels = [...svg.matchAll(/<g data-zone-label=[\s\S]*?<\/g>/g)]; expect(labels).toHaveLength(14); for (const label of labels) expect(label[0]).not.toContain("transform=");
   });
-  it("underpaints both warp seams with their adjacent baseline-zone colors", () => {
-    const data = fixture();
-    const left = data.zones.find(row => row.id === "left-center-24-plus")!, right = data.zones.find(row => row.id === "right-center-24-plus")!;
-    left.fgPctDisplay = "30.0"; right.fgPctDisplay = "41.0";
-    const svg = render(data).match(/<svg[\s\S]*?<\/svg>/)![0];
-    expect(svg).toContain(`data-display-underpaint="left" x="0" y="0" width="600" height="564" fill="${HEATMAP_COLORS.below}"`);
-    expect(svg).toContain(`data-display-underpaint="right" x="530" y="168" width="4" height="396" fill="${HEATMAP_COLORS.near}"`);
-    expect((svg.match(/data-zone-id=/g) ?? [])).toHaveLength(14);
+  it("uses a single coherent path per region with no warp, clipping strips or underpaint", () => {
+    const svg = render().match(/<svg[\s\S]*?<\/svg>/)![0];
+    expect(svg).not.toMatch(/data-display-underpaint|clipPath|matrix\(|transform=/);
+    expect((svg.match(/data-zone-fill=/g) ?? [])).toHaveLength(14);
+    expect((svg.match(/data-corner-leader=/g) ?? [])).toHaveLength(2);
+    expect(svg).toContain('data-display-geometry="coherent-advanced14-illustration-v2"');
+    expect(svg).toContain('data-court-markings="true"');
   });
   it("rejects a ready result under the wrong selection identity", () => {
     const data = fixture(), html = renderToStaticMarkup(<SeasonHeatmapExplorer player={{ id: 999999, name: "Test Player" }} datasets={[{ ...data, season: "2002-03", availability: "available" }]} resources={{ [datasetKey({ ...data, season: "2002-03" })]: { status: "ready", data } }} />);
@@ -69,8 +78,58 @@ describe("season heatmap display rules", () => {
     const data = fixture(), html = renderToStaticMarkup(<SeasonHeatmapExplorer player={{ id: data.playerId, name: "Test Player" }} datasets={[]} resources={{ [datasetKey(data)]: { status: "ready", data } }} />);
     expect(html).toContain("No season datasets"); expect(html).not.toContain("data-zone-id");
   });
+  it.each(["loading", "error", "unavailable"] as const)("keeps an unloaded public %s header source-neutral", status => {
+    const data = fixture();
+    for (const locale of ["en", "zh"] as const) {
+      const html = renderToStaticMarkup(<SeasonHeatmapExplorer player={{ id: data.playerId, name: "Test Player" }} datasets={[{ ...data, availability: "available" }]} resources={{ [datasetKey(data)]: { status } }} publication="verified" locale={locale} />);
+      expect(html).toContain(locale === "en" ? "SHOT ARCHIVE" : "投篮档案");
+      expect(html).toContain('data-season-heatmap="unresolved-archive"');
+      expect(html).not.toContain('data-season-heatmap="verified-aggregate"');
+      expect(html).not.toContain("OFFICIAL AGGREGATES"); expect(html).not.toContain("官方汇总");
+      expect(html).not.toContain("data-zone-id");
+    }
+  });
   it("retains the private and benchmark limitations in both languages", () => {
     expect(render()).toContain("PRIVATE PREVIEW"); expect(render()).toContain("not independently verified"); expect(render()).toContain("±3 percentage-point");
     expect(render(fixture(), "zh")).toContain("私人预览"); expect(render(fixture(), "zh")).toContain("尚未独立核验");
+  });
+});
+
+describe("archive-summary display rules", () => {
+  it.each(["en", "zh"] as const)("retains the same 14 schematic regions and non-spatial residuals (%s)", locale => {
+    const html = render(archiveFixture(), locale), svg = html.match(/<svg[\s\S]*?<\/svg>/)![0];
+    expect((svg.match(/data-zone-id=/g) ?? [])).toHaveLength(14);
+    expect((svg.match(/data-zone-label=/g) ?? [])).toHaveLength(14);
+    expect(svg).not.toContain('data-zone-id="backcourt"');
+    expect(html).toContain('data-list-zone="backcourt"'); expect(html).toContain('data-list-zone="unclassified"');
+    expect(html).toContain('data-season-heatmap="archive-summary"');
+    expect(html).not.toContain("Full-season aggregates reconciled"); expect(html).not.toContain("全赛季汇总已对账");
+    expect(html).not.toContain("OFFICIAL AGGREGATES"); expect(html).not.toContain("官方汇总");
+  });
+  it("shows weighted benchmark provenance, actual dates, explicit 3P and distinct GP counts", () => {
+    const html = render(archiveFixture());
+    for (const text of ["Archive league reference", "league zone makes ÷ attempts", "not independently verified", "Archive 3P made / attempts: 2 / 4", "Shot-bearing games: 35", "Official GP: 36", "zero-attempt games may be absent", "explicit SHOT_TYPE", "never 24+ ft.", "Archive-wide game dates: 2001-10-01", "Original download: 2026-10-03", "Source metadata observed: 2026-10-03", "League reference period: 2001-02", "1440 / 2940", "four shooting totals match"]) expect(html).toContain(text);
+    expect(html).not.toContain("Reference colors compare NBA-displayed LA");
+  });
+  it("discloses mismatched controls and unreconciled archive counts without implying official completeness", () => {
+    const data = archiveFixture(); data.archive!.coverageStatus = "official-shooting-totals-mismatch";
+    expect(render(data)).toContain("Archive totals differ from the official control");
+    expect(render(data)).toContain("missing shots are not invented");
+    Object.assign(data.archive!, { coverageStatus: "not-officially-reconciled", officialControl: null, officialGp: null });
+    expect(render(data)).toContain("Official GP: unavailable");
+    expect(render(data)).toContain("have not been reconciled to official season totals");
+  });
+  it("never compares archive colors using an official displayed-LA label", () => {
+    const data = archiveFixture();
+    expect(referenceDifference(data.zones[0], data.benchmark)).toBe(10);
+    expect(zoneColor(data.zones[0], "reference", data.benchmark)).toBe(HEATMAP_COLORS.above);
+    data.zones[0].leagueAverage = { displayedPct: "40.0", provenance: "source-displayed-unverified-scope" };
+    expect(referenceDifference(data.zones[0], data.benchmark)).toBeNull();
+    expect(zoneColor(data.zones[0], "reference", data.benchmark)).toBe(HEATMAP_COLORS.neutral);
+  });
+  it("keeps genuine archive zero-attempt zones neutral with absent FG%", () => {
+    const data = archiveFixture(); Object.assign(data.zones[0], { fgm: 0, fga: 0, fg3m: 0, fg3a: 0, fgPct: null, fgPctDisplay: null, attemptShare: 0, attemptShareDisplay: "0.0", status: "no-attempts" });
+    expect(render(data)).toContain("Center · under 8 ft: —, 0 / 0; Archive shot share 0.0%");
+    for (const mode of ["reference", "percentage", "volume"] as const) expect(zoneColor(data.zones[0], mode, data.benchmark)).toBe(HEATMAP_COLORS.neutral);
   });
 });

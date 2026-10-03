@@ -138,3 +138,52 @@ export const advanced14Geometry = [
   }
 ] as const;
 export type Advanced14ZoneId = typeof advanced14Geometry[number]["id"];
+
+/** Renderer-only revision. The immutable NBA evidence paths above remain unchanged.
+ * These shared circular boundaries illustrate source AREA | RANGE labels; they
+ * never classify shots, change counts, or claim independently verified NBA cuts. */
+export const SEASON_HEATMAP_DISPLAY_GEOMETRY_VERSION = "coherent-advanced14-illustration-v2" as const;
+export const seasonHeatmapCourt = { width: 600, height: 490, hoopX: 300, hoopY: 60, cornerX: 36, innerRadius: 96, middleRadius: 192, outerRadius: 285, viewBox: "0 -70 600 560" } as const;
+const degrees = Math.PI / 180;
+const clean = (n: number) => Number(n.toFixed(6));
+const point = (radius: number, angle: number): readonly [number, number] => [clean(300 + radius * Math.cos(angle * degrees)), clean(60 + radius * Math.sin(angle * degrees))];
+const xy = (p: readonly [number, number]) => `${p[0]},${p[1]}`;
+const at = (radius: number, angle: number) => xy(point(radius, angle));
+const topRight = (radius: number) => -Math.asin(60 / radius) / degrees;
+const topLeft = (radius: number) => 180 - topRight(radius);
+const cornerAngle = Math.acos(264 / seasonHeatmapCourt.outerRadius) / degrees;
+export const seasonHeatmapCornerY = point(285, cornerAngle)[1];
+// Every shared ring is split at the union of its adjoining radial boundaries.
+// Adjacent regions therefore reuse exactly the same endpoint pairs and radii.
+const ringCuts: Record<number, readonly number[]> = {
+  96: [topRight(96), 60, 120, topLeft(96)],
+  192: [topRight(192), 35, 60, 72, 108, 120, 145, topLeft(192)],
+  285: [cornerAngle, 35, 72, 108, 145, 180 - cornerAngle],
+};
+function arc(radius: number, from: number, to: number): string {
+  const cuts = ringCuts[radius].filter(a => a > Math.min(from, to) && a < Math.max(from, to));
+  if (from > to) cuts.reverse();
+  return [...cuts, to].map(angle => `A${radius},${radius},0,0,${from < to ? 1 : 0},${at(radius, angle)}`).join("");
+}
+const line = (radius: number, angle: number) => `L${at(radius, angle)}`;
+const start = (radius: number, angle: number) => `M${at(radius, angle)}`;
+const outerLeft = 180 - cornerAngle;
+const bottomLeft = clean(300 + (490 - 60) / Math.tan(108 * degrees));
+const bottomRight = clean(600 - bottomLeft);
+const displayPaths: Record<Advanced14ZoneId, string> = {
+  "center-under-8": `${start(96, topLeft(96))}${line(96, topRight(96))}${arc(96, topRight(96), topLeft(96))}Z`,
+  "left-8-16": `${start(192, topLeft(192))}${line(96, topLeft(96))}${arc(96, topLeft(96), 120)}${line(192, 120)}${arc(192, 120, topLeft(192))}Z`,
+  "center-8-16": `${start(96, 120)}${arc(96, 120, 60)}${line(192, 60)}${arc(192, 60, 120)}Z`,
+  "right-8-16": `${start(96, topRight(96))}${line(192, topRight(192))}${arc(192, topRight(192), 60)}${line(96, 60)}${arc(96, 60, topRight(96))}Z`,
+  "left-16-24": `M36,0${line(192, topLeft(192))}${arc(192, topLeft(192), 145)}${line(285, 145)}${arc(285, 145, outerLeft)}Z`,
+  "left-center-16-24": `${start(192, 145)}${arc(192, 145, 108)}${line(285, 108)}${arc(285, 108, 145)}Z`,
+  "center-16-24": `${start(192, 108)}${arc(192, 108, 72)}${line(285, 72)}${arc(285, 72, 108)}Z`,
+  "right-center-16-24": `${start(192, 72)}${arc(192, 72, 35)}${line(285, 35)}${arc(285, 35, 72)}Z`,
+  "right-16-24": `${start(192, topRight(192))}L564,0L564,${seasonHeatmapCornerY}${arc(285, cornerAngle, 35)}${line(192, 35)}${arc(192, 35, topRight(192))}Z`,
+  "left-24-plus": `M0,0H36V${seasonHeatmapCornerY}H0Z`,
+  "left-center-24-plus": `M0,${seasonHeatmapCornerY}H36${arc(285, outerLeft, 108)}L${bottomLeft},490H0Z`,
+  "center-24-plus": `${start(285, 108)}${arc(285, 108, 72)}L${bottomRight},490H${bottomLeft}Z`,
+  "right-center-24-plus": `${start(285, 72)}${arc(285, 72, cornerAngle)}H600V490H${bottomRight}Z`,
+  "right-24-plus": `M564,0H600V${seasonHeatmapCornerY}H564Z`,
+};
+export const advanced14DisplayGeometry = advanced14Geometry.map(({ id, sourceZoneId }) => ({ id, sourceZoneId, pathD: displayPaths[id] }));
