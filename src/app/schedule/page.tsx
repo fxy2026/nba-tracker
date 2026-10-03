@@ -131,7 +131,7 @@ export default async function SchedulePage({ searchParams }: PageProps) {
         <div className="space-y-8">
           {recentDates.map(({ dateStr, displayDate, games }) => (
             <div key={dateStr} className="schedule-section">
-              <div className="sticky top-16 bg-bg-primary/85 backdrop-blur-md py-2 z-10 mb-3 flex items-center gap-3">
+              <div className="sticky site-sticky-offset bg-bg-primary/85 backdrop-blur-md py-2 z-10 mb-3 flex items-center gap-3">
                 <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-primary">
                   {displayDate}
                 </h2>

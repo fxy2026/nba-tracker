@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef } from "react";
 import type { PeriodScore } from "@/lib/api";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -35,6 +35,7 @@ function toGameMinutes(period: number, clock: string): number {
 export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode, awayTricode, scoreEvents }: Props) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
+  const chartScrollRef = useRef<HTMLDivElement>(null);
   if (homePeriods.length === 0) return null;
 
   // Build data points: use play-by-play if available, else quarter-level
@@ -167,14 +168,14 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
   const last = points[points.length - 1];
 
   return (
-    <div className="glass-tile p-4 mt-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="glass-tile min-w-0 max-w-full p-4 mt-4">
+      <div className="flex flex-col items-start gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2">
           <span className="w-1 h-4 bg-accent-amber rounded-full" />
           {t.scoringFlow.title}
-          {isDetailed && <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-normal">{points.length} plays</span>}
+          {isDetailed && <span className="text-xs sm:text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-normal">{points.length} plays</span>}
         </h3>
-        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[10px] text-text-secondary justify-end">
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs sm:text-[10px] text-text-secondary sm:justify-end">
           {maxHomeLead > 0 && <span>{homeTricode} {t.scoringFlow.ledBy} {maxHomeLead}</span>}
           {maxAwayLead > 0 && <span>{awayTricode} {t.scoringFlow.ledBy} {maxAwayLead}</span>}
           {isDetailed && leadChanges > 0 && (
@@ -185,9 +186,25 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
           )}
         </div>
       </div>
+      <div className="mb-2 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold tabular-nums sm:hidden">
+        <span className="flex items-center gap-2 text-accent"><span className="h-0.5 w-4 bg-accent" aria-hidden="true" />{homeTricode} {last.home}</span>
+        <span className="flex items-center gap-2 text-success"><span className="h-0.5 w-4 bg-success" aria-hidden="true" />{awayTricode} {last.away}</span>
+      </div>
+      <p className="mb-2 text-xs leading-relaxed text-text-secondary sm:hidden">
+        {isZh ? "整场得分走势 · 左右滑动或使用方向键查看" : "Full-game scoring · Swipe or use arrow keys to explore"}
+      </p>
+      <div className="mb-2 flex flex-wrap gap-2 sm:hidden">
+        <button type="button" className="min-h-[44px] min-w-[44px] rounded-md border border-border px-3 text-xs text-text-secondary hover:text-text-primary" onClick={() => chartScrollRef.current?.scrollTo({ left: 0 })}>
+          {isZh ? "开场" : "Game start"}
+        </button>
+        <button type="button" className="min-h-[44px] min-w-[44px] rounded-md border border-border px-3 text-xs text-text-secondary hover:text-text-primary" onClick={() => chartScrollRef.current?.scrollTo({ left: chartScrollRef.current.scrollWidth })}>
+          {isZh ? "最后得分" : "Last score"}
+        </button>
+      </div>
+      <div ref={chartScrollRef} className="max-w-full overflow-x-auto overscroll-x-contain rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" role="region" tabIndex={0} aria-label={isZh ? "得分走势，可左右滚动查看整场比赛" : "Scoring flow: scroll horizontally to view the whole game"}>
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="w-full"
+        className="block w-full min-w-[600px] sm:min-w-0"
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={isZh
@@ -201,7 +218,7 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
           return (
             <g key={ratio}>
               <line x1={pad.left} y1={y} x2={w - pad.right} y2={y} stroke="var(--border)" strokeWidth={0.3} />
-              <text x={pad.left - 4} y={y} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={8}>{val}</text>
+              <text x={pad.left - 4} y={y} textAnchor="end" dominantBaseline="central" fill="var(--text-secondary)" fontSize={8} className="text-[12px] sm:text-[8px]">{val}</text>
             </g>
           );
         })}
@@ -209,7 +226,7 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
         {qLines.map(({ t, label }) => (
           <g key={label}>
             <line x1={toX(t)} y1={pad.top} x2={toX(t)} y2={pad.top + plotH} stroke="var(--border)" strokeWidth={0.5} strokeDasharray="3,3" />
-            <text x={toX(t)} y={h - 6} textAnchor="middle" fill="var(--text-secondary)" fontSize={8}>{label}</text>
+            <text x={toX(t)} y={h - 6} textAnchor="middle" fill="var(--text-secondary)" fontSize={8} className="text-[12px] sm:text-[8px]">{label}</text>
           </g>
         ))}
         {/* Lead-area shading — fills the gap between the two lines, colored by
@@ -229,9 +246,10 @@ export default memo(function ScoringFlow({ homePeriods, awayPeriods, homeTricode
         <circle cx={toX(last.t)} cy={toY(last.home)} r={3.5} fill="var(--accent)" stroke="var(--bg-card)" strokeWidth={1.5} />
         <circle cx={toX(last.t)} cy={toY(last.away)} r={3.5} fill="var(--success)" stroke="var(--bg-card)" strokeWidth={1.5} />
         {/* End labels with scores */}
-        <text x={w - pad.right + 4} y={toY(last.home)} dominantBaseline="central" fill="var(--accent)" fontSize={9} fontWeight={600}>{homeTricode} {last.home}</text>
-        <text x={w - pad.right + 4} y={toY(last.away)} dominantBaseline="central" fill="var(--success)" fontSize={9} fontWeight={600}>{awayTricode} {last.away}</text>
+        <text x={w - pad.right + 4} y={toY(last.home)} dominantBaseline="central" fill="var(--accent)" fontSize={9} fontWeight={600} className="hidden sm:block">{homeTricode} {last.home}</text>
+        <text x={w - pad.right + 4} y={toY(last.away)} dominantBaseline="central" fill="var(--success)" fontSize={9} fontWeight={600} className="hidden sm:block">{awayTricode} {last.away}</text>
       </svg>
+      </div>
     </div>
   );
 });

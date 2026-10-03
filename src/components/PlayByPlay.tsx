@@ -266,14 +266,15 @@ export default memo(function PlayByPlay({ actions, isLive = false }: Props) {
             </span>
           )}
         </h3>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="glass-tile flex overflow-hidden p-1">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
+          <div className="glass-tile flex max-w-full flex-wrap gap-1 p-1 sm:gap-0">
             {(["all", "scoring"] as const).map((v) => (
               <button
                 key={v}
+                type="button"
                 onClick={() => setView(v)}
                 aria-pressed={view === v}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                className={`min-h-[44px] min-w-[44px] shrink-0 px-3 py-1 text-xs font-medium sm:min-h-0 sm:min-w-0 rounded-md transition-all cursor-pointer ${
                   view === v ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
                 }`}
               >
@@ -281,18 +282,19 @@ export default memo(function PlayByPlay({ actions, isLive = false }: Props) {
               </button>
             ))}
           </div>
-          <div className="glass-tile flex overflow-hidden p-1">
+          <div className="glass-tile flex max-w-full flex-wrap gap-1 p-1 sm:gap-0" role="group" aria-label={isZh ? "选择节次" : "Choose period"}>
             {periods.map((p) => (
               <button
                 key={p}
+                type="button"
                 onClick={() => setPinnedPeriod(p)}
                 aria-pressed={selectedPeriod === p}
-                className={`px-3 py-1 text-xs font-medium font-mono rounded-md transition-all cursor-pointer ${
+                className={`min-h-[44px] min-w-[44px] shrink-0 px-3 py-1 text-xs font-medium sm:min-h-0 sm:min-w-0 font-mono rounded-md transition-all cursor-pointer ${
                   selectedPeriod === p ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
                 }`}
               >
                 {p <= 4 ? `${t.playByPlayComp.quarter}${p}` : `${t.playByPlayComp.overtime}${p - 4}`}
-                <span className="text-[8px] opacity-60 ml-0.5 tabular-nums">
+                <span className="text-xs opacity-60 ml-1 tabular-nums sm:ml-0.5 sm:text-[8px]">
                   ({actions.filter((a) => a.period === p && a.description && (view === "all" || a.shotResult === "Made")).length})
                 </span>
               </button>
