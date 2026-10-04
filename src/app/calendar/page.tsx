@@ -2,7 +2,9 @@
 
 import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
 import { fixtureDateInZone, normalizePlannedFixtureView, type PlannedFixtureView } from "@/lib/planned-fixtures";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import CalendarLoading from "./loading";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -15,6 +17,7 @@ import { TEAM_META } from "@/lib/teams";
 import { useLocale } from "@/components/LocaleProvider";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { localTz } from "@/lib/timezone";
+import { calendarMonthHref, offsetCalendarMonth, selectedCalendarMonth } from "@/lib/calendar-month-navigation";
 
 function getMonthStr(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -43,22 +46,28 @@ function getLocalParts(tz: string): { year: number; month: number; day: number; 
 }
 
 export default function CalendarPage() {
+  return <Suspense fallback={<CalendarLoading />}><CalendarContent /></Suspense>;
+}
+
+function CalendarContent() {
+  const searchParams = useSearchParams();
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [tz, setTz] = useState("UTC");
   const [ready, setReady] = useState(false);
   const et = getLocalParts(tz);
-  const [year, setYear] = useState(et.year);
-  const [month, setMonth] = useState(et.month); // 0-indexed (local tz)
+  const monthKey = selectedCalendarMonth(searchParams, getMonthStr(et.year, et.month));
+  const [year, monthNumber] = monthKey.split("-").map(Number);
+  const month = monthNumber - 1; // 0-indexed (local tz)
   const [response, setResponse] = useState<{key:string;days:CalendarDay[];planned:PlannedFixtureView|null;loading:boolean;error:boolean}>({key:"",days:[],planned:null,loading:true,error:false});
   const [retry, setRetry] = useState(0);
   const requestKey = `${getMonthStr(year,month)}:${tz}`;
   const current = response.key === requestKey ? response : {days:[],planned:null,loading:true,error:false};
   const {days,planned,loading,error} = current;
   useEffect(() => {
-    const zone=localTz(), local=getLocalParts(zone);
+    const zone=localTz();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate browser timezone without SSR mismatch
-    setTz(zone);setYear(local.year);setMonth(local.month);setReady(true);
+    setTz(zone);setReady(true);
   }, []);
 
   const today = et.todayStr;
@@ -91,15 +100,24 @@ export default function CalendarPage() {
     return ()=>controller.abort();
   },[year,month,tz,requestKey,retry,ready]);
 
-  const goToPrevMonth = () => {
-    if (month === 0) { setYear(year - 1); setMonth(11); }
-    else setMonth(month - 1);
+  const selectMonth = (nextMonth: string | null) => {
+    if (!nextMonth) return;
+    const href = calendarMonthHref(window.location, nextMonth);
+    if (href) {
+      // Next's documented native history integration updates useSearchParams and
+      // preserves its router state. Do not pass history.state: its __NA marker
+      // bypasses that integration and leaves Next's canonical URL stale.
+      window.history.replaceState(null, "", href);
+    }
   };
 
-  const goToNextMonth = () => {
-    if (month === 11) { setYear(year + 1); setMonth(0); }
-    else setMonth(month + 1);
+  const changeMonth = (offset: number) => {
+    // Read the synchronous URL so repeated clicks cannot reuse a stale render.
+    const currentMonth = selectedCalendarMonth(new URLSearchParams(window.location.search), monthKey);
+    selectMonth(offsetCalendarMonth(currentMonth, offset));
   };
+  const goToPrevMonth = () => changeMonth(-1);
+  const goToNextMonth = () => changeMonth(1);
 
   // Build calendar grid
   const firstDayOfMonth = new Date(Date.UTC(year, month, 1)).getUTCDay(); // 0=Sun
@@ -153,7 +171,7 @@ export default function CalendarPage() {
             </div>
             {(year !== et.year || month !== et.month) && (
               <button
-                onClick={() => { setYear(et.year); setMonth(et.month); }}
+                onClick={() => selectMonth(getMonthStr(et.year, et.month))}
                 className="chip chip-active min-h-[44px] shrink-0 cursor-pointer"
               >
                 {t.common.today}
