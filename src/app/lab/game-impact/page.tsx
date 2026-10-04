@@ -208,11 +208,11 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
       {/* Game header card — links to the full game page */}
       <Link
         href={`/game/${gameId}`}
-        className="glass-tile p-4 flex items-center justify-between gap-4 group cursor-pointer mb-5"
+        className="glass-tile p-4 min-h-11 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 group cursor-pointer mb-5"
       >
         <div className="min-w-0">
           <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">{isZh ? "本场比赛" : "This game"}</p>
-          <p className="text-lg font-semibold text-text-primary group-hover:text-accent transition-colors truncate">
+          <p className="text-lg font-semibold text-text-primary group-hover:text-accent transition-colors whitespace-normal break-words sm:truncate">
             {away.teamCity} {away.teamName} {away.score} <span className="text-text-secondary">@</span> {home.score} {home.teamCity} {home.teamName}
           </p>
           <p className="text-[11px] font-mono text-text-secondary mt-0.5">{beijing}</p>
@@ -256,11 +256,11 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
       ) : (
         <EmptyState
           icon={Activity}
-          title={isZh ? "这场比赛暂无逐球数据" : "No play-by-play for this game"}
+          title={isZh ? "得分曲线暂不可用" : "Scoring curve unavailable"}
           description={
             isZh
-              ? "无法重建得分曲线。可以试试下方其他最近的比赛。"
-              : "Can't reconstruct the scoring curve. Try one of the other recent games below."
+              ? "目前无法核验完整得分曲线。可以试试下方其他最近的比赛。"
+              : "A complete scoring curve cannot be verified right now. Try one of the other recent games below."
           }
         />
       )}
