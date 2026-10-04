@@ -20,6 +20,7 @@ vi.mock("@/components/OffseasonHero", () => ({ default: async function Offseason
 vi.mock("@/components/BestOfNightCard", () => ({ default: () => null }));
 vi.mock("@/components/DailyIconicPick", () => ({ default: () => null }));
 import HomeClient from "./HomeClient";
+import HomeGames from "./HomeGames";
 import DateNav from "./DateNav";
 import GamesList from "./GamesList";
 import RecentlyViewed from "./RecentlyViewed";
@@ -60,7 +61,10 @@ it("composes one server hero inside its null-fallback Suspense after search", as
   const page = await HomePage({ searchParams: Promise.resolve({ date: "2026-10-27" }) });
   const children = elements(page);
   const searchIndex = children.findIndex((child) => child.type === HomePlayerSearch);
-  const home = children[searchIndex + 1] as ReactElement<Parameters<typeof HomeClient>[0]>;
+  const boundary = children[searchIndex + 1] as ReactElement<{ children: ReactElement<Parameters<typeof HomeGames>[0]> }>;
+  expect(boundary.type).toBe(Suspense);
+  expect(boundary.props.children.type).toBe(HomeGames);
+  const home = await HomeGames(boundary.props.children.props);
   expect(home.type).toBe(HomeClient);
   expect(children.some((child) => child.type === OffseasonHero)).toBe(false);
   const slot = home.props.afterGames as ReactElement<{ fallback: null; children: ReactElement }>;

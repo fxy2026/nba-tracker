@@ -41,6 +41,12 @@ export async function GET(request: NextRequest) {
     let navigation: ScheduleNavigation | undefined;
 
     if (tz) {
+      // These sources are independent. Start the applicable live overlay now
+      // rather than adding its deadline after the cold full-schedule chain.
+      // Catch immediately so schedule failure cannot leave an unhandled reject.
+      const liveGamesPending = isToday || date === etToday
+        ? getTodayScoreboard().catch(() => [])
+        : null;
       // Timezone-aware: scan full schedule, pick games whose UTC tipoff falls
       // on `date` in `tz`. This is what a Beijing user means by "today's games".
       schedule = await getFullSchedule();
@@ -49,8 +55,8 @@ export async function GET(request: NextRequest) {
       navigation = view.navigation;
 
       // For live games (currently playing in ET), upgrade scores from live scoreboard.
-      if (isToday || date === etToday) {
-        const liveGames = await getTodayScoreboard().catch(() => []);
+      if (liveGamesPending) {
+        const liveGames = await liveGamesPending;
         const sourceDate = getScoreboardSourceDate(liveGames);
         if (sourceDate === etToday) canonicalDatesET.push(sourceDate);
         canonicalDayAvailable = sourceDate === date && new Intl.DateTimeFormat('en-US', { timeZone: tz }).resolvedOptions().timeZone === 'America/New_York';

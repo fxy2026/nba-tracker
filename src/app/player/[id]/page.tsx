@@ -5,14 +5,14 @@ import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getPlayerIndexSnapshot, getPlayerHeadshotUrl } from "@/lib/api";
+import { getPlayerHeadshotUrl } from "@/lib/api";
 import { formatGameDate } from "@/lib/dates";
 import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
 import ArchivedPlayerProfile from "@/components/player/ArchivedPlayerProfile";
 import { getHistoricalCareerArchive } from "@/lib/historical-career-archive";
-import { resolvePlayerIdentity } from "@/lib/player-identity-server";
+import { getPlayerProfileContext } from "@/lib/player-profile-loader";
 import { parsePlayerId } from "@/lib/player-identity";
 import { playerShootingSelection, type PlayerProfileQuery } from "@/lib/player-profile-navigation";
 import { notFound } from "next/navigation";
@@ -51,9 +51,9 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const [snapshot, locale] = await Promise.all([getPlayerIndexSnapshot(), getLocale()]);
-  const identity = await resolvePlayerIdentity(id, snapshot);
-  if (!identity) return {};
+  const [profile, locale] = await Promise.all([getPlayerProfileContext(id), getLocale()]);
+  if (!profile) return {};
+  const { snapshot, identity } = profile;
   const player = snapshot.players.find(p => p.personId === identity.id);
   if (!player) {
     const desc = locale === "zh" ? `${identity.name} 球员主页：身份、已收录生涯数据与投篮分布。缺失资料会明确标注。` : `${identity.name} player profile: identity, available career records and shooting. Unavailable information is explicitly labelled.`;
@@ -81,15 +81,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   const personId = parsePlayerId(id);
   if (personId === null) notFound();
 
-  // Player info + league index in parallel — the index is large and was
-  // previously serialized after getPlayerInfo, adding ~100-300ms of TTFB.
-  const [snapshot, locale] = await Promise.all([
-    getPlayerIndexSnapshot(),
+  // Reviewed historical profiles are fully local. Other IDs retain the live
+  // index and its existing provenance, timeout, coalescing and refresh policy.
+  const [profile, locale] = await Promise.all([
+    getPlayerProfileContext(id),
     getLocale(),
   ]);
+  if (!profile) notFound();
+  const { snapshot, identity } = profile;
   const allPlayers = snapshot.players;
-  const identity = await resolvePlayerIdentity(id, snapshot);
-  if (!identity) notFound();
   const player = allPlayers.find(p => p.personId === personId);
   const query = await searchParams ?? {};
   const heatmapCatalog = (await getPlayerSeasonHeatmapCatalog(personId)).filter(entry => entry.playerId === personId).map(({ playerId, season, seasonType, availability }) => ({ playerId, season, seasonType, availability }));

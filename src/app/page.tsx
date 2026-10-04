@@ -1,8 +1,8 @@
 import { selectedDateFromUrl } from "@/lib/schedule-navigation";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { formatDate, getTodayScoreboard, type ScheduleGame } from "@/lib/api";
-import HomeClient from "@/components/HomeClient";
+import { formatDate } from "@/lib/api";
+import HomeGames, { HomeGamesLoading } from "@/components/HomeGames";
 import HomePlayerSearch from "@/components/HomePlayerSearch";
 import DailyIconicPick from "@/components/DailyIconicPick";
 import BestOfNightCard from "@/components/BestOfNightCard";
@@ -45,44 +45,10 @@ const structuredData = {
   },
 };
 
-// SSR only the small ET-today scoreboard so the home page paints real GameCards
-// instead of a skeleton. Mirrors /api/games's ET-today branch (route.ts:74-90).
-// Note: this is ET-today; a Beijing user's local "today" may differ — HomeClient
-// re-fetches client-side to correct the tz, but US/aligned users get a warm paint.
-// Non-today dates are deliberately NOT SSR'd: getGamesByDate would pull the full
-// ~11MB schedule and block TTFB/LCP on cold lambdas for every ?date= entry, so
-// dated views fall through to GamesList's own client fetch instead.
-async function getInitialGames(): Promise<ScheduleGame[]> {
-  try {
-    const liveGames = await getTodayScoreboard();
-    return liveGames.map((g) => ({
-      gameId: g.gameId,
-      gameCode: g.gameCode,
-      gameStatus: g.gameStatus,
-      gameStatusText: g.gameStatusText,
-      gameDateTimeUTC: g.gameTimeUTC,
-      homeTeam: { ...g.homeTeam, teamSlug: "" },
-      awayTeam: { ...g.awayTeam, teamSlug: "" },
-      seriesText: g.seriesText,
-      gameLeaders: g.gameLeaders,
-    }));
-  } catch {
-    return [];
-  }
-}
-
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const today = formatDate(new Date());
   const initialDate = selectedDateFromUrl(params.date ?? null, today);
-  // Only SSR the small today scoreboard; non-today dates short-circuit to null so
-  // the 11MB getFullSchedule never blocks the shell (GamesList client-fetches the
-  // dated view from /api/games instead).
-  const ssrGames = initialDate === today ? await getInitialGames() : null;
-  // Empty array == fetch failure or genuinely no SSR data → pass undefined so
-  // GamesList falls back to its client fetch + skeleton rather than flashing an
-  // empty state. A populated set skips both the skeleton and the initial round-trip.
-  const initialGames = ssrGames && ssrGames.length > 0 ? ssrGames : undefined;
   const locale = await getLocale();
   const t = getTranslations(locale);
 
@@ -95,19 +61,20 @@ export default async function HomePage({ searchParams }: PageProps) {
       />
       <h1 className="sr-only">{t.meta.siteTitle}</h1>
       <HomePlayerSearch />
-      <HomeClient
-        initialDate={initialDate}
-        initialGames={initialGames}
-        initialIsToday={initialDate === today}
-        afterGames={
-          // Keep the selected games first in the DOM on every date/timezone.
-          // The server-only hero still self-guards to null in-season and streams
-          // without blocking the shell on transaction/news fetches.
-          <Suspense fallback={null}>
-            <OffseasonHero />
-          </Suspense>
-        }
-      />
+      <Suspense fallback={<HomeGamesLoading locale={locale} />}>
+        <HomeGames
+          initialDate={initialDate}
+          initialIsToday={initialDate === today}
+          afterGames={
+            // Keep the selected games first in the DOM on every date/timezone.
+            // The server-only hero still self-guards to null in-season and streams
+            // without blocking the shell on transaction/news fetches.
+            <Suspense fallback={null}>
+              <OffseasonHero />
+            </Suspense>
+          }
+        />
+      </Suspense>
       {/* Daily-changing "best of last night" precedes the evergreen iconic pick
           so the top of the page stays fresh content a returner checks daily.
           Streams in after the shell — schedule/box-score fetches never block. */}

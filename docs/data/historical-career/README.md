@@ -3,7 +3,8 @@
 Historical profiles use a separate, immutable secondary-source archive. These
 records do not enter the live provider cache or the four NBA.com-reviewed career
 archives. `src/lib/historical-career-archive.ts` allowlists player IDs and pins
-SHA-256 of canonical `JSON.stringify` content before validating the schema.
+SHA-256 of the original source bytes and canonical Node `JSON.stringify` content
+before validating the schema.
 
 ## Michael Jordan, NBA ID 893, 2026-10-04
 
@@ -181,3 +182,18 @@ Zero-attempt shooting percentages remain null, while recorded zero counts remain
 zero. Percentage quarantine must also leave the derived canonical rate unknown;
 source-published career totals and TS% observations never override canonical
 missing operands. Exact count values are never reconstructed from rounded rates.
+
+## Runtime integrity across compilers
+
+Archive loading reads only the eight explicitly allowlisted source-file paths.
+It verifies the original audited file-byte SHA-256 before Node's JSON parser,
+then retains the canonical object hash and existing schema validation. Missing
+files, either hash mismatch, malformed JSON and schema failures remain closed.
+No rounded observations or alternate compiler-generated hashes are accepted.
+
+This prevents JSON-module compilation from changing long audit-only floating-point
+values: the isolated Next 16.3.6 Turbopack reproduction changed, for example,
+`2.4074074074074074` to `2.407407407407407`, which previously invalidated the
+whole-object hash despite unchanged season count totals. Original source bytes,
+provenance and all nulls remain unchanged. Source evidence stays server-only;
+only normalized checked totals and attribution enter client props.

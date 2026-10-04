@@ -20,7 +20,7 @@ it.each(["en", "zh"])("home initially renders a visible, labelled search in %s w
 it("home search is in the initial shell before async offseason content and date/score controls", () => {
   const page = readFileSync("src/app/page.tsx", "utf8");
   const search = page.indexOf("<HomePlayerSearch />"); expect(search).toBeGreaterThan(-1);
-  expect(search).toBeLessThan(page.indexOf("<OffseasonHero />")); expect(search).toBeLessThan(page.indexOf("<HomeClient"));
+  expect(search).toBeLessThan(page.indexOf("<OffseasonHero />")); expect(search).toBeLessThan(page.indexOf("<HomeGames\n"));
 });
 it("the client entry ships neither identity data, archive data nor biography, and no duplicate header control is added", () => {
   const home = readFileSync("src/components/HomePlayerSearch.tsx", "utf8");

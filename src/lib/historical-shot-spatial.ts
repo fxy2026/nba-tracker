@@ -54,7 +54,7 @@ function indexEntries(index: unknown): Map<string, Entry> {
   }
   return entries;
 }
-function countBlock(raw: unknown): Block {
+function countBlock(raw: unknown, intersectsFrame: typeof shotMapCellIntersectsFrame): Block {
   const value = object(raw), total = counts(value.total), plotted = counts(value.plotted), residualsRaw = object(value.residuals), binsRaw = object(value.bins);
   requireValue(Object.keys(residualsRaw).length === SHOT_MAP_RESIDUAL_REASONS.length && Object.keys(binsRaw).length === SHOT_MAP_RESOLUTIONS.length);
   const residuals = new Map<ShotMapResidualReason, ShotMapCounts>(), reconciled = { ...plotted };
@@ -67,7 +67,7 @@ function countBlock(raw: unknown): Block {
     for (const rawRow of rows) {
       requireValue(Array.isArray(rawRow) && rawRow.length === 6);
       const [q, r, fgm, fga, fg3m, fg3a] = rawRow;
-      requireValue(typeof q === "number" && Number.isSafeInteger(q) && Math.abs(q) <= 32 && typeof r === "number" && Number.isSafeInteger(r) && Math.abs(r) <= 32 && shotMapCellIntersectsFrame({ q, r }, spec.radius));
+      requireValue(typeof q === "number" && Number.isSafeInteger(q) && Math.abs(q) <= 32 && typeof r === "number" && Number.isSafeInteger(r) && Math.abs(r) <= 32 && intersectsFrame({ q, r }, spec.radius));
       requireValue(!previous || q > previous[0] || q === previous[0] && r > previous[1]); previous = [q, r];
       const row = { q, r, ...counts({ fgm, fga, fg3m, fg3a }) }; requireValue(row.fga > 0);
       mapped.set(`${q}:${r}`, row); add(sum, row);
@@ -85,6 +85,14 @@ function countBlock(raw: unknown): Block {
   return { total, plotted, residuals, bins, shotBearingGames };
 }
 function parsePack(raw: unknown, identity: HeatmapIdentity): Pack {
+  // Every player uses the same finite lattice. Reuse the exact predicate within
+  // this validation pass, without retaining source data or changing geometry.
+  const frameCells = new Map<string, boolean>();
+  const intersectsFrame: typeof shotMapCellIntersectsFrame = (bin, radius) => {
+    const key = `${radius}:${bin.q}:${bin.r}`;
+    const cached = frameCells.get(key); if (cached !== undefined) return cached;
+    const result = shotMapCellIntersectsFrame(bin, radius); frameCells.set(key, result); return result;
+  };
   const value = object(raw), frame = object(value.coordinateFrame), geometry = object(value.geometry), metrics = object(value.metrics), provenance = object(value.provenance), source = object(provenance.sourceArchive), quality = object(value.quality);
   requireValue(value.schemaVersion === "nba-spatial-v1" && value.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && value.season === identity.season && value.seasonStartYear === Number(identity.season.slice(0, 4)) && value.seasonType === identity.seasonType);
   requireValue(frame.id === "nba-legacy-tenths-feet" && frame.unitsPerFoot === 10 && frame.origin === "basket-center" && frame.positiveX === "right" && frame.positiveY === "toward-half-court" && frame.xMin === -250 && frame.xMax === 250 && frame.yMin === -52.5 && frame.yMax === 417.5 && frame.fullCourtYMax === 887.5 && frame.boundsInclusive === true && frame.coordinateTransform === "none" && frame.officialEventCoordinateVerification === false);
@@ -99,13 +107,13 @@ function parsePack(raw: unknown, identity: HeatmapIdentity): Pack {
     requireValue(integer(quality.sourceCsvRows) === integer(quality.csvRows) + integer(quality.quarantinedRowCount));
   }
   requireValue(source.repository === "fxy2026/nba_data" && source.revision === PIN && source.path === `datasets/shotdetail_${identity.seasonType === "Playoffs" ? "po_" : ""}${identity.season.slice(0, 4)}.tar.xz` && source.sourceUrl === `https://raw.githubusercontent.com/fxy2026/nba_data/${PIN}/${source.path}` && quality.duplicateGameEventKeys === 0 && quality.officialCoverage === "not-officially-reconciled");
-  const league = countBlock(value.league), rawPlayers = object(value.players), players = new Map<number, Block>(), sum = zero(), plotted = zero();
+  const league = countBlock(value.league, intersectsFrame), rawPlayers = object(value.players), players = new Map<number, Block>(), sum = zero(), plotted = zero();
   requireValue(Object.keys(rawPlayers).length <= 1000 && quality.csvRows === league.total.fga);
   const leagueSums = new Map(SHOT_MAP_RESOLUTIONS.map(spec => [spec.id, new Map<string, ShotMapCounts>()]));
   const residualSums = new Map(SHOT_MAP_RESIDUAL_REASONS.map(reason => [reason, zero()]));
   for (const [id, rawPlayer] of Object.entries(rawPlayers)) {
     const player = object(rawPlayer); requireValue(/^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id)) && player.playerId === id);
-    const block = countBlock(player); requireValue(block.shotBearingGames <= league.shotBearingGames); players.set(Number(id), block); add(sum, block.total); add(plotted, block.plotted);
+    const block = countBlock(player, intersectsFrame); requireValue(block.shotBearingGames <= league.shotBearingGames); players.set(Number(id), block); add(sum, block.total); add(plotted, block.plotted);
     for (const [reason, counts] of block.residuals) add(residualSums.get(reason)!, counts);
     for (const [resolution, bins] of block.bins) for (const [key, counts] of bins) {
       const binsTotal = leagueSums.get(resolution)!; if (!binsTotal.has(key)) binsTotal.set(key, zero()); add(binsTotal.get(key)!, counts);
@@ -145,19 +153,25 @@ export function projectHistoricalShotMap(raw: unknown, court: SeasonHeatmapRende
 }
 
 export function createHistoricalShotMapStore(index: unknown, read: (file: string) => Promise<Buffer>, loadCourt: (identity: HeatmapIdentity) => Promise<SeasonHeatmapArchiveResource> = loadHistoricalCourtArchive) {
-  const entries = indexEntries(index), packs = new Map<string, Promise<Pack>>(), resources = new Map<string, { resource: SeasonShotMapResource; bytes: number }>();
+  const entries = indexEntries(index), packs = new Map<string, Pack>(), pendingPacks = new Map<string, Promise<Pack>>();
+  const resources = new Map<string, { resource: SeasonShotMapResource; bytes: number }>(), pendingResources = new Map<string, Promise<SeasonShotMapResource>>();
   let resourceBytes = 0, decodeTail: Promise<void> = Promise.resolve();
   async function pack(entry: Entry, identity: HeatmapIdentity): Promise<Pack> {
     const cached = packs.get(entry.file); if (cached) { packs.delete(entry.file); packs.set(entry.file, cached); return cached; }
+    const inFlight = pendingPacks.get(entry.file); if (inFlight) return inFlight;
     // Serialize disk reads/decompression as well as bounding the retained pack cache.
     // A burst across many seasons must not inflate many compressed packs at once.
     const pending = decodeTail.then(async () => {
       const bytes = await read(entry.file); requireValue(bytes.length === entry.compressedBytes && bytes.length <= MAX_COMPRESSED && createHash("sha256").update(bytes).digest("hex") === entry.sha256);
       const json = gunzipSync(bytes, { maxOutputLength: MAX_EXPANDED }); requireValue(json.length === entry.uncompressedBytes);
-      return parsePack(JSON.parse(json.toString("utf8")), identity);
-    }).catch(error => { if (packs.get(entry.file) === pending) packs.delete(entry.file); throw error; });
+      const parsed = parsePack(JSON.parse(json.toString("utf8")), identity);
+      packs.set(entry.file, parsed); while (packs.size > 2) packs.delete(packs.keys().next().value!);
+      return parsed;
+    }).finally(() => { if (pendingPacks.get(entry.file) === pending) pendingPacks.delete(entry.file); });
     decodeTail = pending.then(() => undefined, () => undefined);
-    packs.set(entry.file, pending); while (packs.size > 2) packs.delete(packs.keys().next().value!);
+    // Pending entries are separate from the two settled packs, so a queued
+    // season cannot evict another season's in-flight work and duplicate it.
+    pendingPacks.set(entry.file, pending);
     return pending;
   }
   return {
@@ -166,18 +180,23 @@ export function createHistoricalShotMapStore(index: unknown, read: (file: string
       const entry = entries.get(keyFor(identity)); if (!entry) return { status: "unavailable" };
       const key = `${identity.playerId}:${keyFor(identity)}`, cached = resources.get(key);
       if (cached) { resources.delete(key); resources.set(key, cached); return cached.resource; }
-      try {
-        const court = await loadCourt(identity); if (court.status !== "ready") return court;
-        const data = project(await pack(entry, identity), court.data); if (!data) return { status: "error" };
-        const resource: SeasonShotMapResource = freeze({ status: "ready", data }), bytes = Buffer.byteLength(JSON.stringify(resource));
-        requireValue(bytes <= SHOT_MAP_MAX_DTO_BYTES);
-        resourceBytes -= resources.get(key)?.bytes ?? 0;
-        resources.set(key, { resource, bytes }); resourceBytes += bytes;
-        while (resources.size > 128 || resourceBytes > 4 * 1024 * 1024) {
-          const oldest = resources.keys().next().value!; resourceBytes -= resources.get(oldest)!.bytes; resources.delete(oldest);
-        }
-        return resource;
-      } catch { return { status: "error" }; }
+      const inFlight = pendingResources.get(key); if (inFlight) return inFlight;
+      const pending = (async (): Promise<SeasonShotMapResource> => {
+        try {
+          const court = await loadCourt(identity); if (court.status !== "ready") return court;
+          const data = project(await pack(entry, identity), court.data); if (!data) return { status: "error" };
+          const resource: SeasonShotMapResource = freeze({ status: "ready", data }), bytes = Buffer.byteLength(JSON.stringify(resource));
+          requireValue(bytes <= SHOT_MAP_MAX_DTO_BYTES);
+          resourceBytes -= resources.get(key)?.bytes ?? 0;
+          resources.set(key, { resource, bytes }); resourceBytes += bytes;
+          while (resources.size > 128 || resourceBytes > 4 * 1024 * 1024) {
+            const oldest = resources.keys().next().value!; resourceBytes -= resources.get(oldest)!.bytes; resources.delete(oldest);
+          }
+          return resource;
+        } catch { return { status: "error" }; }
+      })().finally(() => { if (pendingResources.get(key) === pending) pendingResources.delete(key); });
+      pendingResources.set(key, pending);
+      return pending;
     },
   };
 }
