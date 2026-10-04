@@ -16,7 +16,7 @@ import SiteFooter from "@/components/SiteFooter";
 import WebVitalsReporter from "@/components/WebVitalsReporter";
 import CloudflareAnalytics from "@/components/CloudflareAnalytics";
 
-type Props = { children?: ReactNode; id?: string; href?: string; className?: string; prefetch?: boolean };
+type Props = { children?: ReactNode; id?: string; href?: string; className?: string; prefetch?: boolean; onClick?: unknown; onNavigate?: unknown };
 function nodes(node: ReactNode): ReactElement<Props>[] {
   if (Array.isArray(node)) return node.flatMap(nodes);
   if (!isValidElement<Props>(node)) return [];
@@ -46,18 +46,50 @@ it.each(["en", "zh"] as const)("renders an anchored, conditional disclosure in %
 it.each(["en", "zh"] as const)("links the privacy anchor from both footer layouts in %s", locale => {
   state.locale = locale;
   const footer = SiteFooter();
-  const links = nodes(footer).filter(node => node.type === Link && node.props.href === "/about#visitor-statistics");
+  const links = nodes(footer).filter(node => node.props.href === "/about#visitor-statistics");
   expect(links).toHaveLength(2);
+  for (const link of links) {
+    expect(link.type).toBe("a");
+    expect(link.props.onClick).toBeUndefined();
+    expect(link.props.onNavigate).toBeUndefined();
+    expect(link.props.prefetch).toBeUndefined();
+  }
   const label = locale === "en" ? "Visit statistics & privacy" : "访问统计与隐私";
   expect(links.map(node => node.props.children)).toEqual([label, label]);
   const mobile = links.find(node => node.props.className?.includes("sm:hidden"))!;
   expect(mobile.props.className).toContain("min-h-11");
   expect(mobile.props.className).toContain("mb-20");
-  expect(mobile.props.prefetch).toBe(false);
   const desktop = nodes(footer).find(node => node.type === "footer")!;
   expect(desktop.props.className).toContain("hidden sm:block");
   expect(nodes(desktop).filter(node => node.props.href === "/about#visitor-statistics")).toHaveLength(1);
   expect(renderToStaticMarkup(footer).match(/href="\/about#visitor-statistics"/g)).toHaveLength(2);
+  expect(nodes(footer).filter(node => node.type === Link).length).toBeGreaterThan(30);
+  expect(nodes(footer).find(node => node.props.href === "/about")?.type).toBe(Link);
+});
+
+it.each(["en", "zh"] as const)("keeps native privacy targets stable across repeated navigation and locale changes from %s", locale => {
+  // This verifies rendered-anchor/URL contracts, not browser scrolling. Native
+  // anchors deliberately bypass Next's cached canonical URL concatenation.
+  for (const start of [
+    "/about", "/about#visitor-statistics", "/about#visitor-statistics#visitor-statistics",
+    "/about?source=footer#other-section", "/", "/calendar?date=2026-10-04", "/player/201939#career",
+  ]) {
+    let current = new URL(start, "https://nba.example");
+    for (const nextLocale of [locale, locale === "en" ? "zh" : "en", locale] as const) {
+      state.locale = nextLocale;
+      const links = nodes(SiteFooter()).filter(node => node.props.href === "/about#visitor-statistics");
+      expect(links).toHaveLength(2);
+      for (const link of links) {
+        expect(link.type).toBe("a");
+        expect(link.props.children).toBe(nextLocale === "en" ? "Visit statistics & privacy" : "访问统计与隐私");
+        for (let click = 0; click < 3; click++) {
+          current = new URL(link.props.href!, current);
+          expect(current.href).toBe("https://nba.example/about#visitor-statistics");
+          expect(current.hash).toBe("#visitor-statistics");
+        }
+      }
+    }
+  }
 });
 
 it("keeps WebVitals diagnostics local with the disclosed 50-entry path buffer", () => {

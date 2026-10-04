@@ -99,13 +99,14 @@ export default function SiteFooter() {
         <ArrowRight size={16} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
       </Link>
 
-      <Link
+      {/* Use native fragment navigation here and in the desktop sitemap. Next's
+          cached route can already contain the hash after a direct load/reload. */}
+      <a
         href="/about#visitor-statistics"
-        prefetch={false}
         className="sm:hidden flex min-h-11 items-center justify-center mx-4 mb-20 text-xs text-text-secondary hover:text-accent transition-colors"
       >
         {isZh ? "访问统计与隐私" : "Visit statistics & privacy"}
-      </Link>
+      </a>
 
       <footer className="border-t border-border relative hidden sm:block pb-4 mt-12 safe-area-bottom">
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -136,16 +137,19 @@ export default function SiteFooter() {
                   {g.title}
                 </p>
                 <ul className="space-y-1.5">
-                  {g.links.map((l) => (
-                    <li key={l.href}>
-                      <Link
-                        href={l.href}
-                        className="text-[11px] text-text-secondary hover:text-accent transition-colors truncate block"
-                      >
-                        {l.label}
-                      </Link>
-                    </li>
-                  ))}
+                  {g.links.map((l) => {
+                    const FooterLink = l.href === "/about#visitor-statistics" ? "a" : Link;
+                    return (
+                      <li key={l.href}>
+                        <FooterLink
+                          href={l.href}
+                          className="text-[11px] text-text-secondary hover:text-accent transition-colors truncate block"
+                        >
+                          {l.label}
+                        </FooterLink>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}

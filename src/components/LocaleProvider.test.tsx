@@ -102,6 +102,21 @@ for (const locale of ["en", "zh"] as const) {
 }
 
 describe("admin-only locale refresh", () => {
+  it.each(["en", "zh"] as const)("preserves the public privacy fragment through repeated %s locale switches", async locale => {
+    const privacyLocation = Object.assign(new URL("https://nba.example/about#visitor-statistics"), { reload });
+    vi.stubGlobal("window", { location: privacyLocation });
+    let currentLocale = locale;
+    for (let click = 0; click < 3; click++) {
+      render(currentLocale);
+      toggle();
+      expect(privacyLocation.href).toBe("https://nba.example/about#visitor-statistics");
+      expect(reload).toHaveBeenCalledTimes(click + 1);
+      expect(runtime.refresh).not.toHaveBeenCalled();
+      currentLocale = currentLocale === "en" ? "zh" : "en";
+      expect(await getLocale()).toBe(currentLocale);
+    }
+  });
+
   it.each(["/admin", "/admin/", "/admin/operations"])("refreshes %s after writing only the existing locale preference", pathname => {
     location.pathname = pathname;
     render("zh"); flushEffects(); storage.setItem.mockClear();
