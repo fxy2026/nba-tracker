@@ -484,6 +484,7 @@ const en: Translations = {
     seasonCol: "Season",
     baseSalary: "Base Salary",
     capHit: "Cap Hit",
+    unavailable: "Unavailable",
   },
 
   shotHeatmap: {

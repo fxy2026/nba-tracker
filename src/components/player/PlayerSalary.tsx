@@ -4,16 +4,15 @@ import { useEffect, useState } from "react";
 import { DollarSign } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { PlayerSalaryLoading } from "./PlayerDetailsLoading";
+import type { SalaryContract } from "@/lib/player-salary";
 
-interface ContractData {
-  season: number;
-  base_salary: number;
-  cap_hit: number;
+function knownAmount(amount: unknown): amount is number {
+  return typeof amount === "number" && Number.isFinite(amount) && amount >= 0;
 }
 
 export default function PlayerSalary({ playerName, teamAbbr }: { playerName: string; teamAbbr: string }) {
   const { t } = useLocale();
-  const [contracts, setContracts] = useState<ContractData[]>([]);
+  const [contracts, setContracts] = useState<SalaryContract[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +33,9 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
   if (loading) return <PlayerSalaryLoading />;
   if (contracts.length === 0) return null;
 
-  const formatSalary = (amount: number) => {
+  const formatSalary = (amount: number | null) => {
+    // A cached response from an older route may still contain malformed money.
+    if (!knownAmount(amount)) return t.playerSalary.unavailable;
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
     if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
     return `$${amount}`;
@@ -60,9 +61,9 @@ export default function PlayerSalary({ playerName, teamAbbr }: { playerName: str
           </thead>
           <tbody>
             {contracts.map((c, i) => (
-              <tr key={c.season} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i === 0 ? "bg-success/[0.03]" : ""}`}>
+              <tr key={`${c.season}:${i}`} className={`border-b border-border/30 hover:bg-bg-hover/50 transition-colors ${i === 0 ? "bg-success/[0.03]" : ""}`}>
                 <td className="py-2.5 px-4 font-medium text-text-primary font-mono tabular-nums">{c.season}-{String(c.season + 1).slice(2)}</td>
-                <td className="py-2.5 px-4 text-right font-bold text-success font-mono tabular-nums">{formatSalary(c.base_salary)}</td>
+                <td className={`py-2.5 px-4 text-right font-bold font-mono tabular-nums ${knownAmount(c.base_salary) ? "text-success" : "text-text-secondary"}`}>{formatSalary(c.base_salary)}</td>
                 <td className="py-2.5 px-4 text-right text-text-secondary font-mono tabular-nums">{formatSalary(c.cap_hit)}</td>
               </tr>
             ))}

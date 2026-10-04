@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseSalaryContracts, resolveSalaryPlayer } from "@/lib/player-salary";
 
 const BDL_BASE = "https://api.balldontlie.io/v1";
 
@@ -52,19 +53,12 @@ export async function GET(request: NextRequest) {
     );
     clearTimeout(timeout);
     if (!searchRes.ok) return bdlFailure(searchKey, searchRes);
-    const searchData = await searchRes.json();
-    const players = searchData.data || [];
-
-    if (players.length === 0) return NextResponse.json({ data: [] });
-
-    // Match player by name and team
-    const match = players.find((p: { first_name: string; last_name: string; team?: { abbreviation: string } }) =>
-      teamAbbr ? p.team?.abbreviation === teamAbbr : true
-    ) || players[0];
+    const searchData: unknown = await searchRes.json();
+    const match = resolveSalaryPlayer(searchData, playerName, teamAbbr);
+    if (!match) return NextResponse.json({ data: [] });
 
     // Get contracts for the player's team
-    const teamId = match.team?.id;
-    if (!teamId) return NextResponse.json({ data: [] });
+    const teamId = match.teamId;
 
     const teamKey = `team:${teamId}`;
     if ((bdlRetryAt.get(teamKey) ?? 0) > Date.now()) {
@@ -83,20 +77,8 @@ export async function GET(request: NextRequest) {
     );
     clearTimeout(contractTimeout);
     if (!contractRes.ok) return bdlFailure(teamKey, contractRes);
-    const contractData = await contractRes.json();
-    const allContracts = contractData.data || [];
-
-    // Filter contracts for this specific player
-    const playerContracts = allContracts
-      .filter((c: { player_id: number; player?: { id: number } }) =>
-        c.player_id === match.id || c.player?.id === match.id
-      )
-      .map((c: { season: number; base_salary: number; cap_hit: number }) => ({
-        season: c.season,
-        base_salary: c.base_salary || 0,
-        cap_hit: c.cap_hit || 0,
-      }))
-      .sort((a: { season: number }, b: { season: number }) => b.season - a.season);
+    const contractData: unknown = await contractRes.json();
+    const playerContracts = parseSalaryContracts(contractData, match.id);
 
     return NextResponse.json({ data: playerContracts }, {
       headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=172800" },

@@ -484,6 +484,7 @@ const zh: Translations = {
     seasonCol: "赛季",
     baseSalary: "基础薪资",
     capHit: "帽占",
+    unavailable: "暂无数据",
   },
 
   shotHeatmap: {

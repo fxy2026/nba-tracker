@@ -510,6 +510,7 @@ export interface Translations {
     seasonCol: string;
     baseSalary: string;
     capHit: string;
+    unavailable: string;
   };
 
   // ---- Shot Heatmap ----
