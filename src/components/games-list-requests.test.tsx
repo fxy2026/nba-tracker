@@ -1,10 +1,11 @@
 import { isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/locales/en";
+import { getTranslations } from "@/locales";
 import type { ScheduleGame } from "@/lib/api";
 
 // Deterministic component hook/commit harness. Browser QA is a separate gate.
-const runtime = vi.hoisted(() => ({ index: 0, slots: [] as unknown[], effects: [] as (() => void)[] }));
+const runtime = vi.hoisted(() => ({ index: 0, slots: [] as unknown[], effects: [] as (() => void)[], locale: "en" as "en" | "zh", localTz: vi.fn(() => "Pacific/Auckland") }));
 vi.mock("react", async original => {
   const memo = (make: () => unknown, deps: unknown[]) => {
     const index = runtime.index++;
@@ -31,13 +32,16 @@ vi.mock("react", async original => {
     },
   };
 });
-vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: "en", t: en }) }));
-vi.mock("@/lib/timezone", () => ({ localTz: () => "Pacific/Auckland" }));
+vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: runtime.locale, t: getTranslations(runtime.locale) }) }));
+vi.mock("@/lib/timezone", () => ({ localTz: runtime.localTz }));
 import GamesList from "./GamesList";
 import GameCard from "./GameCard";
 import LiveScoreRefresher from "./LiveScoreRefresher";
+import ScoreTicker from "./ScoreTicker";
 import TodayStars from "./TodayStars";
 import EmptyState from "./EmptyState";
+import { PlannedFixtureSection } from "./PlannedFixtures";
+import ScheduleEmptyNavigation from "./ScheduleEmptyNavigation";
 
 function nodes(node: ReactNode): ReactElement<Record<string, unknown>>[] {
   if (Array.isArray(node)) return node.flatMap(nodes);
@@ -67,13 +71,18 @@ let calls: { url: string; signal: AbortSignal; reply: ReturnType<typeof deferred
 const scores = () => calls.filter(call => call.url.startsWith("/api/games?"));
 const replays = () => calls.filter(call => call.url === "/api/replay?action=ids");
 const cards = (view: ReturnType<typeof render>) => view.filter(node => node.type === GameCard);
+const cardIds = (view: ReturnType<typeof render>) => cards(view).map(node => (node.props.game as ScheduleGame).gameId);
+const isLoading = (view: ReturnType<typeof render>) => view.some(node => String(node.props.className).includes("skeleton-shimmer"));
+const hasRefreshError = (view: ReturnType<typeof render>) => view.some(node => node.props.children === en.home.refreshFailed);
 const refresh = (view: ReturnType<typeof render>) => (view.find(node => node.type === LiveScoreRefresher)!.props.onRefresh as () => void)();
 beforeEach(() => {
   runtime.index = 0; runtime.slots = []; runtime.effects = []; calls = [];
+  runtime.locale = "en"; runtime.localTz.mockClear();
   vi.stubGlobal("fetch", vi.fn((url: string, init: RequestInit) => {
     const reply = deferred<Response>(); calls.push({ url, signal: init.signal as AbortSignal, reply }); return reply.promise;
   }));
 });
+
 afterEach(() => {
   unmount();
   // Every mount, date change, refresh, retry, and cancellation is score-only.
@@ -153,5 +162,235 @@ describe("score loading after video replay retirement", () => {
     expect(render(props).some(node => node.type === TodayStars)).toBe(false);
     const widget = render({ ...props, isToday: true }).find(node => node.type === TodayStars)!;
     expect(widget.props).toEqual({});
+  });
+});
+
+describe("scores belong to the selected calendar date", () => {
+  it("hides old cards, summaries, ticker, and polling before the new date effect and after its failure", async () => {
+    const initialGames = [game("old-live", 2), game("old-upcoming", 1), game("old-final", 3)];
+    const first = render({ initialGames, isToday: true });
+    expect(cardIds(first)).toEqual(["old-live", "old-upcoming", "old-final"]);
+    expect(first.some(node => node.type === ScoreTicker)).toBe(true);
+    expect(first.some(node => node.props.href === "/game/old-final")).toBe(true);
+
+    const props = { selectedDate: "2026-03-02", initialGames, isToday: true };
+    // render returns the tree produced before the date-change effect runs.
+    const changed = render(props);
+    expect(isLoading(changed)).toBe(true);
+    expect(cards(changed)).toHaveLength(0);
+    expect(changed.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher)).toBe(false);
+    expect(changed.some(node => node.props.href === "/game/old-final")).toBe(false);
+    expect(changed.some(node => node.props.children === en.home.liveNow || node.props.children === en.common.final)).toBe(false);
+
+    scores()[0].reply.reject(new Error("new date unavailable")); await settle();
+    const failed = render(props);
+    expect(isLoading(failed)).toBe(false);
+    expect(cards(failed)).toHaveLength(0);
+    expect(failed.find(node => node.type === EmptyState)?.props.title).toBe(en.home.failedToLoad);
+    expect(hasRefreshError(failed)).toBe(false);
+    expect(failed.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher || node.type === ScheduleEmptyNavigation || node.type === PlannedFixtureSection)).toBe(false);
+
+    const error = failed.find(node => node.type === EmptyState)!;
+    (error.props.action as { onClick: () => void }).onClick();
+    expect(isLoading(render(props))).toBe(true);
+    expect(scores()[1].url).toContain("date=2026-03-02&");
+    scores()[1].reply.resolve(response({ data: [game("new-live", 2)] })); await settle();
+    const recovered = render(props);
+    expect(cardIds(recovered)).toEqual(["new-live"]);
+    expect(recovered.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    expect(recovered.find(node => node.type === ScoreTicker)?.props.games).toEqual([expect.objectContaining({ gameId: "new-live" })]);
+  });
+
+  it.each([false, true])("does not borrow the previous date's error before its effect (cached scores: %s)", async hasScores => {
+    const props = hasScores ? { initialGames: [game("old", 2)], isToday: true } : {};
+    const first = render(props);
+    if (hasScores) refresh(first);
+    scores()[0].reply.reject(new Error("old date failed")); await settle();
+    const failed = render(props);
+    expect(hasScores ? hasRefreshError(failed) : failed.some(node => node.type === EmptyState)).toBe(true);
+
+    const changed = render({ ...props, selectedDate: "2026-03-02" });
+    expect(isLoading(changed)).toBe(true);
+    expect(cards(changed)).toHaveLength(0);
+    expect(hasRefreshError(changed)).toBe(false);
+    expect(changed.some(node => node.type === EmptyState || node.type === ScheduleEmptyNavigation || node.type === ScoreTicker)).toBe(false);
+  });
+
+  it.each([undefined, "America/New_York"])("keeps same-scope scores on refresh failure and retry (timezone: %s)", async timeZone => {
+    const props = { initialGames: [game("same-date", 2)], isToday: true, timeZone };
+    refresh(render(props)); scores()[0].reply.reject(new Error("offline")); await settle();
+    const failed = render(props);
+    expect(cardIds(failed)).toEqual(["same-date"]);
+    expect(hasRefreshError(failed)).toBe(true);
+    expect(failed.some(node => node.type === EmptyState)).toBe(false);
+    expect(failed.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+
+    (failed.find(node => node.type === "button" && node.props.children === en.common.retry)!.props.onClick as () => void)();
+    const retrying = render(props);
+    expect(cardIds(retrying)).toEqual(["same-date"]);
+    expect(hasRefreshError(retrying)).toBe(false);
+    expect(isLoading(retrying)).toBe(false);
+    expect(scores()[0].signal.aborted).toBe(true);
+    scores()[1].reply.resolve(response({ data: [game("refreshed", 3)] })); await settle();
+    const recovered = render(props);
+    expect(cardIds(recovered)).toEqual(["refreshed"]);
+    expect(recovered.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+    expect(recovered.some(node => node.type === ScoreTicker)).toBe(false);
+  });
+
+  it.each(["pending", "loaded"])("ignores A and B responses and errors when C is %s after rapid navigation", async currentState => {
+    const props = { initialGames: [game("initial-A", 2)], isToday: true };
+    const bodyA = deferred();
+    refresh(render(props)); scores()[0].reply.resolve(response(bodyA.promise)); await settle();
+    render({ ...props, selectedDate: "2026-03-02" });
+    const propsC = { ...props, selectedDate: "2026-03-03" };
+    render(propsC);
+    expect(scores().slice(0, 2).every(call => call.signal.aborted)).toBe(true);
+    expect(scores()).toHaveLength(3);
+    if (currentState === "loaded") { scores()[2].reply.resolve(response({ data: [game("current-C", 2)] })); await settle(); }
+
+    bodyA.resolve({ data: [game("late-A", 2)] });
+    scores()[1].reply.reject(new Error("late B failure")); await settle();
+    const view = render(propsC);
+    expect(cardIds(view)).toEqual(currentState === "loaded" ? ["current-C"] : []);
+    expect(isLoading(view)).toBe(currentState === "pending");
+    expect(hasRefreshError(view)).toBe(false);
+    expect(view.some(node => node.type === EmptyState)).toBe(false);
+    if (currentState === "pending") {
+      expect(view.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher)).toBe(false);
+      scores()[2].reply.resolve(response({ data: [game("current-C", 2)] })); await settle();
+      expect(cardIds(render(propsC))).toEqual(["current-C"]);
+    }
+  });
+
+  it("keeps back/forward navigation date-scoped and does not refetch on same-date rerenders", async () => {
+    const propsA = { initialGames: [game("A")], selectedDate: "2026-03-01" };
+    const propsB = { ...propsA, selectedDate: "2026-03-02" };
+    render(propsA); render(propsB);
+    scores()[0].reply.resolve(response({ data: [game("B")] })); await settle();
+    expect(cardIds(render(propsB))).toEqual(["B"]);
+    expect(cardIds(render({ ...propsB, isToday: true }))).toEqual(["B"]);
+    expect(scores()).toHaveLength(1);
+
+    const back = render(propsA);
+    expect(isLoading(back)).toBe(true); expect(cards(back)).toHaveLength(0);
+    scores()[1].reply.reject(new Error("back failed")); await settle();
+    expect(render(propsA).some(node => node.type === EmptyState)).toBe(true);
+
+    const forward = render(propsB);
+    expect(cardIds(forward)).toEqual(["B"]);
+    expect(hasRefreshError(forward)).toBe(false);
+    expect(forward.some(node => node.type === EmptyState)).toBe(false);
+    scores()[2].reply.resolve(response({ data: [game("B-refreshed")] })); await settle();
+    expect(cardIds(render(propsB))).toEqual(["B-refreshed"]);
+    render(propsB); expect(scores()).toHaveLength(3);
+  });
+
+  it.each([["planned", "date"], ["empty", "date"], ["planned", "zone"], ["empty", "zone"]])("keeps %s semantics and hides them during a new %s request or failure", async (kind, change) => {
+    const props = { selectedDate: "2026-10-04", isToday: true };
+    const navigation = { availableFrom: "2025-10-01", availableThrough: "2026-06-20", latestFinalDate: "2026-06-20", nextScheduledDate: null };
+    const planned = { state: "snapshot", snapshotDate: "2026-08-13", season: "2026-27", timeZone: "Pacific/Auckland", fixtures: [], nextAvailableDate: "2026-10-21" };
+    render(props); scores()[0].reply.resolve(response({ data: [], navigation, ...(kind === "planned" ? { planned } : {}) })); await settle();
+    const view = render(props);
+    expect(cards(view)).toHaveLength(0);
+    expect(view.some(node => node.type === ScoreTicker)).toBe(false);
+    expect(view.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+    if (kind === "planned") expect(view.find(node => node.type === PlannedFixtureSection)?.props.view).toEqual(planned);
+    else expect(view.find(node => node.type === ScheduleEmptyNavigation)?.props.navigation).toEqual(navigation);
+
+    const nextProps = { ...props, ...(change === "date" ? { selectedDate: "2026-10-05" } : { timeZone: "Asia/Shanghai" }) };
+    const changed = render(nextProps);
+    expect(isLoading(changed)).toBe(true);
+    expect(changed.some(node => node.type === PlannedFixtureSection || node.type === ScheduleEmptyNavigation)).toBe(false);
+    scores()[1].reply.reject(new Error("new date failed")); await settle();
+    const failed = render(nextProps);
+    expect(failed.some(node => node.type === EmptyState)).toBe(true);
+    expect(failed.some(node => node.type === PlannedFixtureSection || node.type === ScheduleEmptyNavigation)).toBe(false);
+  });
+});
+
+describe("scores belong to the selected timezone scope", () => {
+  it.each([
+    ["America/New_York", "Asia/Shanghai"],
+    [undefined, "America/New_York"],
+    ["America/New_York", undefined],
+  ])("hides same-date scores before changing %s to %s and does not reuse them on failure", async (oldZone, newZone) => {
+    const props = { initialGames: [game("old-zone", 2)], timeZone: oldZone, isToday: true };
+    expect(cardIds(render(props))).toEqual(["old-zone"]);
+    // Neither explicit nor implicit initial data requires browser timezone
+    // discovery during the SSR-compatible first render.
+    expect(runtime.localTz).not.toHaveBeenCalled();
+    const changedProps = { ...props, timeZone: newZone };
+    const changed = render(changedProps);
+    expect(isLoading(changed)).toBe(true);
+    expect(cards(changed)).toHaveLength(0);
+    expect(changed.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher)).toBe(false);
+    expect(scores()[0].url).toBe(`/api/games?date=2026-03-01&tz=${encodeURIComponent(newZone ?? "Pacific/Auckland")}&navigation=1`);
+
+    scores()[0].reply.reject(new Error("new zone unavailable")); await settle();
+    const failed = render(changedProps);
+    expect(cards(failed)).toHaveLength(0);
+    expect(hasRefreshError(failed)).toBe(false);
+    const error = failed.find(node => node.type === EmptyState)!;
+    expect(error.props.title).toBe(en.home.failedToLoad);
+    expect(failed.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher)).toBe(false);
+
+    (error.props.action as { onClick: () => void }).onClick();
+    expect(isLoading(render(changedProps))).toBe(true);
+    scores()[1].reply.resolve(response({ data: [game("new-zone", 2)] })); await settle();
+    expect(cardIds(render(changedProps))).toEqual(["new-zone"]);
+    render(changedProps); expect(scores()).toHaveLength(2);
+
+    const back = render(props);
+    expect(isLoading(back)).toBe(true); expect(cards(back)).toHaveLength(0);
+    scores()[2].reply.reject(new Error("old zone unavailable")); await settle();
+    expect(render(props).some(node => node.type === EmptyState)).toBe(true);
+    const forward = render(changedProps);
+    expect(cardIds(forward)).toEqual(["new-zone"]);
+    expect(hasRefreshError(forward)).toBe(false);
+    expect(forward.some(node => node.type === EmptyState)).toBe(false);
+  });
+
+  it.each([false, true])("does not borrow an old-zone error on the pre-effect render (cached scores: %s)", async hasScores => {
+    const props = { timeZone: "America/New_York", ...(hasScores ? { initialGames: [game("old-zone", 2)], isToday: true } : {}) };
+    const first = render(props);
+    if (hasScores) refresh(first);
+    scores()[0].reply.reject(new Error("old zone failed")); await settle();
+    render(props);
+    const changed = render({ ...props, timeZone: "Asia/Shanghai" });
+    expect(isLoading(changed)).toBe(true);
+    expect(cards(changed)).toHaveLength(0);
+    expect(hasRefreshError(changed)).toBe(false);
+    expect(changed.some(node => node.type === EmptyState)).toBe(false);
+  });
+
+  it.each(["pending", "loaded", "failed"])("ignores stale zone bodies and errors while the latest same-day scope is %s", async currentState => {
+    const props = { initialGames: [game("initial-zone", 2)], timeZone: "America/New_York", isToday: true };
+    const body = deferred();
+    refresh(render(props)); scores()[0].reply.resolve(response(body.promise)); await settle();
+    render({ ...props, timeZone: "Asia/Shanghai" });
+    const latestProps = { ...props, timeZone: "UTC" };
+    render(latestProps);
+    expect(scores().slice(0, 2).every(call => call.signal.aborted)).toBe(true);
+    if (currentState === "loaded") scores()[2].reply.resolve(response({ data: [game("latest-zone", 2)] }));
+    if (currentState === "failed") scores()[2].reply.reject(new Error("latest zone failed"));
+    await settle();
+
+    body.resolve({ data: [game("late-old-zone", 2)] });
+    scores()[1].reply.reject(new Error("late superseded failure")); await settle();
+    const view = render(latestProps);
+    expect(cardIds(view)).toEqual(currentState === "loaded" ? ["latest-zone"] : []);
+    expect(isLoading(view)).toBe(currentState === "pending");
+    expect(hasRefreshError(view)).toBe(false);
+    expect(view.some(node => node.type === EmptyState)).toBe(currentState === "failed");
+    if (currentState !== "loaded") expect(view.some(node => node.type === ScoreTicker || node.type === LiveScoreRefresher)).toBe(false);
+  });
+
+  it.each(["en", "zh"] as const)("renders the full network error description in %s", async locale => {
+    runtime.locale = locale;
+    render(); scores()[0].reply.reject(new Error("offline")); await settle();
+    const error = render().find(node => node.type === EmptyState)!;
+    expect(error.props.title).toBe(getTranslations(locale).home.failedToLoad);
+    expect(error.props.description).toBe(locale === "zh" ? "网络可能较慢，或数据源暂时不可用。" : "Network may be slow or the data source is temporarily unavailable.");
   });
 });

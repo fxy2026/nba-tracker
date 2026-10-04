@@ -472,7 +472,7 @@ const en: Translations = {
     handLength: "Hand Length",
     handWidth: "Hand Width",
     bodyFat: "Body Fat",
-    disclaimer: "Data from NBA Draft Combine. Showing class average if individual data not matched.",
+    disclaimer: "NBA Draft Combine data matched to this player’s ID. Missing or invalid measurements are shown as —.",
   },
 
   playerNews: {

@@ -3,24 +3,28 @@
 import { useEffect, useState } from "react";
 import { Ruler } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { parsePlayerMeasurements, type PlayerMeasurements as Measurements } from "@/lib/player-measurements";
 
-interface Measurements {
-  wingspan: string;
-  standingReach: string;
-  bodyFat: string;
-  handLength: string;
-  handWidth: string;
-  heightNoShoes: string;
+interface MeasurementState {
+  key: string;
+  data: Measurements | null;
 }
 
-export default function PlayerMeasurements({ draftYear }: { draftYear: number | null }) {
+export default function PlayerMeasurements({ playerId, draftYear }: { playerId: number; draftYear: number | null }) {
   const { t } = useLocale();
-  const [data, setData] = useState<Measurements | null>(null);
-  const [loading, setLoading] = useState(!!draftYear);
+  const key = `${playerId}:${draftYear}`;
+  const [result, setResult] = useState<MeasurementState>({ key, data: null });
+  // Reset during render so navigating within a draft class never paints old data,
+  // including A → B → A before B's request finishes.
+  if (result.key !== key) setResult({ key, data: null });
+  const data = result.key === key ? result.data : null;
 
   useEffect(() => {
-    if (!draftYear) return;
+    if (!Number.isSafeInteger(playerId) || playerId <= 0
+      || draftYear === null || !Number.isInteger(draftYear) || draftYear < 1946 || draftYear > 9999) return;
     const controller = new AbortController();
+    let active = true;
+    const isCurrent = () => active && !controller.signal.aborted;
     (async () => {
       try {
         const qs = new URLSearchParams({
@@ -29,46 +33,19 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
           SeasonYear: String(draftYear),
         });
         const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
-        if (!res.ok) { setLoading(false); return; }
-        const json = await res.json();
-        const rs = json.resultSets?.[0];
-        if (!rs || !rs.rowSet?.length) { if (!controller.signal.aborted) setLoading(false); return; }
-
-        // We get all players from that draft year — for now show as "available" indicator
-        // In a real app we'd match by player name, but the API doesn't include player ID consistently
-        const headers: string[] = rs.headers;
-        const wingspanIdx = headers.indexOf("WINGSPAN");
-        const standingReachIdx = headers.indexOf("STANDING_REACH");
-        const bodyFatIdx = headers.indexOf("BODY_FAT_PCT");
-        const handLengthIdx = headers.indexOf("HAND_LENGTH");
-        const handWidthIdx = headers.indexOf("HAND_WIDTH");
-        const heightNoShoesIdx = headers.indexOf("HEIGHT_WO_SHOES");
-        // Store first row as sample (ideally we'd match by player ID)
-        if (rs.rowSet.length > 0) {
-          const row = rs.rowSet[0];
-          if (!controller.signal.aborted) {
-            setData({
-              wingspan: row[wingspanIdx] ? `${row[wingspanIdx]}"` : "-",
-              standingReach: row[standingReachIdx] ? `${row[standingReachIdx]}"` : "-",
-              bodyFat: row[bodyFatIdx] ? `${row[bodyFatIdx]}%` : "-",
-              handLength: row[handLengthIdx] ? `${row[handLengthIdx]}"` : "-",
-              handWidth: row[handWidthIdx] ? `${row[handWidthIdx]}"` : "-",
-              heightNoShoes: row[heightNoShoesIdx] ? `${row[heightNoShoesIdx]}"` : "-",
-            });
-          }
-        }
-      } catch { /* ignore */ }
-      if (!controller.signal.aborted) setLoading(false);
+        if (!isCurrent()) return;
+        if (!res.ok) throw new Error("Combine measurements unavailable");
+        const json: unknown = await res.json();
+        if (isCurrent()) setResult({ key, data: parsePlayerMeasurements(json, playerId) });
+      } catch {
+        if (isCurrent()) setResult({ key, data: null });
+      }
     })();
-    return () => controller.abort();
-  }, [draftYear]);
+    return () => { active = false; controller.abort(); };
+  }, [playerId, draftYear, key]);
 
-  // While the combine API is in flight (or for players without combine data)
-  // render nothing — most users will never see this tile, so reserving height
-  // would be wasted whitespace. The miss case is players who DO have combine
-  // data: returning null here briefly causes a small CLS when the tile appears.
-  // Accepted trade-off since players-with-combine is the minority.
-  if (loading) return null;
+  // Unmatched, unavailable and pending data stay hidden rather than borrowing
+  // another player's measurements or implying that the class average is known.
   if (!data || !draftYear) return null;
 
   return (
@@ -86,7 +63,7 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
         <MeasureCell label={t.playerMeasurements.heightNoShoes} value={data.heightNoShoes} />
         <MeasureCell label={t.playerMeasurements.handLength} value={data.handLength} />
         <MeasureCell label={t.playerMeasurements.handWidth} value={data.handWidth} />
-        <MeasureCell label={t.playerMeasurements.bodyFat} value={data.bodyFat} />
+        <MeasureCell label={t.playerMeasurements.bodyFat} value={data.bodyFat} unit="%" />
       </div>
       <p className="px-4 py-2 text-[10px] text-text-secondary">
         {t.playerMeasurements.disclaimer}
@@ -95,11 +72,11 @@ export default function PlayerMeasurements({ draftYear }: { draftYear: number | 
   );
 }
 
-function MeasureCell({ label, value }: { label: string; value: string }) {
+function MeasureCell({ label, value, unit = '"' }: { label: string; value: number | null; unit?: string }) {
   return (
     <div className="bg-bg-card p-3 text-center">
       <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
-      <p className="text-base font-light font-mono tabular-nums text-text-primary mt-1">{value}</p>
+      <p className="text-base font-light font-mono tabular-nums text-text-primary mt-1">{value === null ? "—" : `${value}${unit}`}</p>
     </div>
   );
 }

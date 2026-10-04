@@ -36,16 +36,25 @@ interface GamesListProps {
 export default function GamesList({ selectedDate, initialGames, isToday, timeZone }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
-  const [{ games, navigation, planned, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; date: string }>({ games: initialGames || [], navigation: null, planned: null, date: selectedDate });
+  // Keep implicit-local identity stable across SSR/hydration. Resolve the actual
+  // browser timezone only in fetchGames, as before.
+  const requestKey = `${selectedDate}:${timeZone ?? "local"}`;
+  const [{ games: responseGames, navigation, planned, key: responseKey }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; key: string }>({ games: initialGames || [], navigation: null, planned: null, key: requestKey });
   const [loading, setLoading] = useState(!initialGames);
-  const [error, setError] = useState(false);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const initialFetchDone = useRef(!!initialGames?.length);
   const [requests] = useState(createLatestRequestGate);
+  // Gate every score consumer before date/timezone effects run. Retained scores
+  // and errors only belong to their requested day and timezone scope.
+  const hasMatchingResults = responseKey === requestKey;
+  const games = useMemo(() => hasMatchingResults ? responseGames : [], [responseGames, hasMatchingResults]);
+  const error = errorKey === requestKey;
 
   const fetchGames = useCallback(async (date: string) => {
     const request = requests.begin();
     const { signal } = request;
-    setError(false);
+    const key = `${date}:${timeZone ?? "local"}`;
+    setErrorKey(null);
     setResults((previous) => ({ ...previous, navigation: null, planned: null }));
     try {
       const gamesRes = await fetch(`/api/games?date=${date}&tz=${encodeURIComponent(timeZone ?? localTz())}&navigation=1`, { signal });
@@ -57,9 +66,9 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
         return order(a.gameStatus) - order(b.gameStatus);
       });
-      setResults({ games: rawGames, planned: gamesJson.planned ? normalizePlannedFixtureView(gamesJson.planned, { mode: "day", date, timeZone: timeZone ?? localTz() }) : null, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, date });
+      setResults({ games: rawGames, planned: gamesJson.planned ? normalizePlannedFixtureView(gamesJson.planned, { mode: "day", date, timeZone: timeZone ?? localTz() }) : null, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, key });
     } catch {
-      if (request.isCurrent()) setError(true);
+      if (request.isCurrent()) setErrorKey(key);
     } finally {
       if (request.isCurrent()) setLoading(false);
     }
@@ -101,7 +110,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
   // Date breakdown for hero display — must run before any early return (rules-of-hooks)
   const dateObj = useMemo(() => new Date(selectedDate + "T12:00:00"), [selectedDate]);
 
-  if (loading) {
+  if (loading || (!hasMatchingResults && !error)) {
     return (
       <div className="mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -132,9 +141,8 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
     );
   }
 
-  // Full-screen error only when we have nothing to show. If a refresh fails
-  // after we already rendered games, fall through and show a soft banner —
-  // stale data beats wiping the UI.
+  // Full-screen error when this scope has nothing to show. A failed same-scope
+  // refresh keeps its scores with a soft banner, never another date/zone's scores.
   if (error && games.length === 0) {
     return (
       <div className="mt-6">
@@ -142,8 +150,8 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
           icon={AlertCircle}
           tone="danger"
           title={t.home.failedToLoad}
-          description="Network may be slow or the data source is temporarily unavailable."
-          action={{ label: t.common.retry, onClick: () => { setError(false); setLoading(true); fetchGames(selectedDate); } }}
+          description={isZh ? "网络可能较慢，或数据源暂时不可用。" : "Network may be slow or the data source is temporarily unavailable."}
+          action={{ label: t.common.retry, onClick: () => { setLoading(true); fetchGames(selectedDate); } }}
         />
       </div>
     );
@@ -161,7 +169,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
           <AlertCircle size={14} className="shrink-0" />
           <span className="flex-1">{t.home.refreshFailed}</span>
           <button
-            onClick={() => { setError(false); fetchGames(selectedDate); }}
+            onClick={() => { fetchGames(selectedDate); }}
             className="font-medium underline decoration-dashed hover:no-underline"
           >
             {t.common.retry}
@@ -349,7 +357,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
             </div>
           )}
         </div>
-      ) : responseDate === selectedDate && planned?.state === "snapshot" ? (
+      ) : hasMatchingResults && planned?.state === "snapshot" ? (
         <PlannedFixtureSection view={planned} />
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
@@ -359,7 +367,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
             <path d="M10,40 Q40,15 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="M10,40 Q40,65 70,40" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <ScheduleEmptyNavigation timeZone={timeZone} date={selectedDate} navigation={responseDate === selectedDate ? navigation : null} isZh={isZh} />
+          <ScheduleEmptyNavigation timeZone={timeZone} date={selectedDate} navigation={hasMatchingResults ? navigation : null} isZh={isZh} />
           {(() => {
             const facts = [
               "Wilt Chamberlain scored 100 points in a single game on March 2, 1962.",

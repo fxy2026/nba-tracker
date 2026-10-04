@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getBoxScore, getPlayerIndex, getFullSchedule, toBeijingTime, type PlayerInfo, type ScoringShot } from "@/lib/api";
 import { getGamePlayByPlay } from "@/lib/game-play-by-play";
 import WithPlayByPlay from "./_components/WithPlayByPlay";
+import WithPlayerInfo from "./_components/WithPlayerInfo";
 import { isPlayoff, findScheduleGame } from "@/lib/games";
 import { buildRecap } from "@/lib/recap";
 import QuarterBars from "@/components/QuarterBars";
@@ -115,15 +116,9 @@ export default async function GamePage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  const [boxScore, playerIndex] = await Promise.all([
-    getBoxScore(id),
-    getPlayerIndex().catch(() => []),
-  ]);
-  // Start one optional request without awaiting it on the basic data path.
+  const boxScore = await getBoxScore(id);
+  // Start optional PBP as soon as the box arrives, independently of player info.
   const pbp = boxScore && boxScore.gameStatus >= 2 ? getGamePlayByPlay(id) : null;
-
-  const playerInfoMap = new Map<number, PlayerInfo>();
-  for (const pi of playerIndex) playerInfoMap.set(pi.personId, pi);
 
   const isZh = locale === "zh";
 
@@ -276,6 +271,14 @@ export default async function GamePage({ params }: PageProps) {
   // Leaders/headlines/shooting splits compute fine from an in-progress box
   // score, so a live viewer gets the same "who's balling" summary as a final.
   const isLiveOrFinal = boxScore.gameStatus >= 2;
+  // Only live/final leaders and box tables use metadata. Share one request,
+  // but keep the hero and basic stats independent of its latency or failure.
+  const emptyPlayerInfo = new Map<number, PlayerInfo>();
+  const playerInfo = isLiveOrFinal
+    ? getPlayerIndex()
+        .then(players => new Map<number, PlayerInfo>(players.map(pi => [pi.personId, pi])))
+        .catch(() => emptyPlayerInfo)
+    : null;
   const isPlayoffs = isPlayoff(boxScore.gameId);
   const dateFromCode = boxScore.gameCode.split("/")[0];
   const backDate = `${dateFromCode.slice(0, 4)}-${dateFromCode.slice(4, 6)}-${dateFromCode.slice(6, 8)}`;
@@ -439,7 +442,11 @@ export default async function GamePage({ params }: PageProps) {
       )}
 
       {isLiveOrFinal && (
-        <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} isLive={isLive} t={t} />
+        <Suspense fallback={<GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={emptyPlayerInfo} isLive={isLive} t={t} />}>
+          <WithPlayerInfo data={playerInfo!}>{playerInfoMap => (
+            <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} isLive={isLive} t={t} />
+          )}</WithPlayerInfo>
+        </Suspense>
       )}
 
       {isFinal && (
@@ -482,8 +489,18 @@ export default async function GamePage({ params }: PageProps) {
               </Suspense>
             </div>}
             <div className="lg:col-span-2 space-y-6">
-              <Suspense fallback={<BoxScoreSection team={boxScore.awayTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.awayTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>
-              <Suspense fallback={<BoxScoreSection team={boxScore.homeTeam} shots={[]} playerInfoMap={playerInfoMap} t={t} />}><WithPlayByPlay data={pbp!}>{({ scoringShots }) => <BoxScoreSection team={boxScore.homeTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayByPlay></Suspense>
+              {/* Both optional inputs resolve within the existing table boundary,
+                  so metadata cannot trigger an extra interactive fallback swap. */}
+              <Suspense fallback={<BoxScoreSection team={boxScore.awayTeam} shots={[]} playerInfoMap={emptyPlayerInfo} t={t} />}>
+                <WithPlayByPlay data={pbp!}>{({ scoringShots }) => (
+                  <WithPlayerInfo data={playerInfo!}>{playerInfoMap => <BoxScoreSection team={boxScore.awayTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayerInfo>
+                )}</WithPlayByPlay>
+              </Suspense>
+              <Suspense fallback={<BoxScoreSection team={boxScore.homeTeam} shots={[]} playerInfoMap={emptyPlayerInfo} t={t} />}>
+                <WithPlayByPlay data={pbp!}>{({ scoringShots }) => (
+                  <WithPlayerInfo data={playerInfo!}>{playerInfoMap => <BoxScoreSection team={boxScore.homeTeam} shots={scoringShots} playerInfoMap={playerInfoMap} t={t} />}</WithPlayerInfo>
+                )}</WithPlayByPlay>
+              </Suspense>
             </div>
           </div>
 

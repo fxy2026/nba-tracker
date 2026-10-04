@@ -97,17 +97,21 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
   // time, matching the timezone-aware grouping in /api/games and /api/calendar.
   // localToday() reads Intl at runtime (UTC on the server, browser tz on the
   // client), so it's only safe to compare against post-mount; pre-mount we use a
-  // sentinel that matches no date, keeping the chip highlight + reset chip absent
-  // on first paint to match the server HTML.
+  // sentinel that matches no date, keeping the chip highlight + reset chip hidden
+  // on first paint to match the server HTML. Reserve the reset chip's width so
+  // learning the local date never squeezes or shifts the date scroller.
   const today = useMemo(() => (mounted ? dateInTz(new Date(), timeZone ?? localTz()) : NO_TODAY), [mounted, timeZone]);
+  const showToday = Boolean(today && selectedDate !== today);
 
   const prevDate = offsetCalendarDate(selectedDate, -1);
   const nextDate = offsetCalendarDate(selectedDate, 1);
 
   return (
+    // At 320px: 8px edge padding + three 44px controls leaves 180px,
+    // enough for the selected 56px chip and both neighbors (176px with gaps).
     <div
       ref={navRef}
-      className="sticky site-sticky-offset z-30 flex items-center justify-center gap-1 -mx-4 px-4 py-2 bg-bg-primary border-b border-border/60"
+      className="sticky site-sticky-offset z-30 flex items-center justify-center gap-0 sm:gap-1 -mx-4 px-1 sm:px-4 py-2 bg-bg-primary border-b border-border/60"
       role="navigation"
       aria-label={isZh ? "日期导航" : "Date navigation"}
     >
@@ -119,7 +123,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
         <ChevronLeft size={20} />
       </button>
 
-      <div ref={daysRef} className="relative flex min-w-0 gap-1 overflow-x-auto overscroll-x-contain scrollbar-hide scroll-snap-x">
+      <div ref={daysRef} className="relative flex flex-1 sm:flex-initial min-w-0 gap-1 overflow-x-auto overscroll-x-contain scrollbar-hide scroll-snap-x">
         {days.map((day) => {
           const isSelected = day.date === selectedDate;
           const isToday = day.date === today;
@@ -128,7 +132,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
               key={day.date}
               onClick={() => navigate(day.date)}
               aria-current={isSelected ? "date" : undefined}
-              className={`flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-all min-w-[56px] cursor-pointer relative ${
+              className={`flex flex-col items-center shrink-0 w-14 sm:w-auto px-1 sm:px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-11 min-w-[56px] cursor-pointer relative ${
                 isSelected
                   ? "bg-accent-gradient text-white shadow-md shadow-accent/30"
                   : isToday
@@ -154,14 +158,14 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
         <ChevronRight size={20} />
       </button>
 
-      {today && selectedDate !== today && (
-        <button
-          onClick={() => navigate(today)}
-          className="shrink-0 min-h-11 px-2 sm:ml-2 sm:px-3 py-1.5 text-xs sm:text-[10px] font-mono uppercase tracking-[0.15em] glass-tile text-text-secondary hover:text-accent transition-colors cursor-pointer"
-        >
-          {t.dateNav.today}
-        </button>
-      )}
+      <button
+        onClick={() => { if (showToday) navigate(today); }}
+        disabled={!showToday}
+        aria-hidden={!showToday || undefined}
+        className={`shrink-0 w-11 sm:w-auto min-w-11 min-h-11 px-0.5 sm:ml-2 sm:px-3 py-1.5 text-xs sm:text-[10px] font-mono uppercase tracking-normal sm:tracking-[0.15em] glass-tile text-text-secondary hover:text-accent transition-colors cursor-pointer ${showToday ? "" : "invisible"}`}
+      >
+        {t.dateNav.today}
+      </button>
 
       {/* Which timezone the date chips are grouped by — removes "is this last
           night or tonight?" ambiguity for non-ET (e.g. Beijing) users. */}

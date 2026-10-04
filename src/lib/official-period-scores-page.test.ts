@@ -113,7 +113,7 @@ describe.each(["en", "zh"] as const)("actual game page archive selection in %s",
     expect(getOfficialPeriodScores).toHaveBeenCalledExactlyOnceWith(game(id));
     expect(regularQuarterBars(result)).toHaveLength(0);
     expect(mocks.box).toHaveBeenCalledExactlyOnceWith(id);
-    expect(mocks.players).toHaveBeenCalledExactlyOnceWith();
+    expect(mocks.players).not.toHaveBeenCalled();
     expect(mocks.full).toHaveBeenCalledExactlyOnceWith();
     expect(mocks.pbp).not.toHaveBeenCalled();
   });

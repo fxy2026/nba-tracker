@@ -472,7 +472,7 @@ const zh: Translations = {
     handLength: "手长",
     handWidth: "手宽",
     bodyFat: "体脂率",
-    disclaimer: "数据来自 NBA 选秀体测。若无个人数据，显示同届平均值。",
+    disclaimer: "数据来自 NBA 选秀体测，并已按球员 ID 匹配；缺失或无效的项目显示为 —。",
   },
 
   playerNews: {

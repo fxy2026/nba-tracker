@@ -466,7 +466,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
           <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         </div>
-        <PlayerMeasurements draftYear={player.draftYear} />
+        <PlayerMeasurements playerId={personId} draftYear={player.draftYear} />
         <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
         <PlayerNews playerName={fullName} />
       </section>

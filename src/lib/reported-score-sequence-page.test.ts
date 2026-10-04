@@ -159,7 +159,7 @@ describe("reported score sequence game-page isolation", () => {
     expect(elementsOf(tree, ProviderPlayerBox)).toHaveLength(0);
     expect(elementsOf(tree, OfficialGameReport)).toHaveLength(1);
     expect(mocks.box).toHaveBeenCalledExactlyOnceWith(gameId);
-    expect(mocks.players).toHaveBeenCalledTimes(1);
+    expect(mocks.players).not.toHaveBeenCalled();
     expect(mocks.schedule).toHaveBeenCalledTimes(1);
     expect(mocks.pbp).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();

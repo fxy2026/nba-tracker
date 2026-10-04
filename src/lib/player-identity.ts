@@ -76,14 +76,22 @@ export function searchPlayerIdentities(players: readonly PlayerIdentity[], query
   const needle = normalizePlayerSearchText(query).slice(0, 100);
   if (!needle) return [];
   const terms = [...new Set(expandQuery(needle).map(normalizePlayerSearchText))];
+  // Unicode name boundaries distinguish Curry from Scurry, including hyphenated
+  // surnames. Compile escaped literal queries once, not once per identity.
+  const wholeNameTerms = terms.map(term => {
+    const literal = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[^\\p{L}\\p{N}])${literal}(?=$|[^\\p{L}\\p{N}])`, "u");
+  });
   const preferredId = preferredAliasPlayerId(needle);
+  // Ambiguous surnames retain name/ID ties: dated coverage is not current activity.
   return players.map(player => {
     const names = [player.name, ...player.aliases].map(normalizePlayerSearchText);
     const team = normalizePlayerSearchText([player.teamAbbr, player.teamLabel].filter(Boolean).join(" "));
     const score = String(player.id) === needle ? 0 : names.includes(needle) ? 1 : player.id === preferredId ? 1.5 : terms.some(term => names.includes(term)) ? 2
-      : terms.some(term => names.some(name => name.startsWith(term))) ? 3
-      : terms.some(term => names.some(name => name.includes(term))) ? 4
-      : terms.some(term => team.includes(term)) ? 5 : 6;
+      : wholeNameTerms.some(term => names.some(name => term.test(name))) ? 3
+      : terms.some(term => names.some(name => name.startsWith(term))) ? 4
+      : terms.some(term => names.some(name => name.includes(term))) ? 5
+      : terms.some(term => team.includes(term)) ? 6 : 7;
     return { player, score };
-  }).filter(match => match.score < 6).sort((a, b) => a.score - b.score || a.player.name.localeCompare(b.player.name, "en") || a.player.id - b.player.id).map(match => match.player);
+  }).filter(match => match.score < 7).sort((a, b) => a.score - b.score || a.player.name.localeCompare(b.player.name, "en") || a.player.id - b.player.id).map(match => match.player);
 }

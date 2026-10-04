@@ -356,20 +356,20 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
               <Link
                 key={g.gameId}
                 href={`/game/${g.gameId}`}
-                className="glass-tile p-3 flex items-center gap-3 group cursor-pointer"
+                className="glass-tile p-3 min-h-11 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:flex sm:gap-3 group cursor-pointer"
               >
-                <div className="shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center bg-bg-hover/60">
-                  <p className="text-[8px] font-mono uppercase text-text-secondary/60">G</p>
-                  <p className="text-xl font-bold font-mono tabular-nums leading-none">{gameNum}</p>
+                <div className="shrink-0 w-fit h-6 px-2 gap-1.5 rounded-lg flex items-center justify-center bg-bg-hover/60 sm:w-12 sm:h-12 sm:px-0 sm:gap-0 sm:rounded-xl sm:flex-col">
+                  <p className="text-[10px] sm:text-[8px] font-mono uppercase text-text-secondary/60">G</p>
+                  <p className="text-xs sm:text-xl font-bold font-mono tabular-nums leading-none">{gameNum}</p>
                 </div>
-                <div className="flex-1 flex items-center gap-3 min-w-0">
-                  <div className="text-right shrink-0 w-20">
+                <div className="col-span-2 row-start-2 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 min-w-0 sm:flex sm:flex-1 sm:gap-3">
+                  <div className="min-w-0 text-left sm:text-right sm:shrink-0 sm:w-20">
                     <p className={`text-base font-bold font-mono ${t1Won ? "text-text-primary" : isFinished ? "text-text-secondary opacity-60" : "text-text-secondary"}`}>
                       {team1.tricode}
                     </p>
                     <p className="text-[9px] font-mono text-text-secondary/50 uppercase">{isT1Home ? (isZh ? "主" : "Home") : (isZh ? "客" : "Away")}</p>
                   </div>
-                  <div className="flex items-baseline gap-2 px-2">
+                  <div className="flex items-baseline gap-2 whitespace-nowrap sm:px-2">
                     <span className={`text-2xl font-light font-mono tabular-nums ${t1Won ? "text-accent-amber" : "text-text-secondary"}`}>
                       {isFinished ? t1Score : "—"}
                     </span>
@@ -378,17 +378,17 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
                       {isFinished ? t2Score : "—"}
                     </span>
                   </div>
-                  <div className="shrink-0 w-20">
+                  <div className="min-w-0 text-right sm:text-left sm:shrink-0 sm:w-20">
                     <p className={`text-base font-bold font-mono ${!t1Won && isFinished ? "text-text-primary" : isFinished ? "text-text-secondary opacity-60" : "text-text-secondary"}`}>
                       {team2.tricode}
                     </p>
                     <p className="text-[9px] font-mono text-text-secondary/50 uppercase">{!isT1Home ? (isZh ? "主" : "Home") : (isZh ? "客" : "Away")}</p>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 text-right whitespace-nowrap shrink-0 sm:block">
                   <p className="text-[10px] font-mono tabular-nums text-text-secondary">{formatted}</p>
                   {isFinished && (
-                    <div className="flex items-center gap-1 justify-end mt-0.5">
+                    <div className="flex items-center gap-1 justify-end sm:mt-0.5">
                       {isOT && <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-accent-amber font-bold">OT</span>}
                       <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">{isZh ? "最终" : "Final"}</span>
                     </div>
