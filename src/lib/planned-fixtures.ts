@@ -1,3 +1,4 @@
+import { createZonedCalendarDate } from "./zoned-calendar-date";
 import { offsetCalendarDate } from './calendar-date';
 import { TEAM_META } from './teams';
 
@@ -61,8 +62,7 @@ export function parsePlannedFixtureQuery(params: URLSearchParams): PlannedFixtur
   return validCalendarDate(from) && /^\d{1,2}$/.test(rawLimit) && limit >= 1 && limit <= 20 ? { ...base, mode: 'upcoming', from, limit } : null;
 }
 export function fixtureDateInZone(utc: string, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(utc));
-  return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type)!.value).join('-');
+  return createZonedCalendarDate(timeZone)(utc);
 }
 /** Reject corrupt or wrongly scoped responses before putting them in a client view. */
 export function normalizePlannedFixtureView(value: unknown, query: PlannedFixtureQuery): PlannedFixtureView | null {
@@ -71,10 +71,11 @@ export function normalizePlannedFixtureView(value: unknown, query: PlannedFixtur
   if (!['snapshot', 'canonical', 'outside-snapshot'].includes(v.state) || v.snapshotDate !== PLANNED_SNAPSHOT_DATE || v.season !== PLANNED_SEASON || v.timeZone !== query.timeZone || !Array.isArray(v.fixtures)) return null;
   const maximum = query.mode === 'upcoming' ? query.limit : query.mode === 'day' ? 15 : 250;
   const keys = new Set<string>();
+  const localDate = createZonedCalendarDate(query.timeZone);
   if (v.fixtures.length > maximum || (v.state !== 'snapshot' && (v.fixtures.length || v.nextAvailableDate !== null))) return null;
   for (const f of v.fixtures) {
     if (!f || !['at', 'vs'].includes(f.relationship) || (f.venue !== null && (!f.venue || typeof f.venue.name !== 'string' || typeof f.venue.city !== 'string')) || f.officialGameId !== null || f.currentStatus !== null || f.scores !== null || !Number.isInteger(f.sourceNumber) || f.sourceNumber < 1 || f.sourceNumber > 1200 || f.key !== `nba-pdf:2026-08-13:by-date:${f.sourceNumber}` || keys.has(f.key) || !Object.hasOwn(TEAM_META, f.awayTricode) || !Object.hasOwn(TEAM_META, f.homeTricode) || f.homeTricode === f.awayTricode || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(f.tipoffUTC) || !Number.isFinite(Date.parse(f.tipoffUTC))) return null;
-    const date = fixtureDateInZone(f.tipoffUTC, query.timeZone);
+    const date = localDate(f.tipoffUTC);
     if ((query.mode === 'day' && date !== query.date) || (query.mode === 'month' && !date.startsWith(query.month + '-')) || (query.mode === 'upcoming' && date < query.from) || (query.team && f.awayTricode !== query.team && f.homeTricode !== query.team)) return null;
     keys.add(f.key);
   }

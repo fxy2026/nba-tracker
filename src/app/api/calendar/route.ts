@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPlannedFixtureView } from "@/lib/planned-fixtures-server";
 import { validCalendarDate, validTimeZone } from "@/lib/planned-fixtures";
 import { getFullSchedule, getScheduleCoverage } from "@/lib/api";
+import { createZonedCalendarDate } from "@/lib/zoned-calendar-date";
 
 interface CalendarGame {
   gameId: string;
@@ -10,20 +11,6 @@ interface CalendarGame {
   gameStatus: number;
   homeScore: number;
   awayScore: number;
-}
-
-// Compute "YYYY-MM-DD" of a UTC instant in the given IANA timezone.
-function dateInTz(utcIso: string, tz: string): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date(utcIso));
-  const y = parts.find((p) => p.type === "year")!.value;
-  const m = parts.find((p) => p.type === "month")!.value;
-  const d = parts.find((p) => p.type === "day")!.value;
-  return `${y}-${m}-${d}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -45,13 +32,14 @@ export async function GET(request: NextRequest) {
     // Group all games of the season by local date (in tz). Then return only
     // those whose local date falls in the requested month.
     const buckets = new Map<string, CalendarGame[]>();
+    const dateInZone = createZonedCalendarDate(tz);
     for (const gd of dates) {
       for (const g of gd.games) {
         // gameDateTimeUTC is required for timezone-correct grouping. Skip
         // games that don't carry it — they remain on the API date instead.
         const utc = g.gameDateTimeUTC;
         if (!utc) continue;
-        const localDate = dateInTz(utc, tz);
+        const localDate = dateInZone(utc);
         if (!localDate.startsWith(month)) continue;
         const bucket = buckets.get(localDate);
         const entry: CalendarGame = {

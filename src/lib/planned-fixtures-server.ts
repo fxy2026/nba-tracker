@@ -2,7 +2,8 @@ import 'server-only';
 import snapshot from '@/data/planned-fixtures-2026-27.json';
 import type { ScheduleDate } from './api';
 import { hasCanonicalSeasonCoverage, type CanonicalScheduleCoverage } from './schedule-coverage';
-import { fixtureDateInZone, PLANNED_SEASON, PLANNED_SNAPSHOT_DATE, type PlannedFixture, type PlannedFixtureQuery, type PlannedFixtureView } from './planned-fixtures';
+import { PLANNED_SEASON, PLANNED_SNAPSHOT_DATE, type PlannedFixture, type PlannedFixtureQuery, type PlannedFixtureView } from './planned-fixtures';
+import { createZonedCalendarDate } from './zoned-calendar-date';
 
 // Array encoding keeps the verified facts small (~120 KB), without raw PDF metadata.
 // [source number, UTC, ET date, ET time, away, home, date page, away page,
@@ -29,8 +30,9 @@ export function getPlannedFixtureView(query: PlannedFixtureQuery, dates: Schedul
   // October can lead users to opening night. This snapshot says nothing about
   // preseason, dates after the regular season, or a subsequent season.
   if (start < '2026-10-01' || start > '2027-04-12') return { ...base, state: 'outside-snapshot' };
+  const localDate = createZonedCalendarDate(query.timeZone);
   const scoped = fixtures.filter(f => !canonicalDatesET.includes(f.dateET) && (!query.team || f.awayTricode === query.team || f.homeTricode === query.team))
-    .map(f => ({ fixture: f, date: fixtureDateInZone(f.tipoffUTC, query.timeZone) }));
+    .map(f => ({ fixture: f, date: localDate(f.tipoffUTC) }));
   const selected = scoped.filter(({ date }) => query.mode === 'day' ? date === query.date : query.mode === 'month' ? date.startsWith(query.month + '-') : date >= query.from);
   const limited = query.mode === 'upcoming' ? selected.slice(0, query.limit) : selected;
   const nextAvailableDate = limited.length === 0 ? scoped.find(({ date }) => date > start)?.date ?? null : null;
