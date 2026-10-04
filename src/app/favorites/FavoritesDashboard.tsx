@@ -67,8 +67,8 @@ export default function FavoritesDashboard() {
   // tricode → injuries[], tricode → latest 1-2 headlines
   const [injuriesByTeam, setInjuriesByTeam] = useState<Record<string, InjuryItem[]>>({});
   const [newsByTeam, setNewsByTeam] = useState<Record<string, NewsItem[]>>({});
-  // Teams whose news we've already fan-out'd this session, so a single unfollow
-  // (which re-runs the favTeams effect) doesn't re-request every remaining team.
+  // Cache only completed news responses. Pending requests are aborted when
+  // follows change and must be retried for the teams that remain followed.
   const newsFetched = useRef(new Set<string>());
   const [copied, setCopied] = useState(false);
 
@@ -143,22 +143,22 @@ export default function FavoritesDashboard() {
     // Query by the unambiguous nickname only ("Lakers"), NOT "Los Angeles
     // Lakers" — the route OR-matches query words, so a city like "Los Angeles"
     // would surface Clippers / generic-LA headlines on the Lakers card.
-    for (const tri of favTeams) {
+    for (const tri of followed) {
       if (newsFetched.current.has(tri)) continue; // already fetched this session
       const meta = TEAM_META[tri];
       if (!meta) continue;
-      newsFetched.current.add(tri); // mark BEFORE fetch so effect re-runs skip it
       const q = meta.name;
       fetch(`/api/news?q=${encodeURIComponent(q)}`, { signal: controller.signal })
-        .then((r) => (r.ok ? r.json() : { data: [] }))
-        .then((json: { data?: NewsItem[] }) => {
-          if (controller.signal.aborted) return;
-          const items = (json.data ?? []).filter((n) => n.headline && n.link).slice(0, 2);
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("news failed"))))
+        .then((json: { data?: NewsItem[] } | null) => {
+          if (controller.signal.aborted || !Array.isArray(json?.data)) return;
+          if (json.data.some((n) => !n || typeof n.headline !== "string" || typeof n.link !== "string" || typeof n.published !== "string")) return;
+          const items = json.data.filter((n) => n.headline && n.link).slice(0, 2);
+          newsFetched.current.add(tri);
           if (items.length) setNewsByTeam((prev) => ({ ...prev, [tri]: items }));
         })
-        .catch(() => {
-          newsFetched.current.delete(tri); // allow retry if aborted/failed
-        });
+        // A stale request must not clear a newer successful response's marker.
+        .catch(() => {});
     }
 
     return () => controller.abort();
