@@ -45,7 +45,7 @@ function AvgMarker({ avg, category, isZh }: { avg: number; category: BoardCatego
   return (
     <div className="flex items-center gap-2 py-0.5">
       <span className="h-px flex-1 bg-accent-amber/40" />
-      <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-accent-amber whitespace-nowrap tabular-nums">
+      <span className="text-xs font-mono uppercase tracking-[0.15em] text-accent-amber whitespace-nowrap tabular-nums">
         {isZh ? "联盟平均" : "League avg"} {formatBoardValue(avg, category.format)}
       </span>
       <span className="h-px flex-1 bg-accent-amber/40" />
@@ -72,17 +72,17 @@ function BoardRow({ row, rank, barPct, category, isZh }: {
   return (
     <Link
       href={`/team/${row.tricode}`}
-      className={`glass-tile p-3 flex items-center gap-3 group cursor-pointer ${rank === 1 ? "bg-accent-amber/[0.04]" : ""}`}
+      className={`glass-tile min-h-11 p-3 flex items-center gap-2 sm:gap-3 group cursor-pointer ${rank === 1 ? "bg-accent-amber/[0.04]" : ""}`}
     >
       <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
         {rank}
       </span>
       <Image src={teamLogoUrl(row.teamId)} alt={row.tricode} width={32} height={32} unoptimized />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-text-primary group-hover:text-accent transition-colors truncate">
+        <p className="text-sm font-bold text-text-primary group-hover:text-accent transition-colors leading-snug break-words">
           {meta ? `${meta.city} ${meta.name}` : row.tricode}
         </p>
-        <p className="text-[10px] font-mono text-text-secondary truncate">{isZh ? row.detailZh : row.detailEn}</p>
+        <p className="text-xs font-mono text-text-secondary leading-snug">{isZh ? row.detailZh : row.detailEn}</p>
       </div>
       <div className="hidden sm:block w-24 h-1.5 bg-bg-hover rounded-full overflow-hidden shrink-0">
         <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${barPct}%` }} />
@@ -108,7 +108,7 @@ function Board({ rows, category, isZh }: { rows: TeamBoardRow[]; category: Board
 
   return (
     <div>
-      <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary mb-2">
+      <p className="text-xs font-mono uppercase tracking-[0.15em] text-text-secondary mb-2">
         {category.source === "schedule"
           ? (isZh ? "由赛程比分计算 · 常规赛场均" : "Computed from final scores · regular season, per game")
           : (isZh ? "数据来源 stats.nba.com · 常规赛场均" : "Source stats.nba.com · regular season, per game")}
@@ -126,7 +126,7 @@ function Board({ rows, category, isZh }: { rows: TeamBoardRow[]; category: Board
   );
 }
 
-export default function TeamStatBoards({ scheduleBoards }: { scheduleBoards: ScheduleBoards }) {
+export default function TeamStatBoards({ scheduleBoards, recorded = false }: { scheduleBoards: ScheduleBoards; recorded?: boolean }) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [cat, setCat] = useState<CategoryKey>("PTS");
@@ -135,6 +135,7 @@ export default function TeamStatBoards({ scheduleBoards }: { scheduleBoards: Sch
   const [failed, setFailed] = useState(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
+    if (recorded) return;
     setLoading(true);
     setFailed(false);
     try {
@@ -150,17 +151,19 @@ export default function TeamStatBoards({ scheduleBoards }: { scheduleBoards: Sch
       setFailed(true);
     }
     setLoading(false);
-  }, []);
+  }, [recorded]);
 
   // load() internally calls setLoading(true) → intentional mount-time fetch.
   useEffect(() => {
+    if (recorded) return;
     const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(controller.signal);
     return () => controller.abort();
-  }, [load]);
+  }, [load, recorded]);
 
-  const category = CATEGORIES.find((c) => c.key === cat) ?? CATEGORIES[0];
+  const categories = recorded ? CATEGORIES.filter(c => c.source === "schedule") : CATEGORIES;
+  const category = categories.find((c) => c.key === cat) ?? CATEGORIES[0];
   const rows =
     category.source === "schedule"
       ? scheduleBoards[category.key as ScheduleCategoryKey]
@@ -174,12 +177,12 @@ export default function TeamStatBoards({ scheduleBoards }: { scheduleBoards: Sch
         role="group"
         aria-label={isZh ? "数据类别" : "Stat category"}
       >
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
             key={c.key}
             onClick={() => setCat(c.key)}
             aria-pressed={cat === c.key}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+            className={`min-h-11 px-3 py-2 text-sm font-medium rounded-md transition-all cursor-pointer ${
               cat === c.key ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
             }`}
           >

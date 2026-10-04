@@ -92,6 +92,17 @@ export default async function ByCollegePage() {
   const singles = groups.filter((g) => g.count === 1).sort((a, b) => (b.bestPpg ?? -1) - (a.bestPpg ?? -1));
 
   const maxCount = topColleges[0]?.count || 1;
+  const renderSingle = (g: CollegeGroup) => (
+    <Link
+      key={g.college}
+      href={`/player/${g.topThree[0].personId}`}
+      className="flex min-h-11 min-w-0 max-w-full flex-col justify-center gap-1 whitespace-normal break-words text-xs font-mono px-2 py-2 rounded-md bg-bg-hover/60 hover:bg-accent/15 hover:text-accent text-text-secondary transition-colors cursor-pointer sm:text-[10px] sm:py-1"
+      title={`${g.college} · ${g.topThree[0].firstName} ${g.topThree[0].lastName} (${playerIndexStat(g.bestPpg)} PPG)`}
+    >
+      <span className="font-semibold text-text-primary">{g.topThree[0].firstName} {g.topThree[0].lastName}</span>
+      <span>{g.college}</span>
+    </Link>
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -130,7 +141,7 @@ export default async function ByCollegePage() {
               <div key={g.college} className={`glass-tile p-4 ${isTop3 ? "bg-accent-amber/[0.03]" : ""}`}>
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-text-primary truncate flex items-center gap-2">
+                    <p className="text-sm font-bold text-text-primary whitespace-normal break-words flex items-start gap-2">
                       {i === 0 && <span className="text-[#FFD700]">🥇</span>}
                       {i === 1 && <span className="text-[#C0C0C0]">🥈</span>}
                       {i === 2 && <span className="text-[#CD7F32]">🥉</span>}
@@ -156,10 +167,10 @@ export default async function ByCollegePage() {
                     <Link
                       key={p.personId}
                       href={`/player/${p.personId}`}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                      className="flex min-h-11 sm:min-h-0 items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
                     >
                       <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={26} />
-                      <span className="text-xs font-medium text-text-primary group-hover:text-accent transition-colors truncate flex-1">
+                      <span className="text-xs font-medium text-text-primary group-hover:text-accent transition-colors whitespace-normal break-words min-w-0 flex-1">
                         {p.firstName} {p.lastName}
                       </span>
                       <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary shrink-0">{p.teamAbbr}</span>
@@ -187,7 +198,7 @@ export default async function ByCollegePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {midColleges.map((g) => (
               <div key={g.college} className="glass-tile p-3">
-                <p className="text-xs font-bold text-text-primary truncate">{g.college}</p>
+                <p className="text-xs font-bold text-text-primary whitespace-normal break-words">{g.college}</p>
                 <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary/60 mb-1.5">
                   {isZh ? "最高场均得分" : "Best snapshot PPG"} <span className="tabular-nums text-text-secondary">{playerIndexStat(g.bestPpg)}</span>
                 </p>
@@ -196,9 +207,9 @@ export default async function ByCollegePage() {
                     <Link
                       key={p.personId}
                       href={`/player/${p.personId}`}
-                      className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-bg-hover hover:bg-accent/15 hover:text-accent text-text-secondary transition-colors cursor-pointer"
+                      className="inline-flex min-h-11 sm:min-h-0 max-w-full items-center whitespace-normal break-words text-xs sm:text-[10px] font-mono px-2 py-1 sm:px-1.5 sm:py-0.5 rounded-md bg-bg-hover hover:bg-accent/15 hover:text-accent text-text-secondary transition-colors cursor-pointer"
                     >
-                      {p.firstName[0]}. {p.lastName}
+                      {p.firstName} {p.lastName}
                     </Link>
                   ))}
                 </div>
@@ -221,18 +232,14 @@ export default async function ByCollegePage() {
           </div>
           <div className="glass-tile p-4">
             <div className="flex flex-wrap gap-1.5">
-              {singles.slice(0, 60).map((g) => (
-                <Link
-                  key={g.college}
-                  href={`/player/${g.topThree[0].personId}`}
-                  className="text-[10px] font-mono px-2 py-1 rounded-md bg-bg-hover/60 hover:bg-accent/15 hover:text-accent text-text-secondary transition-colors cursor-pointer truncate max-w-[200px]"
-                  title={`${g.college} · ${g.topThree[0].firstName} ${g.topThree[0].lastName} (${playerIndexStat(g.bestPpg)} PPG)`}
-                >
-                  {g.college}
-                </Link>
-              ))}
+              {singles.slice(0, 60).map(renderSingle)}
               {singles.length > 60 && (
-                <span className="text-[10px] font-mono px-2 py-1 text-text-secondary/60">+{singles.length - 60} {isZh ? "更多" : "more"}</span>
+                <details className="w-full min-w-0">
+                  <summary className="min-h-11 cursor-pointer text-xs font-mono text-accent px-2 py-3 rounded-md hover:bg-bg-hover">
+                    {isZh ? `查看其余 ${singles.length - 60} 个来源分组` : `Show remaining ${singles.length - 60} background groups`}
+                  </summary>
+                  <div className="mt-2 flex flex-wrap gap-1.5">{singles.slice(60).map(renderSingle)}</div>
+                </details>
               )}
             </div>
           </div>

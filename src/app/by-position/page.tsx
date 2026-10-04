@@ -169,22 +169,22 @@ export default async function ByPositionPage(props: DirectoryPageProps) {
                       <Link
                         key={p.personId}
                         href={`/player/${p.personId}`}
-                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-bg-hover/60 transition-colors group cursor-pointer"
+                        className="grid grid-cols-[1.75rem_2.25rem_minmax(0,1fr)] items-center gap-x-2 gap-y-2 p-2.5 rounded-xl hover:bg-bg-hover/60 transition-colors group cursor-pointer sm:flex sm:gap-3"
                       >
                         <span className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold font-mono tabular-nums shrink-0 ${medalBg}`}>
                           {i + 1}
                         </span>
                         <PlayerHeadshot personId={p.personId} name={`${p.firstName} ${p.lastName}`} size={36} />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-text-primary group-hover:text-accent transition-colors truncate text-sm">
+                          <p className="font-medium text-text-primary group-hover:text-accent transition-colors whitespace-normal break-words text-sm sm:truncate">
                             {p.firstName} {p.lastName}
                           </p>
                           <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
                             {p.teamAbbr || "—"} · {p.position} · {p.height}
                           </p>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="text-right">
+                        <div className="col-start-2 col-span-2 flex items-center gap-3 shrink-0 sm:ml-auto">
+                          <div className="flex items-baseline gap-2 sm:block sm:text-right">
                             <p className="text-[8px] font-mono uppercase tracking-[0.15em] text-text-secondary/60">P/R/A</p>
                             <p className="text-sm font-mono tabular-nums text-text-primary">
                               {playerIndexStat(p.pts)}/{playerIndexStat(p.reb)}/{playerIndexStat(p.ast)}

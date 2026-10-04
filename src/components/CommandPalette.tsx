@@ -226,7 +226,7 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={isZh ? "跳转到任意页面 · 搜索 35+ 个页面..." : "Jump to anywhere · search 35+ pages..."}
+            placeholder={isZh ? "搜索页面..." : "Search pages..."}
             aria-label={isZh ? "搜索页面" : "Search pages"}
             role="combobox"
             aria-expanded="true"

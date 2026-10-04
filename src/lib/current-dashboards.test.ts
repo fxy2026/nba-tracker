@@ -38,7 +38,7 @@ for (const [name, load] of pages) {
     it("shows an empty state when only archived finished games exist", async () => {
       getCurrentSeasonSchedule.mockResolvedValue(scheduleForSeason(archive, "2026-27"));
       const { default: Page } = await load();
-      const html = renderToStaticMarkup(await Page());
+      const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
       expect(html).toMatch(/No data|No ranking data/);
       expect(getCurrentSeasonSchedule).toHaveBeenCalledOnce();
       expect(getFullSchedule).not.toHaveBeenCalled();
@@ -46,7 +46,7 @@ for (const [name, load] of pages) {
     it("uses only the first new-season game, without old wins or averages", async () => {
       getCurrentSeasonSchedule.mockResolvedValue(scheduleForSeason([...archive, ...current], "2026-27"));
       const { default: Page } = await load();
-      const html = renderToStaticMarkup(await Page());
+      const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
       const text = html.replace(/<[^>]+>/g, "");
       expect(text).toMatch(/BOS|Boston Celtics/); expect(text).toMatch(/NYK|New York Knicks/);
       if (name === "team stats") {

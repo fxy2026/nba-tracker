@@ -321,3 +321,9 @@ it('phone dialog follows the visual viewport through keyboard open and dismissal
   setOpen(false);
   expect(viewport.removeEventListener).toHaveBeenCalledTimes(2);
 });
+
+it.each(['en', 'zh'])('shows a count-free page-search prompt in %s', async locale => {
+  context.locale = locale;
+  await show();
+  expect(input().props.placeholder).toBe(locale === 'zh' ? '搜索页面...' : 'Search pages...');
+});

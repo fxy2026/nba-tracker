@@ -1,11 +1,7 @@
-// Static NBA all-time career leaders — career stats are NBA-official as of
-// the start of the 2025-26 season. Active players' numbers may shift.
-//
-// Why static: NBA's CDN playerIndex only contains *active* players (missing
-// MJ, Kobe, Wilt, Kareem, etc), and its pts/reb/ast fields are LAST-SEASON
-// averages — not career averages. stats.nba.com career endpoints are CORS-
-// blocked from both browsers and Vercel IPs. So a hardcoded dataset is the
-// only reliable way to render a true all-time leaderboard.
+// Manually curated static career reference, not a complete NBA leaderboard.
+// No verified statistics as-of date or per-record source URLs are recorded.
+// These hardcoded values do not update automatically. Identity reconciliation
+// below is separate from statistical verification; it does not date the stats.
 
 export interface AllTimeLeader {
   // Real NBA personId — used for /player/{id} link AND headshot URL.
@@ -13,9 +9,9 @@ export interface AllTimeLeader {
   personId: number;
   name: string;
   fromYear: number;
-  toYear: number;     // 2026 for currently-active players
-  active: boolean;
-  team: string;       // Most-associated team tricode
+  toYear: number;     // Stored endpoint; not a verified current-season marker
+  active: boolean;   // Stored snapshot status, not a live roster check
+  team: string;       // Most-associated team tricode, not current roster
   // Career per-game averages
   ppg: number;
   rpg: number;
@@ -31,7 +27,8 @@ export interface AllTimeLeader {
 }
 
 // NBA identities were reconciled against the official 2026-10-03 all-player
-// registry. Historical career statistics below retain their original snapshot.
+// registry. This is an identity reconciliation date only, not a statistics date.
+// Historical career statistics below retain their undated reference values.
 export const ALL_TIME_LEADERS: AllTimeLeader[] = [
   // ─── Active superstars (real personIds for headshots + /player linking) ───
   { personId: 2544, name: "LeBron James", fromYear: 2003, toYear: 2026, active: true, team: "LAL",
@@ -209,6 +206,7 @@ export function getLeaderboard(
 ): (AllTimeLeader & { _value: number; _seasons: number })[] {
   return ALL_TIME_LEADERS
     .map((p) => {
+      // Legacy field name: inclusive recorded year span, not NBA seasons played.
       const seasons = p.toYear - p.fromYear + 1;
       const value = category === "tenure" ? seasons : p[category];
       return { ...p, _value: value ?? 0, _seasons: seasons };
