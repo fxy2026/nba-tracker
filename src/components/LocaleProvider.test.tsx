@@ -4,10 +4,12 @@ import type { Locale, Translations } from "@/locales/types";
 import { getTranslations } from "@/locales";
 
 // Execute real provider effects and toggle handlers with deterministic hooks.
-// Browser storage, cookies, and reload are mocks; no browser or network is used.
+// Browser storage, cookies, and router operations are mocks; no browser or network is used.
 const runtime = vi.hoisted(() => ({
-  effects: [] as (() => void)[], context: undefined as unknown,
+  effects: [] as (() => void)[], context: undefined as unknown, refresh: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: runtime.refresh }) }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: cookie.split(";")[0]?.split("=")[1] }) }) }));
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
   useEffect: (effect: () => void) => { runtime.effects.push(effect); },
@@ -17,10 +19,12 @@ vi.mock("react", async original => ({
 }));
 import { LocaleProvider } from "./LocaleProvider";
 import LocaleToggle from "./LocaleToggle";
+import { getLocale } from "@/lib/locale";
 
-type Value = { locale: Locale; t: Translations; setLocale: (next: Locale) => void };
+type Value = { locale: Locale; t: Translations; setLocale: (next: Locale, refreshRoute?: () => void) => void };
 const storage = { getItem: vi.fn(), setItem: vi.fn() };
 const reload = vi.fn();
+const location = { pathname: "/", reload };
 const cookieWrite = vi.fn();
 let cookie: string;
 function render(initialLocale: Locale) {
@@ -36,9 +40,9 @@ function toggle() {
 beforeEach(() => {
   runtime.effects = []; runtime.context = undefined; cookie = "";
   storage.getItem.mockReset().mockReturnValue(null); storage.setItem.mockReset();
-  reload.mockReset(); cookieWrite.mockReset();
+  reload.mockReset(); cookieWrite.mockReset(); runtime.refresh.mockReset(); location.pathname = "/";
   vi.stubGlobal("localStorage", storage);
-  vi.stubGlobal("window", { location: { reload } });
+  vi.stubGlobal("window", { location });
   vi.stubGlobal("document", {
     get cookie() { return cookie; },
     set cookie(value: string) { cookie = value; cookieWrite(value); },
@@ -96,3 +100,87 @@ for (const locale of ["en", "zh"] as const) {
     });
   });
 }
+
+describe("admin-only locale refresh", () => {
+  it.each(["/admin", "/admin/", "/admin/operations"])("refreshes %s after writing only the existing locale preference", pathname => {
+    location.pathname = pathname;
+    render("zh"); flushEffects(); storage.setItem.mockClear();
+    toggle();
+    expect(cookieWrite).toHaveBeenCalledExactlyOnceWith("locale=en;path=/;max-age=31536000;SameSite=Lax");
+    expect(storage.setItem).toHaveBeenCalledExactlyOnceWith("locale", "en");
+    expect(runtime.refresh).toHaveBeenCalledExactlyOnceWith();
+    expect(cookieWrite.mock.invocationCallOrder[0]).toBeLessThan(storage.setItem.mock.invocationCallOrder[0]);
+    expect(storage.setItem.mock.invocationCallOrder[0]).toBeLessThan(runtime.refresh.mock.invocationCallOrder[0]);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it.each(["/", "/news", "/administrator", "/admin-tools", "/team/admin", "/ADMIN"])("keeps document reload on public route %s", pathname => {
+    location.pathname = pathname;
+    render("zh"); toggle();
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(runtime.refresh).not.toHaveBeenCalled();
+  });
+
+  it("retains the reload fallback for a caller without a route refresh callback", () => {
+    location.pathname = "/admin";
+    render("zh").setLocale("en");
+    expect(cookie).toBe("locale=en;path=/;max-age=31536000;SameSite=Lax");
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(runtime.refresh).not.toHaveBeenCalled();
+  });
+
+  it.each(["zh", "en"] as const)("keeps pending and repeated %s switches consistent until the server locale arrives", async locale => {
+    location.pathname = "/admin";
+    const next = locale === "zh" ? "en" : "zh";
+    render(locale); flushEffects();
+    toggle();
+    // No optimistic dictionary or document reload while a refresh is pending.
+    expect(render(locale)).toMatchObject({ locale, t: getTranslations(locale) });
+    toggle();
+    expect(cookieWrite.mock.calls).toEqual([
+      [`locale=${next};path=/;max-age=31536000;SameSite=Lax`],
+      [`locale=${next};path=/;max-age=31536000;SameSite=Lax`],
+    ]);
+    expect(runtime.refresh).toHaveBeenCalledTimes(2);
+    const serverLocale = await getLocale();
+    expect(serverLocale).toBe(next);
+    const value = render(serverLocale); flushEffects();
+    expect(value.t.admin.login).toBe(getTranslations(serverLocale).admin.login);
+    expect(LocaleToggle().props["aria-label"]).toBe(next === "en" ? value.t.locale.switchToChinese : value.t.locale.switchToEnglish);
+    toggle();
+    expect(await getLocale()).toBe(locale);
+    expect(render(await getLocale())).toMatchObject({ locale, t: getTranslations(locale) });
+    expect(runtime.refresh).toHaveBeenCalledTimes(3);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("uses the current route after an interrupted refresh and Back/Forward, without queued retries", () => {
+    location.pathname = "/admin";
+    const { setLocale } = render("zh"); flushEffects();
+    setLocale("en", runtime.refresh); // Leave this request unresolved, as when navigation interrupts it.
+    location.pathname = "/news";
+    setLocale("zh", runtime.refresh);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(runtime.refresh).toHaveBeenCalledTimes(1);
+    location.pathname = "/admin"; // Browser Back: same stable provider callback.
+    setLocale("en", runtime.refresh);
+    expect(runtime.refresh).toHaveBeenCalledTimes(2);
+    location.pathname = "/news"; // Browser Forward does not trigger an effect retry.
+    flushEffects();
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(runtime.refresh).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["read", "write", "access"])("still refreshes admin when locale storage %s is blocked", failure => {
+    location.pathname = "/admin";
+    const error = new DOMException("Storage unavailable", "SecurityError");
+    if (failure === "read") storage.getItem.mockImplementation(() => { throw error; });
+    if (failure === "write") storage.setItem.mockImplementation(() => { throw error; });
+    if (failure === "access") Object.defineProperty(globalThis, "localStorage", { configurable: true, get: () => { throw error; } });
+    render("zh");
+    expect(flushEffects).not.toThrow(); expect(toggle).not.toThrow();
+    expect(cookie).toBe("locale=en;path=/;max-age=31536000;SameSite=Lax");
+    expect(runtime.refresh).toHaveBeenCalledTimes(1);
+    expect(reload).not.toHaveBeenCalled();
+  });
+});

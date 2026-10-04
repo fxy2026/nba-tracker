@@ -4,6 +4,7 @@ import type { Locale } from "@/locales/types";
 
 const runtime = vi.hoisted(() => ({ cookie: undefined as string | undefined }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => runtime.cookie === undefined ? undefined : { value: runtime.cookie } }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 import NewsPage, { generateMetadata } from "@/app/news/page";
 import { getLocale } from "./locale";
 import { LocaleProvider } from "@/components/LocaleProvider";

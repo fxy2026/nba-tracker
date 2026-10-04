@@ -1,13 +1,15 @@
 "use client";
 
 import { useLocale } from "./LocaleProvider";
+import { useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
 
 export default function LocaleToggle() {
+  const { refresh } = useRouter();
   const { locale, t, setLocale } = useLocale();
 
   const toggle = () => {
-    setLocale(locale === "zh" ? "en" : "zh");
+    setLocale(locale === "zh" ? "en" : "zh", refresh);
   };
 
   return (

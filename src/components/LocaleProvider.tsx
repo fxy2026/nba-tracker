@@ -10,7 +10,7 @@ const dictionaries: Record<Locale, Translations> = { zh, en };
 interface LocaleContextValue {
   locale: Locale;
   t: Translations;
-  setLocale: (l: Locale) => void;
+  setLocale: (l: Locale, refreshRoute?: () => void) => void;
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
@@ -45,15 +45,23 @@ export function LocaleProvider({
   // hasn't changed, causing every useLocale() consumer (basically every
   // client component on the site — Navbar, Footer, GamesList, every t.x
   // call) to re-render unnecessarily.
-  const setLocale = useCallback((next: Locale) => {
+  const setLocale = useCallback((next: Locale, refreshRoute?: () => void) => {
     document.cookie = `locale=${next};path=/;max-age=31536000;SameSite=Lax`;
     try {
       localStorage.setItem("locale", next);
     } catch {
-      // Storage failures must not prevent the cookie-backed reload.
+      // Storage failures must not prevent the cookie-backed update.
     }
-    // Keep the current UI consistent until server and client reload together.
-    window.location.reload();
+    // Read the current URL at click time, including after Back/Forward. Admin
+    // access lives only in React state: a document reload would discard it.
+    // Refresh merges the cookie-derived server locale without remounting that
+    // state. Leave public routes on their existing full-reload behavior.
+    const pathname = window.location.pathname;
+    if (refreshRoute && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+      refreshRoute();
+    } else {
+      window.location.reload();
+    }
   }, []);
 
   // PERF: memoize the context value so its reference is stable across renders.

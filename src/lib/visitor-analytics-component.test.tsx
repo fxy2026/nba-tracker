@@ -22,7 +22,7 @@ vi.mock("react", () => ({
     if (!fixture.effect || deps.some((value, index) => !Object.is(value, fixture.effect!.deps[index]))) fixture.pending = { run, deps };
   },
 }));
-import VisitorAnalytics from "@/components/VisitorAnalytics";
+import VisitorAnalytics from "@/components/VisitorAnalyticsRuntime";
 
 const config = { enabled: true, productionOrigin: "https://nba.xpy.me" };
 let win: {

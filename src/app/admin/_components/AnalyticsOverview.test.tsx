@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import styles from "../admin.module.css";
 import type { VisitorAnalytics } from "./AnalyticsOverview";
 import { AnalyticsContent, AnalyticsSkeleton, chartPoints, validAnalytics } from "./AnalyticsOverview";
 
@@ -31,6 +32,16 @@ describe("honest analytics presentation", () => {
     expect(html).toContain(status === "unconfigured" ? "isn&#x27;t connected yet" : "temporarily unavailable");
     expect(html).not.toContain("<svg viewBox=\"0 0 776"); expect(html).not.toContain(">0<");
   });
+  it.each([false, true])("explains non-ready analytics before unknown metrics, Chinese=%s", zh => {
+    for (const status of ["unconfigured", "unavailable"] as const) {
+      const html = render(analyticsFixture({ status, collectedSince: null, today: null, period: null, series: null, pages: null, devices: null, referrers: null }), zh);
+      const metricsStart = html.indexOf(`class="${styles.metrics}"`);
+      expect(html).toMatch(new RegExp(`^<div class="${styles.status}" role="${status === "unavailable" ? "alert" : "status"}">`));
+      expect(metricsStart).toBeGreaterThan(html.indexOf(zh ? "重新检查" : "Check again"));
+      expect(html.match(/>—</g)).toHaveLength(4);
+      expect(html).not.toContain(zh ? "这段时间还没有记录到页面浏览" : "No page views have been recorded in this period");
+    }
+  });
   it.each([false, true])("keeps unknown collection history distinct from a verified empty store, Chinese=%s", zh => {
     for (const status of ["unconfigured", "unavailable"] as const) {
       const html = render(analyticsFixture({ status, collectedSince: null, today: null, period: null, series: null, pages: null, referrers: null, devices: null }), zh);
@@ -42,7 +53,7 @@ describe("honest analytics presentation", () => {
   });
   it("shows zero only for actual empty persisted results", () => {
     const empty = analyticsFixture({ collectedSince: null, today: { pageViews: 0, visitors: null, identifiedPageViews: 0, missingIdentityPageViews: 0 }, period: { pageViews: 0, visitorDays: null, avgDailyVisitors: null, observedDays: 0, identifiedPageViews: 0, missingIdentityPageViews: 0 }, series: [], pages: [], devices: [], referrers: [] });
-    const html = render(empty); expect(html.match(/>0</g)).toHaveLength(2); expect(html).toContain("No page views have been recorded"); expect(html).not.toContain(">0%.");
+    const html = render(empty); expect(html.startsWith(`<div class="${styles.metrics}">`)).toBe(true); expect(html).not.toContain(`class="${styles.status}"`); expect(html.match(/>0</g)).toHaveLength(2); expect(html).toContain("No page views have been recorded"); expect(html).not.toContain(">0%.");
   });
   it("exposes daily exact values, partial collection coverage and cap warning", () => {
     const data = analyticsFixture({ limited: true, today: { pageViews: 12, visitors: 2, identifiedPageViews: 4, missingIdentityPageViews: 8 }, period: { pageViews: 12, visitorDays: 2, avgDailyVisitors: 2, identifiedPageViews: 4, missingIdentityPageViews: 8, observedDays: 1 }, series: [{ date: "2026-10-04", pageViews: 12, visitors: 2, identifiedPageViews: 4, missingIdentityPageViews: 8 }] });

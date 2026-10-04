@@ -57,6 +57,25 @@ beforeEach(() => { hooks.cursor = 0; hooks.slots = []; hooks.effects.clear(); ho
 afterEach(() => { unmount(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("real admin component auth callbacks", () => {
+  it("preserves pending login and authenticated state across server locale updates", async () => {
+    const pending = deferred<Response>(); fetchMock.mockReturnValueOnce(pending.promise);
+    let tree = render(AdminPage); change(find(tree, node => node.props.id === "admin-password"), "test-only-password");
+    const login = submit(render(AdminPage)); const signal = fetchMock.mock.calls[0][1]?.signal;
+    for (const locale of ["zh", "en", "zh"] as const) {
+      hooks.locale = locale; tree = render(AdminPage);
+      expect(find(tree, node => node.props.id === "admin-password").props.value).toBe("test-only-password");
+      expect(find(tree, node => node.type === "button" && node.props.type === "submit").props.disabled).toBe(true);
+      expect(signal?.aborted).toBe(false); expect(fetchMock).toHaveBeenCalledTimes(1);
+    }
+    pending.resolve(response({ success: true })); await login; tree = render(AdminPage);
+    expect(hasText(tree, "运营中心")).toBe(true);
+    hooks.locale = "en"; tree = render(AdminPage);
+    expect(hasText(tree, "Control room")).toBe(true);
+    expect(find(tree, node => node.type === AnalyticsOverview).props.password).toBe("test-only-password");
+    expect(elements(tree).some(node => node.props.id === "admin-password")).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("deduplicates repeated login, signs out with cleared credentials, and supports a fresh login", async () => {
     const pending = deferred<Response>(); fetchMock.mockReturnValueOnce(pending.promise);
     let tree = render(AdminPage); change(find(tree, node => node.props.id === "admin-password"), "test-only-password"); tree = render(AdminPage);
@@ -85,6 +104,30 @@ describe("real admin component auth callbacks", () => {
 });
 
 describe("real analytics component async flows", () => {
+  it("keeps the selected range across locale changes and ignores old-locale unauthorized responses", async () => {
+    const seven = deferred<Response>(); const oldThirty = deferred<Response>(); const translatedThirty = deferred<Response>();
+    fetchMock.mockReturnValueOnce(seven.promise).mockReturnValueOnce(oldThirty.promise).mockReturnValueOnce(translatedThirty.promise);
+    const oldUnauthorized = vi.fn(); const currentUnauthorized = vi.fn();
+    const component = () => AnalyticsOverview({ password: "test", onUnauthorized: hooks.locale === "en" ? oldUnauthorized : currentUnauthorized });
+    let tree = render(component);
+    click(find(tree, node => node.type === "button" && node.props.children === "30 days")); render(component);
+    const oldSignal = fetchMock.mock.calls[1][1]?.signal;
+    hooks.locale = "zh"; tree = render(component);
+    expect(oldSignal?.aborted).toBe(true);
+    expect(find(tree, node => node.type === "button" && node.props.children === "近 30 天").props["aria-pressed"]).toBe(true);
+    expect(fetchMock.mock.calls.map(call => call[0])).toEqual(["/api/admin/analytics?days=7", "/api/admin/analytics?days=30", "/api/admin/analytics?days=30"]);
+    translatedThirty.resolve(response(report(30))); await flush();
+    oldThirty.resolve(response({ error: "Unauthorized" }, 401)); seven.resolve(response({ error: "Unauthorized" }, 401)); await flush();
+    tree = render(component);
+    expect((find(tree, node => node.type === AnalyticsContent).props.data as VisitorAnalytics).range.days).toBe(30);
+    expect(oldUnauthorized).not.toHaveBeenCalled(); expect(currentUnauthorized).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce(response(report(30))); hooks.locale = "en"; render(component); await flush(); tree = render(component);
+    expect(find(tree, node => node.type === "button" && node.props.children === "30 days").props["aria-pressed"]).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock.mock.calls[3][0]).toBe("/api/admin/analytics?days=30");
+    expect(oldUnauthorized).not.toHaveBeenCalled(); expect(currentUnauthorized).not.toHaveBeenCalled();
+  });
+
   it("keeps the newest range when the old request finishes later and repeated current-range clicks do nothing", async () => {
     const seven = deferred<Response>(); const thirty = deferred<Response>(); fetchMock.mockReturnValueOnce(seven.promise).mockReturnValueOnce(thirty.promise);
     const component = () => AnalyticsOverview({ password: "test", onUnauthorized: vi.fn() }); let tree = render(component);

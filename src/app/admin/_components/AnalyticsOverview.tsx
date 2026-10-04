@@ -120,18 +120,19 @@ export function AnalyticsContent({ data, zh, onRetry }: { data: VisitorAnalytics
   const coverage = period && period.pageViews > 0 ? Math.min(100, Math.round(period.identifiedPageViews / period.pageViews * 100)) : null;
 
   return <>
+    {!ready && <div className={styles.status} role={data.status === "unavailable" ? "alert" : "status"}>
+      <div className={styles.statusIcon}><Database size={23} /></div>
+      <h3>{data.status === "unconfigured" ? (zh ? "访问统计尚未接入" : "Visitor analytics isn't connected yet") : (zh ? "统计服务暂时不可用" : "Analytics is temporarily unavailable")}</h3>
+      <p>{data.status === "unconfigured" ? (zh ? "统计存储尚未配置。接入后，这里会展示真实的浏览趋势、热门页面和来源；不会补写过去的数据。" : "Analytics storage hasn't been configured. Once connected, this space will show real traffic trends, top pages, and sources. Past visits cannot be backfilled.") : (zh ? "暂时无法读取已保存的统计。未将读取失败显示为零次访问，请稍后重试。" : "Stored analytics couldn't be read. A failed request doesn't mean zero visits. Please try again shortly.")}</p>
+      <button type="button" onClick={onRetry} className={styles.button}><RefreshCw size={14} />{zh ? "重新检查" : "Check again"}</button>
+    </div>}
     <div className={styles.metrics}>
       <Metric label={zh ? "页面浏览量" : "Page views"} value={number(period?.pageViews)} note={zh ? `近 ${data.range.days} 天 · 含今日` : `Last ${data.range.days} days · includes today`} icon={<Eye size={15} />} />
       <Metric label={zh ? "日均浏览器 · 已同意" : "Daily browsers · opted in"} value={number(period?.avgDailyVisitors, 1)} note={noIdentity ? (zh ? "尚无已同意统计的浏览器数据" : "No opted-in browser data yet") : (zh ? "按已有记录的天数计算" : "Average per observed day")} icon={<Users size={15} />} />
       <Metric label={zh ? "今日浏览量" : "Views today"} value={number(today?.pageViews)} note={zh ? "北京时间 · 今日尚未结束" : "Shanghai time · day in progress"} icon={<CalendarDays size={15} />} />
       <Metric label={zh ? "今日浏览器 · 已同意" : "Browsers today · opted in"} value={number(today?.visitors)} note={zh ? "浏览器数不等于人数" : "Browsers are not people"} icon={<Monitor size={15} />} />
     </div>
-    {!ready ? <div className={styles.status} role={data.status === "unavailable" ? "alert" : "status"}>
-      <div className={styles.statusIcon}><Database size={23} /></div>
-      <h3>{data.status === "unconfigured" ? (zh ? "访问统计尚未接入" : "Visitor analytics isn't connected yet") : (zh ? "统计服务暂时不可用" : "Analytics is temporarily unavailable")}</h3>
-      <p>{data.status === "unconfigured" ? (zh ? "统计存储尚未配置。接入后，这里会展示真实的浏览趋势、热门页面和来源；不会补写过去的数据。" : "Analytics storage hasn't been configured. Once connected, this space will show real traffic trends, top pages, and sources. Past visits cannot be backfilled.") : (zh ? "暂时无法读取已保存的统计。未将读取失败显示为零次访问，请稍后重试。" : "Stored analytics couldn't be read. A failed request doesn't mean zero visits. Please try again shortly.")}</p>
-      <button type="button" onClick={onRetry} className={styles.button}><RefreshCw size={14} />{zh ? "重新检查" : "Check again"}</button>
-    </div> : <>
+    {ready && <>
       <section className={styles.card} aria-labelledby="admin-traffic-title">
         <div className={styles.cardHeader}><div><h3 id="admin-traffic-title" className={styles.cardTitle}><BarChart3 size={16} />{zh ? "每日访问趋势" : "Daily traffic"}</h3><p className={styles.caption}>{rangeLabel} · UTC+8</p></div><div className={styles.legend}><span><i />{zh ? "页面浏览量" : "Page views"}</span>{!noIdentity && <span><i className={styles.secondaryDot} />{zh ? "已同意的浏览器" : "Opted-in browsers"}</span>}</div></div>
         {period?.pageViews === 0 ? <div className={styles.emptySmall}>{zh ? "这段时间还没有记录到页面浏览。采集到数据后，趋势会显示在这里。" : "No page views have been recorded in this period. Your traffic trend will appear here as data arrives."}</div> : <TrafficChart series={data.series ?? []} zh={zh} />}
