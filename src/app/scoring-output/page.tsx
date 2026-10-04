@@ -12,7 +12,7 @@ import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Scoring Output",
-  description: "Team offensive and defensive output — points scored, points allowed, and net rating per game.",
+  description: "Team offensive and defensive output — points scored, points allowed, and point differential per game.",
 };
 
 interface TeamOutput {

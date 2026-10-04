@@ -18,7 +18,10 @@ const archive: ScheduleDate[] = [{ gameDate: "01/01/2026 00:00:00", games: [1, 2
 const current: ScheduleDate[] = [{ gameDate: "10/21/2026 00:00:00", games: [game("0022600001", 90, 93)] }];
 const pages = [
   ["scoring output", () => import("@/app/scoring-output/page")],
-  ["home vs road", () => import("@/app/home-vs-road/page")],
+  ["home vs road", async () => {
+    const page = await import("@/app/home-vs-road/page");
+    return { default: () => page.default({ searchParams: Promise.resolve({}) }) };
+  }],
   ["clutch teams", () => import("@/app/clutch-teams/page")],
   ["season records", () => import("@/app/records/page")],
   ["best games", () => import("@/app/best-games/page")],
@@ -46,7 +49,7 @@ for (const [name, load] of pages) {
       if (name === "scoring output") {
         expect(text).toContain("90.0"); expect(text).toContain("93.0"); expect(text).not.toContain("135.0");
       } else if (name === "home vs road") {
-        expect(text).toContain("0-1 at home"); expect(text).toContain("1-0 on road"); expect(text).not.toContain("3-1 at home");
+        expect(text).toContain("Home 0-1"); expect(text).toContain("Road 1-0"); expect(text).not.toContain("Home 3-1");
       } else if (name === "clutch teams") {
         expect(text).toContain("0-1 in OT"); expect(text).toContain("1-0 in OT"); expect(text).not.toContain("3-1 in OT");
       } else {
