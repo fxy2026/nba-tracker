@@ -30,6 +30,7 @@ class FixtureNode {
   constructor(public tag: string, public name = '') {}
   contains(target: unknown): boolean { return this === target || this.children.some(child => child.contains(target)); }
   hasAttribute(name: string) { return this.props[name] !== undefined && this.props[name] !== false; }
+  get isConnected() { return doc.body.contains(this); }
   focus() { doc.activeElement = this; }
   querySelectorAll(): FixtureNode[] { return this.children.flatMap(child => [child, ...child.querySelectorAll()]).filter(child => ['input', 'button', 'a'].includes(child.tag)); }
 }
@@ -43,6 +44,20 @@ let outside: FixtureNode;
 let hosts: Map<string, FixtureNode>;
 let listeners: Set<(event: Key) => void>;
 let nativeDestinations: string[];
+let triggerAttached: boolean;
+let historyListeners: Set<() => void>;
+let historyEntries: string[];
+let historyIndex: number;
+let win: {
+  location: URL;
+  history: {
+    pushState: ReturnType<typeof vi.fn<(state: unknown, unused: string, href: string) => void>>;
+    replaceState: ReturnType<typeof vi.fn<(state: unknown, unused: string, href: string) => void>>;
+    back: () => void; forward: () => void;
+  };
+  addEventListener: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+};
 
 // Commit refs to a small DOM fixture before passive effects, reusing the actual
 // component's host nodes and handlers. Native Enter is simulated only after the
@@ -65,7 +80,7 @@ function flush() {
     if (renders > 40) throw new Error('Effects did not settle');
     runtime.dirty = false; runtime.cursor = 0; runtime.effects = [];
     tree = CommandPalette({ open, onClose: close, groups });
-    doc.body.children = [trigger, ...commitHosts(tree), outside];
+    doc.body.children = [...(triggerAttached ? [trigger] : []), ...commitHosts(tree), outside];
     // Removing a focused native control falls back to body unless its handler
     // explicitly moves focus to a surviving element before this commit.
     if (doc.activeElement && !doc.body.contains(doc.activeElement)) doc.activeElement = doc.body;
@@ -83,6 +98,21 @@ const closeButton = () => visibleHosts().find(n => n.tag === 'button' && String(
 const clearButton = () => visibleHosts().find(n => n.props['aria-label'] === 'Clear search' || n.props['aria-label'] === '清除搜索')!;
 const links = () => visibleHosts().filter(n => n.tag === 'a');
 const activeHref = () => links().find(n => n.props['aria-selected'])?.props.href;
+// A client navigation updates location and rerenders the same mounted layout;
+// Back/Forward then dispatch popstate without discarding any component hooks.
+function setLocation(href: string) {
+  win.location = new URL(href, 'https://example.test');
+  context.path = win.location.pathname;
+  runtime.dirty = true;
+}
+function travel(delta: number) {
+  const next = historyIndex + delta;
+  if (next < 0 || next >= historyEntries.length) return;
+  historyIndex = next; setLocation(historyEntries[next]);
+  for (const listener of [...historyListeners]) listener();
+  flush();
+}
+function clientNavigate(href: string) { win.history.pushState(null, '', href); flush(); }
 function setOpen(value: boolean) { open = value; runtime.dirty = true; flush(); }
 async function timers() { await vi.advanceTimersByTimeAsync(0); flush(); }
 async function show() { setOpen(true); await timers(); }
@@ -120,14 +150,30 @@ beforeEach(() => {
   runtime.mounted = true; runtime.lateSetters = 0;
   vi.useFakeTimers(); context.locale = 'en'; context.path = '/search'; context.router.push.mockReset();
   trigger = new FixtureNode('button', 'More'); outside = new FixtureNode('button', 'outside');
-  hosts = new Map(); listeners = new Set(); nativeDestinations = [];
+  hosts = new Map(); listeners = new Set(); nativeDestinations = []; triggerAttached = true;
+  historyListeners = new Set(); historyEntries = ['/search']; historyIndex = 0;
+  win = {
+    location: new URL('/search', 'https://example.test'),
+    history: {
+      pushState: vi.fn((_state: unknown, _unused: string, href: string) => {
+        historyEntries.splice(historyIndex + 1); historyEntries.push(href); historyIndex++;
+        setLocation(href);
+      }),
+      replaceState: vi.fn((_state: unknown, _unused: string, href: string) => {
+        historyEntries[historyIndex] = href; setLocation(href);
+      }),
+      back: () => travel(-1), forward: () => travel(1),
+    },
+    addEventListener: vi.fn((name: string, listener: () => void) => { if (name === 'popstate') historyListeners.add(listener); }),
+    removeEventListener: vi.fn((name: string, listener: () => void) => { if (name === 'popstate') historyListeners.delete(listener); }),
+  };
   doc = {
     activeElement: trigger, body: new FixtureNode('body'),
     addEventListener: vi.fn((name: string, listener: (e: Key) => void) => { if (name === 'keydown') listeners.add(listener); }),
     removeEventListener: vi.fn((name: string, listener: (e: Key) => void) => { if (name === 'keydown') listeners.delete(listener); }),
   };
   doc.body.style.overflow = 'auto';
-  vi.stubGlobal('document', doc); vi.stubGlobal('window', {}); vi.stubGlobal('Node', FixtureNode);
+  vi.stubGlobal('document', doc); vi.stubGlobal('window', win); vi.stubGlobal('Node', FixtureNode);
   groups = [{ title: 'Common', color: '#123456', items: [{ href: '/compare', label: 'Compare players' }, { href: '/standings', label: 'Standings' }, { href: '/favorites', label: 'Favorites' }] }];
   open = false; close = vi.fn(() => { open = false; runtime.dirty = true; }); flush();
 });
@@ -219,12 +265,12 @@ describe('CommandPalette dialog scope and lifecycle', () => {
   });
   it('cancels focus timers and restores scroll/focus when unmounted while open', async () => {
     setOpen(true); unmount(); await timers();
-    expect(runtime.lateSetters).toBe(0); expect(listeners.size).toBe(0); expect(vi.getTimerCount()).toBe(0);
+    expect(runtime.lateSetters).toBe(0); expect(listeners.size).toBe(0); expect(historyListeners.size).toBe(0); expect(vi.getTimerCount()).toBe(0);
     expect(doc.body.style.overflow).toBe('auto'); expect(doc.activeElement).toBe(trigger);
   });
   it('survives StrictMode effect replay with one listener and one eventual navigation', async () => {
     setOpen(true); replayEffects(); await timers();
-    expect(listeners.size).toBe(1); expect(doc.activeElement).toBe(input()); expect(doc.body.style.overflow).toBe('hidden');
+    expect(listeners.size).toBe(1); expect(historyListeners.size).toBe(1); expect(doc.activeElement).toBe(input()); expect(doc.body.style.overflow).toBe('hidden');
     key(input(), 'Enter'); expect(context.router.push).toHaveBeenCalledExactlyOnceWith('/compare'); expect(close).toHaveBeenCalledTimes(1);
     expect(listeners.size).toBe(0); expect(doc.body.style.overflow).toBe('auto'); expect(doc.activeElement).toBe(trigger);
   });
@@ -292,7 +338,7 @@ vi.mock('react', async original => ({
 
 // Actual effect + key handler regression: touch users can browse before invoking the keyboard.
 it('phone opening focuses the panel, traps Shift+Tab, then restores the trigger on close', async () => {
-  vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+  vi.stubGlobal('window', { ...win, matchMedia: () => ({ matches: true }) });
   await show();
   const panel = doc.activeElement!;
   expect(panel.props.tabIndex).toBe(-1);
@@ -310,7 +356,7 @@ it('phone dialog follows the visual viewport through keyboard open and dismissal
     addEventListener: vi.fn((name: string, fn: () => void) => events.set(name, fn)),
     removeEventListener: vi.fn(),
   };
-  vi.stubGlobal('window', { matchMedia: () => ({ matches: true }), visualViewport: viewport, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+  vi.stubGlobal('window', { ...win, matchMedia: () => ({ matches: true }), visualViewport: viewport });
   await show();
   const overlay = [...hosts.values()].find(host => host.props.role === 'dialog')!;
   expect(overlay.style).toMatchObject({ top: '0px', height: '680px', bottom: 'auto' });
@@ -326,4 +372,69 @@ it.each(['en', 'zh'])('shows a count-free page-search prompt in %s', async local
   context.locale = locale;
   await show();
   expect(input().props.placeholder).toBe(locale === 'zh' ? '搜索页面...' : 'Search pages...');
+});
+
+
+describe('CommandPalette persistent-layout history dismissal', () => {
+  it.each([
+    ['/schedule-heatmap', '/back-to-back'],
+    ['/standings?season=2023-24', '/standings?season=2024-25'],
+  ])('closes on Back and Forward without changing either destination: %s → %s', async (first, second) => {
+    clientNavigate(first); clientNavigate(second);
+    const initialHooks = runtime.hooks;
+    const entries = [...historyEntries];
+    const pushes = win.history.pushState.mock.calls.length;
+    await show(); await type('Stand');
+    expect(historyListeners.size).toBe(1);
+    win.history.back();
+    expect(open).toBe(false); expect(tree).toBeNull(); expect(close).toHaveBeenCalledTimes(1);
+    expect(`${win.location.pathname}${win.location.search}`).toBe(first);
+    expect(doc.body.style.overflow).toBe('auto'); expect(doc.activeElement).toBe(trigger);
+    expect(historyListeners.size).toBe(0); expect(listeners.size).toBe(0);
+    await show();
+    expect(input().props.value).toBe(''); expect(activeHref()).toBe('/compare');
+    win.history.forward();
+    expect(open).toBe(false); expect(tree).toBeNull(); expect(close).toHaveBeenCalledTimes(2);
+    expect(`${win.location.pathname}${win.location.search}`).toBe(second);
+    expect(runtime.hooks).toBe(initialHooks); // No full-document/unmount reset.
+    expect(historyEntries).toEqual(entries); expect(win.history.pushState).toHaveBeenCalledTimes(pushes);
+    expect(win.history.replaceState).not.toHaveBeenCalled(); expect(context.router.push).not.toHaveBeenCalled();
+    expect(doc.body.style.overflow).toBe('auto'); expect(historyListeners.size).toBe(0);
+    await show(); expect(historyListeners.size).toBe(1); expect(input().props.value).toBe('');
+    enter(closeButton()); expect(historyListeners.size).toBe(0); expect(doc.activeElement).toBe(trigger);
+  });
+  it('removes its history listener on ordinary Close, Escape, backdrop and result click', async () => {
+    for (const dismiss of ['close', 'escape', 'backdrop', 'result']) {
+      await show(); expect(historyListeners.size).toBe(1);
+      if (dismiss === 'close') enter(closeButton());
+      else if (dismiss === 'escape') key(input(), 'Escape');
+      else {
+        const host = dismiss === 'result' ? links()[1] : [...hosts.values()].find(node => node.props.role === 'dialog')!;
+        (host.props.onClick as () => void)(); flush();
+      }
+      expect(open).toBe(false); expect(historyListeners.size).toBe(0); expect(listeners.size).toBe(0);
+      expect(doc.activeElement).toBe(trigger); expect(doc.body.style.overflow).toBe('auto');
+    }
+  });
+  it('does not retain duplicate history handlers through effect replay, rerender or rapid close', async () => {
+    clientNavigate('/schedule-heatmap'); clientNavigate('/back-to-back');
+    setOpen(true); replayEffects(); await timers();
+    expect(historyListeners.size).toBe(1);
+    // Parent callback identity changes can restart only the current listener.
+    close = vi.fn(() => { open = false; runtime.dirty = true; }); runtime.dirty = true; flush();
+    expect(historyListeners.size).toBe(1);
+    win.history.back(); expect(close).toHaveBeenCalledTimes(1); expect(historyListeners.size).toBe(0);
+    setOpen(true); setOpen(false); await timers();
+    expect(historyListeners.size).toBe(0); expect(vi.getTimerCount()).toBe(0);
+    win.history.forward(); expect(close).toHaveBeenCalledTimes(1);
+    await show(); unmount(); expect(historyListeners.size).toBe(0); expect(listeners.size).toBe(0);
+  });
+  it('does not restore focus to a trigger detached by the history destination', async () => {
+    clientNavigate('/schedule-heatmap'); clientNavigate('/back-to-back'); await show();
+    const restoreFocus = vi.spyOn(trigger, 'focus');
+    triggerAttached = false;
+    win.history.back();
+    expect(restoreFocus).not.toHaveBeenCalled(); expect(doc.activeElement).toBe(doc.body);
+    expect(open).toBe(false); expect(doc.body.style.overflow).toBe('auto');
+  });
 });

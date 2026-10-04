@@ -48,13 +48,22 @@ describe.each(["en", "zh"] as const)("profile comparison disclosure (%s)", local
     [{ source: "nba-cdn", season: "2025-26", stale: true, retrievedAt: "2026-10-04T00:00:00Z" }, "2025-26 · NBA cached snapshot (refresh unavailable)", "2025-26 · NBA 缓存快照（刷新暂不可用）"],
     [{ source: "nba-cdn", season: null, stale: false, retrievedAt: null }, "season unspecified · NBA player index", "赛季未注明 · NBA 球员索引"],
   ];
-  it.each(cases)("preserves source state %j alongside one compact sample disclosure", async (provenance, en, zh) => {
+  it.each(cases)("preserves source state %j alongside one closed native sample disclosure", async (provenance, en, zh) => {
     state.locale = locale; state.snapshot!.provenance = provenance;
     const tree = await page(); const html = renderToStaticMarkup(tree);
     expect(html).toContain(locale === "zh" ? zh : en);
     const disclosure = nodes(tree).filter(node => node.props.id === "profile-comparison-basis");
     expect(disclosure).toHaveLength(1); expect(disclosure[0].type).toBe("p");
     expect(disclosure[0].props.className).toContain("break-words");
+    const details = nodes(tree).filter(node => node.type === "details" && nodes(node.props.children).includes(disclosure[0]));
+    expect(details).toHaveLength(1); expect(details[0].props.open).toBeUndefined();
+    const summary = nodes(details[0].props.children).filter(node => node.type === "summary");
+    expect(summary).toHaveLength(1);
+    expect(summary[0].props.children).toBe(locale === "zh" ? "样本对比口径" : "Comparison basis");
+    expect(summary[0].props.className).toContain("min-h-11");
+    expect(summary[0].props.className).toContain("focus-visible:outline-2");
+    expect(details[0].props.onToggle).toBeUndefined();
+    expect(nodes(details[0]).some(node => node.props.id === "overview")).toBe(false);
     const copy = renderToStaticMarkup(disclosure[0]);
     for (const expected of locale === "zh" ? ["已记录的场均值", "场均得分大于 0", "等权", "不设出场数或上场时间门槛", "严格低于", "四舍五入", "同值并列"] : ["recorded per-game values", "positive PPG", "equally", "no games-played or minutes minimum", "strictly below", "rounded", "Ties share rank and P"]) expect(copy).toContain(expected);
     const hero = renderOverview(tree);

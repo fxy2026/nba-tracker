@@ -142,7 +142,8 @@ export default function Navbar() {
   const allMoreHrefs = useMemo(() => moreGroups.flatMap((g) => g.items.map((i) => i.href)), [moreGroups]);
 
   const [moreOpen, setMoreOpen] = useState(false);
-  const isMoreActive = allMoreHrefs.some((href) => pathname === href);
+  const isMoreActive = !primaryLinks.some(({ href }) => pathname === href) &&
+    allMoreHrefs.some((href) => pathname === href);
 
   // Cmd+M / Ctrl+M shortcut to open the command palette (Cmd+K is search)
   useEffect(() => {

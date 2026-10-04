@@ -61,9 +61,18 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
     }, 0);
     return () => {
       clearTimeout(id);
-      trigger?.focus?.();
+      if (trigger?.isConnected) trigger.focus();
     };
   }, [open]);
+
+  // Layouts persist through client-side Back/Forward, including query-only
+  // history changes. Dismiss without adding or replacing a history entry.
+  useEffect(() => {
+    if (!open) return;
+    const onHistoryChange = () => onClose();
+    window.addEventListener("popstate", onHistoryChange);
+    return () => window.removeEventListener("popstate", onHistoryChange);
+  }, [open, onClose]);
 
   // Body scroll lock when open
   useEffect(() => {

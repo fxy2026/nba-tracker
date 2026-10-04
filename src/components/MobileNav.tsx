@@ -33,7 +33,8 @@ export default function MobileNav() {
   // mobile gets focus trap, search, bilingual labels, keyboard nav for free.
   const moreGroups = useMoreGroups();
   const allMoreHrefs = useMemo(() => moreGroups.flatMap((g) => g.items.map((i) => i.href)), [moreGroups]);
-  const isMoreActive = allMoreHrefs.some((href) => pathname === href);
+  const isMoreActive = !mainLinks.some(({ href }) => pathname === href) &&
+    allMoreHrefs.some((href) => pathname === href);
 
   return (
     <>

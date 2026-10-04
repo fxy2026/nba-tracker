@@ -196,11 +196,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       />
 
       <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
-      <p id="profile-comparison-basis" className="mt-1 text-xs leading-relaxed text-text-secondary break-words">
-        {isZh
-          ? "对比口径：按本球员索引已记录的场均值，各项仅纳入场均得分大于 0 且该项有记录的球员。样本均值按球员等权计算，不设出场数或上场时间门槛。名次为严格高于该值的人数加 1；P 为样本中严格低于该值的人数占比（百分比四舍五入）。同值并列。"
-          : "Comparison basis: recorded per-game values in this player index, with positive PPG and a known value for each stat. Sample averages weight players equally, with no games-played or minutes minimum. Rank is 1 + the number strictly higher; P is the rounded percentage of the sample strictly below. Ties share rank and P."}
-      </p>
+      <details className="mt-1 text-xs text-text-secondary">
+        <summary className="min-h-11 cursor-pointer rounded-md py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          {isZh ? "样本对比口径" : "Comparison basis"}
+        </summary>
+        <p id="profile-comparison-basis" className="pb-2 leading-relaxed break-words">
+          {isZh
+            ? "对比口径：按本球员索引已记录的场均值，各项仅纳入场均得分大于 0 且该项有记录的球员。样本均值按球员等权计算，不设出场数或上场时间门槛。名次为严格高于该值的人数加 1；P 为样本中严格低于该值的人数占比（百分比四舍五入）。同值并列。"
+            : "Comparison basis: recorded per-game values in this player index, with positive PPG and a known value for each stat. Sample averages weight players equally, with no games-played or minutes minimum. Rank is 1 + the number strictly higher; P is the rounded percentage of the sample strictly below. Ties share rank and P."}
+        </p>
+      </details>
 
       {/* Quick-action row — one-click into /compare with this player primed */}
       <div className="mt-2 flex flex-wrap gap-2">
