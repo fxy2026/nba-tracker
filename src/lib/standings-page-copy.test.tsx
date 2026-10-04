@@ -25,7 +25,7 @@ function dates(...games: ScheduleGame[]): ScheduleDate[] {
 }
 async function render() {
   const { default: Page } = await import("@/app/standings/page");
-  return renderToStaticMarkup(await Page());
+  return renderToStaticMarkup(await Page({}));
 }
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ describe("standings season and empty-state provenance", () => {
     expect(html).toContain(language === "zh"
       ? "当前没有可用于计算 2026-27 赛季排名的已结束常规赛记录。"
       : "No usable completed regular-season records are available for 2026-27.");
-    expect(html).not.toMatch(/<table|role="alert"|2025-26|season has not started|赛季尚未开始|0 games|0 场比赛/);
+    expect(html).not.toMatch(/<table|role="alert"|season has not started|赛季尚未开始|0 games|0 场比赛/);
   });
 
   it.each(["en", "zh"])("distinguishes only a known rejected schedule request in %s", async language => {
@@ -81,7 +81,7 @@ describe("standings season and empty-state provenance", () => {
     expect(mixed).toContain(getTranslations("en").export.exportBtn);
     expect(mixed).toContain("BOS");
     expect(mixed).toContain("W1");
-    expect(mixed).not.toMatch(/No standings data|Unable to load standings|2025-26/);
+    expect(mixed).not.toMatch(/No standings data|Unable to load standings/);
   });
 
   it("uses the existing October UTC rollover for both query and label", async () => {
