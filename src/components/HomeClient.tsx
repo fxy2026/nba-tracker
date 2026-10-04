@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import DateNav from "./DateNav";
 import FollowStrip from "./FollowStrip";
 import GamesList from "./GamesList";
+import HomeExtra from "./HomeExtra";
 import SeasonProgress from "./SeasonProgress";
 import StandingsMini from "./StandingsMini";
 import RecentlyViewed from "./RecentlyViewed";
@@ -92,6 +93,10 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday, 
         initialGames={!chosenTimeZone && selectedDate === initialDate ? initialGames : undefined}
         isToday={isToday}
       />
+
+      {/* Date-independent extras keep their viewport gate and request state
+          while GamesList loads a new date or remounts for a timezone change. */}
+      <HomeExtra />
 
       {afterGames}
 

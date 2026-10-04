@@ -18,7 +18,6 @@ import GameCard from "./GameCard";
 import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
 import TodayStars from "./TodayStars";
-import HomeExtra from "./HomeExtra";
 import EmptyState from "./EmptyState";
 import { AlertCircle } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
@@ -419,7 +418,6 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
       )}
 
       {isToday && <TodayStars />}
-      <HomeExtra />
     </>
   );
 }

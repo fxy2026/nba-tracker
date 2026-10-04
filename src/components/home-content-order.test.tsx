@@ -23,6 +23,7 @@ import HomeClient from "./HomeClient";
 import HomeGames from "./HomeGames";
 import DateNav from "./DateNav";
 import GamesList from "./GamesList";
+import HomeExtra from "./HomeExtra";
 import RecentlyViewed from "./RecentlyViewed";
 import HomePlayerSearch from "./HomePlayerSearch";
 import OffseasonHero from "./OffseasonHero";
@@ -36,7 +37,7 @@ it.each([
   [false, false, "America/New_York"],
   [true, true, null],
   [true, false, "Asia/Shanghai"],
-] as const)("keeps one supplemental slot immediately after games (mounted=%s, today=%s, tz=%s)", (mounted, initialIsToday, tz) => {
+] as const)("keeps extras then one supplemental slot after games (mounted=%s, today=%s, tz=%s)", (mounted, initialIsToday, tz) => {
   state.mounted = mounted;
   state.tz = tz;
   const slot = <section data-testid="offseason">Supplemental content</section>;
@@ -44,17 +45,21 @@ it.each([
   const children = elements(tree);
   const gameIndex = children.findIndex((child) => child.type === GamesList);
   expect(children[0].type).toBe(DateNav);
-  expect(children[gameIndex + 1].type).toBe("section");
-  expect(children[gameIndex + 1].props).toEqual(slot.props);
+  expect(children[gameIndex + 1].type).toBe(HomeExtra);
+  expect(children[gameIndex + 1].props).toEqual({});
+  expect(children.filter((child) => child.type === HomeExtra)).toHaveLength(1);
+  expect(children[gameIndex + 2].type).toBe("section");
+  expect(children[gameIndex + 2].props).toEqual(slot.props);
   expect(children.filter((child) => child.type === "section")).toHaveLength(1);
-  expect(children[gameIndex + 2].type).toBe(RecentlyViewed);
-  expect(children[gameIndex + 3].type).toBe("div"); // League Pulse
+  expect(children[gameIndex + 3].type).toBe(RecentlyViewed);
+  expect(children[gameIndex + 4].type).toBe("div"); // League Pulse
 });
 
 it.each([undefined, null])("accepts an absent supplemental slot (%s)", (afterGames) => {
   const children = elements(HomeClient({ initialDate: "2026-10-02", initialIsToday: true, afterGames }));
   const gameIndex = children.findIndex((child) => child.type === GamesList);
-  expect(children[gameIndex + 1].type).toBe(RecentlyViewed);
+  expect(children[gameIndex + 1].type).toBe(HomeExtra);
+  expect(children[gameIndex + 2].type).toBe(RecentlyViewed);
 });
 
 it("composes one server hero inside its null-fallback Suspense after search", async () => {
