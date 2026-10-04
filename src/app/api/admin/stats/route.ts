@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { isAdminRequest, privateAdminJson } from "@/lib/admin-auth";
+import { getAdminArchiveCoverage, type AdminArchiveCoverage } from "@/lib/admin-archive-coverage";
 
 export interface AdminStats {
   generatedAt: string;
@@ -14,6 +15,7 @@ export interface AdminStats {
     playerIndexSeason: string | null;
     playerIndexFetchedAt: string | null;
   };
+  coverage: AdminArchiveCoverage;
   environment: { adminConfigured: true; deployment: string };
 }
 
@@ -22,6 +24,7 @@ export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return privateAdminJson({ error: "Unauthorized" }, 401);
   const results: AdminStats = {
     generatedAt: new Date().toISOString(),
+    coverage: getAdminArchiveCoverage(),
     data: { status: "unavailable", source: "bundled-archive", recordedSeason: null, recordedGames: null, completedRecordedGames: null, recordedDates: null, indexedPlayers: null, playerIndexSeason: null, playerIndexFetchedAt: null },
     environment: { adminConfigured: true, deployment: ["production", "preview", "development"].includes(process.env.VERCEL_ENV ?? "") ? process.env.VERCEL_ENV! : "local" },
   };

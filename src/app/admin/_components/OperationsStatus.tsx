@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { AdminArchiveCoverage, CoverageDates } from "@/lib/admin-archive-coverage";
 import { Archive, Database, Info, RefreshCw, Server } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { AdminRequestError, createLatestRequest, readAdminResponse, fetchAdmin, adminErrorText } from "./admin-client";
@@ -19,6 +20,7 @@ export interface OperationsReport {
     playerIndexSeason: string | null;
     playerIndexFetchedAt: string | null;
   };
+  coverage?: AdminArchiveCoverage;
   environment: { adminConfigured: true; deployment: string };
 }
 type Status = { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; data: OperationsReport };
@@ -65,7 +67,53 @@ export function OperationsContent({ data, zh }: { data: OperationsReport; zh: bo
   ];
   return <div className={styles.stack}>
     <div className={styles.runtimeGrid}>{fields.map(field => <div key={field.label} className={styles.runtimeMetric}><p className={styles.metricLabel}>{field.label}</p><p className={styles.runtimeValue}>{number(field.value)}</p><p className={styles.metricNote}>{field.hint ?? (zh ? "信息暂不可用" : "Information unavailable")}</p></div>)}</div>
-    <div className={styles.runtimeMeta}><span className={styles.badge}><Server size={12} />{zh ? "部署环境" : "Environment"}: {data.environment.deployment}</span><span className={styles.badge}><Archive size={12} />{zh ? "已发布归档" : "Published archive"}</span><span className={`${styles.badge} ${data.data.status === "available" ? styles.readyBadge : ""}`}><Database size={12} />{data.data.status === "available" ? (zh ? "本地数据可读取" : "Local data readable") : (zh ? "部分数据暂不可用" : "Some local data unavailable")}</span></div>
-    <div className={styles.note}><Info size={14} /><p>{zh ? "这些数字来自网站内置归档，不表示当前赛季已完整覆盖，不代表球员历史档案或搜索结果的完整范围，也不代表上游接口实时可用。" : "These figures come from the site's bundled archive. They don't imply complete current-season coverage the full historical-player registry or search coverage, or live availability of upstream services."}</p></div>
+    <ArchiveCoverage coverage={data.coverage} zh={zh} />
+    <div className={styles.runtimeMeta}><span className={styles.badge}><Server size={12} />{zh ? "部署环境" : "Environment"}: {data.environment.deployment}</span><span className={styles.badge}><Archive size={12} />{zh ? "已发布归档" : "Published archive"}</span><span className={`${styles.badge} ${data.data.status === "available" ? styles.readyBadge : ""}`}><Database size={12} />{data.data.status === "available" ? (zh ? "赛程与索引可读取" : "Schedule & index readable") : (zh ? "部分数据暂不可用" : "Some local data unavailable")}</span></div>
+    <div className={styles.note}><Info size={14} /><p>{zh ? "各项数字来自不同范围的内置数据，不能相加作为球员总数。不表示当前赛季、NBA 历史或搜索结果已完整覆盖，也不代表上游接口实时可用。刷新只重新生成报告，不会更新源数据。" : "These bundled datasets have different scopes; player counts cannot be added together. They do not imply complete current-season, NBA history or search coverage, or live availability of upstream services. Refreshing regenerates this report, not its source data."}</p></div>
+  </div>;
+}
+
+
+function CoverageCard({ title, available, zh, children }: { title: string; available: boolean; zh: boolean; children: ReactNode }) {
+  return <section className={styles.coverageCard}>
+    <h3 className={styles.coverageTitle}>{title}</h3>
+    {available ? children : <><p className={styles.runtimeValue}>—</p><p className={styles.metricNote}>{zh ? "覆盖元数据暂不可用" : "Coverage metadata unavailable"}</p></>}
+  </section>;
+}
+
+export function ArchiveCoverage({ coverage, zh }: { coverage?: AdminArchiveCoverage; zh: boolean }) {
+  const number = (value: number | undefined) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString(zh ? "zh-CN" : "en-US") : "—";
+  const dates = (value: CoverageDates | undefined) => !value ? "—" : value.first === value.last ? value.first : `${value.first} – ${value.last}`;
+  const identities = coverage?.identities?.status === "available" ? coverage.identities.data : null;
+  const nba = coverage?.nbaCareers?.status === "available" ? coverage.nbaCareers.data : null;
+  const secondary = coverage?.secondaryCareers?.status === "available" ? coverage.secondaryCareers.data : null;
+  const shots = coverage?.shots?.status === "available" ? coverage.shots.data : null;
+  return <div className={styles.coverageGrid} aria-label={zh ? "按来源区分的归档覆盖" : "Archive coverage by source"}>
+    <CoverageCard title={zh ? "NBA 官方身份快照" : "Official identity snapshot"} available={!!identities} zh={zh}>
+      <p className={styles.coverageValue}>{number(identities?.playerIds)} <span>{zh ? "个球员 ID" : "player IDs"}</span></p>
+      <p className={styles.metricNote}>NBA Stats CommonAllPlayers</p>
+      <p className={styles.metricNote}>{zh ? "源数据获取日期" : "Source retrieved"}: {dates(identities?.sourceRetrievedOn)}</p>
+      <p className={styles.coverageNote}>{zh ? "身份记录，不代表每位球员都有生涯统计。" : "Identity records; career statistics are not available for every ID."}</p>
+    </CoverageCard>
+    <CoverageCard title={zh ? "NBA.com 已审核生涯" : "NBA.com-reviewed careers"} available={!!nba} zh={zh}>
+      <p className={styles.coverageValue}>{number(nba?.players)} <span>{zh ? "位球员" : "players"}</span></p>
+      <p className={styles.metricNote}>{number(nba?.regularSeasonRows)} {zh ? "条常规赛赛季记录" : "regular-season rows"}</p>
+      <p className={styles.metricNote}>{zh ? "源页面采集日期" : "Source captured"}: {dates(nba?.sourceCapturedOn)}</p>
+      <p className={styles.coverageNote}>{zh ? "本地审核的 NBA.com 生涯页面快照。" : "Locally reviewed NBA.com career-page captures."}</p>
+    </CoverageCard>
+    <CoverageCard title={zh ? "次级来源已审核生涯" : "Secondary-source careers"} available={!!secondary} zh={zh}>
+      <p className={styles.coverageValue}>{number(secondary?.players)} <span>{zh ? "位球员" : "players"}</span></p>
+      <p className={styles.metricNote}>{number(secondary?.seasonTypeRows)} {zh ? "条赛季/类型记录" : "season/type rows"} · {number(secondary?.regularSeasonRows)} {zh ? "常规赛" : "regular"} · {number(secondary?.playoffRows)} {zh ? "季后赛" : "playoff"}</p>
+      <p className={styles.metricNote}>{zh ? "源数据获取日期" : "Source retrieved"}: {dates(secondary?.sourceRetrievedOn)}</p>
+      <p className={styles.coverageNote}>{zh ? "已审核的次级来源；完整生涯统计未经 NBA 官方核验。" : "Reviewed secondary sources; full career totals are not NBA-verified."}</p>
+    </CoverageCard>
+    <CoverageCard title={zh ? "第三方投篮归档" : "Third-party shot archive"} available={!!shots} zh={zh}>
+      <p className={styles.coverageValue}>{number(shots?.players)} <span>{zh ? "位有投篮记录的球员" : "players with shots"}</span></p>
+      <p className={styles.metricNote}>{number(shots?.packs)} {zh ? "个归档包" : "packs"} · {number(shots?.seasons)} {zh ? "个赛季" : "seasons"} · {shots?.firstSeason} – {shots?.lastSeason}</p>
+      <p className={styles.metricNote}>{number(shots?.playerSeasonTypeEntries)} {zh ? "条球员/赛季/类型记录" : "player-season/type entries"}</p>
+      <p className={styles.metricNote}>{number(shots?.acceptedAttempts)} {zh ? "次已接纳出手" : "accepted attempts"} · {zh ? "隔离记录未计入" : "quarantined rows excluded"}: {number(shots?.quarantinedRows)}</p>
+      <p className={styles.metricNote}>{zh ? "元数据本地核验日期" : "Metadata locally verified"}: {dates(shots?.localVerifiedOn)}</p>
+      <p className={styles.coverageNote}>{zh ? `原始来源采集日期未记录；归档未经完整官方对账，${number(shots?.packsWithControlMismatches)} 个包存在对照值差异。` : `Original source capture date unrecorded; not fully reconciled with NBA totals. ${number(shots?.packsWithControlMismatches)} packs have control mismatches.`}</p>
+    </CoverageCard>
   </div>;
 }

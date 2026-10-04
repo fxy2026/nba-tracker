@@ -7,8 +7,13 @@ vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(), getRecorded2025SeasonSchedule: vi.fn(), getBundledPlayerIndexSnapshot: vi.fn(),
-  getFullSchedule: vi.fn(), getPlayerIndex: vi.fn(),
+  getFullSchedule: vi.fn(), getPlayerIndex: vi.fn(), getAdminArchiveCoverage: vi.fn(),
 }));
+vi.mock("@/lib/admin-archive-coverage", async importOriginal => {
+  const actual = await importOriginal<typeof import("./admin-archive-coverage")>();
+  mocks.getAdminArchiveCoverage.mockImplementation(actual.getAdminArchiveCoverage);
+  return { ...actual, getAdminArchiveCoverage: mocks.getAdminArchiveCoverage };
+});
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.createClient }));
 vi.mock("@/lib/api", () => ({ getRecorded2025SeasonSchedule: mocks.getRecorded2025SeasonSchedule, getBundledPlayerIndexSnapshot: mocks.getBundledPlayerIndexSnapshot, getFullSchedule: mocks.getFullSchedule, getPlayerIndex: mocks.getPlayerIndex }));
 
@@ -124,17 +129,31 @@ describe("admin login", () => {
 });
 
 describe("admin operational statistics", () => {
+  it("preserves existing data and independent sections when one coverage section is unavailable", async () => {
+    const { getAdminArchiveCoverage } = await vi.importActual<typeof import("./admin-archive-coverage")>("./admin-archive-coverage");
+    const coverage = getAdminArchiveCoverage();
+    coverage.secondaryCareers = { status: "unavailable", data: null };
+    mocks.getAdminArchiveCoverage.mockReturnValueOnce(coverage);
+    const body = await (await stats(request("/api/admin/stats"))).json();
+    expect(body.data).toMatchObject({ status: "available", recordedGames: 3, recordedDates: 2, indexedPlayers: 3 });
+    expect(body.coverage.secondaryCareers).toEqual({ status: "unavailable", data: null });
+    expect(body.coverage.identities.status).toBe("available");
+  });
   it("rejects unauthenticated reads before all data access", async () => {
     const response = await stats(request("/api/admin/stats", "GET", undefined, false));
     expect(response.status).toBe(401);
     privateResponse(response);
     expect(mocks.createClient).not.toHaveBeenCalled();
     expect(mocks.getRecorded2025SeasonSchedule).not.toHaveBeenCalled();
+    expect(mocks.getAdminArchiveCoverage).not.toHaveBeenCalled();
   });
   it("uses only local archives without legacy storage or replay fields", async () => {
     const response = await stats(request("/api/admin/stats"));
     const body = await response.json();
     expect(body.data).toMatchObject({ status: "available", source: "bundled-archive", recordedSeason: "2025-26", recordedGames: 3, completedRecordedGames: 2, recordedDates: 2, indexedPlayers: 3, playerIndexSeason: "2025-26", playerIndexFetchedAt: null });
+    expect(body.coverage.identities).toMatchObject({ status: "available", data: { playerIds: 5238 } });
+    expect(body.coverage.secondaryCareers.data.officialNbaVerified).toBe(false);
+    expect(body.coverage.shots.data.acceptedAttempts).toBe(6328070);
     expect(body).not.toHaveProperty("replays");
     expect(body.environment).not.toHaveProperty("supabaseConfigured");
     expect(body.environment.adminConfigured).toBe(true);
@@ -143,6 +162,9 @@ describe("admin operational statistics", () => {
   });
   it("isolates local data failures without manufacturing zeroes", async () => {
     mocks.getRecorded2025SeasonSchedule.mockImplementationOnce(() => { throw new Error("bad archive"); });
-    expect((await (await stats(request("/api/admin/stats"))).json()).data).toMatchObject({ status: "unavailable", recordedGames: null, indexedPlayers: null });
+    const body = await (await stats(request("/api/admin/stats"))).json();
+    expect(body.data).toMatchObject({ status: "unavailable", recordedGames: null, indexedPlayers: null });
+    expect(body.coverage.identities.status).toBe("available");
+    expect(body.coverage.shots.status).toBe("available");
   });
 });

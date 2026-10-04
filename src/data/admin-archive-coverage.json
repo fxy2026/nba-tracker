@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "identities": {
+    "source": "nba-common-all-players",
+    "playerIds": 5238,
+    "sourceRetrievedOn": {
+      "first": "2026-10-03",
+      "last": "2026-10-03"
+    },
+    "inputsSha256": "b8524394638a14f4c98c4e80211b7d8bd9fd12b13df09a93c0d17a3a0a0672a9"
+  },
+  "nbaCareers": {
+    "source": "nba-com-reviewed",
+    "players": 4,
+    "regularSeasonRows": 64,
+    "sourceCapturedOn": {
+      "first": "2026-10-03",
+      "last": "2026-10-03"
+    },
+    "inputsSha256": "fc8f19c8e208dc82ec518c2befd0905a54a6d60af50d772e8b915be6a5455bfe"
+  },
+  "secondaryCareers": {
+    "source": "secondary-source-reviewed",
+    "players": 8,
+    "seasonTypeRows": 252,
+    "regularSeasonRows": 133,
+    "playoffRows": 119,
+    "officialNbaVerified": false,
+    "sourceRetrievedOn": {
+      "first": "2026-10-04",
+      "last": "2026-10-04"
+    },
+    "inputsSha256": "e814e9130ee19ba22fb5f8749c73c2ea2a75e2a60a6162defdddc0ec234daa23"
+  },
+  "shots": {
+    "source": "third-party-shot-archive",
+    "players": 2840,
+    "packs": 60,
+    "seasons": 30,
+    "firstSeason": "1996-97",
+    "lastSeason": "2025-26",
+    "playerSeasonTypeEntries": 20421,
+    "acceptedAttempts": 6328070,
+    "quarantinedRows": 1,
+    "packsWithControlMismatches": 2,
+    "sourceCapturedOn": null,
+    "localVerifiedOn": {
+      "first": "2026-10-03",
+      "last": "2026-10-04"
+    },
+    "inputsSha256": "f74e5a61af8107bab49a54ae05170f6388d94a366e8b0715366c1d5a70a248e6"
+  }
+}
