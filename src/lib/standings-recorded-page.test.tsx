@@ -19,6 +19,18 @@ it.each(["en", "zh"] as const)("renders recorded mobile disclosures and desktop 
   locale.mockResolvedValue(language); client.locale = language;
   const fetch = vi.fn(() => { throw new Error("No provider calls for archive"); }); vi.stubGlobal("fetch", fetch);
   const html = await render("2025-26");
+  const teamHeader = language === "zh" ? "球队" : "Team";
+  const mobileHeaders = [...html.matchAll(/<div aria-hidden="true"[^>]*><span>([^<]*)<\/span>/g)];
+  const desktopHeaders = [...html.matchAll(/<thead><tr[^>]*><th[^>]*>([^<]*)<\/th>/g)];
+  const divisionHeaders = [...html.matchAll(/<span class="w-5">#<\/span><span>([^<]*)<\/span>/g)];
+  expect(mobileHeaders.map(match => match[1])).toEqual(Array(2).fill(teamHeader));
+  expect(desktopHeaders.map(match => match[1])).toEqual(Array(2).fill(teamHeader));
+  expect(divisionHeaders.map(match => match[1])).toEqual(Array(6).fill(teamHeader));
+  const eastLabel = language === "zh" ? "东部每队平均胜场" : "East wins per team";
+  const westLabel = language === "zh" ? "西部每队平均胜场" : "West wins per team";
+  expect(html).toMatch(new RegExp(`>${eastLabel}</p><p[^>]*>40\\.6</p>`));
+  expect(html).toMatch(new RegExp(`>${westLabel}</p><p[^>]*>41\\.4</p>`));
+  if (language === "zh") expect(html).toContain("30 支球队");
   expect(html).toContain("2025-26"); expect(html).toContain("1,230"); expect(html).toContain("82");
   expect(html).toContain('href="/standings"'); expect(html).toContain('aria-current="page"'); expect(html).toContain("min-h-11");
   expect(html).toMatch(language === "en" ? /local/i : /本地/);
@@ -64,6 +76,21 @@ it.each(["", "2024-25", "2026-26", ["2025-26"], ["2025-26", "2026-27"]])("keeps 
 it("explicit current uses current schedule and keeps the archive escape", async () => {
   const html = await render("2026-27"); expect(html).toContain("?season=2025-26"); expect(html).not.toContain("Invalid or repeated");
   expect(current).toHaveBeenCalledExactlyOnceWith("2026-27"); expect(recorded).not.toHaveBeenCalled();
+});
+
+it.each(["en", "zh"] as const)("qualifies current position highlights with official results in empty and populated %s views", async language => {
+  locale.mockResolvedValue(language); client.locale = language;
+  const caveat = language === "zh" ? "各联盟前六名位置高亮提示 · 最终季后赛资格以官方结果为准" : "Top six positions per conference highlighted · playoff qualification is subject to official results";
+  const empty = await render("2026-27");
+  expect(empty).toContain(caveat);
+  expect(empty).not.toContain(getTranslations(language).standingsPage.top6Hint);
+  const api = await vi.importActual<typeof import("./api")>("./api");
+  current.mockResolvedValue(api.getRecorded2025SeasonSchedule());
+  const populated = await render("2026-27");
+  expect(populated).toContain(caveat);
+  expect(populated).not.toContain(getTranslations(language).standingsPage.top6Hint);
+  expect(populated).toMatch(/>P</); expect(populated).toMatch(/>PI</);
+  expect(recorded).not.toHaveBeenCalled();
 });
 
 it.each(["en", "zh"] as const)("keeps metadata tied to selected season and archive source in %s", async language => {

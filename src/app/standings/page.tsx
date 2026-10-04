@@ -82,10 +82,11 @@ function StreakBadge({ streak, compact }: { streak: string; compact?: boolean })
   );
 }
 
-function DivisionCard({ division, teams, conferenceRanks, t, archive }: {
+function DivisionCard({ division, teams, conferenceRanks, t, archive, isZh }: {
   division: string;
   teams: StandingsRow[];
   conferenceRanks: Map<string, number>;
+  isZh: boolean;
   archive: boolean;
   t: Translations;
 }) {
@@ -108,7 +109,7 @@ function DivisionCard({ division, teams, conferenceRanks, t, archive }: {
             team name; brings back below `sm` once viewport can fit it. */}
         <div className="grid grid-cols-[auto_minmax(0,1fr)_36px_36px_48px] sm:grid-cols-[auto_1fr_40px_40px_56px_40px] items-center px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
           <span className="w-5">#</span>
-          <span>{t.common.team}</span>
+          <span>{isZh ? "球队" : "Team"}</span>
           <span className="text-center">{t.common.wins}</span>
           <span className="text-center">{t.common.losses}</span>
           <span className="text-center">{t.standingsPage.pct}</span>
@@ -202,7 +203,7 @@ function ConferenceTable({ title, teams, t, isZh, archive }: { title: string; te
       </div>
       <div className="md:hidden divide-y divide-border/50">
         <div aria-hidden="true" className="grid grid-cols-[minmax(0,1fr)_3.5rem_3rem_2.5rem] gap-2 px-3 py-2 text-xs text-text-secondary">
-          <span>{t.common.team}</span><span className="text-right">W–L</span><span className="text-right">{t.standingsPage.pct}</span><span className="text-right">{t.standingsPage.gb}</span>
+          <span>{isZh ? "球队" : "Team"}</span><span className="text-right">W–L</span><span className="text-right">{t.standingsPage.pct}</span><span className="text-right">{t.standingsPage.gb}</span>
         </div>
         {teams.map((team, i) => (
           <details key={team.tricode} data-team={team.tricode} className="group">
@@ -238,7 +239,7 @@ function ConferenceTable({ title, teams, t, isZh, archive }: { title: string; te
         <table className="w-full text-sm min-w-[820px]">
           <thead>
             <tr className="border-b border-border text-text-secondary text-[10px] font-mono uppercase tracking-[0.15em]">
-              <th className="text-left py-2.5 px-3 sticky left-0 z-10 bg-bg-card min-w-[150px]">{t.common.team}</th>
+              <th className="text-left py-2.5 px-3 sticky left-0 z-10 bg-bg-card min-w-[150px]">{isZh ? "球队" : "Team"}</th>
               {headers.map((h) => (
                 <th key={h.key} className="text-center py-2.5 px-2 whitespace-nowrap">{h.label}</th>
               ))}
@@ -308,7 +309,7 @@ export default async function StandingsPage({ searchParams }: NextPageProps) {
 
   const coverage = trajectoryCoverage(schedule ?? []);
   const seasonControls = <SeasonSource selection={selection} coverage={coverage} isZh={isZh} />;
-  const subtitle = archive ? (isZh ? "计算排名 · 未应用 NBA 官方同胜率排名规则" : "Computed order · official NBA tiebreakers are not applied") : t.standingsPage.top6Hint;
+  const subtitle = archive ? (isZh ? "计算排名 · 未应用 NBA 官方同胜率排名规则" : "Computed order · official NBA tiebreakers are not applied") : (isZh ? "各联盟前六名位置高亮提示 · 最终季后赛资格以官方结果为准" : "Top six positions per conference highlighted · playoff qualification is subject to official results");
 
   const seasonLabel = `${season} · ${isZh ? "常规赛" : "Regular season"}`;
 
@@ -390,7 +391,7 @@ export default async function StandingsPage({ searchParams }: NextPageProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div className="glass-tile p-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.eastAvgW}</p>
+                <p className="text-[10px] text-text-secondary uppercase">{isZh ? "东部每队平均胜场" : "East wins per team"}</p>
                 <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{eastAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
@@ -400,7 +401,7 @@ export default async function StandingsPage({ searchParams }: NextPageProps) {
             </div>
             <div className="glass-tile p-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-text-secondary uppercase">{t.standingsPage.westAvgW}</p>
+                <p className="text-[10px] text-text-secondary uppercase">{isZh ? "西部每队平均胜场" : "West wins per team"}</p>
                 <p className="text-2xl font-light font-mono tabular-nums text-accent-amber">{westAvgW.toFixed(1)}</p>
               </div>
               <div className="text-right">
@@ -449,6 +450,7 @@ export default async function StandingsPage({ searchParams }: NextPageProps) {
             division={div}
             teams={byDivision.get(div) || []}
             archive={archive}
+            isZh={isZh}
             conferenceRanks={conferenceRanks}
             t={t}
           />
@@ -470,6 +472,7 @@ export default async function StandingsPage({ searchParams }: NextPageProps) {
             division={div}
             teams={byDivision.get(div) || []}
             archive={archive}
+            isZh={isZh}
             conferenceRanks={conferenceRanks}
             t={t}
           />
