@@ -11,6 +11,7 @@ import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
 import ArchivedPlayerProfile from "@/components/player/ArchivedPlayerProfile";
+import PlayerOptionalDetails from "@/components/player/PlayerOptionalDetails";
 import { getHistoricalCareerArchive } from "@/lib/historical-career-archive";
 import { getPlayerProfileContext } from "@/lib/player-profile-loader";
 import { parsePlayerId } from "@/lib/player-identity";
@@ -32,13 +33,9 @@ import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
 import { getPlayerSeasonHeatmapCatalog, loadPlayerSeasonHeatmapArchive } from "@/lib/season-heatmap-catalog-server";
 
-// Heavy player subcomponents are code-split — each ships its own chunk
-// instead of bloating the player page bundle. They all fetch on mount,
-// so deferring the JS doesn't change behavior.
+// Optional measurements, contract and news have their own client visibility
+// boundary. Keep the main stats/honors rendering and fetching unchanged.
 const PlayerHonors = nextDynamic(() => import("@/components/player/PlayerHonors"));
-const PlayerMeasurements = nextDynamic(() => import("@/components/player/PlayerMeasurements"));
-const PlayerSalary = nextDynamic(() => import("@/components/player/PlayerSalary"));
-const PlayerNews = nextDynamic(() => import("@/components/player/PlayerNews"));
 const PlayerStatsBundle = nextDynamic(() => import("@/components/player/PlayerStatsBundle"));
 const PlayerAdvancedStats = nextDynamic(() => import("@/components/player/PlayerAdvancedStats"));
 const PlayerSeasonHeatmap = nextDynamic(() => import("@/components/player/PlayerSeasonHeatmap"));
@@ -466,9 +463,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
           <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
         </div>
-        <PlayerMeasurements playerId={personId} draftYear={player.draftYear} />
-        <PlayerSalary playerName={fullName} teamAbbr={player.teamAbbr} />
-        <PlayerNews playerName={fullName} />
+        <PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} />
       </section>
 
       {/* ─── Connections (Teammates + Similar) ──────────── */}

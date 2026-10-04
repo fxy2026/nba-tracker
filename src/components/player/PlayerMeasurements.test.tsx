@@ -67,7 +67,9 @@ afterEach(() => { unmount(); vi.unstubAllGlobals(); });
 describe("combine identity and request lifecycle", () => {
   it("passes the resolved player ID from the profile page", () => {
     const page = readFileSync(new URL("../../app/player/[id]/page.tsx", import.meta.url), "utf8");
-    expect(page).toContain("<PlayerMeasurements playerId={personId} draftYear={player.draftYear} />");
+    expect(page).toContain("<PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} />");
+    const details = readFileSync(new URL("./PlayerOptionalDetails.tsx", import.meta.url), "utf8");
+    expect(details).toContain("<PlayerMeasurements playerId={playerId} draftYear={draftYear} />");
   });
   it("requests the class once and renders only the matching player's measurements", async () => {
     expect(render()).toBe("");

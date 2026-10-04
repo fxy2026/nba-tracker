@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Newspaper } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { PlayerNewsLoading } from "./PlayerDetailsLoading";
 
 interface NewsItem {
   headline: string;
@@ -22,6 +23,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
     (async () => {
       try {
         const res = await fetch(`/api/news?q=${encodeURIComponent(playerName)}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
         if (!res.ok) { setLoading(false); return; }
         const json = await res.json();
         if (!controller.signal.aborted && json.data) setNews(json.data);
@@ -31,24 +33,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
     return () => controller.abort();
   }, [playerName]);
 
-  if (loading) {
-    return (
-      <div className="glass-tile p-4">
-        <div className="mb-3">
-          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ News</p>
-          <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
-            <Newspaper size={14} className="text-accent-amber" />
-            {t.playerNews.title}
-          </h3>
-        </div>
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-14 bg-bg-secondary/60 rounded-lg skeleton-shimmer" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PlayerNewsLoading />;
 
   if (news.length === 0) return null;
 
@@ -58,7 +43,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
         <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ News</p>
         <h3 className="text-sm font-semibold text-text-primary tracking-tight flex items-center gap-2 mt-1">
           <Newspaper size={14} className="text-accent-amber" />
-          Latest News
+          {t.playerNews.title}
         </h3>
       </div>
       <div className="divide-y divide-border/50">
