@@ -1,0 +1,20 @@
+.scroller {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.scroller:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.table th, .table td { min-width: 54px; padding: 12px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.table th { color: var(--text-secondary); font-weight: 500; }
+.table td { color: var(--text-primary); }
+.table .season { position: sticky; left: 0; z-index: 1; min-width: 86px; text-align: left; background-color: var(--bg-card); }
+.table thead .season { z-index: 2; }
+.table tfoot .season, .table tfoot td { background-color: var(--bg-secondary); font-weight: 600; border-bottom: 0; }
+.table .points { color: var(--accent); font-weight: 600; }
+@media (max-width: 639px) {
+  .table th, .table td { min-width: 44px; padding: 11px 6px; }
+  .table .season { min-width: 80px; }
+}

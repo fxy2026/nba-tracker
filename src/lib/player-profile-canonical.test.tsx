@@ -4,7 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import index from "@/data/playerindex-2025-26.json";
 import type { PlayerInfo } from "./api";
 vi.mock("server-only", () => ({}));
-const state = vi.hoisted(() => ({ locale: "en" as "en" | "zh" }));
+const state = vi.hoisted(() => ({ locale: "en" as "en" | "zh", careerUnavailable: false }));
+vi.mock("@/lib/historical-career-archive", async original => {
+  const originalArchive = await original<typeof import("./historical-career-archive")>();
+  return { ...originalArchive, getHistoricalCareerArchive: async (id: number) => state.careerUnavailable ? null : originalArchive.getHistoricalCareerArchive(id) };
+});
 vi.mock("@/lib/locale", () => ({ getLocale: async () => state.locale }));
 vi.mock("@/lib/api", async original => ({ ...await original<typeof import("./api")>(), getPlayerIndexSnapshot: async () => ({ players: index.resultSets[0].rowSet.map(r => ({ personId: r[0], lastName: r[1], firstName: r[2], slug: r[3], teamId: r[4], teamAbbr: r[9], teamCity: r[7], teamName: r[8], jersey: r[10], position: r[11], height: r[12], weight: r[13], college: r[14], country: r[15], draftYear: r[16], draftRound: r[17], draftNumber: r[18], fromYear: r[20], toYear: r[21], pts: r[22], reb: r[23], ast: r[24] } as PlayerInfo)), provenance: { source: "bundled-archive", season: "2025-26", stale: true, retrievedAt: null } }) }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NEXT_NOT_FOUND"); } }));
@@ -24,7 +28,7 @@ function elements(node: ReactNode): React.ReactElement<Record<string, unknown>>[
   return [node as React.ReactElement<Record<string, unknown>>, ...elements(node.props.children)];
 }
 const page = (id: number | string, query = {}) => Page({ params: Promise.resolve({ id: String(id) }), searchParams: Promise.resolve(query) });
-beforeEach(() => { state.locale = "en"; });
+beforeEach(() => { state.locale = "en"; state.careerUnavailable = false; });
 describe("one canonical player home", () => {
   it.each([[201939, "Curry"], [977, "Kobe Bryant"], [15, "Eric Piatkowski"], [893, "Michael Jordan"], [1642850, "Sorber"], [901, "Otis Thorpe"], [76681, "Julius Erving"]])("server-renders genuine profile %s", async (id, name) => {
     const tree = await page(id); const html = renderToStaticMarkup(tree);
@@ -45,6 +49,26 @@ describe("one canonical player home", () => {
     const tree = await page(893); const html = renderToStaticMarkup(tree);
     expect(html).toContain("Michael Jordan"); expect(html).toContain("Missing records do not mean zero attempts");
     expect(html).toContain("Existing curated career summary"); expect(html).toContain("30.1");
+  });
+  it.each(["en", "zh"] as const)("integrates Jordan season totals into the canonical page without hiding shot availability (%s)", async locale => {
+    state.locale = locale;
+    const tree = await page(893); const html = renderToStaticMarkup(tree);
+    expect(tree.props.historicalCareer.rows).toHaveLength(28);
+    expect(html).toContain('data-historical-career="893"');
+    expect(html).toContain("1984-85"); expect(html).toContain("2002-03");
+    expect(html).toContain(locale === "zh" ? "缺失记录并不代表零次出手" : "Missing records do not mean zero attempts");
+    expect(html).not.toContain(locale === "zh" ? "完整逐赛季生涯表暂未收录" : "A complete season-by-season career table has not been recorded");
+    expect(html.indexOf('id="career"')).toBeLessThan(html.indexOf('id="shooting"'));
+    expect(JSON.stringify(tree.props.historicalCareer)).not.toMatch(/evidenceSha256|publishedCareerTotals|sourceObservations/);
+  });
+  it("retains the usable canonical profile when the historical archive fails validation or loading", async () => {
+    state.careerUnavailable = true;
+    const tree = await page(893); const html = renderToStaticMarkup(tree);
+    expect(tree.props.historicalCareer).toBeNull();
+    expect(html).toContain("Michael Jordan"); expect(html).toContain("Existing curated career summary");
+    expect(html).toContain("A complete season-by-season career table has not been recorded");
+    expect(html).not.toContain("data-historical-career");
+    expect(html).toContain("Missing records do not mean zero attempts");
   });
   it("preserves current rich stats props and places shooting before the long career table", async () => {
     const tree = await page(201939); const nodes = elements(tree);

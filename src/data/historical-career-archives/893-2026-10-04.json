@@ -1,0 +1,6083 @@
+{
+  "schemaVersion": 1,
+  "player": {
+    "nbaPlayerId": 893,
+    "name": "Michael Jordan"
+  },
+  "retrievedAt": "2026-10-04T03:24:33Z",
+  "sourceStatus": "secondary_source",
+  "officialNbaVerified": false,
+  "fieldConventions": {
+    "season": "YYYY-YY; no invented rows for inactive seasons",
+    "seasonType": [
+      "Regular Season",
+      "Playoffs"
+    ],
+    "totals": "Exact source season totals, except explicit nulls for unsupported or quarantined fields.",
+    "percentages": "Displayed source percentages normalized to fraction 0..1.",
+    "perGame": "Displayed source per-game values, rounded as published.",
+    "GS": "Unsupported by selected tables, null for every row.",
+    "PLUS_MINUS": "Null when source has no historical value; any career plus/minus is partial coverage.",
+    "MIN": "Minutes as published, not seconds; 2001-02 regular MIN and perGame.MIN null pending source dispute resolution."
+  },
+  "sources": [
+    {
+      "id": "statmuse_regular_totals",
+      "publisher": "StatMuse",
+      "url": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "evidenceFile": "regular-evidence.txt",
+      "role": "primary_selected_secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "sourcePublishedAt": null,
+      "datasetRevision": null,
+      "retrievalMethod": "web.run open: extracted public HTML text",
+      "evidenceSha256": "1fcd5c64c2fa0295f886fdc62ab2e3e9bdfc3ff8f059706e25cf820998b594fd"
+    },
+    {
+      "id": "statmuse_playoff_totals",
+      "publisher": "StatMuse",
+      "url": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "evidenceFile": "playoffs-evidence.txt",
+      "role": "primary_selected_secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "sourcePublishedAt": null,
+      "datasetRevision": null,
+      "retrievalMethod": "web.run open: extracted public HTML text",
+      "evidenceSha256": "daa65bcd1e738ec572486de749390965a9d066f2aee85e46d64103dcf8c43330"
+    },
+    {
+      "id": "basketballmonster_regular_totals",
+      "publisher": "Basketball Monster / RotoMonster",
+      "url": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "evidenceFile": "corroboration-evidence.txt",
+      "role": "corroboration",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "sourcePublishedAt": null,
+      "datasetRevision": null,
+      "retrievalMethod": "web.run open: extracted public HTML text",
+      "evidenceSha256": "a505bda6b1ccbdef8264a8b13922469e3f0a77b2f1d5f21190556c8c1483af63"
+    }
+  ],
+  "rows": [
+    {
+      "rowId": "893:Regular Season:1984-85",
+      "nbaPlayerId": 893,
+      "season": "1984-85",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3144,
+        "PTS": 2313,
+        "REB": 534,
+        "AST": 481,
+        "STL": 196,
+        "BLK": 69,
+        "FGM": 837,
+        "FGA": 1625,
+        "FG3M": 9,
+        "FG3A": 52,
+        "FTM": 630,
+        "FTA": 746,
+        "OREB": 167,
+        "DREB": 367,
+        "TOV": 291,
+        "PF": 285,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.515,
+        "FG3_PCT": 0.173,
+        "FT_PCT": 0.845,
+        "TS_PCT": 0.592
+      },
+      "perGame": {
+        "MIN": 38.3,
+        "PTS": 28.2,
+        "REB": 6.5,
+        "AST": 5.9,
+        "STL": 2.4,
+        "BLK": 0.8,
+        "TOV": 3.5
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 83,
+        "endLine": 141
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 38.3,
+          "PTS": 28.2,
+          "REB": 6.5,
+          "AST": 5.9,
+          "STL": 2.4,
+          "BLK": 0.8,
+          "TOV": 3.5
+        },
+        "percentages": {
+          "FG_PCT": 0.51507692,
+          "FG3_PCT": 0.17307692,
+          "FT_PCT": 0.84450402
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1985-86",
+      "nbaPlayerId": 893,
+      "season": "1985-86",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 18,
+        "MIN": 451,
+        "PTS": 408,
+        "REB": 64,
+        "AST": 53,
+        "STL": 37,
+        "BLK": 21,
+        "FGM": 150,
+        "FGA": 328,
+        "FG3M": 3,
+        "FG3A": 18,
+        "FTM": 105,
+        "FTA": 125,
+        "OREB": 23,
+        "DREB": 41,
+        "TOV": 45,
+        "PF": 46,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.457,
+        "FG3_PCT": 0.167,
+        "FT_PCT": 0.84,
+        "TS_PCT": 0.533
+      },
+      "perGame": {
+        "MIN": 25.1,
+        "PTS": 22.7,
+        "REB": 3.6,
+        "AST": 2.9,
+        "STL": 2.1,
+        "BLK": 1.2,
+        "TOV": 2.5
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 143,
+        "endLine": 200
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 25.1,
+          "PTS": 22.7,
+          "REB": 3.6,
+          "AST": 2.9,
+          "STL": 2.1,
+          "BLK": 1.2,
+          "TOV": 2.5
+        },
+        "percentages": {
+          "FG_PCT": 0.45731707,
+          "FG3_PCT": 0.16666667,
+          "FT_PCT": 0.84
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1986-87",
+      "nbaPlayerId": 893,
+      "season": "1986-87",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3281,
+        "PTS": 3041,
+        "REB": 430,
+        "AST": 377,
+        "STL": 236,
+        "BLK": 125,
+        "FGM": 1098,
+        "FGA": 2279,
+        "FG3M": 12,
+        "FG3A": 66,
+        "FTM": 833,
+        "FTA": 972,
+        "OREB": 166,
+        "DREB": 264,
+        "TOV": 272,
+        "PF": 237,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.482,
+        "FG3_PCT": 0.182,
+        "FT_PCT": 0.857,
+        "TS_PCT": 0.562
+      },
+      "perGame": {
+        "MIN": 40.0,
+        "PTS": 37.1,
+        "REB": 5.2,
+        "AST": 4.6,
+        "STL": 2.9,
+        "BLK": 1.5,
+        "TOV": 3.3
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 202,
+        "endLine": 260
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 40.0,
+          "PTS": 37.1,
+          "REB": 5.2,
+          "AST": 4.6,
+          "STL": 2.9,
+          "BLK": 1.5,
+          "TOV": 3.3
+        },
+        "percentages": {
+          "FG_PCT": 0.48179026,
+          "FG3_PCT": 0.18181818,
+          "FT_PCT": 0.85699588
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1987-88",
+      "nbaPlayerId": 893,
+      "season": "1987-88",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3311,
+        "PTS": 2868,
+        "REB": 449,
+        "AST": 485,
+        "STL": 259,
+        "BLK": 131,
+        "FGM": 1069,
+        "FGA": 1998,
+        "FG3M": 7,
+        "FG3A": 53,
+        "FTM": 723,
+        "FTA": 860,
+        "OREB": 139,
+        "DREB": 310,
+        "TOV": 252,
+        "PF": 270,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.535,
+        "FG3_PCT": 0.132,
+        "FT_PCT": 0.841,
+        "TS_PCT": 0.603
+      },
+      "perGame": {
+        "MIN": 40.4,
+        "PTS": 35.0,
+        "REB": 5.5,
+        "AST": 5.9,
+        "STL": 3.2,
+        "BLK": 1.6,
+        "TOV": 3.1
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 262,
+        "endLine": 319
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 40.4,
+          "PTS": 35.0,
+          "REB": 5.5,
+          "AST": 5.9,
+          "STL": 3.2,
+          "BLK": 1.6,
+          "TOV": 3.1
+        },
+        "percentages": {
+          "FG_PCT": 0.53503504,
+          "FG3_PCT": 0.13207547,
+          "FT_PCT": 0.84069767
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1988-89",
+      "nbaPlayerId": 893,
+      "season": "1988-89",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 81,
+        "MIN": 3255,
+        "PTS": 2633,
+        "REB": 652,
+        "AST": 650,
+        "STL": 234,
+        "BLK": 65,
+        "FGM": 966,
+        "FGA": 1795,
+        "FG3M": 27,
+        "FG3A": 98,
+        "FTM": 674,
+        "FTA": 793,
+        "OREB": 149,
+        "DREB": 503,
+        "TOV": 290,
+        "PF": 247,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.538,
+        "FG3_PCT": 0.276,
+        "FT_PCT": 0.85,
+        "TS_PCT": 0.614
+      },
+      "perGame": {
+        "MIN": 40.2,
+        "PTS": 32.5,
+        "REB": 8.0,
+        "AST": 8.0,
+        "STL": 2.9,
+        "BLK": 0.8,
+        "TOV": 3.6
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 321,
+        "endLine": 379
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 40.2,
+          "PTS": 32.5,
+          "REB": 8.0,
+          "AST": 8.0,
+          "STL": 2.9,
+          "BLK": 0.8,
+          "TOV": 3.6
+        },
+        "percentages": {
+          "FG_PCT": 0.53816156,
+          "FG3_PCT": 0.2755102,
+          "FT_PCT": 0.84993695
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1989-90",
+      "nbaPlayerId": 893,
+      "season": "1989-90",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3197,
+        "PTS": 2753,
+        "REB": 565,
+        "AST": 519,
+        "STL": 227,
+        "BLK": 54,
+        "FGM": 1034,
+        "FGA": 1964,
+        "FG3M": 92,
+        "FG3A": 245,
+        "FTM": 593,
+        "FTA": 699,
+        "OREB": 143,
+        "DREB": 422,
+        "TOV": 247,
+        "PF": 241,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.526,
+        "FG3_PCT": 0.376,
+        "FT_PCT": 0.848,
+        "TS_PCT": 0.606
+      },
+      "perGame": {
+        "MIN": 39.0,
+        "PTS": 33.6,
+        "REB": 6.9,
+        "AST": 6.3,
+        "STL": 2.8,
+        "BLK": 0.7,
+        "TOV": 3.0
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 381,
+        "endLine": 439
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 39.0,
+          "PTS": 33.6,
+          "REB": 6.9,
+          "AST": 6.3,
+          "STL": 2.8,
+          "BLK": 0.7,
+          "TOV": 3.0
+        },
+        "percentages": {
+          "FG_PCT": 0.52647658,
+          "FG3_PCT": 0.3755102,
+          "FT_PCT": 0.84835479
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1990-91",
+      "nbaPlayerId": 893,
+      "season": "1990-91",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3034,
+        "PTS": 2580,
+        "REB": 492,
+        "AST": 453,
+        "STL": 223,
+        "BLK": 83,
+        "FGM": 990,
+        "FGA": 1837,
+        "FG3M": 29,
+        "FG3A": 93,
+        "FTM": 571,
+        "FTA": 671,
+        "OREB": 118,
+        "DREB": 374,
+        "TOV": 202,
+        "PF": 229,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.539,
+        "FG3_PCT": 0.312,
+        "FT_PCT": 0.851,
+        "TS_PCT": 0.605
+      },
+      "perGame": {
+        "MIN": 37.0,
+        "PTS": 31.5,
+        "REB": 6.0,
+        "AST": 5.5,
+        "STL": 2.7,
+        "BLK": 1.0,
+        "TOV": 2.5
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 440,
+        "endLine": 498
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 37.0,
+          "PTS": 31.5,
+          "REB": 6.0,
+          "AST": 5.5,
+          "STL": 2.7,
+          "BLK": 1.0,
+          "TOV": 2.5
+        },
+        "percentages": {
+          "FG_PCT": 0.53892216,
+          "FG3_PCT": 0.31182796,
+          "FT_PCT": 0.8509687
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1991-92",
+      "nbaPlayerId": 893,
+      "season": "1991-92",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 80,
+        "MIN": 3102,
+        "PTS": 2404,
+        "REB": 511,
+        "AST": 489,
+        "STL": 182,
+        "BLK": 75,
+        "FGM": 943,
+        "FGA": 1818,
+        "FG3M": 27,
+        "FG3A": 100,
+        "FTM": 491,
+        "FTA": 590,
+        "OREB": 91,
+        "DREB": 420,
+        "TOV": 200,
+        "PF": 201,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.519,
+        "FG3_PCT": 0.27,
+        "FT_PCT": 0.832,
+        "TS_PCT": 0.579
+      },
+      "perGame": {
+        "MIN": 38.8,
+        "PTS": 30.1,
+        "REB": 6.4,
+        "AST": 6.1,
+        "STL": 2.3,
+        "BLK": 0.9,
+        "TOV": 2.5
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 500,
+        "endLine": 558
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 38.8,
+          "PTS": 30.1,
+          "REB": 6.4,
+          "AST": 6.1,
+          "STL": 2.3,
+          "BLK": 0.9,
+          "TOV": 2.5
+        },
+        "percentages": {
+          "FG_PCT": 0.51870187,
+          "FG3_PCT": 0.27,
+          "FT_PCT": 0.83220339
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1992-93",
+      "nbaPlayerId": 893,
+      "season": "1992-93",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 78,
+        "MIN": 3067,
+        "PTS": 2541,
+        "REB": 522,
+        "AST": 428,
+        "STL": 221,
+        "BLK": 61,
+        "FGM": 992,
+        "FGA": 2003,
+        "FG3M": 81,
+        "FG3A": 230,
+        "FTM": 476,
+        "FTA": 569,
+        "OREB": 135,
+        "DREB": 387,
+        "TOV": 207,
+        "PF": 188,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.495,
+        "FG3_PCT": 0.352,
+        "FT_PCT": 0.837,
+        "TS_PCT": 0.564
+      },
+      "perGame": {
+        "MIN": 39.3,
+        "PTS": 32.6,
+        "REB": 6.7,
+        "AST": 5.5,
+        "STL": 2.8,
+        "BLK": 0.8,
+        "TOV": 2.7
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 559,
+        "endLine": 617
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 39.3,
+          "PTS": 32.6,
+          "REB": 6.7,
+          "AST": 5.5,
+          "STL": 2.8,
+          "BLK": 0.8,
+          "TOV": 2.7
+        },
+        "percentages": {
+          "FG_PCT": 0.49525711,
+          "FG3_PCT": 0.35217391,
+          "FT_PCT": 0.83655536
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1994-95",
+      "nbaPlayerId": 893,
+      "season": "1994-95",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 17,
+        "MIN": 668,
+        "PTS": 457,
+        "REB": 117,
+        "AST": 90,
+        "STL": 30,
+        "BLK": 13,
+        "FGM": 166,
+        "FGA": 404,
+        "FG3M": 16,
+        "FG3A": 32,
+        "FTM": 109,
+        "FTA": 136,
+        "OREB": 25,
+        "DREB": 92,
+        "TOV": 35,
+        "PF": 47,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.411,
+        "FG3_PCT": 0.5,
+        "FT_PCT": 0.801,
+        "TS_PCT": 0.493
+      },
+      "perGame": {
+        "MIN": 39.3,
+        "PTS": 26.9,
+        "REB": 6.9,
+        "AST": 5.3,
+        "STL": 1.8,
+        "BLK": 0.8,
+        "TOV": 2.1
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 619,
+        "endLine": 677
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 39.3,
+          "PTS": 26.9,
+          "REB": 6.9,
+          "AST": 5.3,
+          "STL": 1.8,
+          "BLK": 0.8,
+          "TOV": 2.1
+        },
+        "percentages": {
+          "FG_PCT": 0.41089109,
+          "FG3_PCT": 0.5,
+          "FT_PCT": 0.80147059
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1995-96",
+      "nbaPlayerId": 893,
+      "season": "1995-96",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3090,
+        "PTS": 2491,
+        "REB": 543,
+        "AST": 352,
+        "STL": 180,
+        "BLK": 42,
+        "FGM": 916,
+        "FGA": 1850,
+        "FG3M": 111,
+        "FG3A": 260,
+        "FTM": 548,
+        "FTA": 657,
+        "OREB": 148,
+        "DREB": 395,
+        "TOV": 197,
+        "PF": 195,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.495,
+        "FG3_PCT": 0.427,
+        "FT_PCT": 0.834,
+        "TS_PCT": 0.582
+      },
+      "perGame": {
+        "MIN": 37.7,
+        "PTS": 30.4,
+        "REB": 6.6,
+        "AST": 4.3,
+        "STL": 2.2,
+        "BLK": 0.5,
+        "TOV": 2.4
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 678,
+        "endLine": 736
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 37.7,
+          "PTS": 30.4,
+          "REB": 6.6,
+          "AST": 4.3,
+          "STL": 2.2,
+          "BLK": 0.5,
+          "TOV": 2.4
+        },
+        "percentages": {
+          "FG_PCT": 0.49513514,
+          "FG3_PCT": 0.42692308,
+          "FT_PCT": 0.83409437
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1996-97",
+      "nbaPlayerId": 893,
+      "season": "1996-97",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3106,
+        "PTS": 2431,
+        "REB": 482,
+        "AST": 352,
+        "STL": 140,
+        "BLK": 44,
+        "FGM": 920,
+        "FGA": 1892,
+        "FG3M": 111,
+        "FG3A": 297,
+        "FTM": 480,
+        "FTA": 576,
+        "OREB": 113,
+        "DREB": 369,
+        "TOV": 166,
+        "PF": 156,
+        "PLUS_MINUS": 818,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.486,
+        "FG3_PCT": 0.374,
+        "FT_PCT": 0.833,
+        "TS_PCT": 0.567
+      },
+      "perGame": {
+        "MIN": 37.9,
+        "PTS": 29.6,
+        "REB": 5.9,
+        "AST": 4.3,
+        "STL": 1.7,
+        "BLK": 0.5,
+        "TOV": 2.0
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 738,
+        "endLine": 798
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 37.9,
+          "PTS": 29.6,
+          "REB": 5.9,
+          "AST": 4.3,
+          "STL": 1.7,
+          "BLK": 0.5,
+          "TOV": 2.0
+        },
+        "percentages": {
+          "FG_PCT": 0.48625793,
+          "FG3_PCT": 0.37373737,
+          "FT_PCT": 0.83333333
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1997-98",
+      "nbaPlayerId": 893,
+      "season": "1997-98",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3181,
+        "PTS": 2357,
+        "REB": 475,
+        "AST": 283,
+        "STL": 141,
+        "BLK": 45,
+        "FGM": 881,
+        "FGA": 1893,
+        "FG3M": 30,
+        "FG3A": 126,
+        "FTM": 565,
+        "FTA": 721,
+        "OREB": 130,
+        "DREB": 345,
+        "TOV": 185,
+        "PF": 151,
+        "PLUS_MINUS": 598,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.465,
+        "FG3_PCT": 0.238,
+        "FT_PCT": 0.784,
+        "TS_PCT": 0.533
+      },
+      "perGame": {
+        "MIN": 38.8,
+        "PTS": 28.7,
+        "REB": 5.8,
+        "AST": 3.5,
+        "STL": 1.7,
+        "BLK": 0.5,
+        "TOV": 2.3
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 799,
+        "endLine": 859
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 38.8,
+          "PTS": 28.7,
+          "REB": 5.8,
+          "AST": 3.5,
+          "STL": 1.7,
+          "BLK": 0.5,
+          "TOV": 2.3
+        },
+        "percentages": {
+          "FG_PCT": 0.46539884,
+          "FG3_PCT": 0.23809524,
+          "FT_PCT": 0.78363384
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:2001-02",
+      "nbaPlayerId": 893,
+      "season": "2001-02",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "WAS",
+      "totals": {
+        "GP": 60,
+        "MIN": null,
+        "PTS": 1375,
+        "REB": 339,
+        "AST": 310,
+        "STL": 85,
+        "BLK": 26,
+        "FGM": 551,
+        "FGA": 1324,
+        "FG3M": 10,
+        "FG3A": 53,
+        "FTM": 263,
+        "FTA": 333,
+        "OREB": 50,
+        "DREB": 289,
+        "TOV": 162,
+        "PF": 119,
+        "PLUS_MINUS": 16,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.416,
+        "FG3_PCT": 0.189,
+        "FT_PCT": 0.79,
+        "TS_PCT": 0.468
+      },
+      "perGame": {
+        "MIN": null,
+        "PTS": 22.9,
+        "REB": 5.7,
+        "AST": 5.2,
+        "STL": 1.4,
+        "BLK": 0.4,
+        "TOV": 2.7
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [
+        "totals.MIN",
+        "perGame.MIN"
+      ],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 861,
+        "endLine": 921
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": null,
+          "PTS": 22.9,
+          "REB": 5.7,
+          "AST": 5.2,
+          "STL": 1.4,
+          "BLK": 0.4,
+          "TOV": 2.7
+        },
+        "percentages": {
+          "FG_PCT": 0.41616314,
+          "FG3_PCT": 0.18867925,
+          "FT_PCT": 0.78978979
+        }
+      }
+    },
+    {
+      "rowId": "893:Regular Season:2002-03",
+      "nbaPlayerId": 893,
+      "season": "2002-03",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "WAS",
+      "totals": {
+        "GP": 82,
+        "MIN": 3031,
+        "PTS": 1640,
+        "REB": 497,
+        "AST": 311,
+        "STL": 123,
+        "BLK": 39,
+        "FGM": 679,
+        "FGA": 1527,
+        "FG3M": 16,
+        "FG3A": 55,
+        "FTM": 266,
+        "FTA": 324,
+        "OREB": 71,
+        "DREB": 426,
+        "TOV": 173,
+        "PF": 171,
+        "PLUS_MINUS": 6,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.445,
+        "FG3_PCT": 0.291,
+        "FT_PCT": 0.821,
+        "TS_PCT": 0.491
+      },
+      "perGame": {
+        "MIN": 37.0,
+        "PTS": 20.0,
+        "REB": 6.1,
+        "AST": 3.8,
+        "STL": 1.5,
+        "BLK": 0.5,
+        "TOV": 2.1
+      },
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "startLine": 922,
+        "endLine": 982
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 37.0,
+          "PTS": 20.0,
+          "REB": 6.1,
+          "AST": 3.8,
+          "STL": 1.5,
+          "BLK": 0.5,
+          "TOV": 2.1
+        },
+        "percentages": {
+          "FG_PCT": 0.44466274,
+          "FG3_PCT": 0.29090909,
+          "FT_PCT": 0.82098765
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1984-85",
+      "nbaPlayerId": 893,
+      "season": "1984-85",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 4,
+        "MIN": 171,
+        "PTS": 117,
+        "REB": 23,
+        "AST": 34,
+        "STL": 11,
+        "BLK": 4,
+        "FGM": 34,
+        "FGA": 78,
+        "FG3M": 1,
+        "FG3A": 8,
+        "FTM": 48,
+        "FTA": 58,
+        "OREB": 7,
+        "DREB": 16,
+        "TOV": 15,
+        "PF": 15,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.436,
+        "FG3_PCT": 0.125,
+        "FT_PCT": 0.828,
+        "TS_PCT": 0.565
+      },
+      "perGame": {
+        "MIN": 42.8,
+        "PTS": 29.3,
+        "REB": 5.8,
+        "AST": 8.5,
+        "STL": 2.8,
+        "BLK": 1.0,
+        "TOV": 3.8
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 84,
+        "endLine": 144
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.8,
+          "PTS": 29.3,
+          "REB": 5.8,
+          "AST": 8.5,
+          "STL": 2.8,
+          "BLK": 1.0,
+          "TOV": 3.8
+        },
+        "percentages": {
+          "FG_PCT": 0.43589744,
+          "FG3_PCT": 0.125,
+          "FT_PCT": 0.82758621
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1985-86",
+      "nbaPlayerId": 893,
+      "season": "1985-86",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 3,
+        "MIN": 135,
+        "PTS": 131,
+        "REB": 19,
+        "AST": 17,
+        "STL": 7,
+        "BLK": 4,
+        "FGM": 48,
+        "FGA": 95,
+        "FG3M": 1,
+        "FG3A": 1,
+        "FTM": 34,
+        "FTA": 39,
+        "OREB": 5,
+        "DREB": 14,
+        "TOV": 14,
+        "PF": 13,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.505,
+        "FG3_PCT": 1.0,
+        "FT_PCT": 0.872,
+        "TS_PCT": 0.584
+      },
+      "perGame": {
+        "MIN": 45.0,
+        "PTS": 43.7,
+        "REB": 6.3,
+        "AST": 5.7,
+        "STL": 2.3,
+        "BLK": 1.3,
+        "TOV": 4.7
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 146,
+        "endLine": 205
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 45.0,
+          "PTS": 43.7,
+          "REB": 6.3,
+          "AST": 5.7,
+          "STL": 2.3,
+          "BLK": 1.3,
+          "TOV": 4.7
+        },
+        "percentages": {
+          "FG_PCT": 0.50526316,
+          "FG3_PCT": 1.0,
+          "FT_PCT": 0.87179487
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1986-87",
+      "nbaPlayerId": 893,
+      "season": "1986-87",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 3,
+        "MIN": 128,
+        "PTS": 107,
+        "REB": 21,
+        "AST": 18,
+        "STL": 6,
+        "BLK": 7,
+        "FGM": 35,
+        "FGA": 84,
+        "FG3M": 2,
+        "FG3A": 5,
+        "FTM": 35,
+        "FTA": 39,
+        "OREB": 7,
+        "DREB": 14,
+        "TOV": 8,
+        "PF": 11,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.417,
+        "FG3_PCT": 0.4,
+        "FT_PCT": 0.897,
+        "TS_PCT": 0.529
+      },
+      "perGame": {
+        "MIN": 42.7,
+        "PTS": 35.7,
+        "REB": 7.0,
+        "AST": 6.0,
+        "STL": 2.0,
+        "BLK": 2.3,
+        "TOV": 2.7
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 207,
+        "endLine": 267
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.7,
+          "PTS": 35.7,
+          "REB": 7.0,
+          "AST": 6.0,
+          "STL": 2.0,
+          "BLK": 2.3,
+          "TOV": 2.7
+        },
+        "percentages": {
+          "FG_PCT": 0.41666667,
+          "FG3_PCT": 0.4,
+          "FT_PCT": 0.8974359
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1987-88",
+      "nbaPlayerId": 893,
+      "season": "1987-88",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 10,
+        "MIN": 427,
+        "PTS": 363,
+        "REB": 71,
+        "AST": 47,
+        "STL": 24,
+        "BLK": 11,
+        "FGM": 138,
+        "FGA": 260,
+        "FG3M": 1,
+        "FG3A": 3,
+        "FTM": 86,
+        "FTA": 99,
+        "OREB": 23,
+        "DREB": 48,
+        "TOV": 39,
+        "PF": 38,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.531,
+        "FG3_PCT": 0.333,
+        "FT_PCT": 0.869,
+        "TS_PCT": 0.598
+      },
+      "perGame": {
+        "MIN": 42.7,
+        "PTS": 36.3,
+        "REB": 7.1,
+        "AST": 4.7,
+        "STL": 2.4,
+        "BLK": 1.1,
+        "TOV": 3.9
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 269,
+        "endLine": 328
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.7,
+          "PTS": 36.3,
+          "REB": 7.1,
+          "AST": 4.7,
+          "STL": 2.4,
+          "BLK": 1.1,
+          "TOV": 3.9
+        },
+        "percentages": {
+          "FG_PCT": 0.53076923,
+          "FG3_PCT": 0.33333333,
+          "FT_PCT": 0.86868687
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1988-89",
+      "nbaPlayerId": 893,
+      "season": "1988-89",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 17,
+        "MIN": 718,
+        "PTS": 591,
+        "REB": 119,
+        "AST": 130,
+        "STL": 42,
+        "BLK": 13,
+        "FGM": 199,
+        "FGA": 390,
+        "FG3M": 10,
+        "FG3A": 35,
+        "FTM": 183,
+        "FTA": 229,
+        "OREB": 26,
+        "DREB": 93,
+        "TOV": 68,
+        "PF": 65,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.51,
+        "FG3_PCT": 0.286,
+        "FT_PCT": 0.799,
+        "TS_PCT": 0.602
+      },
+      "perGame": {
+        "MIN": 42.2,
+        "PTS": 34.8,
+        "REB": 7.0,
+        "AST": 7.6,
+        "STL": 2.5,
+        "BLK": 0.8,
+        "TOV": 4.0
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 330,
+        "endLine": 390
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.2,
+          "PTS": 34.8,
+          "REB": 7.0,
+          "AST": 7.6,
+          "STL": 2.5,
+          "BLK": 0.8,
+          "TOV": 4.0
+        },
+        "percentages": {
+          "FG_PCT": 0.51025641,
+          "FG3_PCT": 0.28571429,
+          "FT_PCT": 0.79912664
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1989-90",
+      "nbaPlayerId": 893,
+      "season": "1989-90",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 16,
+        "MIN": 674,
+        "PTS": 587,
+        "REB": 115,
+        "AST": 109,
+        "STL": 45,
+        "BLK": 14,
+        "FGM": 219,
+        "FGA": 426,
+        "FG3M": 16,
+        "FG3A": 50,
+        "FTM": 133,
+        "FTA": 159,
+        "OREB": 24,
+        "DREB": 91,
+        "TOV": 56,
+        "PF": 54,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.514,
+        "FG3_PCT": 0.32,
+        "FT_PCT": 0.836,
+        "TS_PCT": 0.592
+      },
+      "perGame": {
+        "MIN": 42.1,
+        "PTS": 36.7,
+        "REB": 7.2,
+        "AST": 6.8,
+        "STL": 2.8,
+        "BLK": 0.9,
+        "TOV": 3.5
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 392,
+        "endLine": 452
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.1,
+          "PTS": 36.7,
+          "REB": 7.2,
+          "AST": 6.8,
+          "STL": 2.8,
+          "BLK": 0.9,
+          "TOV": 3.5
+        },
+        "percentages": {
+          "FG_PCT": 0.51408451,
+          "FG3_PCT": 0.32,
+          "FT_PCT": 0.83647799
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1990-91",
+      "nbaPlayerId": 893,
+      "season": "1990-91",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 17,
+        "MIN": 689,
+        "PTS": 529,
+        "REB": 108,
+        "AST": 142,
+        "STL": 40,
+        "BLK": 23,
+        "FGM": 197,
+        "FGA": 376,
+        "FG3M": 10,
+        "FG3A": 26,
+        "FTM": 125,
+        "FTA": 148,
+        "OREB": 18,
+        "DREB": 90,
+        "TOV": 43,
+        "PF": 53,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.524,
+        "FG3_PCT": 0.385,
+        "FT_PCT": 0.845,
+        "TS_PCT": 0.6
+      },
+      "perGame": {
+        "MIN": 40.5,
+        "PTS": 31.1,
+        "REB": 6.4,
+        "AST": 8.4,
+        "STL": 2.4,
+        "BLK": 1.4,
+        "TOV": 2.5
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 453,
+        "endLine": 513
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 40.5,
+          "PTS": 31.1,
+          "REB": 6.4,
+          "AST": 8.4,
+          "STL": 2.4,
+          "BLK": 1.4,
+          "TOV": 2.5
+        },
+        "percentages": {
+          "FG_PCT": 0.52393617,
+          "FG3_PCT": 0.38461538,
+          "FT_PCT": 0.84459459
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1991-92",
+      "nbaPlayerId": 893,
+      "season": "1991-92",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 22,
+        "MIN": 920,
+        "PTS": 759,
+        "REB": 137,
+        "AST": 127,
+        "STL": 44,
+        "BLK": 16,
+        "FGM": 290,
+        "FGA": 581,
+        "FG3M": 17,
+        "FG3A": 44,
+        "FTM": 162,
+        "FTA": 189,
+        "OREB": 37,
+        "DREB": 100,
+        "TOV": 81,
+        "PF": 62,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.499,
+        "FG3_PCT": 0.386,
+        "FT_PCT": 0.857,
+        "TS_PCT": 0.571
+      },
+      "perGame": {
+        "MIN": 41.8,
+        "PTS": 34.5,
+        "REB": 6.2,
+        "AST": 5.8,
+        "STL": 2.0,
+        "BLK": 0.7,
+        "TOV": 3.7
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 515,
+        "endLine": 575
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 41.8,
+          "PTS": 34.5,
+          "REB": 6.2,
+          "AST": 5.8,
+          "STL": 2.0,
+          "BLK": 0.7,
+          "TOV": 3.7
+        },
+        "percentages": {
+          "FG_PCT": 0.49913941,
+          "FG3_PCT": 0.38636364,
+          "FT_PCT": 0.85714286
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1992-93",
+      "nbaPlayerId": 893,
+      "season": "1992-93",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 19,
+        "MIN": 783,
+        "PTS": 666,
+        "REB": 128,
+        "AST": 114,
+        "STL": 39,
+        "BLK": 17,
+        "FGM": 251,
+        "FGA": 528,
+        "FG3M": 28,
+        "FG3A": 72,
+        "FTM": 136,
+        "FTA": 169,
+        "OREB": 32,
+        "DREB": 96,
+        "TOV": 45,
+        "PF": 58,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.475,
+        "FG3_PCT": 0.389,
+        "FT_PCT": 0.805,
+        "TS_PCT": 0.553
+      },
+      "perGame": {
+        "MIN": 41.2,
+        "PTS": 35.1,
+        "REB": 6.7,
+        "AST": 6.0,
+        "STL": 2.1,
+        "BLK": 0.9,
+        "TOV": 2.4
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 577,
+        "endLine": 636
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 41.2,
+          "PTS": 35.1,
+          "REB": 6.7,
+          "AST": 6.0,
+          "STL": 2.1,
+          "BLK": 0.9,
+          "TOV": 2.4
+        },
+        "percentages": {
+          "FG_PCT": 0.47537879,
+          "FG3_PCT": 0.38888889,
+          "FT_PCT": 0.80473373
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1994-95",
+      "nbaPlayerId": 893,
+      "season": "1994-95",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 10,
+        "MIN": 420,
+        "PTS": 315,
+        "REB": 65,
+        "AST": 45,
+        "STL": 23,
+        "BLK": 14,
+        "FGM": 120,
+        "FGA": 248,
+        "FG3M": 11,
+        "FG3A": 30,
+        "FTM": 64,
+        "FTA": 79,
+        "OREB": 20,
+        "DREB": 45,
+        "TOV": 41,
+        "PF": 30,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.484,
+        "FG3_PCT": 0.367,
+        "FT_PCT": 0.81,
+        "TS_PCT": 0.557
+      },
+      "perGame": {
+        "MIN": 42.0,
+        "PTS": 31.5,
+        "REB": 6.5,
+        "AST": 4.5,
+        "STL": 2.3,
+        "BLK": 1.4,
+        "TOV": 4.1
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 638,
+        "endLine": 698
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.0,
+          "PTS": 31.5,
+          "REB": 6.5,
+          "AST": 4.5,
+          "STL": 2.3,
+          "BLK": 1.4,
+          "TOV": 4.1
+        },
+        "percentages": {
+          "FG_PCT": 0.48387097,
+          "FG3_PCT": 0.36666667,
+          "FT_PCT": 0.81012658
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1995-96",
+      "nbaPlayerId": 893,
+      "season": "1995-96",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 18,
+        "MIN": 733,
+        "PTS": 552,
+        "REB": 89,
+        "AST": 74,
+        "STL": 33,
+        "BLK": 6,
+        "FGM": 187,
+        "FGA": 407,
+        "FG3M": 25,
+        "FG3A": 62,
+        "FTM": 153,
+        "FTA": 187,
+        "OREB": 31,
+        "DREB": 58,
+        "TOV": 42,
+        "PF": 49,
+        "PLUS_MINUS": null,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.459,
+        "FG3_PCT": 0.403,
+        "FT_PCT": 0.818,
+        "TS_PCT": 0.564
+      },
+      "perGame": {
+        "MIN": 40.7,
+        "PTS": 30.7,
+        "REB": 4.9,
+        "AST": 4.1,
+        "STL": 1.8,
+        "BLK": 0.3,
+        "TOV": 2.3
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS",
+        "totals.PLUS_MINUS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 700,
+        "endLine": 759
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 40.7,
+          "PTS": 30.7,
+          "REB": 4.9,
+          "AST": 4.1,
+          "STL": 1.8,
+          "BLK": 0.3,
+          "TOV": 2.3
+        },
+        "percentages": {
+          "FG_PCT": 0.45945946,
+          "FG3_PCT": 0.40322581,
+          "FT_PCT": 0.81818182
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1996-97",
+      "nbaPlayerId": 893,
+      "season": "1996-97",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 19,
+        "MIN": 804,
+        "PTS": 590,
+        "REB": 150,
+        "AST": 91,
+        "STL": 30,
+        "BLK": 17,
+        "FGM": 227,
+        "FGA": 498,
+        "FG3M": 13,
+        "FG3A": 67,
+        "FTM": 123,
+        "FTA": 148,
+        "OREB": 42,
+        "DREB": 108,
+        "TOV": 49,
+        "PF": 46,
+        "PLUS_MINUS": 136,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.456,
+        "FG3_PCT": 0.194,
+        "FT_PCT": 0.831,
+        "TS_PCT": 0.524
+      },
+      "perGame": {
+        "MIN": 42.3,
+        "PTS": 31.1,
+        "REB": 7.9,
+        "AST": 4.8,
+        "STL": 1.6,
+        "BLK": 0.9,
+        "TOV": 2.6
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 761,
+        "endLine": 823
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 42.3,
+          "PTS": 31.1,
+          "REB": 7.9,
+          "AST": 4.8,
+          "STL": 1.6,
+          "BLK": 0.9,
+          "TOV": 2.6
+        },
+        "percentages": {
+          "FG_PCT": 0.45582329,
+          "FG3_PCT": 0.19402985,
+          "FT_PCT": 0.83108108
+        }
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1997-98",
+      "nbaPlayerId": 893,
+      "season": "1997-98",
+      "seasonType": "Playoffs",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 21,
+        "MIN": 872,
+        "PTS": 680,
+        "REB": 107,
+        "AST": 74,
+        "STL": 32,
+        "BLK": 12,
+        "FGM": 243,
+        "FGA": 526,
+        "FG3M": 13,
+        "FG3A": 43,
+        "FTM": 181,
+        "FTA": 223,
+        "OREB": 33,
+        "DREB": 74,
+        "TOV": 45,
+        "PF": 47,
+        "PLUS_MINUS": 158,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.462,
+        "FG3_PCT": 0.302,
+        "FT_PCT": 0.812,
+        "TS_PCT": 0.545
+      },
+      "perGame": {
+        "MIN": 41.5,
+        "PTS": 32.4,
+        "REB": 5.1,
+        "AST": 3.5,
+        "STL": 1.5,
+        "BLK": 0.6,
+        "TOV": 2.1
+      },
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "sourceStatus": "secondary_source",
+      "officialNbaVerified": false,
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "unsupportedFields": [
+        "totals.GS"
+      ],
+      "disputedFields": [],
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "startLine": 825,
+        "endLine": 886
+      },
+      "derivedFromTotals": {
+        "perGame": {
+          "MIN": 41.5,
+          "PTS": 32.4,
+          "REB": 5.1,
+          "AST": 3.5,
+          "STL": 1.5,
+          "BLK": 0.6,
+          "TOV": 2.1
+        },
+        "percentages": {
+          "FG_PCT": 0.46197719,
+          "FG3_PCT": 0.30232558,
+          "FT_PCT": 0.81165919
+        }
+      }
+    }
+  ],
+  "publishedCareerTotals": [
+    {
+      "seasonType": "Regular Season",
+      "sourceId": "statmuse_regular_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/jordan-stats-career-total",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "totals": {
+        "GP": 1072,
+        "MIN": 41011,
+        "PTS": 32292,
+        "REB": 6672,
+        "AST": 5633,
+        "STL": 2514,
+        "BLK": 893,
+        "FGM": 12192,
+        "FGA": 24537,
+        "FG3M": 581,
+        "FG3A": 1778,
+        "FTM": 7327,
+        "FTA": 8772,
+        "OREB": 1668,
+        "DREB": 5004,
+        "TOV": 2924,
+        "PF": 2783,
+        "PLUS_MINUS": 1438,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.497,
+        "FG3_PCT": 0.327,
+        "FT_PCT": 0.835,
+        "TS_PCT": 0.569
+      },
+      "perGame": {
+        "MIN": 38.3,
+        "PTS": 30.1,
+        "REB": 6.2,
+        "AST": 5.3,
+        "STL": 2.3,
+        "BLK": 0.8,
+        "TOV": 2.7
+      },
+      "officialNbaVerified": false,
+      "evidence": {
+        "file": "regular-evidence.txt",
+        "line": 984
+      },
+      "caveats": [
+        "PLUS_MINUS has only partial historical coverage.",
+        "MIN is a published source total, not a resolved canonical total: 2001-02 MIN is disputed."
+      ]
+    },
+    {
+      "seasonType": "Playoffs",
+      "sourceId": "statmuse_playoff_totals",
+      "sourceUrl": "https://www.statmuse.com/nba/ask/michael-jordan-total-playoff-points",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "totals": {
+        "PTS": 5987,
+        "GP": 179,
+        "MIN": 7474,
+        "REB": 1152,
+        "AST": 1022,
+        "STL": 376,
+        "BLK": 158,
+        "FGM": 2188,
+        "FGA": 4497,
+        "FG3M": 148,
+        "FG3A": 446,
+        "FTM": 1463,
+        "FTA": 1766,
+        "OREB": 305,
+        "DREB": 847,
+        "TOV": 546,
+        "PF": 541,
+        "PLUS_MINUS": 294,
+        "GS": null
+      },
+      "percentages": {
+        "FG_PCT": 0.487,
+        "FG3_PCT": 0.332,
+        "FT_PCT": 0.828,
+        "TS_PCT": 0.568
+      },
+      "perGame": {
+        "MIN": 41.8,
+        "PTS": 33.4,
+        "REB": 6.4,
+        "AST": 5.7,
+        "STL": 2.1,
+        "BLK": 0.9,
+        "TOV": 3.1
+      },
+      "officialNbaVerified": false,
+      "evidence": {
+        "file": "playoffs-evidence.txt",
+        "line": 889
+      },
+      "caveats": [
+        "PLUS_MINUS has only partial historical coverage."
+      ]
+    }
+  ],
+  "sourceObservations": [
+    {
+      "rowId": "893:Regular Season:1984-85",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3144,
+        "PTS": 2313,
+        "REB": 534,
+        "AST": 481,
+        "STL": 196,
+        "BLK": 69,
+        "FGM": 837,
+        "FGA": 1625,
+        "FG_PCT": 51.5,
+        "FG3M": 9,
+        "FG3A": 52,
+        "FG3_PCT": 17.3,
+        "FTM": 630,
+        "FTA": 746,
+        "FT_PCT": 84.5,
+        "TS_PCT": 59.2,
+        "OREB": 167,
+        "DREB": 367,
+        "TOV": 291,
+        "PF": 285,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 38.3,
+        "PTS": 28.2,
+        "REB": 6.5,
+        "AST": 5.9,
+        "STL": 2.4,
+        "BLK": 0.8,
+        "TOV": 3.5
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1985-86",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 18,
+        "MIN": 451,
+        "PTS": 408,
+        "REB": 64,
+        "AST": 53,
+        "STL": 37,
+        "BLK": 21,
+        "FGM": 150,
+        "FGA": 328,
+        "FG_PCT": 45.7,
+        "FG3M": 3,
+        "FG3A": 18,
+        "FG3_PCT": 16.7,
+        "FTM": 105,
+        "FTA": 125,
+        "FT_PCT": 84.0,
+        "TS_PCT": 53.3,
+        "OREB": 23,
+        "DREB": 41,
+        "TOV": 45,
+        "PF": 46,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 25.1,
+        "PTS": 22.7,
+        "REB": 3.6,
+        "AST": 2.9,
+        "STL": 2.1,
+        "BLK": 1.2,
+        "TOV": 2.5
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1986-87",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3281,
+        "PTS": 3041,
+        "REB": 430,
+        "AST": 377,
+        "STL": 236,
+        "BLK": 125,
+        "FGM": 1098,
+        "FGA": 2279,
+        "FG_PCT": 48.2,
+        "FG3M": 12,
+        "FG3A": 66,
+        "FG3_PCT": 18.2,
+        "FTM": 833,
+        "FTA": 972,
+        "FT_PCT": 85.7,
+        "TS_PCT": 56.2,
+        "OREB": 166,
+        "DREB": 264,
+        "TOV": 272,
+        "PF": 237,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 40.0,
+        "PTS": 37.1,
+        "REB": 5.2,
+        "AST": 4.6,
+        "STL": 2.9,
+        "BLK": 1.5,
+        "TOV": 3.3
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1987-88",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3311,
+        "PTS": 2868,
+        "REB": 449,
+        "AST": 485,
+        "STL": 259,
+        "BLK": 131,
+        "FGM": 1069,
+        "FGA": 1998,
+        "FG_PCT": 53.5,
+        "FG3M": 7,
+        "FG3A": 53,
+        "FG3_PCT": 13.2,
+        "FTM": 723,
+        "FTA": 860,
+        "FT_PCT": 84.1,
+        "TS_PCT": 60.3,
+        "OREB": 139,
+        "DREB": 310,
+        "TOV": 252,
+        "PF": 270,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 40.4,
+        "PTS": 35.0,
+        "REB": 5.5,
+        "AST": 5.9,
+        "STL": 3.2,
+        "BLK": 1.6,
+        "TOV": 3.1
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1988-89",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 81,
+        "MIN": 3255,
+        "PTS": 2633,
+        "REB": 652,
+        "AST": 650,
+        "STL": 234,
+        "BLK": 65,
+        "FGM": 966,
+        "FGA": 1795,
+        "FG_PCT": 53.8,
+        "FG3M": 27,
+        "FG3A": 98,
+        "FG3_PCT": 27.6,
+        "FTM": 674,
+        "FTA": 793,
+        "FT_PCT": 85.0,
+        "TS_PCT": 61.4,
+        "OREB": 149,
+        "DREB": 503,
+        "TOV": 290,
+        "PF": 247,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 40.2,
+        "PTS": 32.5,
+        "REB": 8.0,
+        "AST": 8.0,
+        "STL": 2.9,
+        "BLK": 0.8,
+        "TOV": 3.6
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1989-90",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3197,
+        "PTS": 2753,
+        "REB": 565,
+        "AST": 519,
+        "STL": 227,
+        "BLK": 54,
+        "FGM": 1034,
+        "FGA": 1964,
+        "FG_PCT": 52.6,
+        "FG3M": 92,
+        "FG3A": 245,
+        "FG3_PCT": 37.6,
+        "FTM": 593,
+        "FTA": 699,
+        "FT_PCT": 84.8,
+        "TS_PCT": 60.6,
+        "OREB": 143,
+        "DREB": 422,
+        "TOV": 247,
+        "PF": 241,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 39.0,
+        "PTS": 33.6,
+        "REB": 6.9,
+        "AST": 6.3,
+        "STL": 2.8,
+        "BLK": 0.7,
+        "TOV": 3.0
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1990-91",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3034,
+        "PTS": 2580,
+        "REB": 492,
+        "AST": 453,
+        "STL": 223,
+        "BLK": 83,
+        "FGM": 990,
+        "FGA": 1837,
+        "FG_PCT": 53.9,
+        "FG3M": 29,
+        "FG3A": 93,
+        "FG3_PCT": 31.2,
+        "FTM": 571,
+        "FTA": 671,
+        "FT_PCT": 85.1,
+        "TS_PCT": 60.5,
+        "OREB": 118,
+        "DREB": 374,
+        "TOV": 202,
+        "PF": 229,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 37.0,
+        "PTS": 31.5,
+        "REB": 6.0,
+        "AST": 5.5,
+        "STL": 2.7,
+        "BLK": 1.0,
+        "TOV": 2.5
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1991-92",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 80,
+        "MIN": 3102,
+        "PTS": 2404,
+        "REB": 511,
+        "AST": 489,
+        "STL": 182,
+        "BLK": 75,
+        "FGM": 943,
+        "FGA": 1818,
+        "FG_PCT": 51.9,
+        "FG3M": 27,
+        "FG3A": 100,
+        "FG3_PCT": 27.0,
+        "FTM": 491,
+        "FTA": 590,
+        "FT_PCT": 83.2,
+        "TS_PCT": 57.9,
+        "OREB": 91,
+        "DREB": 420,
+        "TOV": 200,
+        "PF": 201,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 38.8,
+        "PTS": 30.1,
+        "REB": 6.4,
+        "AST": 6.1,
+        "STL": 2.3,
+        "BLK": 0.9,
+        "TOV": 2.5
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1992-93",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 78,
+        "MIN": 3067,
+        "PTS": 2541,
+        "REB": 522,
+        "AST": 428,
+        "STL": 221,
+        "BLK": 61,
+        "FGM": 992,
+        "FGA": 2003,
+        "FG_PCT": 49.5,
+        "FG3M": 81,
+        "FG3A": 230,
+        "FG3_PCT": 35.2,
+        "FTM": 476,
+        "FTA": 569,
+        "FT_PCT": 83.7,
+        "TS_PCT": 56.4,
+        "OREB": 135,
+        "DREB": 387,
+        "TOV": 207,
+        "PF": 188,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 39.3,
+        "PTS": 32.6,
+        "REB": 6.7,
+        "AST": 5.5,
+        "STL": 2.8,
+        "BLK": 0.8,
+        "TOV": 2.7
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1994-95",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 17,
+        "MIN": 668,
+        "PTS": 457,
+        "REB": 117,
+        "AST": 90,
+        "STL": 30,
+        "BLK": 13,
+        "FGM": 166,
+        "FGA": 404,
+        "FG_PCT": 41.1,
+        "FG3M": 16,
+        "FG3A": 32,
+        "FG3_PCT": 50.0,
+        "FTM": 109,
+        "FTA": 136,
+        "FT_PCT": 80.1,
+        "TS_PCT": 49.3,
+        "OREB": 25,
+        "DREB": 92,
+        "TOV": 35,
+        "PF": 47,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 39.3,
+        "PTS": 26.9,
+        "REB": 6.9,
+        "AST": 5.3,
+        "STL": 1.8,
+        "BLK": 0.8,
+        "TOV": 2.1
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1995-96",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3090,
+        "PTS": 2491,
+        "REB": 543,
+        "AST": 352,
+        "STL": 180,
+        "BLK": 42,
+        "FGM": 916,
+        "FGA": 1850,
+        "FG_PCT": 49.5,
+        "FG3M": 111,
+        "FG3A": 260,
+        "FG3_PCT": 42.7,
+        "FTM": 548,
+        "FTA": 657,
+        "FT_PCT": 83.4,
+        "TS_PCT": 58.2,
+        "OREB": 148,
+        "DREB": 395,
+        "TOV": 197,
+        "PF": 195,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 37.7,
+        "PTS": 30.4,
+        "REB": 6.6,
+        "AST": 4.3,
+        "STL": 2.2,
+        "BLK": 0.5,
+        "TOV": 2.4
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1996-97",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3106,
+        "PTS": 2431,
+        "REB": 482,
+        "AST": 352,
+        "STL": 140,
+        "BLK": 44,
+        "FGM": 920,
+        "FGA": 1892,
+        "FG_PCT": 48.6,
+        "FG3M": 111,
+        "FG3A": 297,
+        "FG3_PCT": 37.4,
+        "FTM": 480,
+        "FTA": 576,
+        "FT_PCT": 83.3,
+        "TS_PCT": 56.7,
+        "OREB": 113,
+        "DREB": 369,
+        "TOV": 166,
+        "PF": 156,
+        "PLUS_MINUS": 818
+      },
+      "reportedPerGame": {
+        "MIN": 37.9,
+        "PTS": 29.6,
+        "REB": 5.9,
+        "AST": 4.3,
+        "STL": 1.7,
+        "BLK": 0.5,
+        "TOV": 2.0
+      }
+    },
+    {
+      "rowId": "893:Regular Season:1997-98",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3181,
+        "PTS": 2357,
+        "REB": 475,
+        "AST": 283,
+        "STL": 141,
+        "BLK": 45,
+        "FGM": 881,
+        "FGA": 1893,
+        "FG_PCT": 46.5,
+        "FG3M": 30,
+        "FG3A": 126,
+        "FG3_PCT": 23.8,
+        "FTM": 565,
+        "FTA": 721,
+        "FT_PCT": 78.4,
+        "TS_PCT": 53.3,
+        "OREB": 130,
+        "DREB": 345,
+        "TOV": 185,
+        "PF": 151,
+        "PLUS_MINUS": 598
+      },
+      "reportedPerGame": {
+        "MIN": 38.8,
+        "PTS": 28.7,
+        "REB": 5.8,
+        "AST": 3.5,
+        "STL": 1.7,
+        "BLK": 0.5,
+        "TOV": 2.3
+      }
+    },
+    {
+      "rowId": "893:Regular Season:2001-02",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 60,
+        "MIN": 2093,
+        "PTS": 1375,
+        "REB": 339,
+        "AST": 310,
+        "STL": 85,
+        "BLK": 26,
+        "FGM": 551,
+        "FGA": 1324,
+        "FG_PCT": 41.6,
+        "FG3M": 10,
+        "FG3A": 53,
+        "FG3_PCT": 18.9,
+        "FTM": 263,
+        "FTA": 333,
+        "FT_PCT": 79.0,
+        "TS_PCT": 46.8,
+        "OREB": 50,
+        "DREB": 289,
+        "TOV": 162,
+        "PF": 119,
+        "PLUS_MINUS": 16
+      },
+      "reportedPerGame": {
+        "MIN": 34.9,
+        "PTS": 22.9,
+        "REB": 5.7,
+        "AST": 5.2,
+        "STL": 1.4,
+        "BLK": 0.4,
+        "TOV": 2.7
+      }
+    },
+    {
+      "rowId": "893:Regular Season:2002-03",
+      "sourceId": "statmuse_regular_totals",
+      "reportedValues": {
+        "GP": 82,
+        "MIN": 3031,
+        "PTS": 1640,
+        "REB": 497,
+        "AST": 311,
+        "STL": 123,
+        "BLK": 39,
+        "FGM": 679,
+        "FGA": 1527,
+        "FG_PCT": 44.5,
+        "FG3M": 16,
+        "FG3A": 55,
+        "FG3_PCT": 29.1,
+        "FTM": 266,
+        "FTA": 324,
+        "FT_PCT": 82.1,
+        "TS_PCT": 49.1,
+        "OREB": 71,
+        "DREB": 426,
+        "TOV": 173,
+        "PF": 171,
+        "PLUS_MINUS": 6
+      },
+      "reportedPerGame": {
+        "MIN": 37.0,
+        "PTS": 20.0,
+        "REB": 6.1,
+        "AST": 3.8,
+        "STL": 1.5,
+        "BLK": 0.5,
+        "TOV": 2.1
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1984-85",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 4,
+        "MIN": 171,
+        "REB": 23,
+        "AST": 34,
+        "STL": 11,
+        "BLK": 4,
+        "FGM": 34,
+        "FGA": 78,
+        "FG_PCT": 43.6,
+        "FG3M": 1,
+        "FG3A": 8,
+        "FG3_PCT": 12.5,
+        "FTM": 48,
+        "FTA": 58,
+        "FT_PCT": 82.8,
+        "TS_PCT": 56.5,
+        "OREB": 7,
+        "DREB": 16,
+        "TOV": 15,
+        "PF": 15,
+        "PTS": 117,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.8,
+        "PTS": 29.3,
+        "REB": 5.8,
+        "AST": 8.5,
+        "STL": 2.8,
+        "BLK": 1.0,
+        "TOV": 3.8
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1985-86",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 3,
+        "MIN": 135,
+        "REB": 19,
+        "AST": 17,
+        "STL": 7,
+        "BLK": 4,
+        "FGM": 48,
+        "FGA": 95,
+        "FG_PCT": 50.5,
+        "FG3M": 1,
+        "FG3A": 1,
+        "FG3_PCT": 100.0,
+        "FTM": 34,
+        "FTA": 39,
+        "FT_PCT": 87.2,
+        "TS_PCT": 58.4,
+        "OREB": 5,
+        "DREB": 14,
+        "TOV": 14,
+        "PF": 13,
+        "PTS": 131,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 45.0,
+        "PTS": 43.7,
+        "REB": 6.3,
+        "AST": 5.7,
+        "STL": 2.3,
+        "BLK": 1.3,
+        "TOV": 4.7
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1986-87",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 3,
+        "MIN": 128,
+        "REB": 21,
+        "AST": 18,
+        "STL": 6,
+        "BLK": 7,
+        "FGM": 35,
+        "FGA": 84,
+        "FG_PCT": 41.7,
+        "FG3M": 2,
+        "FG3A": 5,
+        "FG3_PCT": 40.0,
+        "FTM": 35,
+        "FTA": 39,
+        "FT_PCT": 89.7,
+        "TS_PCT": 52.9,
+        "OREB": 7,
+        "DREB": 14,
+        "TOV": 8,
+        "PF": 11,
+        "PTS": 107,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.7,
+        "PTS": 35.7,
+        "REB": 7.0,
+        "AST": 6.0,
+        "STL": 2.0,
+        "BLK": 2.3,
+        "TOV": 2.7
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1987-88",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 10,
+        "MIN": 427,
+        "REB": 71,
+        "AST": 47,
+        "STL": 24,
+        "BLK": 11,
+        "FGM": 138,
+        "FGA": 260,
+        "FG_PCT": 53.1,
+        "FG3M": 1,
+        "FG3A": 3,
+        "FG3_PCT": 33.3,
+        "FTM": 86,
+        "FTA": 99,
+        "FT_PCT": 86.9,
+        "TS_PCT": 59.8,
+        "OREB": 23,
+        "DREB": 48,
+        "TOV": 39,
+        "PF": 38,
+        "PTS": 363,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.7,
+        "PTS": 36.3,
+        "REB": 7.1,
+        "AST": 4.7,
+        "STL": 2.4,
+        "BLK": 1.1,
+        "TOV": 3.9
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1988-89",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 17,
+        "MIN": 718,
+        "REB": 119,
+        "AST": 130,
+        "STL": 42,
+        "BLK": 13,
+        "FGM": 199,
+        "FGA": 390,
+        "FG_PCT": 51.0,
+        "FG3M": 10,
+        "FG3A": 35,
+        "FG3_PCT": 28.6,
+        "FTM": 183,
+        "FTA": 229,
+        "FT_PCT": 79.9,
+        "TS_PCT": 60.2,
+        "OREB": 26,
+        "DREB": 93,
+        "TOV": 68,
+        "PF": 65,
+        "PTS": 591,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.2,
+        "PTS": 34.8,
+        "REB": 7.0,
+        "AST": 7.6,
+        "STL": 2.5,
+        "BLK": 0.8,
+        "TOV": 4.0
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1989-90",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 16,
+        "MIN": 674,
+        "REB": 115,
+        "AST": 109,
+        "STL": 45,
+        "BLK": 14,
+        "FGM": 219,
+        "FGA": 426,
+        "FG_PCT": 51.4,
+        "FG3M": 16,
+        "FG3A": 50,
+        "FG3_PCT": 32.0,
+        "FTM": 133,
+        "FTA": 159,
+        "FT_PCT": 83.6,
+        "TS_PCT": 59.2,
+        "OREB": 24,
+        "DREB": 91,
+        "TOV": 56,
+        "PF": 54,
+        "PTS": 587,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.1,
+        "PTS": 36.7,
+        "REB": 7.2,
+        "AST": 6.8,
+        "STL": 2.8,
+        "BLK": 0.9,
+        "TOV": 3.5
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1990-91",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 17,
+        "MIN": 689,
+        "REB": 108,
+        "AST": 142,
+        "STL": 40,
+        "BLK": 23,
+        "FGM": 197,
+        "FGA": 376,
+        "FG_PCT": 52.4,
+        "FG3M": 10,
+        "FG3A": 26,
+        "FG3_PCT": 38.5,
+        "FTM": 125,
+        "FTA": 148,
+        "FT_PCT": 84.5,
+        "TS_PCT": 60.0,
+        "OREB": 18,
+        "DREB": 90,
+        "TOV": 43,
+        "PF": 53,
+        "PTS": 529,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 40.5,
+        "PTS": 31.1,
+        "REB": 6.4,
+        "AST": 8.4,
+        "STL": 2.4,
+        "BLK": 1.4,
+        "TOV": 2.5
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1991-92",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 22,
+        "MIN": 920,
+        "REB": 137,
+        "AST": 127,
+        "STL": 44,
+        "BLK": 16,
+        "FGM": 290,
+        "FGA": 581,
+        "FG_PCT": 49.9,
+        "FG3M": 17,
+        "FG3A": 44,
+        "FG3_PCT": 38.6,
+        "FTM": 162,
+        "FTA": 189,
+        "FT_PCT": 85.7,
+        "TS_PCT": 57.1,
+        "OREB": 37,
+        "DREB": 100,
+        "TOV": 81,
+        "PF": 62,
+        "PTS": 759,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 41.8,
+        "PTS": 34.5,
+        "REB": 6.2,
+        "AST": 5.8,
+        "STL": 2.0,
+        "BLK": 0.7,
+        "TOV": 3.7
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1992-93",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 19,
+        "MIN": 783,
+        "REB": 128,
+        "AST": 114,
+        "STL": 39,
+        "BLK": 17,
+        "FGM": 251,
+        "FGA": 528,
+        "FG_PCT": 47.5,
+        "FG3M": 28,
+        "FG3A": 72,
+        "FG3_PCT": 38.9,
+        "FTM": 136,
+        "FTA": 169,
+        "FT_PCT": 80.5,
+        "TS_PCT": 55.3,
+        "OREB": 32,
+        "DREB": 96,
+        "TOV": 45,
+        "PF": 58,
+        "PTS": 666,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 41.2,
+        "PTS": 35.1,
+        "REB": 6.7,
+        "AST": 6.0,
+        "STL": 2.1,
+        "BLK": 0.9,
+        "TOV": 2.4
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1994-95",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 10,
+        "MIN": 420,
+        "REB": 65,
+        "AST": 45,
+        "STL": 23,
+        "BLK": 14,
+        "FGM": 120,
+        "FGA": 248,
+        "FG_PCT": 48.4,
+        "FG3M": 11,
+        "FG3A": 30,
+        "FG3_PCT": 36.7,
+        "FTM": 64,
+        "FTA": 79,
+        "FT_PCT": 81.0,
+        "TS_PCT": 55.7,
+        "OREB": 20,
+        "DREB": 45,
+        "TOV": 41,
+        "PF": 30,
+        "PTS": 315,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 42.0,
+        "PTS": 31.5,
+        "REB": 6.5,
+        "AST": 4.5,
+        "STL": 2.3,
+        "BLK": 1.4,
+        "TOV": 4.1
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1995-96",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 18,
+        "MIN": 733,
+        "REB": 89,
+        "AST": 74,
+        "STL": 33,
+        "BLK": 6,
+        "FGM": 187,
+        "FGA": 407,
+        "FG_PCT": 45.9,
+        "FG3M": 25,
+        "FG3A": 62,
+        "FG3_PCT": 40.3,
+        "FTM": 153,
+        "FTA": 187,
+        "FT_PCT": 81.8,
+        "TS_PCT": 56.4,
+        "OREB": 31,
+        "DREB": 58,
+        "TOV": 42,
+        "PF": 49,
+        "PTS": 552,
+        "PLUS_MINUS": null
+      },
+      "reportedPerGame": {
+        "MIN": 40.7,
+        "PTS": 30.7,
+        "REB": 4.9,
+        "AST": 4.1,
+        "STL": 1.8,
+        "BLK": 0.3,
+        "TOV": 2.3
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1996-97",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 19,
+        "MIN": 804,
+        "REB": 150,
+        "AST": 91,
+        "STL": 30,
+        "BLK": 17,
+        "FGM": 227,
+        "FGA": 498,
+        "FG_PCT": 45.6,
+        "FG3M": 13,
+        "FG3A": 67,
+        "FG3_PCT": 19.4,
+        "FTM": 123,
+        "FTA": 148,
+        "FT_PCT": 83.1,
+        "TS_PCT": 52.4,
+        "OREB": 42,
+        "DREB": 108,
+        "TOV": 49,
+        "PF": 46,
+        "PTS": 590,
+        "PLUS_MINUS": 136
+      },
+      "reportedPerGame": {
+        "MIN": 42.3,
+        "PTS": 31.1,
+        "REB": 7.9,
+        "AST": 4.8,
+        "STL": 1.6,
+        "BLK": 0.9,
+        "TOV": 2.6
+      }
+    },
+    {
+      "rowId": "893:Playoffs:1997-98",
+      "sourceId": "statmuse_playoff_totals",
+      "reportedValues": {
+        "GP": 21,
+        "MIN": 872,
+        "REB": 107,
+        "AST": 74,
+        "STL": 32,
+        "BLK": 12,
+        "FGM": 243,
+        "FGA": 526,
+        "FG_PCT": 46.2,
+        "FG3M": 13,
+        "FG3A": 43,
+        "FG3_PCT": 30.2,
+        "FTM": 181,
+        "FTA": 223,
+        "FT_PCT": 81.2,
+        "TS_PCT": 54.5,
+        "OREB": 33,
+        "DREB": 74,
+        "TOV": 45,
+        "PF": 47,
+        "PTS": 680,
+        "PLUS_MINUS": 158
+      },
+      "reportedPerGame": {
+        "MIN": 41.5,
+        "PTS": 32.4,
+        "REB": 5.1,
+        "AST": 3.5,
+        "STL": 1.5,
+        "BLK": 0.6,
+        "TOV": 2.1
+      }
+    }
+  ],
+  "corroborationRows": [
+    {
+      "season": "2002-03",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "WAS",
+      "totals": {
+        "GP": 82,
+        "MIN": 3031,
+        "PTS": 1640,
+        "FG3M": 16,
+        "REB": 497,
+        "AST": 311,
+        "STL": 123,
+        "BLK": 39,
+        "FGA": 1527,
+        "FTA": 324,
+        "TOV": 173,
+        "PF": 171
+      },
+      "percentages": {
+        "FG3_PCT": 0.291,
+        "FG_PCT": 0.445,
+        "FT_PCT": 0.821
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 31
+      }
+    },
+    {
+      "season": "2001-02",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "WAS",
+      "totals": {
+        "GP": 60,
+        "MIN": 2094,
+        "PTS": 1375,
+        "FG3M": 10,
+        "REB": 339,
+        "AST": 310,
+        "STL": 85,
+        "BLK": 26,
+        "FGA": 1324,
+        "FTA": 333,
+        "TOV": 162,
+        "PF": 119
+      },
+      "percentages": {
+        "FG3_PCT": 0.189,
+        "FG_PCT": 0.416,
+        "FT_PCT": 0.79
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 32
+      }
+    },
+    {
+      "season": "1997-98",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3181,
+        "PTS": 2357,
+        "FG3M": 30,
+        "REB": 475,
+        "AST": 283,
+        "STL": 141,
+        "BLK": 45,
+        "FGA": 1893,
+        "FTA": 721,
+        "TOV": 185,
+        "PF": 151
+      },
+      "percentages": {
+        "FG3_PCT": 0.238,
+        "FG_PCT": 0.465,
+        "FT_PCT": 0.784
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 33
+      }
+    },
+    {
+      "season": "1996-97",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3106,
+        "PTS": 2431,
+        "FG3M": 111,
+        "REB": 482,
+        "AST": 352,
+        "STL": 140,
+        "BLK": 44,
+        "FGA": 1892,
+        "FTA": 576,
+        "TOV": 166,
+        "PF": 156
+      },
+      "percentages": {
+        "FG3_PCT": 0.374,
+        "FG_PCT": 0.486,
+        "FT_PCT": 0.833
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 34
+      }
+    },
+    {
+      "season": "1995-96",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3090,
+        "PTS": 2491,
+        "FG3M": 111,
+        "REB": 543,
+        "AST": 352,
+        "STL": 180,
+        "BLK": 42,
+        "FGA": 1850,
+        "FTA": 657,
+        "TOV": 197,
+        "PF": 195
+      },
+      "percentages": {
+        "FG3_PCT": 0.427,
+        "FG_PCT": 0.495,
+        "FT_PCT": 0.834
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 35
+      }
+    },
+    {
+      "season": "1994-95",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 17,
+        "MIN": 668,
+        "PTS": 457,
+        "FG3M": 16,
+        "REB": 117,
+        "AST": 90,
+        "STL": 30,
+        "BLK": 13,
+        "FGA": 404,
+        "FTA": 136,
+        "TOV": 35,
+        "PF": 47
+      },
+      "percentages": {
+        "FG3_PCT": 0.5,
+        "FG_PCT": 0.411,
+        "FT_PCT": 0.801
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 36
+      }
+    },
+    {
+      "season": "1992-93",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 78,
+        "MIN": 3067,
+        "PTS": 2541,
+        "FG3M": 81,
+        "REB": 522,
+        "AST": 428,
+        "STL": 221,
+        "BLK": 61,
+        "FGA": 2003,
+        "FTA": 569,
+        "TOV": 207,
+        "PF": 188
+      },
+      "percentages": {
+        "FG3_PCT": 0.352,
+        "FG_PCT": 0.495,
+        "FT_PCT": 0.837
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 37
+      }
+    },
+    {
+      "season": "1991-92",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 80,
+        "MIN": 3102,
+        "PTS": 2404,
+        "FG3M": 27,
+        "REB": 511,
+        "AST": 489,
+        "STL": 182,
+        "BLK": 75,
+        "FGA": 1818,
+        "FTA": 590,
+        "TOV": 200,
+        "PF": 201
+      },
+      "percentages": {
+        "FG3_PCT": 0.27,
+        "FG_PCT": 0.519,
+        "FT_PCT": 0.832
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 38
+      }
+    },
+    {
+      "season": "1990-91",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3034,
+        "PTS": 2580,
+        "FG3M": 29,
+        "REB": 492,
+        "AST": 453,
+        "STL": 223,
+        "BLK": 83,
+        "FGA": 1837,
+        "FTA": 671,
+        "TOV": 202,
+        "PF": 229
+      },
+      "percentages": {
+        "FG3_PCT": 0.312,
+        "FG_PCT": 0.539,
+        "FT_PCT": 0.851
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 39
+      }
+    },
+    {
+      "season": "1989-90",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3197,
+        "PTS": 2753,
+        "FG3M": 92,
+        "REB": 565,
+        "AST": 519,
+        "STL": 227,
+        "BLK": 54,
+        "FGA": 1964,
+        "FTA": 699,
+        "TOV": 247,
+        "PF": 241
+      },
+      "percentages": {
+        "FG3_PCT": 0.376,
+        "FG_PCT": 0.526,
+        "FT_PCT": 0.848
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 40
+      }
+    },
+    {
+      "season": "1988-89",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 81,
+        "MIN": 3255,
+        "PTS": 2633,
+        "FG3M": 27,
+        "REB": 652,
+        "AST": 650,
+        "STL": 234,
+        "BLK": 65,
+        "FGA": 1795,
+        "FTA": 793,
+        "TOV": 290,
+        "PF": 247
+      },
+      "percentages": {
+        "FG3_PCT": 0.276,
+        "FG_PCT": 0.538,
+        "FT_PCT": 0.85
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 41
+      }
+    },
+    {
+      "season": "1987-88",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3311,
+        "PTS": 2868,
+        "FG3M": 7,
+        "REB": 449,
+        "AST": 485,
+        "STL": 259,
+        "BLK": 131,
+        "FGA": 1998,
+        "FTA": 860,
+        "TOV": 252,
+        "PF": 270
+      },
+      "percentages": {
+        "FG3_PCT": 0.132,
+        "FG_PCT": 0.535,
+        "FT_PCT": 0.841
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 42
+      }
+    },
+    {
+      "season": "1986-87",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3281,
+        "PTS": 3041,
+        "FG3M": 12,
+        "REB": 430,
+        "AST": 377,
+        "STL": 236,
+        "BLK": 125,
+        "FGA": 2279,
+        "FTA": 972,
+        "TOV": 272,
+        "PF": 237
+      },
+      "percentages": {
+        "FG3_PCT": 0.182,
+        "FG_PCT": 0.482,
+        "FT_PCT": 0.857
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 43
+      }
+    },
+    {
+      "season": "1985-86",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 18,
+        "MIN": 451,
+        "PTS": 408,
+        "FG3M": 3,
+        "REB": 64,
+        "AST": 53,
+        "STL": 37,
+        "BLK": 21,
+        "FGA": 328,
+        "FTA": 125,
+        "TOV": 45,
+        "PF": 46
+      },
+      "percentages": {
+        "FG3_PCT": 0.167,
+        "FG_PCT": 0.457,
+        "FT_PCT": 0.84
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 44
+      }
+    },
+    {
+      "season": "1984-85",
+      "seasonType": "Regular Season",
+      "teamAbbreviation": "CHI",
+      "totals": {
+        "GP": 82,
+        "MIN": 3144,
+        "PTS": 2313,
+        "FG3M": 9,
+        "REB": 534,
+        "AST": 481,
+        "STL": 196,
+        "BLK": 69,
+        "FGA": 1625,
+        "FTA": 746,
+        "TOV": 291,
+        "PF": 285
+      },
+      "percentages": {
+        "FG3_PCT": 0.173,
+        "FG_PCT": 0.515,
+        "FT_PCT": 0.845
+      },
+      "sourceId": "basketballmonster_regular_totals",
+      "sourceUrl": "https://history.basketballmonster.com/Player/Details/11364?name=Michael_Jordan",
+      "retrievedAt": "2026-10-04T03:24:33Z",
+      "evidence": {
+        "file": "corroboration-evidence.txt",
+        "line": 45
+      }
+    }
+  ],
+  "disputes": [
+    {
+      "rowId": "893:Regular Season:2001-02",
+      "season": "2001-02",
+      "seasonType": "Regular Season",
+      "field": "totals.MIN",
+      "observations": [
+        {
+          "sourceId": "statmuse_regular_totals",
+          "value": 2093
+        },
+        {
+          "sourceId": "basketballmonster_regular_totals",
+          "value": 2094
+        }
+      ],
+      "resolution": "quarantined_null",
+      "reason": "Sources disagree; no official NBA reconciliation established."
+    }
+  ],
+  "validation": {
+    "status": "pass_with_quarantined_minutes",
+    "rowCount": 28,
+    "seasonCoverage": [
+      {
+        "seasonType": "Regular Season",
+        "expectedSeasons": [
+          "1984-85",
+          "1985-86",
+          "1986-87",
+          "1987-88",
+          "1988-89",
+          "1989-90",
+          "1990-91",
+          "1991-92",
+          "1992-93",
+          "1994-95",
+          "1995-96",
+          "1996-97",
+          "1997-98",
+          "2001-02",
+          "2002-03"
+        ],
+        "actualSeasons": [
+          "1984-85",
+          "1985-86",
+          "1986-87",
+          "1987-88",
+          "1988-89",
+          "1989-90",
+          "1990-91",
+          "1991-92",
+          "1992-93",
+          "1994-95",
+          "1995-96",
+          "1996-97",
+          "1997-98",
+          "2001-02",
+          "2002-03"
+        ],
+        "expectedRowCount": 15,
+        "actualRowCount": 15,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "expectedSeasons": [
+          "1984-85",
+          "1985-86",
+          "1986-87",
+          "1987-88",
+          "1988-89",
+          "1989-90",
+          "1990-91",
+          "1991-92",
+          "1992-93",
+          "1994-95",
+          "1995-96",
+          "1996-97",
+          "1997-98"
+        ],
+        "actualSeasons": [
+          "1984-85",
+          "1985-86",
+          "1986-87",
+          "1987-88",
+          "1988-89",
+          "1989-90",
+          "1990-91",
+          "1991-92",
+          "1992-93",
+          "1994-95",
+          "1995-96",
+          "1996-97",
+          "1997-98"
+        ],
+        "expectedRowCount": 13,
+        "actualRowCount": 13,
+        "status": "pass"
+      }
+    ],
+    "uniqueRowIds": true,
+    "rowArithmetic": [
+      {
+        "rowId": "893:Regular Season:1984-85",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1985-86",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1986-87",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1987-88",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1988-89",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1989-90",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1990-91",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1991-92",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1992-93",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1994-95",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1995-96",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1996-97",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:1997-98",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:2001-02",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Regular Season:2002-03",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1984-85",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1985-86",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1986-87",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1987-88",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1988-89",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1989-90",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1990-91",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1991-92",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1992-93",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1994-95",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1995-96",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1996-97",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      },
+      {
+        "rowId": "893:Playoffs:1997-98",
+        "checks": {
+          "pointsIdentity": true,
+          "reboundIdentity": true,
+          "madeNotExceedAttempts": true,
+          "threePointSubset": true,
+          "positiveGames": true,
+          "nonnegativeCountTotals": true
+        },
+        "status": "pass"
+      }
+    ],
+    "careerReconciliation": [
+      {
+        "seasonType": "Regular Season",
+        "field": "GP",
+        "publishedTotal": 1072,
+        "sumOfReportedSourceRows": 1072,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1072,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "MIN",
+        "publishedTotal": 41011,
+        "sumOfReportedSourceRows": 41011,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": null,
+        "status": "quarantined"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "PTS",
+        "publishedTotal": 32292,
+        "sumOfReportedSourceRows": 32292,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 32292,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "REB",
+        "publishedTotal": 6672,
+        "sumOfReportedSourceRows": 6672,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 6672,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "AST",
+        "publishedTotal": 5633,
+        "sumOfReportedSourceRows": 5633,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 5633,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "STL",
+        "publishedTotal": 2514,
+        "sumOfReportedSourceRows": 2514,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 2514,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "BLK",
+        "publishedTotal": 893,
+        "sumOfReportedSourceRows": 893,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 893,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FGM",
+        "publishedTotal": 12192,
+        "sumOfReportedSourceRows": 12192,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 12192,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FGA",
+        "publishedTotal": 24537,
+        "sumOfReportedSourceRows": 24537,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 24537,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FG3M",
+        "publishedTotal": 581,
+        "sumOfReportedSourceRows": 581,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 581,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FG3A",
+        "publishedTotal": 1778,
+        "sumOfReportedSourceRows": 1778,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1778,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FTM",
+        "publishedTotal": 7327,
+        "sumOfReportedSourceRows": 7327,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 7327,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "FTA",
+        "publishedTotal": 8772,
+        "sumOfReportedSourceRows": 8772,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 8772,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "OREB",
+        "publishedTotal": 1668,
+        "sumOfReportedSourceRows": 1668,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1668,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "DREB",
+        "publishedTotal": 5004,
+        "sumOfReportedSourceRows": 5004,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 5004,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "TOV",
+        "publishedTotal": 2924,
+        "sumOfReportedSourceRows": 2924,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 2924,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Regular Season",
+        "field": "PF",
+        "publishedTotal": 2783,
+        "sumOfReportedSourceRows": 2783,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 2783,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "GP",
+        "publishedTotal": 179,
+        "sumOfReportedSourceRows": 179,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 179,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "MIN",
+        "publishedTotal": 7474,
+        "sumOfReportedSourceRows": 7474,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 7474,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "PTS",
+        "publishedTotal": 5987,
+        "sumOfReportedSourceRows": 5987,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 5987,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "REB",
+        "publishedTotal": 1152,
+        "sumOfReportedSourceRows": 1152,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1152,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "AST",
+        "publishedTotal": 1022,
+        "sumOfReportedSourceRows": 1022,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1022,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "STL",
+        "publishedTotal": 376,
+        "sumOfReportedSourceRows": 376,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 376,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "BLK",
+        "publishedTotal": 158,
+        "sumOfReportedSourceRows": 158,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 158,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FGM",
+        "publishedTotal": 2188,
+        "sumOfReportedSourceRows": 2188,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 2188,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FGA",
+        "publishedTotal": 4497,
+        "sumOfReportedSourceRows": 4497,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 4497,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FG3M",
+        "publishedTotal": 148,
+        "sumOfReportedSourceRows": 148,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 148,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FG3A",
+        "publishedTotal": 446,
+        "sumOfReportedSourceRows": 446,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 446,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FTM",
+        "publishedTotal": 1463,
+        "sumOfReportedSourceRows": 1463,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1463,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "FTA",
+        "publishedTotal": 1766,
+        "sumOfReportedSourceRows": 1766,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 1766,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "OREB",
+        "publishedTotal": 305,
+        "sumOfReportedSourceRows": 305,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 305,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "DREB",
+        "publishedTotal": 847,
+        "sumOfReportedSourceRows": 847,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 847,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "TOV",
+        "publishedTotal": 546,
+        "sumOfReportedSourceRows": 546,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 546,
+        "status": "pass"
+      },
+      {
+        "seasonType": "Playoffs",
+        "field": "PF",
+        "publishedTotal": 541,
+        "sumOfReportedSourceRows": 541,
+        "sourceArithmeticStatus": "pass",
+        "canonicalSum": 541,
+        "status": "pass"
+      }
+    ],
+    "corroboration": {
+      "sourceId": "basketballmonster_regular_totals",
+      "rowsCompared": 15,
+      "checks": [
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.MIN",
+          "statmuse": 3144,
+          "basketballMonster": 3144,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.PTS",
+          "statmuse": 2313,
+          "basketballMonster": 2313,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.FG3M",
+          "statmuse": 9,
+          "basketballMonster": 9,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.REB",
+          "statmuse": 534,
+          "basketballMonster": 534,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.AST",
+          "statmuse": 481,
+          "basketballMonster": 481,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.STL",
+          "statmuse": 196,
+          "basketballMonster": 196,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.BLK",
+          "statmuse": 69,
+          "basketballMonster": 69,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.FGA",
+          "statmuse": 1625,
+          "basketballMonster": 1625,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.FTA",
+          "statmuse": 746,
+          "basketballMonster": 746,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.TOV",
+          "statmuse": 291,
+          "basketballMonster": 291,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "totals.PF",
+          "statmuse": 285,
+          "basketballMonster": 285,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.173,
+          "basketballMonster": 0.173,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.515,
+          "basketballMonster": 0.515,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1984-85",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.845,
+          "basketballMonster": 0.845,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.GP",
+          "statmuse": 18,
+          "basketballMonster": 18,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.MIN",
+          "statmuse": 451,
+          "basketballMonster": 451,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.PTS",
+          "statmuse": 408,
+          "basketballMonster": 408,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.FG3M",
+          "statmuse": 3,
+          "basketballMonster": 3,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.REB",
+          "statmuse": 64,
+          "basketballMonster": 64,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.AST",
+          "statmuse": 53,
+          "basketballMonster": 53,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.STL",
+          "statmuse": 37,
+          "basketballMonster": 37,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.BLK",
+          "statmuse": 21,
+          "basketballMonster": 21,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.FGA",
+          "statmuse": 328,
+          "basketballMonster": 328,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.FTA",
+          "statmuse": 125,
+          "basketballMonster": 125,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.TOV",
+          "statmuse": 45,
+          "basketballMonster": 45,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "totals.PF",
+          "statmuse": 46,
+          "basketballMonster": 46,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.167,
+          "basketballMonster": 0.167,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.457,
+          "basketballMonster": 0.457,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1985-86",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.84,
+          "basketballMonster": 0.84,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.MIN",
+          "statmuse": 3281,
+          "basketballMonster": 3281,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.PTS",
+          "statmuse": 3041,
+          "basketballMonster": 3041,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.FG3M",
+          "statmuse": 12,
+          "basketballMonster": 12,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.REB",
+          "statmuse": 430,
+          "basketballMonster": 430,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.AST",
+          "statmuse": 377,
+          "basketballMonster": 377,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.STL",
+          "statmuse": 236,
+          "basketballMonster": 236,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.BLK",
+          "statmuse": 125,
+          "basketballMonster": 125,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.FGA",
+          "statmuse": 2279,
+          "basketballMonster": 2279,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.FTA",
+          "statmuse": 972,
+          "basketballMonster": 972,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.TOV",
+          "statmuse": 272,
+          "basketballMonster": 272,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "totals.PF",
+          "statmuse": 237,
+          "basketballMonster": 237,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.182,
+          "basketballMonster": 0.182,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.482,
+          "basketballMonster": 0.482,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1986-87",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.857,
+          "basketballMonster": 0.857,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.MIN",
+          "statmuse": 3311,
+          "basketballMonster": 3311,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.PTS",
+          "statmuse": 2868,
+          "basketballMonster": 2868,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.FG3M",
+          "statmuse": 7,
+          "basketballMonster": 7,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.REB",
+          "statmuse": 449,
+          "basketballMonster": 449,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.AST",
+          "statmuse": 485,
+          "basketballMonster": 485,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.STL",
+          "statmuse": 259,
+          "basketballMonster": 259,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.BLK",
+          "statmuse": 131,
+          "basketballMonster": 131,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.FGA",
+          "statmuse": 1998,
+          "basketballMonster": 1998,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.FTA",
+          "statmuse": 860,
+          "basketballMonster": 860,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.TOV",
+          "statmuse": 252,
+          "basketballMonster": 252,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "totals.PF",
+          "statmuse": 270,
+          "basketballMonster": 270,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.132,
+          "basketballMonster": 0.132,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.535,
+          "basketballMonster": 0.535,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1987-88",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.841,
+          "basketballMonster": 0.841,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.GP",
+          "statmuse": 81,
+          "basketballMonster": 81,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.MIN",
+          "statmuse": 3255,
+          "basketballMonster": 3255,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.PTS",
+          "statmuse": 2633,
+          "basketballMonster": 2633,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.FG3M",
+          "statmuse": 27,
+          "basketballMonster": 27,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.REB",
+          "statmuse": 652,
+          "basketballMonster": 652,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.AST",
+          "statmuse": 650,
+          "basketballMonster": 650,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.STL",
+          "statmuse": 234,
+          "basketballMonster": 234,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.BLK",
+          "statmuse": 65,
+          "basketballMonster": 65,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.FGA",
+          "statmuse": 1795,
+          "basketballMonster": 1795,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.FTA",
+          "statmuse": 793,
+          "basketballMonster": 793,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.TOV",
+          "statmuse": 290,
+          "basketballMonster": 290,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "totals.PF",
+          "statmuse": 247,
+          "basketballMonster": 247,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.276,
+          "basketballMonster": 0.276,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.538,
+          "basketballMonster": 0.538,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1988-89",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.85,
+          "basketballMonster": 0.85,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.MIN",
+          "statmuse": 3197,
+          "basketballMonster": 3197,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.PTS",
+          "statmuse": 2753,
+          "basketballMonster": 2753,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.FG3M",
+          "statmuse": 92,
+          "basketballMonster": 92,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.REB",
+          "statmuse": 565,
+          "basketballMonster": 565,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.AST",
+          "statmuse": 519,
+          "basketballMonster": 519,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.STL",
+          "statmuse": 227,
+          "basketballMonster": 227,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.BLK",
+          "statmuse": 54,
+          "basketballMonster": 54,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.FGA",
+          "statmuse": 1964,
+          "basketballMonster": 1964,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.FTA",
+          "statmuse": 699,
+          "basketballMonster": 699,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.TOV",
+          "statmuse": 247,
+          "basketballMonster": 247,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "totals.PF",
+          "statmuse": 241,
+          "basketballMonster": 241,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.376,
+          "basketballMonster": 0.376,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.526,
+          "basketballMonster": 0.526,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1989-90",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.848,
+          "basketballMonster": 0.848,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.MIN",
+          "statmuse": 3034,
+          "basketballMonster": 3034,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.PTS",
+          "statmuse": 2580,
+          "basketballMonster": 2580,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.FG3M",
+          "statmuse": 29,
+          "basketballMonster": 29,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.REB",
+          "statmuse": 492,
+          "basketballMonster": 492,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.AST",
+          "statmuse": 453,
+          "basketballMonster": 453,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.STL",
+          "statmuse": 223,
+          "basketballMonster": 223,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.BLK",
+          "statmuse": 83,
+          "basketballMonster": 83,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.FGA",
+          "statmuse": 1837,
+          "basketballMonster": 1837,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.FTA",
+          "statmuse": 671,
+          "basketballMonster": 671,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.TOV",
+          "statmuse": 202,
+          "basketballMonster": 202,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "totals.PF",
+          "statmuse": 229,
+          "basketballMonster": 229,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.312,
+          "basketballMonster": 0.312,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.539,
+          "basketballMonster": 0.539,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1990-91",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.851,
+          "basketballMonster": 0.851,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.GP",
+          "statmuse": 80,
+          "basketballMonster": 80,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.MIN",
+          "statmuse": 3102,
+          "basketballMonster": 3102,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.PTS",
+          "statmuse": 2404,
+          "basketballMonster": 2404,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.FG3M",
+          "statmuse": 27,
+          "basketballMonster": 27,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.REB",
+          "statmuse": 511,
+          "basketballMonster": 511,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.AST",
+          "statmuse": 489,
+          "basketballMonster": 489,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.STL",
+          "statmuse": 182,
+          "basketballMonster": 182,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.BLK",
+          "statmuse": 75,
+          "basketballMonster": 75,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.FGA",
+          "statmuse": 1818,
+          "basketballMonster": 1818,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.FTA",
+          "statmuse": 590,
+          "basketballMonster": 590,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.TOV",
+          "statmuse": 200,
+          "basketballMonster": 200,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "totals.PF",
+          "statmuse": 201,
+          "basketballMonster": 201,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.27,
+          "basketballMonster": 0.27,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.519,
+          "basketballMonster": 0.519,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1991-92",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.832,
+          "basketballMonster": 0.832,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.GP",
+          "statmuse": 78,
+          "basketballMonster": 78,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.MIN",
+          "statmuse": 3067,
+          "basketballMonster": 3067,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.PTS",
+          "statmuse": 2541,
+          "basketballMonster": 2541,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.FG3M",
+          "statmuse": 81,
+          "basketballMonster": 81,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.REB",
+          "statmuse": 522,
+          "basketballMonster": 522,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.AST",
+          "statmuse": 428,
+          "basketballMonster": 428,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.STL",
+          "statmuse": 221,
+          "basketballMonster": 221,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.BLK",
+          "statmuse": 61,
+          "basketballMonster": 61,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.FGA",
+          "statmuse": 2003,
+          "basketballMonster": 2003,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.FTA",
+          "statmuse": 569,
+          "basketballMonster": 569,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.TOV",
+          "statmuse": 207,
+          "basketballMonster": 207,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "totals.PF",
+          "statmuse": 188,
+          "basketballMonster": 188,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.352,
+          "basketballMonster": 0.352,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.495,
+          "basketballMonster": 0.495,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1992-93",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.837,
+          "basketballMonster": 0.837,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.GP",
+          "statmuse": 17,
+          "basketballMonster": 17,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.MIN",
+          "statmuse": 668,
+          "basketballMonster": 668,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.PTS",
+          "statmuse": 457,
+          "basketballMonster": 457,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.FG3M",
+          "statmuse": 16,
+          "basketballMonster": 16,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.REB",
+          "statmuse": 117,
+          "basketballMonster": 117,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.AST",
+          "statmuse": 90,
+          "basketballMonster": 90,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.STL",
+          "statmuse": 30,
+          "basketballMonster": 30,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.BLK",
+          "statmuse": 13,
+          "basketballMonster": 13,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.FGA",
+          "statmuse": 404,
+          "basketballMonster": 404,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.FTA",
+          "statmuse": 136,
+          "basketballMonster": 136,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.TOV",
+          "statmuse": 35,
+          "basketballMonster": 35,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "totals.PF",
+          "statmuse": 47,
+          "basketballMonster": 47,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.5,
+          "basketballMonster": 0.5,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.411,
+          "basketballMonster": 0.411,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1994-95",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.801,
+          "basketballMonster": 0.801,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.MIN",
+          "statmuse": 3090,
+          "basketballMonster": 3090,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.PTS",
+          "statmuse": 2491,
+          "basketballMonster": 2491,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.FG3M",
+          "statmuse": 111,
+          "basketballMonster": 111,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.REB",
+          "statmuse": 543,
+          "basketballMonster": 543,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.AST",
+          "statmuse": 352,
+          "basketballMonster": 352,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.STL",
+          "statmuse": 180,
+          "basketballMonster": 180,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.BLK",
+          "statmuse": 42,
+          "basketballMonster": 42,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.FGA",
+          "statmuse": 1850,
+          "basketballMonster": 1850,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.FTA",
+          "statmuse": 657,
+          "basketballMonster": 657,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.TOV",
+          "statmuse": 197,
+          "basketballMonster": 197,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "totals.PF",
+          "statmuse": 195,
+          "basketballMonster": 195,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.427,
+          "basketballMonster": 0.427,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.495,
+          "basketballMonster": 0.495,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1995-96",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.834,
+          "basketballMonster": 0.834,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.MIN",
+          "statmuse": 3106,
+          "basketballMonster": 3106,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.PTS",
+          "statmuse": 2431,
+          "basketballMonster": 2431,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.FG3M",
+          "statmuse": 111,
+          "basketballMonster": 111,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.REB",
+          "statmuse": 482,
+          "basketballMonster": 482,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.AST",
+          "statmuse": 352,
+          "basketballMonster": 352,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.STL",
+          "statmuse": 140,
+          "basketballMonster": 140,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.BLK",
+          "statmuse": 44,
+          "basketballMonster": 44,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.FGA",
+          "statmuse": 1892,
+          "basketballMonster": 1892,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.FTA",
+          "statmuse": 576,
+          "basketballMonster": 576,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.TOV",
+          "statmuse": 166,
+          "basketballMonster": 166,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "totals.PF",
+          "statmuse": 156,
+          "basketballMonster": 156,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.374,
+          "basketballMonster": 0.374,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.486,
+          "basketballMonster": 0.486,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1996-97",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.833,
+          "basketballMonster": 0.833,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.MIN",
+          "statmuse": 3181,
+          "basketballMonster": 3181,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.PTS",
+          "statmuse": 2357,
+          "basketballMonster": 2357,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.FG3M",
+          "statmuse": 30,
+          "basketballMonster": 30,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.REB",
+          "statmuse": 475,
+          "basketballMonster": 475,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.AST",
+          "statmuse": 283,
+          "basketballMonster": 283,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.STL",
+          "statmuse": 141,
+          "basketballMonster": 141,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.BLK",
+          "statmuse": 45,
+          "basketballMonster": 45,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.FGA",
+          "statmuse": 1893,
+          "basketballMonster": 1893,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.FTA",
+          "statmuse": 721,
+          "basketballMonster": 721,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.TOV",
+          "statmuse": 185,
+          "basketballMonster": 185,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "totals.PF",
+          "statmuse": 151,
+          "basketballMonster": 151,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.238,
+          "basketballMonster": 0.238,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.465,
+          "basketballMonster": 0.465,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:1997-98",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.784,
+          "basketballMonster": 0.784,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.GP",
+          "statmuse": 60,
+          "basketballMonster": 60,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.MIN",
+          "statmuse": 2093,
+          "basketballMonster": 2094,
+          "status": "disputed"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.PTS",
+          "statmuse": 1375,
+          "basketballMonster": 1375,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.FG3M",
+          "statmuse": 10,
+          "basketballMonster": 10,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.REB",
+          "statmuse": 339,
+          "basketballMonster": 339,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.AST",
+          "statmuse": 310,
+          "basketballMonster": 310,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.STL",
+          "statmuse": 85,
+          "basketballMonster": 85,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.BLK",
+          "statmuse": 26,
+          "basketballMonster": 26,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.FGA",
+          "statmuse": 1324,
+          "basketballMonster": 1324,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.FTA",
+          "statmuse": 333,
+          "basketballMonster": 333,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.TOV",
+          "statmuse": 162,
+          "basketballMonster": 162,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "totals.PF",
+          "statmuse": 119,
+          "basketballMonster": 119,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.189,
+          "basketballMonster": 0.189,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.416,
+          "basketballMonster": 0.416,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2001-02",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.79,
+          "basketballMonster": 0.79,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.GP",
+          "statmuse": 82,
+          "basketballMonster": 82,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.MIN",
+          "statmuse": 3031,
+          "basketballMonster": 3031,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.PTS",
+          "statmuse": 1640,
+          "basketballMonster": 1640,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.FG3M",
+          "statmuse": 16,
+          "basketballMonster": 16,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.REB",
+          "statmuse": 497,
+          "basketballMonster": 497,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.AST",
+          "statmuse": 311,
+          "basketballMonster": 311,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.STL",
+          "statmuse": 123,
+          "basketballMonster": 123,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.BLK",
+          "statmuse": 39,
+          "basketballMonster": 39,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.FGA",
+          "statmuse": 1527,
+          "basketballMonster": 1527,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.FTA",
+          "statmuse": 324,
+          "basketballMonster": 324,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.TOV",
+          "statmuse": 173,
+          "basketballMonster": 173,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "totals.PF",
+          "statmuse": 171,
+          "basketballMonster": 171,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "percentages.FG3_PCT",
+          "statmuse": 0.291,
+          "basketballMonster": 0.291,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "percentages.FG_PCT",
+          "statmuse": 0.445,
+          "basketballMonster": 0.445,
+          "status": "pass"
+        },
+        {
+          "rowId": "893:Regular Season:2002-03",
+          "field": "percentages.FT_PCT",
+          "statmuse": 0.821,
+          "basketballMonster": 0.821,
+          "status": "pass"
+        }
+      ],
+      "matchedChecks": 224,
+      "disputedChecks": 1,
+      "upstreamStatisticalIndependenceVerified": false
+    },
+    "officialNbaVerification": "not_established",
+    "shotCoordinatesIncluded": false,
+    "notes": [
+      "Do not infer missing shots, shot locations, GS, or unavailable plus/minus from aggregates.",
+      "No synthetic retirement-year or Wizards playoff rows.",
+      "Per-game and source percentages preserve the displayed rounded source values; derivedFromTotals separately exposes calculations."
+    ]
+  }
+}

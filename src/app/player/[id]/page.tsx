@@ -11,6 +11,7 @@ import { ALL_TIME_LEADERS } from "@/lib/allTimeLeaders";
 import { ICONIC_SEASONS } from "@/lib/iconicSeasons";
 import { ICONIC_GAMES } from "@/lib/iconicGames";
 import ArchivedPlayerProfile from "@/components/player/ArchivedPlayerProfile";
+import { getHistoricalCareerArchive } from "@/lib/historical-career-archive";
 import { resolvePlayerIdentity } from "@/lib/player-identity-server";
 import { parsePlayerId } from "@/lib/player-identity";
 import { playerShootingSelection, type PlayerProfileQuery } from "@/lib/player-profile-navigation";
@@ -94,7 +95,10 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   const heatmapCatalog = (await getPlayerSeasonHeatmapCatalog(personId)).filter(entry => entry.playerId === personId).map(({ playerId, season, seasonType, availability }) => ({ playerId, season, seasonType, availability }));
   const heatmapSelection = playerShootingSelection(personId, heatmapCatalog, query);
   const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
-  if (!player) return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} />;
+  if (!player) {
+    const historicalCareer = await getHistoricalCareerArchive(personId);
+    return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} historicalCareer={historicalCareer} />;
+  }
 
   const t = getTranslations(locale);
   const isZh = locale === "zh";
