@@ -1,24 +1,30 @@
-import { buildScheduleHeatmap } from "@/lib/schedule-heatmap";
+import { buildScheduleHeatmap, buildPlannedScheduleHeatmap } from "@/lib/schedule-heatmap";
 import { homeDateUrl } from "@/lib/date-navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, Calendar, ListOrdered, Repeat } from "lucide-react";
-import { getCurrentSeasonSchedule, getScheduleAge } from "@/lib/api";
+import { getCurrentSeasonSchedule, getScheduleAge, getScheduleCoverage } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
+import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
+import { selectScheduleToolSource } from "@/lib/schedule-tools-server";
+import { currentSeason } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Schedule Heatmap",
-  description: "Game density across the season — see which nights are stacked and which are empty.",
+  description: "Listed NBA game density by Eastern Time date, with separately labeled partial planned fixtures.",
 };
 
 async function build() {
-  return buildScheduleHeatmap(await getCurrentSeasonSchedule().catch(() => []));
+  const season = currentSeason();
+  const schedule = await getCurrentSeasonSchedule(season).catch(() => []);
+  const source = selectScheduleToolSource(schedule, getScheduleCoverage(schedule), season);
+  return { source, ...(source.mode === 'planned' ? buildPlannedScheduleHeatmap(source.fixtures) : buildScheduleHeatmap(source.schedule)) };
 }
 
-const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function intensity(games: number, max: number): string {
@@ -34,7 +40,8 @@ function intensity(games: number, max: number): string {
 export default async function ScheduleHeatmapPage() {
   const locale = await getLocale();
   const isZh = locale === "zh";
-  const { byMonth, totalGames, finishedGames, maxGames, totalDays, todayStr } = await build();
+  const { source, byMonth, totalGames, finishedGames, maxGames, totalDays, todayStr } = await build();
+  const planned = source.mode === "planned";
 
   if (totalDays === 0) {
     return (
@@ -58,34 +65,41 @@ export default async function ScheduleHeatmapPage() {
         icon={Activity}
         title={isZh ? "赛程热力图" : "Schedule Heatmap"}
         subtitle={
-          isZh
+          planned
+            ? (isZh ? `${totalGames.toLocaleString('en-US')} 场计划比赛 · ${totalDays} 个日期 · 单日峰值 ${maxGames} 场` : `${totalGames.toLocaleString('en-US')} planned fixtures · ${totalDays} dates · peak ${maxGames} games per date`)
+            : isZh
             ? `${totalGames} 场比赛跨 ${totalDays} 个日期 · 已完 ${finishedGames} · 单晚峰值 ${maxGames} 场`
             : `${totalGames} games across ${totalDays} dates · ${finishedGames} finished · peak ${maxGames} games on a single night`
         }
-        updatedAt={getScheduleAge()}
+        updatedAt={planned ? null : getScheduleAge()}
       />
 
-      <p className="text-xs text-text-secondary mb-4">{isZh ? "日期按美国东部时间（America/New_York）；数量为现有赛程中已列出的比赛。" : "Dates use America/New_York (Eastern Time); counts reflect games listed in the available schedule."}</p>
+      {planned && <div className="glass-tile p-4 mb-4">
+        <p className="text-sm font-semibold mb-2">{isZh ? '2026-27 部分计划赛程 · 每队已分配 80 场' : '2026-27 partial planned schedule · 80 assigned games per team'}</p>
+        <p className="text-sm text-text-secondary mb-2">{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。数字仅表示计划，日期过去也不代表比赛已完成。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Counts describe plans; passing dates do not confirm results.'}</p>
+        <PlannedSnapshotNote timeZone="America/New_York" />
+      </div>}
+      <p className="text-sm text-text-secondary mb-4">{isZh ? "日期按美国东部时间（America/New_York）；数量仅为已列比赛或已分配的计划比赛。零表示没有已列比赛，不代表当天确定没有比赛。" : "Dates use America/New_York (Eastern Time); counts reflect only listed games or assigned planned fixtures. A zero means no listed fixtures, not a confirmed empty date."}</p>
       <div className="space-y-6">
         {months.map((ym) => {
           const days = byMonth.get(ym)!;
           const [yr, mo] = ym.split("-");
-          const monthLabel = `${MONTH_LABELS[parseInt(mo) - 1]} ${yr}`;
+          const monthLabel = isZh ? `${yr}年${Number(mo)}月` : `${MONTH_LABELS[parseInt(mo) - 1]} ${yr}`;
           const firstWeekday = days[0].weekday;
           const padding = Array.from({ length: firstWeekday });
           const monthGames = days.reduce((s, d) => s + d.games, 0);
 
           return (
-            <section key={ym} className="glass-tile p-5">
+            <section key={ym} className="glass-tile min-w-0 p-3 sm:p-5">
               <div className="flex items-end justify-between mb-3 flex-wrap gap-2">
                 <h2 className="text-lg font-semibold tracking-tight text-text-primary">{monthLabel}</h2>
-                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary tabular-nums">
-                  {isZh ? `${monthGames} 场比赛 · ${days.filter(day=>day.games>0).length} 个比赛日` : `${monthGames} games · ${days.filter(day=>day.games>0).length} game dates`}
+                <span className="text-xs font-mono text-text-secondary tabular-nums">
+                  {isZh ? `${monthGames} 场${planned ? "已列计划比赛" : "已列比赛"} · ${days.filter(day=>day.games>0).length} 个日期` : `${monthGames} ${planned ? "listed fixtures" : "listed games"} · ${days.filter(day=>day.games>0).length} dates`}
                 </span>
               </div>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="grid min-w-0 grid-cols-7 gap-1 sm:gap-1.5">
                 {WEEKDAY_LABELS.map((wl, i) => (
-                  <span key={`wl-${i}`} className="text-[9px] font-mono uppercase text-text-secondary/60 text-center pb-1">{wl}</span>
+                  <span key={`wl-${i}`} className="text-xs font-mono text-text-secondary text-center pb-1">{isZh ? ["日", "一", "二", "三", "四", "五", "六"][i] : wl}</span>
                 ))}
                 {padding.map((_, i) => (
                   <div key={`pad-${i}`} />
@@ -97,14 +111,14 @@ export default async function ScheduleHeatmapPage() {
                       key={d.date}
                       href={homeDateUrl(d.date,"America/New_York")}
                       prefetch={false}
-                      className={`relative aspect-square rounded-lg flex flex-col items-center justify-center group cursor-pointer transition-all hover:scale-110 ${intensity(d.games, maxGames)} ${isToday ? "ring-2 ring-accent" : ""}`}
-                      title={`${d.date} · ${d.games} ${isZh ? "场已列比赛" : "listed games"} · America/New_York`}
-                      aria-label={`${d.date} · ${d.games} ${isZh ? "场已列比赛" : "listed games"} · America/New_York`}
+                      className={`relative min-w-0 min-h-[52px] sm:min-h-[64px] rounded-lg flex flex-col items-center justify-center gap-1 group cursor-pointer transition-colors hover:ring-2 hover:ring-accent focus-visible:outline-2 focus-visible:outline-accent ${intensity(d.games, maxGames)} ${isToday ? "ring-2 ring-accent" : ""}`}
+                      title={`${d.date} · ${d.games} ${isZh ? (planned ? "场已列计划比赛" : "场已列比赛") : (planned ? "listed planned fixtures" : "listed games")} · America/New_York`}
+                      aria-label={`${d.date} · ${d.games} ${isZh ? (planned ? "场已列计划比赛" : "场已列比赛") : (planned ? "listed planned fixtures" : "listed games")} · America/New_York`}
                     >
-                      <span className="text-[10px] font-mono tabular-nums leading-none text-text-primary group-hover:text-text-primary">
+                      <span className="text-sm font-mono tabular-nums leading-none text-text-primary group-hover:text-text-primary">
                         {d.display.split("/")[1]}
                       </span>
-                      <span className="text-[8px] font-mono tabular-nums leading-none mt-0.5 text-text-primary/80">
+                      <span className="text-xs font-mono tabular-nums leading-none text-text-primary/80">
                         {d.games}
                       </span>
                     </Link>
@@ -117,18 +131,18 @@ export default async function ScheduleHeatmapPage() {
       </div>
 
       <div className="glass-tile p-4 mt-6 flex items-center gap-4 flex-wrap">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "热度" : "Intensity"}</p>
+        <p className="text-xs font-mono text-text-secondary/60">/ {isZh ? "已列比赛数" : "Listed count"}</p>
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-bg-hover/30" />
-          <span className="text-[9px] font-mono text-text-secondary">0</span>
+          <span className="text-xs font-mono text-text-secondary">0</span>
           <div className="w-4 h-4 rounded bg-accent/20" />
           <div className="w-4 h-4 rounded bg-accent/35" />
           <div className="w-4 h-4 rounded bg-accent/55" />
           <div className="w-4 h-4 rounded bg-accent-amber/55" />
           <div className="w-4 h-4 rounded bg-accent-amber/80" />
-          <span className="text-[9px] font-mono text-text-secondary">{maxGames}</span>
+          <span className="text-xs font-mono text-text-secondary">{maxGames}</span>
         </div>
-        <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-text-secondary">{isZh ? "点击任一格查看当日比赛" : "click any cell to view that date"}</span>
+        <span className="text-xs font-mono text-text-secondary">{isZh ? "点击任一格查看当日比赛" : "click any cell to view that date"}</span>
       </div>
 
       <RelatedPages

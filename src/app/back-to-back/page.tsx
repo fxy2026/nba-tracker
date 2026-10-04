@@ -1,254 +1,105 @@
-import { offsetCalendarDate } from "@/lib/calendar-date";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Repeat, Activity, Zap, Calendar } from "lucide-react";
-import { getCurrentSeasonSchedule, getScheduleAge, formatDate } from "@/lib/api";
+import { Repeat, Activity, Calendar } from "lucide-react";
+import { getCurrentSeasonSchedule, getScheduleAge, getScheduleCoverage } from "@/lib/api";
+import { currentSeason } from "@/lib/constants";
+import { calendarDateLabels } from "@/lib/calendar-date";
+import { buildBackToBacks, selectScheduleToolSource, SCHEDULE_TIME_ZONE } from "@/lib/schedule-tools-server";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
-import { isPreseason } from "@/lib/games";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
+import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
 
 export const metadata: Metadata = {
   title: "Back-to-Backs",
-  description: "Teams that have played the most back-to-back games this season and upcoming B2B situations on the schedule.",
+  description: "Listed consecutive-day NBA game pairs in Eastern Time, with separately labeled planned fixtures and verified results.",
 };
 
-interface B2BInstance {
-  teamTricode: string;
-  teamId: number;
-  dates: [string, string];
-  game1Id: string;
-  game2Id: string;
-  isFuture: boolean;
-  game1Won?: boolean;
-  game2Won?: boolean;
-}
-
-function parseUS(s: string): string | null {
-  const date = s.split(" ")[0];
-  const parts = date.split("/");
-  if (parts.length !== 3) return null;
-  const iso = `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
-  try { return offsetCalendarDate(iso, 0); } catch { return null; }
-}
-
-async function compute() {
-  const schedule = await getCurrentSeasonSchedule().catch(() => []);
-  type Apr = { date: string; gameId: string; status: number; teamId: number; won: boolean | null };
-  const teamApps = new Map<string, Apr[]>();
-
-  for (const gd of schedule) {
-    const iso = parseUS(gd.gameDate);
-    if (!iso) continue;
-    for (const g of gd.games) {
-      // Skip preseason (001) exhibition vs international teams; keep regular season + playoffs
-      if (isPreseason(g.gameId)) continue;
-      const won = g.gameStatus === 3 ? g.homeTeam.score > g.awayTeam.score : null;
-      const pushH = teamApps.get(g.homeTeam.teamTricode) || [];
-      pushH.push({ date: iso, gameId: g.gameId, status: g.gameStatus, teamId: g.homeTeam.teamId, won });
-      teamApps.set(g.homeTeam.teamTricode, pushH);
-      const pushA = teamApps.get(g.awayTeam.teamTricode) || [];
-      pushA.push({ date: iso, gameId: g.gameId, status: g.gameStatus, teamId: g.awayTeam.teamId, won: won === null ? null : !won });
-      teamApps.set(g.awayTeam.teamTricode, pushA);
-    }
-  }
-
-  const todayIso = formatDate(new Date());
-  const instances: B2BInstance[] = [];
-  for (const [tricode, apps] of teamApps) {
-    apps.sort((a, b) => a.date.localeCompare(b.date));
-    for (let i = 0; i < apps.length - 1; i++) {
-      const a = apps[i];
-      const b = apps[i + 1];
-      if (b.date !== offsetCalendarDate(a.date, 1)) continue;
-      instances.push({
-        teamTricode: tricode,
-        teamId: a.teamId,
-        dates: [a.date, b.date],
-        game1Id: a.gameId,
-        game2Id: b.gameId,
-        isFuture: a.date > todayIso,
-        game1Won: a.won === null ? undefined : a.won,
-        game2Won: b.won === null ? undefined : b.won,
-      });
-    }
-  }
-
-  const past = instances.filter((i) => !i.isFuture);
-  const future = instances.filter((i) => i.isFuture);
-
-  // Aggregate per team
-  const totals = new Map<string, { team: string; teamId: number; played: number; upcoming: number; pastB2bWins: number; pastB2bGames: number }>();
-  for (const ins of instances) {
-    const cur = totals.get(ins.teamTricode) || { team: ins.teamTricode, teamId: ins.teamId, played: 0, upcoming: 0, pastB2bWins: 0, pastB2bGames: 0 };
-    if (ins.isFuture) cur.upcoming++;
-    else {
-      cur.played++;
-      if (ins.game1Won === true) cur.pastB2bWins++;
-      if (ins.game2Won === true) cur.pastB2bWins++;
-      cur.pastB2bGames += 2;
-    }
-    totals.set(ins.teamTricode, cur);
-  }
-  // Add missing teams
-  for (const meta of Object.values(TEAM_META)) {
-    if (!totals.has(meta.tricode)) {
-      totals.set(meta.tricode, { team: meta.tricode, teamId: meta.teamId, played: 0, upcoming: 0, pastB2bWins: 0, pastB2bGames: 0 });
-    }
-  }
-
-  return {
-    past,
-    future: future.sort((a, b) => a.dates[0].localeCompare(b.dates[0])).slice(0, 15),
-    totals: [...totals.values()],
-  };
-}
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso + "T00:00:00");
-  return `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`;
-}
-
 export default async function BackToBackPage() {
-  const locale = await getLocale();
-  const isZh = locale === "zh";
-  const { past, future, totals } = await compute();
+  const isZh = (await getLocale()) === "zh";
+  const season = currentSeason();
+  const schedule = await getCurrentSeasonSchedule(season).catch(() => []);
+  const source = selectScheduleToolSource(schedule, getScheduleCoverage(schedule), season);
+  const planned = source.mode === "planned";
+  const { totalPairs, completedCount, upcomingCount, unresolvedCount, visibleUpcoming, totals } = buildBackToBacks(source);
 
-  if (past.length === 0 && future.length === 0) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <PageHeader eyebrow={isZh ? "赛程" : "Schedule"} icon={Repeat} title={isZh ? "背靠背" : "Back-to-Backs"} />
-        <EmptyState
-          icon={Repeat}
-          title={isZh ? "未检测到背靠背" : "No B2Bs detected"}
-          description={isZh ? "现有本赛季赛程数据中未找到连续两天的比赛。" : "No consecutive-day game pairs were found in the available current-season schedule."}
-        />
-      </div>
-    );
-  }
+  if (totalPairs === 0) return <div className="max-w-5xl mx-auto px-4 py-6">
+    <PageHeader eyebrow={isZh ? "赛程" : "Schedule"} icon={Repeat} title={isZh ? "背靠背" : "Back-to-Backs"} />
+    <EmptyState icon={Repeat} title={isZh ? "未检测到背靠背" : "No B2Bs detected"} description={isZh ? "现有本赛季赛程数据中未找到连续两天的比赛。" : "No consecutive-day game pairs were found in the available current-season schedule."} />
+  </div>;
 
-  const ranked = [...totals].sort((a, b) => (b.played + b.upcoming) - (a.played + a.upcoming)).slice(0, 15);
-  const maxCount = ranked[0]?.played + ranked[0]?.upcoming || 1;
+  const ranked = [...totals].sort((a, b) => b.total - a.total || a.team.localeCompare(b.team));
+  const maxCount = ranked[0]?.total || 1;
+  return <div className="max-w-5xl mx-auto px-4 py-6">
+    <PageHeader eyebrow={isZh ? "赛程" : "Schedule"} icon={Repeat} title={isZh ? "背靠背" : "Back-to-Backs"}
+      subtitle={planned
+        ? (isZh ? `${totalPairs} 组计划背靠背 · ${upcomingCount} 组第二场在今天或以后` : `${totalPairs} planned team-specific pairs · ${upcomingCount} with second dates today or later`)
+        : (isZh ? `${totalPairs} 组已列背靠背 · ${completedCount} 组已确认完成 · ${upcomingCount} 组即将到来或进行中` : `${totalPairs} listed team-specific pairs · ${completedCount} confirmed complete · ${upcomingCount} upcoming or in progress`)}
+      updatedAt={planned ? null : getScheduleAge()} />
 
-  return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <PageHeader
-        eyebrow={isZh ? "赛程" : "Schedule"}
-        icon={Repeat}
-        title={isZh ? "背靠背" : "Back-to-Backs"}
-        subtitle={
-          isZh
-            ? `${past.length} 组背靠背已打 · ${future.length} 场即将到来 · 联盟最折磨的赛程`
-            : `${past.length} B2B game pairs played · ${future.length} upcoming · the league's most punishing scheduling artifact`
-        }
-        updatedAt={getScheduleAge()}
-      />
+    {planned && <div className="glass-tile p-4 mb-4">
+      <p className="text-sm font-semibold mb-2">{isZh ? '2026-27 部分计划赛程 · 每队已分配 80 场' : '2026-27 partial planned schedule · 80 assigned games per team'}</p>
+      <p className="text-sm text-text-secondary mb-2">{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。计划日期过去也不代表比赛已经进行。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Passing planned dates do not confirm games were played.'}</p>
+      <PlannedSnapshotNote timeZone={SCHEDULE_TIME_ZONE} />
+    </div>}
+    <p className="text-sm text-text-secondary mb-5">{isZh ? '按美国东部时间（America/New_York）的连续两个日历日计算，每支球队分别计数。仅涉及已列比赛，不推断旅行、场馆或实际休息时长。' : 'Consecutive calendar days in America/New_York (Eastern Time), counted separately for each team. Listed fixtures only; no travel, venue or actual recovery-time inference.'}</p>
+    {!planned && unresolvedCount > 0 && <p className="text-sm text-text-secondary mb-5">{isZh ? `${unresolvedCount} 组日期已过但结果尚未确认，不计为已完成。` : `${unresolvedCount} pairs have past dates but unconfirmed results; they are not counted as complete.`}</p>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent flex items-center gap-2">
-              <Repeat size={14} />
-              {isZh ? "球队背靠背最多" : "Most B2Bs By Team"}
-            </h2>
-            <span className="h-px flex-1 bg-accent/30" />
-          </div>
-          <div className="space-y-1.5">
-            {ranked.map((r) => {
-              const total = r.played + r.upcoming;
-              const pct = (total / maxCount) * 100;
-              const winPct = r.pastB2bGames > 0 ? (r.pastB2bWins / r.pastB2bGames) * 100 : null;
-              return (
-                <Link
-                  key={r.team}
-                  href={`/team/${r.team}`}
-                  className="glass-tile p-3 flex items-center gap-3 group cursor-pointer"
-                >
-                  <Image src={teamLogoUrl(r.teamId)} alt={r.team} width={32} height={32} unoptimized />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold font-mono group-hover:text-accent transition-colors">{r.team}</p>
-                    <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary">
-                      {isZh ? (
-                        <>
-                          <span className="tabular-nums">{r.played}</span> 已打 · <span className="tabular-nums">{r.upcoming}</span> 场未打
-                          {winPct !== null && <> · <span className="tabular-nums">{winPct.toFixed(0)}%</span> 背靠背胜率</>}
-                        </>
-                      ) : (
-                        <>
-                          <span className="tabular-nums">{r.played}</span> played · <span className="tabular-nums">{r.upcoming}</span> upcoming
-                          {winPct !== null && <> · <span className="tabular-nums">{winPct.toFixed(0)}%</span> on B2Bs</>}
-                        </>
-                      )}
-                    </p>
-                    <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-1.5">
-                      <div className="h-full bg-accent rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  <span className="text-xl font-light font-mono tabular-nums text-accent shrink-0">{total}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+    <div className="grid min-w-0 grid-cols-1 lg:grid-cols-2 gap-5">
+      <section className="min-w-0">
+        <h2 className="text-base font-semibold mb-3">{isZh ? '各队已列背靠背' : 'Listed pairs by team'}</h2>
+        <p className="text-sm text-text-secondary mb-3">{isZh ? '全部 30 支球队 · 按组数排序' : 'All 30 teams · sorted by pair count'}</p>
+        <div className="space-y-2">
+          {ranked.map(team => <Link key={team.team} href={`/team/${team.team}`} className="glass-tile min-h-[64px] p-3 flex items-center gap-3 group">
+            <Image src={teamLogoUrl(team.teamId)} alt="" width={32} height={32} unoptimized className="shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold group-hover:text-accent">{team.team} <span className="font-normal text-text-secondary">{TEAM_META[team.team].name}</span></p>
+              <p className="text-xs leading-relaxed text-text-secondary">{planned
+                ? (isZh ? `${team.total} 组计划背靠背` : `${team.total} planned pairs`)
+                : (isZh ? `${team.completed} 组已确认完成 · ${team.upcoming} 组即将到来或进行中${team.unresolved ? ` · ${team.unresolved} 组结果待确认` : ''}` : `${team.completed} confirmed complete · ${team.upcoming} upcoming/in progress${team.unresolved ? ` · ${team.unresolved} unconfirmed` : ''}`)}</p>
+              {!planned && team.verifiedGames > 0 && <p className="text-xs leading-relaxed text-text-secondary">{isZh ? `${team.wins}/${team.verifiedGames} 场已确认背靠背比赛获胜（${(team.wins / team.verifiedGames * 100).toFixed(0)}%）` : `${team.wins}/${team.verifiedGames} verified final B2B games won (${(team.wins / team.verifiedGames * 100).toFixed(0)}%)`}</p>}
+              <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-2"><div className="h-full bg-accent rounded-full" style={{ width: `${team.total / maxCount * 100}%` }} /></div>
+            </div>
+            <span className="text-xl font-mono tabular-nums text-accent shrink-0">{team.total}</span>
+          </Link>)}
+        </div>
+      </section>
 
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent-amber flex items-center gap-2">
-              <Repeat size={14} className="text-accent-amber" />
-              {isZh ? "即将到来的背靠背" : "Upcoming B2Bs"}
-            </h2>
-            <span className="h-px flex-1 bg-accent-amber/30" />
-            <span className="text-[10px] font-mono tabular-nums text-text-secondary">{future.length} {isZh ? "未打" : "ahead"}</span>
-          </div>
-          <div className="space-y-1.5">
-            {future.length === 0 ? (
-              <div className="glass-tile p-4 text-center text-xs font-mono text-text-secondary">
-                {isZh ? "暂无即将到来的背靠背" : "No upcoming back-to-backs detected"}
-              </div>
-            ) : future.map((ins, i) => (
-              <div key={`${ins.teamTricode}-${ins.dates[0]}-${i}`} className="glass-tile p-3 flex items-center gap-3">
-                <Image src={teamLogoUrl(ins.teamId)} alt={ins.teamTricode} width={32} height={32} unoptimized />
-                <Link href={`/team/${ins.teamTricode}`} className="text-sm font-bold font-mono hover:text-accent transition-colors shrink-0">
-                  {ins.teamTricode}
-                </Link>
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <Link href={`/game/${ins.game1Id}`} className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors">
-                    {fmtDate(ins.dates[0])}
-                  </Link>
-                  <span className="text-text-secondary/40">→</span>
-                  <Link href={`/game/${ins.game2Id}`} className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors">
-                    {fmtDate(ins.dates[1])}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <div className="glass-tile p-4 mt-6">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60 mb-2">/ {isZh ? "方法" : "Method"}</p>
-        <p className="text-xs text-text-secondary leading-relaxed">
-          {isZh
-            ? "背靠背指连续两个日历日内的两场比赛。NBA 已经逐步减少背靠背以管理球员负荷 — 历史上背靠背第二场胜率偏低，跨城市旅行后更明显。"
-            : "A back-to-back is any pair of games scheduled on consecutive calendar days. The NBA has progressively reduced B2Bs to manage player workload — historically tied to lower win rates on the second night, especially when traveling between cities."}
-        </p>
-      </div>
-
-      <RelatedPages
-        eyebrow={isZh ? "继续探索" : "Keep exploring"}
-        pages={[
-          { href: "/streaks", label: isZh ? "连胜连败" : "Streaks", description: isZh ? "正在燃烧或冷却的球队" : "Hot and cold teams", icon: Activity },
-          { href: "/momentum", label: isZh ? "势头" : "Momentum", description: isZh ? "上升与下降的球队" : "Rising and falling teams", icon: Activity },
-          { href: "/scoring-output", label: isZh ? "攻防输出" : "Scoring Output", description: isZh ? "进攻、防守与净值" : "Offense, defense, and net rating", icon: Zap },
-          { href: "/schedule", label: isZh ? "赛程" : "Schedule", description: isZh ? "全联盟赛程一览" : "League-wide game calendar", icon: Calendar },
-          { href: "/clutch-teams", label: isZh ? "关键时刻" : "Clutch Teams", description: isZh ? "焦点战与加时赛战绩" : "Close-game and OT records", icon: Repeat },
-        ]}
-      />
+      <section className="min-w-0">
+        <h2 className="text-base font-semibold mb-3">{planned ? (isZh ? '接下来的计划背靠背' : 'Next planned pairs') : (isZh ? '即将到来或进行中的背靠背' : 'Upcoming or in-progress pairs')}</h2>
+        <p className="text-sm text-text-secondary mb-3">{isZh ? `共 ${upcomingCount} 组 · 显示前 ${visibleUpcoming.length} 组` : `${upcomingCount} total · showing first ${visibleUpcoming.length}`}</p>
+        <div className="space-y-2">
+          {visibleUpcoming.length === 0 ? <p className="glass-tile p-4 text-sm text-text-secondary">{isZh ? '已列赛程中暂无第二场日期为今天或以后的背靠背。' : 'No listed pairs have a second date today or later.'}</p> : visibleUpcoming.map(pair => <div key={`${pair.team}-${pair.nights[0].key}`} className="glass-tile min-w-0 p-3">
+            <Link href={`/team/${pair.team}`} className="inline-flex min-h-[44px] max-w-full items-center gap-2 text-sm font-semibold hover:text-accent">
+              <Image src={teamLogoUrl(pair.teamId)} alt="" width={28} height={28} unoptimized />
+              <span>{pair.team} · {TEAM_META[pair.team].name}</span>
+            </Link>
+            <div className="grid min-w-0 grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+              {pair.nights.map((night, index) => {
+                const labels = calendarDateLabels(night.date, isZh ? 'zh-CN' : 'en-US');
+                return <Link key={night.key} prefetch={false} href={night.href} className="flex min-h-[44px] min-w-0 flex-wrap items-center justify-between gap-x-2 rounded-lg bg-bg-hover/40 px-3 py-2 text-sm hover:text-accent focus-visible:outline-2 focus-visible:outline-accent" aria-label={`${pair.team} · ${night.date} · ${night.opponent} · America/New_York`}>
+                  <span><span className="text-xs text-text-secondary">{isZh ? `第 ${index + 1} 场` : `Night ${index + 1}`} · </span><time dateTime={night.date}>{labels.weekday} {labels.label}</time></span>
+                  <span className="font-semibold">{isZh ? '对阵' : 'vs'} {night.opponent}</span>
+                </Link>;
+              })}
+            </div>
+          </div>)}
+        </div>
+      </section>
     </div>
-  );
+    <div className="glass-tile p-4 mt-6">
+      <h2 className="text-sm font-semibold mb-2">{isZh ? '计算方法' : 'How pairs are counted'}</h2>
+      <p className="text-sm text-text-secondary leading-relaxed">{isZh ? '每组包含同一球队在连续两个东部日历日的已列比赛。三天连赛可形成两组；两队连续交手会分别计入各自的组数。待定、条件性、延期或无效日期不计入。未分配的杯赛场次可能改变这些数量。' : 'Each pair contains one team’s listed games on consecutive ET dates. A three-day run can form two pairs; consecutive meetings between the same two teams count once per team. TBD, conditional, postponed and invalid dates are excluded. Unassigned Cup games may change these counts.'}</p>
+      {!planned && <p className="text-sm text-text-secondary leading-relaxed mt-2">{isZh ? '只有两场都有已确认最终比分才算完成一组。胜率仅包含这些背靠背中有已确认最终比分的独立比赛，包括第二场尚未完成时的第一场；重叠组中的同一场比赛只算一次。' : 'A pair is complete only when both games have verified final scores. Win rates use unique verified final games belonging to a listed pair, including a final first game whose second game is pending. A game shared by overlapping pairs counts once.'}</p>}
+    </div>
+    <RelatedPages eyebrow={isZh ? "继续探索" : "Keep exploring"} pages={[
+      { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule Heatmap", description: isZh ? "各日比赛密度" : "Game counts by date", icon: Activity },
+      { href: "/calendar", label: isZh ? "日历" : "Calendar", description: isZh ? "按日期浏览比赛" : "Browse games by date", icon: Calendar },
+      { href: "/schedule", label: isZh ? "赛程" : "Schedule", description: isZh ? "全联盟赛程一览" : "League-wide game listing", icon: Repeat },
+    ]} />
+  </div>;
 }

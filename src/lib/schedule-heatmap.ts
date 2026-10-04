@@ -1,4 +1,5 @@
 import type { ScheduleDate } from './api';
+import type { PlannedFixture } from './planned-fixtures';
 import { monthDateKeys } from './date-navigation';
 export interface HeatmapDay {date:string;display:string;weekday:number;games:number;finished:number;isFuture:boolean;}
 export function buildScheduleHeatmap(schedule:ScheduleDate[],now=new Date()) {
@@ -13,6 +14,20 @@ export function buildScheduleHeatmap(schedule:ScheduleDate[],now=new Date()) {
       seen.add(game.gameId);const value=counts.get(key)??{games:0,finished:0};value.games++;if(game.gameStatus===3)value.finished++;counts.set(key,value);
     }
   }
+  return heatmapFromCounts(counts, todayStr);
+}
+
+export function buildPlannedScheduleHeatmap(fixtures: readonly PlannedFixture[], now = new Date()) {
+  const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  const counts = new Map<string, { games: number; finished: number }>();
+  for (const fixture of new Map(fixtures.map(f => [f.key, f])).values()) {
+    const value = counts.get(fixture.dateET) ?? { games: 0, finished: 0 };
+    value.games++; counts.set(fixture.dateET, value);
+  }
+  return heatmapFromCounts(counts, today);
+}
+
+function heatmapFromCounts(counts: Map<string, {games:number;finished:number}>, todayStr: string) {
   const byMonth=new Map<string,HeatmapDay[]>();
   for(const month of [...new Set([...counts.keys()].map(date=>date.slice(0,7)))].sort()){
     const[y,m]=month.split('-').map(Number);

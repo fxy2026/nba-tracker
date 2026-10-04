@@ -14,7 +14,7 @@ import RelatedPages from "@/components/RelatedPages";
 
 export const metadata: Metadata = {
   title: "Rookie Watch",
-  description: "Top performing rookies and sophomores this season — ranked by per-game scoring.",
+  description: "First- and second-year NBA cohorts ranked by a heuristic production score when supported current-season data is available.",
 };
 
 interface RookieRow {

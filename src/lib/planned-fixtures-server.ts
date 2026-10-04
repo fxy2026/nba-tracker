@@ -16,6 +16,12 @@ const fixtures: readonly PlannedFixture[] = Object.freeze((snapshot.rows as Row[
   sourcePages: Object.freeze({ byDate: row[6], awayTeam: row[7], homeTeam: row[8] }),
 })).sort((a, b) => a.tipoffUTC.localeCompare(b.tipoffUTC)));
 
+/** Server-only full-season view for schedule tools; never coerce fixtures into games. */
+export function getPlannedSeasonFixtures(season: string, dates: ScheduleDate[], coverage: CanonicalScheduleCoverage | null): readonly PlannedFixture[] | null {
+  if (season !== PLANNED_SEASON || hasCanonicalSeasonCoverage(dates, coverage, season)) return null;
+  return fixtures;
+}
+
 export function getPlannedFixtureView(query: PlannedFixtureQuery, dates: ScheduleDate[], coverage: CanonicalScheduleCoverage | null, canonicalDayAvailable = false, canonicalDatesET: string[] = []): PlannedFixtureView {
   const base: Omit<PlannedFixtureView, 'state'> = { snapshotDate: PLANNED_SNAPSHOT_DATE, season: PLANNED_SEASON, timeZone: query.timeZone, fixtures: [], nextAvailableDate: null };
   if (canonicalDayAvailable || hasCanonicalSeasonCoverage(dates, coverage, PLANNED_SEASON)) return { ...base, state: 'canonical' };

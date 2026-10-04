@@ -4,8 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { scheduleForSeason } from "./games";
 import { getTranslations } from "@/locales";
 import type { ScheduleDate, ScheduleGame } from "./api";
+vi.mock("server-only", () => ({}));
 const { current, full, locale } = vi.hoisted(() => ({ current: vi.fn(), full: vi.fn(), locale: vi.fn() }));
-vi.mock("@/lib/api", () => ({ getCurrentSeasonSchedule: current, getFullSchedule: full, getScheduleAge: () => null, formatDate: () => "2026-11-25" }));
+vi.mock("@/lib/api", () => ({ getCurrentSeasonSchedule: current, getFullSchedule: full, getScheduleAge: () => null, getScheduleCoverage: () => null, formatDate: () => "2026-11-25" }));
 vi.mock("@/lib/locale", () => ({ getLocale: locale }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: "en", t: getTranslations("en") }) }));
 vi.mock("next/dynamic", () => ({ default: () => (props: unknown) => createElement("div", { "data-trajectory": JSON.stringify(props) }) }));
@@ -37,7 +38,10 @@ beforeEach(() => { current.mockReset(); full.mockReset(); full.mockImplementatio
 afterEach(() => vi.useRealTimers());
 for (const [name, load, empty] of pages) describe(name, () => {
   it("does not reuse archive-only results as current data", async () => {
-    const html = await render(load, archive); expect(html).toMatch(empty); expect(html).not.toContain('/game/00225'); expect(current).toHaveBeenCalledOnce(); expect(full).not.toHaveBeenCalled();
+    const html = await render(load, archive);
+    if (name === "back-to-back" || name === "schedule-heatmap") {
+      expect(html).toContain("partial planned schedule"); expect(html).toContain("NBA source PDF");
+    } else expect(html).toMatch(empty); expect(html).not.toContain('/game/00225'); expect(current).toHaveBeenCalledOnce(); expect(full).not.toHaveBeenCalled();
   });
   it("keeps the first current game without filling its history from the archive", async () => {
     const clean = await render(load, first); const mixed = await render(load, [...archive, ...first]); expect(mixed).toBe(clean);
