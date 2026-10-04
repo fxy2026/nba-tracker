@@ -6,12 +6,20 @@ import { POST } from "../app/api/analytics/pageview/route";
 const event = { eventId: "18b18274-df2a-4f7c-b4cc-e737f3200302", path: "/player/201939", referrer: "direct", device: "mobile" };
 const token = "345827fb-0c05-4629-ae03-98b42faeebca";
 const now = new Date("2026-10-04T08:00:00Z");
+// Deliberately unusable test fixtures, never credentials for any actual project.
+const secretKey = "sb_secret_offline_test_only";
+function legacyKey(payload: unknown = { role: "service_role" }) {
+  return [JSON.stringify({ alg: "HS256", typ: "JWT" }), JSON.stringify(payload), "not-a-valid-signature"].map(part => Buffer.from(part).toString("base64url")).join(".");
+}
 let fetchMock: ReturnType<typeof vi.fn>;
 function configure() {
   vi.stubEnv("NODE_ENV", "production"); vi.stubEnv("VERCEL_ENV", "production");
   vi.stubEnv("VISITOR_ANALYTICS_ENABLED", "true"); vi.stubEnv("VISITOR_ANALYTICS_ORIGIN", "https://nba.example.com");
-  vi.stubEnv("SUPABASE_URL", "https://analytics-project.supabase.co"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
-  vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-server-key"); vi.stubEnv("ADMIN_PASSWORD", "test-admin-password");
+  vi.stubEnv("ANALYTICS_SUPABASE_URL", "https://analytics-project.supabase.co");
+  vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", secretKey); vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", "");
+  vi.stubEnv("SUPABASE_URL", "https://generic-project.supabase.co"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://replay-project.supabase.co");
+  vi.stubEnv("SUPABASE_SECRET_KEY", "sb_secret_generic_test_only"); vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", legacyKey());
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", legacyKey({ role: "anon" })); vi.stubEnv("ADMIN_PASSWORD", "test-admin-password");
 }
 function request(body: unknown = event, headers: Record<string, string> = {}) {
   return new Request("https://nba.example.com/api/analytics/pageview", { method: "POST", headers: { "Content-Type": "application/json", Origin: "https://nba.example.com", ...headers }, body: typeof body === "string" ? body : JSON.stringify(body) });
@@ -21,12 +29,84 @@ beforeEach(() => { configure(); fetchMock = vi.fn().mockResolvedValue(Response.j
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("configuration and server credential boundary", () => {
-  it.each([["VISITOR_ANALYTICS_ENABLED", ""], ["VISITOR_ANALYTICS_ENABLED", "1"], ["VERCEL_ENV", "preview"], ["VERCEL_ENV", "development"], ["NODE_ENV", "development"], ["SUPABASE_SERVICE_ROLE_KEY", ""], ["SUPABASE_URL", "https://evil.test"], ["SUPABASE_URL", "https://project.supabase.co/path"], ["VISITOR_ANALYTICS_ORIGIN", "https://nba.example.com/"], ["VISITOR_ANALYTICS_ORIGIN", "http://nba.example.com"], ["VISITOR_ANALYTICS_ORIGIN", "https://localhost"]])("keeps disabled for %s=%s", async (name, value) => {
+  it.each([["VISITOR_ANALYTICS_ENABLED", ""], ["VISITOR_ANALYTICS_ENABLED", "1"], ["VERCEL_ENV", "preview"], ["VERCEL_ENV", "development"], ["NODE_ENV", "development"], ["ANALYTICS_SUPABASE_SECRET_KEY", ""], ["ANALYTICS_SUPABASE_URL", ""], ["ANALYTICS_SUPABASE_URL", "https://evil.test"], ["ANALYTICS_SUPABASE_URL", "https://project.supabase.co/path"], ["VISITOR_ANALYTICS_ORIGIN", "https://nba.example.com/"], ["VISITOR_ANALYTICS_ORIGIN", "http://nba.example.com"], ["VISITOR_ANALYTICS_ORIGIN", "https://localhost"]])("keeps disabled for %s=%s", async (name, value) => {
     vi.stubEnv(name, value); expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: false, origin: null });
     expect((await POST(request())).status).toBe(204);
     expect((await getVisitorAnalyticsReport(7, now)).status).toBe("unconfigured"); expect(fetchMock).not.toHaveBeenCalled();
   });
   it("exposes only a boolean and public origin to client", () => expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: true, origin: "https://nba.example.com" }));
+  it("ignores the full generic integration bundle when dedicated analytics config is absent", async () => {
+    vi.stubEnv("ANALYTICS_SUPABASE_URL", undefined); vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", undefined);
+    vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", undefined);
+    expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: false, origin: null });
+    expect((await POST(request())).status).toBe(204);
+    expect((await getVisitorAnalyticsReport(7, now)).status).toBe("unconfigured"); expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it.each([
+    "http://analytics-project.supabase.co", "https://analytics-project.supabase.co.evil.test",
+    "https://nested.analytics-project.supabase.co", "https://analytics-project.supabase.co?project=other",
+    "https://analytics-project.supabase.co#other", "https://analytics-project.supabase.co:8443",
+    "https://user:password@analytics-project.supabase.co", "not-a-url",
+  ])("never sends credentials to an invalid analytics destination %s", async url => {
+    vi.stubEnv("ANALYTICS_SUPABASE_URL", url);
+    expect((await POST(request())).status).toBe(204);
+    expect((await getVisitorAnalyticsReport(7, now)).status).toBe("unconfigured"); expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it.each(["sb_publishable_offline_test_only", legacyKey({ role: "anon" }), legacyKey(), "sb_secret_", " sb_secret_test", "sb_secret_test\n", "test-server-key", "sb_secret_" + "x".repeat(4096)])("does not downgrade an invalid modern credential to legacy: %s", async key => {
+    vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", key); vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", legacyKey());
+    expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: false, origin: null });
+    expect((await POST(request())).status).toBe(204);
+    expect((await getVisitorAnalyticsReport(7, now)).status).toBe("unconfigured"); expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it.each(["sb_publishable_offline_test_only", secretKey, legacyKey({ role: "anon" }), legacyKey({ role: "authenticated" }), legacyKey({}), legacyKey(null), legacyKey([]), "not.a.jwt", "test-server-key", legacyKey() + "\n", "x".repeat(4097)])("rejects non-service-role or malformed legacy credentials: %s", async key => {
+    vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", ""); vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", key);
+    expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: false, origin: null });
+    expect((await POST(request())).status).toBe(204);
+    expect((await getVisitorAnalyticsReport(7, now)).status).toBe("unconfigured"); expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+describe("dedicated Supabase credential transport", () => {
+  it.each(["secret", "legacy"] as const)("uses documented %s headers for both RPCs without forwarding request credentials", async kind => {
+    const key = kind === "secret" ? secretKey : legacyKey();
+    vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", kind === "secret" ? secretKey : "");
+    vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", legacyKey());
+    vi.stubEnv("ANALYTICS_SUPABASE_URL", "https://analytics-project.supabase.co/");
+    expect(getVisitorAnalyticsClientConfig()).toEqual({ enabled: true, origin: "https://nba.example.com" });
+    const incoming = { Authorization: "Bearer caller-token", apikey: "caller-key", Cookie: "caller-cookie", "x-admin-password": "test-admin-password" };
+    const collect = await POST(request(event, incoming)); expect(collect.status).toBe(204);
+    fetchMock.mockResolvedValue(store());
+    const report = await GET(new Request("https://nba.example.com/api/admin/analytics", { headers: incoming }));
+    expect(report.status).toBe(200); expect((await report.clone().json()).status).toBe("ready");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "https://analytics-project.supabase.co/rest/v1/rpc/visitor_analytics_collect",
+      "https://analytics-project.supabase.co/rest/v1/rpc/visitor_analytics_report",
+    ]);
+    for (const [, options] of fetchMock.mock.calls) {
+      expect(options).toMatchObject({ method: "POST", cache: "no-store", redirect: "error" });
+      expect(options.signal).toBeInstanceOf(AbortSignal);
+      expect(options.headers).toEqual({ "Content-Type": "application/json", apikey: key, ...(kind === "legacy" ? { Authorization: `Bearer ${key}` } : {}) });
+      expect(options.body).not.toContain(key);
+    }
+    expect(JSON.stringify(getVisitorAnalyticsClientConfig())).not.toContain(key);
+    expect(await collect.text()).not.toContain(key); expect(await report.text()).not.toContain(key);
+  });
+  it("prefers the modern key without validating or transmitting the unused legacy value", async () => {
+    vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", "invalid-unused-legacy-value");
+    expect((await POST(request())).status).toBe(204);
+    expect(fetchMock.mock.calls[0][1].headers).toEqual({ "Content-Type": "application/json", apikey: secretKey });
+  });
+  it.each(["secret", "legacy"] as const)("treats rejected %s credentials as unavailable without leaking provider errors", async kind => {
+    const key = kind === "secret" ? secretKey : legacyKey();
+    vi.stubEnv("ANALYTICS_SUPABASE_SECRET_KEY", kind === "secret" ? key : "");
+    vi.stubEnv("ANALYTICS_SUPABASE_SERVICE_ROLE_KEY", kind === "legacy" ? key : "");
+    const log = vi.spyOn(console, "error");
+    fetchMock.mockImplementation(() => Promise.resolve(Response.json({ error: `provider detail ${key}` }, { status: 401 })));
+    const response = await POST(request()); expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Analytics unavailable" });
+    const report = await getVisitorAnalyticsReport(7, now); expect(report.status).toBe("unavailable");
+    expect(JSON.stringify(report)).not.toContain(key); expect(log).not.toHaveBeenCalled();
+  });
 });
 describe("bounded privacy-safe collection", () => {
   it.each(["https://evil.example", "https://nba.example.com.evil.test", "null", ""])('rejects Origin "%s" before database', async origin => {

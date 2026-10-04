@@ -16,15 +16,30 @@ export function analyticsResponse(body: unknown, status = 200): Response {
 }
 export function analyticsNoContent(): Response { return new Response(null, { status: 204, headers: PRIVATE_HEADERS }); }
 
-interface AnalyticsConfig { origin: string; databaseUrl: string; key: string }
+interface AnalyticsCredential { kind: "secret" | "legacy-service-role"; key: string }
+interface AnalyticsConfig { origin: string; databaseUrl: string; credential: AnalyticsCredential }
+/** Classify configured credentials only; Supabase must validate their authenticity and permissions. */
+function getCredential(): AnalyticsCredential | null {
+  const secret = process.env.ANALYTICS_SUPABASE_SECRET_KEY;
+  // A configured but invalid modern key must not silently fall back to a legacy credential.
+  if (secret) return secret.length <= 4096 && /^sb_secret_[A-Za-z0-9_-]+$/.test(secret) ? { kind: "secret", key: secret } : null;
+  const legacy = process.env.ANALYTICS_SUPABASE_SERVICE_ROLE_KEY;
+  if (!legacy || legacy.length > 4096 || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(legacy)) return null;
+  try {
+    const payload: unknown = JSON.parse(Buffer.from(legacy.split(".")[1], "base64url").toString("utf8"));
+    if (!payload || typeof payload !== "object" || Array.isArray(payload) || !("role" in payload) || payload.role !== "service_role") return null;
+    return { kind: "legacy-service-role", key: legacy };
+  } catch { return null; }
+}
 /** Never export this object or its credentials to a client component. */
 function getConfig(): AnalyticsConfig | null {
   if (process.env.VISITOR_ANALYTICS_ENABLED !== "true" || process.env.NODE_ENV !== "production") return null;
   if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") return null;
   const origin = process.env.VISITOR_ANALYTICS_ORIGIN;
-  const databaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!origin || !databaseUrl || !key) return null;
+  // Never inherit generic integration variables used by the separate legacy replay store.
+  const databaseUrl = process.env.ANALYTICS_SUPABASE_URL;
+  const credential = getCredential();
+  if (!origin || !databaseUrl || !credential) return null;
   try {
     const site = new URL(origin);
     const database = new URL(databaseUrl);
@@ -33,7 +48,7 @@ function getConfig(): AnalyticsConfig | null {
     if (database.protocol !== "https:" || database.username || database.password || database.search || database.hash || database.port || !["", "/"].includes(database.pathname)) return null;
     // Keys are sent only to the specifically configured Supabase project, never to request-supplied URLs.
     if (!/^[a-z0-9-]+\.supabase\.co$/.test(database.hostname)) return null;
-    return { origin, databaseUrl: database.origin, key };
+    return { origin, databaseUrl: database.origin, credential };
   } catch { return null; }
 }
 /** Safe boolean for a server layout to pass into a disabled-by-default collector. */
@@ -117,7 +132,11 @@ async function rpc(config: AnalyticsConfig, name: "visitor_analytics_collect" | 
   try {
     const response = await fetch(`${config.databaseUrl}/rest/v1/rpc/${name}`, {
       method: "POST", cache: "no-store", redirect: "error", signal: controller.signal,
-      headers: { "Content-Type": "application/json", apikey: config.key, Authorization: `Bearer ${config.key}` },
+      headers: {
+        "Content-Type": "application/json", apikey: config.credential.key,
+        // Modern secret keys are opaque, not JWTs. Only legacy service-role JWTs use Bearer.
+        ...(config.credential.kind === "legacy-service-role" ? { Authorization: `Bearer ${config.credential.key}` } : {}),
+      },
       body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Analytics store unavailable");

@@ -72,13 +72,33 @@ Server-only settings:
 - `VISITOR_ANALYTICS_ENABLED=true`: explicit activation after checks, absent off.
 - `VISITOR_ANALYTICS_ORIGIN=https://exact-approved-production-domain`: no slash,
   port, query, or wildcard; one production origin, never derived from a Host header.
-- `SUPABASE_URL`: existing project URL; fallback `NEXT_PUBLIC_SUPABASE_URL`.
-  This adapter accepts the hosted `https://<project>.supabase.co` domain only.
-- `SUPABASE_SERVICE_ROLE_KEY`: privileged existing legacy server-only key. Never
-  use a `NEXT_PUBLIC_` name, send it to a browser, log it, or put it in the repo.
-  A future secret-key/custom-role adapter must be verified before substitution.
+- `ANALYTICS_SUPABASE_URL`: URL of the separately approved analytics project.
+  Only hosted `https://<project>.supabase.co` is accepted, optionally ending in
+  `/`; paths, credentials, custom ports, queries and fragments are rejected.
+- `ANALYTICS_SUPABASE_SECRET_KEY`: preferred server-only modern `sb_secret_...`
+  key for that analytics project. It is sent in `apikey` only, with no
+  `Authorization` header: modern keys are opaque, not JWTs.
+- `ANALYTICS_SUPABASE_SERVICE_ROLE_KEY`: optional legacy compatibility setting,
+  used only if the dedicated modern setting is absent or empty. It must be a
+  JWT-shaped value whose payload has `role: "service_role"`; it is sent in both
+  `apikey` and `Authorization: Bearer`. Prefer the modern key for a new project.
+  A nonempty but invalid modern setting disables analytics instead of silently
+  falling back. Publishable, anon, user-session and custom-role keys are not
+  supported privileged credentials. Local format/role checks do not verify a
+  key's signature, validity or permissions; Supabase performs that verification.
+- Both credential settings must remain server-only. Never use a `NEXT_PUBLIC_`
+  name, send keys to client code, log them, or put them in source control.
 - `ADMIN_PASSWORD`: existing password, remains in `x-admin-password` for private
   admin reads. No auth/session credential is created by this implementation.
+
+There is deliberately no fallback to `SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, or any public key.
+The generic public URL/anon-key settings belong to the separate legacy replay
+helper and must not be repointed to the analytics project. A hosting integration
+may synchronize a broad generic credential bundle; do not enable that sync if
+it would overwrite existing settings. Configure only the dedicated analytics
+settings through the owner's secure setup after checking the target project.
+This code neither changes replay configuration nor creates credentials.
 
 Collection requires NODE_ENV production; if VERCEL_ENV exists it must also be
 production. Client enablement is only a safe boolean and exact public origin.
@@ -96,16 +116,19 @@ SQL functions are SECURITY INVOKER with an empty search path and fully-qualified
 tables, executable only by service_role. Their RLS-protected private schema has
 no anon/authenticated/public table or function grants and must remain outside
 PostgREST's exposed schemas. There is no anonymous browser-to-Supabase path.
-The existing service_role bypasses RLS; its server secrecy is mandatory. Its
-project-wide authority is why setup is an explicit approved security step.
+Both supported key types resolve to service_role and bypass RLS; server secrecy
+is mandatory. A dedicated variable name does not scope the key's database
+permissions. Its project-wide authority is why setup is an explicit approved
+security step.
 A scoped database role would be preferable if already supported, but is not
 created, guessed, or silently substituted here.
 
 ## Mandatory activation steps (owner-authorized, not performed)
 
-1. Select a project the owner can access; inspect its plan, usage, existing
-   schemas and actual migration workflow. Do not assume old credentials work.
-   Keep any legacy replay storage intact.
+1. Select the owner's separately approved new free analytics project; inspect
+   its plan, usage, schemas and actual migration workflow. Do not assume old
+   credentials work or reuse/repoint the legacy replay project. Keep legacy
+   replay storage and its generic environment settings intact.
 2. Review `visitor-analytics-proposed.sql`; turn it into a migration through the
    real project workflow. This file is deliberately a proposal, not an applied
    schema or a migration-history entry.
@@ -115,10 +138,13 @@ created, guessed, or silently substituted here.
    and authenticated roles cannot SELECT tables or execute either public RPC;
    the designated server role can execute only the intended workflow. Never
    change replay policies just to make analytics work.
-4. Configure required server secrets through the owner's secure setup. Creating
-   credentials or materially expanding persistent access requires separate
-   approval; the user must handle highly sensitive credential transmission. No
-   pasted secrets in chat. No paid plan, upgrade, auto-spend, or paid add-on.
+4. Configure `ANALYTICS_SUPABASE_URL` and the preferred
+   `ANALYTICS_SUPABASE_SECRET_KEY` through the owner's secure setup. Use
+   `ANALYTICS_SUPABASE_SERVICE_ROLE_KEY` only for an explicitly selected legacy
+   credential. Creating credentials or materially expanding persistent access
+   requires separate approval; the user must handle highly sensitive credential
+   transmission. No pasted secrets in chat, generic integration-variable
+   overwrite, paid plan, upgrade, auto-spend, or paid add-on.
 5. Verify free-plan headroom, database/storage quotas and provider backup/log
    retention. Existing hosting and database limits still apply; this is not a
    promise of unlimited or universally free usage.
@@ -139,14 +165,20 @@ created, guessed, or silently substituted here.
    until explicit consent adapter and withdrawal behavior are approved/tested.
    Consent-free compliance is not assumed just because there are no cookies.
 9. With all above confirmed, enable only the approved production origin. Verify
-   real row writes and aggregate reads, not just env values; no public route
-   waits for analytics, and service/database failure must never break the site.
+   real row writes and aggregate reads using the selected key/header branch,
+   not just env values or mocked responses. Verify the actual hosted REST RPC
+   permissions for that project; no public route waits for analytics, and
+   service/database failure must never break the site.
    Disable the env flag to stop collection without touching replay data.
 
 ## Verification boundaries and sources
 
 Local focused tests cover parsing, auth/config/origin guards, date windows,
-privacy normalization, result statuses and mocked database transport. SQL text
+privacy normalization, result statuses and mocked database transport. Credential
+checks cover dedicated-variable isolation, modern/legacy headers for both RPCs,
+modern-key precedence without invalid-key downgrade, public/anon-key rejection,
+URL scoping, and generic error/client responses that never expose keys. These
+fixtures are deliberately unusable synthetic keys, not real credentials. SQL text
 checks can detect contract drift, but are not execution/concurrency/RLS proof.
 Real database tests and activation checks require access to the target database
 and deployment configuration. A successful application build alone does not
@@ -161,3 +193,6 @@ Primary implementation references:
 - https://supabase.com/docs/guides/database/postgres/row-level-security
 - https://supabase.com/docs/guides/api/securing-your-api
 - https://supabase.com/docs/guides/cron
+- https://supabase.com/docs/guides/getting-started/api-keys#known-limitations
+- https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys
+- https://nextjs.org/docs/app/guides/environment-variables
