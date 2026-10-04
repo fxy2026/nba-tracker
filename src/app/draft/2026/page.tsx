@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { GraduationCap, Crown, Sparkles, School, Users } from "lucide-react";
-import { getPlayerIndex, getScheduleAge } from "@/lib/api";
+import { getPlayerIndex } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
@@ -146,7 +146,6 @@ export default async function DraftPage() {
         icon={GraduationCap}
         title={isZh ? "2026 NBA 选秀" : "2026 NBA Draft"}
         subtitle={isZh ? `逐顺位结果 · 共 ${sorted.length} 个签` : `Pick-by-pick results · ${sorted.length} selections`}
-        updatedAt={getScheduleAge()}
       />
 
       {topPick && (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import { formatRelative } from "@/lib/dates";
+import { formatCacheAge, formatRelative } from "@/lib/dates";
 
 interface UpdatedPillProps {
   ageMs: number | null;
@@ -11,7 +11,7 @@ interface UpdatedPillProps {
 }
 
 // Live-updating "X mins ago" badge. Re-renders every 30s so the displayed
-// freshness stays approximately current without forcing a page reload.
+// elapsed time stays approximately current without forcing a page reload.
 export default function UpdatedPill({ ageMs, meaning = "source" }: UpdatedPillProps) {
   const { locale } = useLocale();
   const [tick, setTick] = useState(0);
@@ -25,7 +25,7 @@ export default function UpdatedPill({ ageMs, meaning = "source" }: UpdatedPillPr
   // ageMs grows with wall clock; add elapsed since mount via `tick`.
   const total = ageMs + tick * 30_000;
   const isZh = locale === "zh";
-  const label = formatRelative(total, locale, "freshness");
+  const label = meaning === "cache" ? formatCacheAge(total, locale) : formatRelative(total, locale, "freshness");
 
   return (
     <span
@@ -33,7 +33,7 @@ export default function UpdatedPill({ ageMs, meaning = "source" }: UpdatedPillPr
       title={meaning === "cache" ? (isZh ? "距服务器载入赛程缓存的时间，并非 NBA 来源的更新时间。" : "Time since the server loaded its schedule cache, not when the NBA source was updated.") : (isZh ? "数据更新时间" : "Data freshness")}
     >
       <Clock size={10} aria-hidden="true" />
-      <span>{meaning === "cache" ? (isZh ? "缓存载入于 " : "Cache loaded ") : ""}{label}</span>
+      <span>{meaning === "cache" ? (isZh ? "赛程缓存载入于 " : "Schedule cache loaded ") : ""}{label}</span>
     </span>
   );
 }

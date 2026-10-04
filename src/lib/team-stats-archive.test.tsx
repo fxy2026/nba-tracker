@@ -12,13 +12,14 @@ vi.mock("@/lib/api", async importOriginal => {
   return { ...api, getCurrentSeasonSchedule: current, getRecorded2025SeasonSchedule: recorded, getScheduleAge: () => 1000 };
 });
 vi.mock("@/lib/locale", () => ({ getLocale: locale }));
-vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: "en", t: getTranslations("en") }) }));
+const clientLocale = vi.hoisted(() => ({ value: "en" }));
+vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: clientLocale.value, t: getTranslations(clientLocale.value as "en" | "zh") }) }));
 import Page, { generateMetadata } from "@/app/team-stats/page";
 import Boards from "@/app/team-stats/TeamStatBoards";
 async function render(season?: string | string[]) { return renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ season }) })); }
 beforeEach(async () => {
   vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-04T12:00:00Z"));
-  vi.clearAllMocks(); effects.length = 0; locale.mockResolvedValue("en"); current.mockResolvedValue([]);
+  vi.clearAllMocks(); effects.length = 0; locale.mockResolvedValue("en"); clientLocale.value = "en"; current.mockResolvedValue([]);
   const api = await vi.importActual<typeof import("./api")>("./api"); recorded.mockImplementation(api.getRecorded2025SeasonSchedule);
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -28,14 +29,14 @@ it("keeps current default and its empty state, with an accessible archive escape
   expect(current).toHaveBeenCalledOnce(); expect(current).toHaveBeenCalledWith(); expect(recorded).not.toHaveBeenCalled();
 });
 it.each(["en", "zh"])("shows honest recorded coverage and source limits in %s", async language => {
-  locale.mockResolvedValue(language); const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+  locale.mockResolvedValue(language); clientLocale.value = language; const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
   const html = await render("2025-26"); effects.forEach(effect => effect());
   expect(html).toContain("1,230"); expect(html).toContain("30"); expect(html).toContain("82");
   expect(html).toContain('href="/team-stats"'); expect(html).toContain('aria-current="page"');
   expect(html).toContain(language === "en" ? "not live or recently verified" : "并非实时或近期核验");
   expect(html).toContain(language === "en" ? "Final scores cannot provide" : "存档比分无法计算");
   expect(html).toContain("<details>"); expect(html).not.toContain("<details open");
-  expect(html).not.toContain("Cache loaded"); expect(html).not.toContain("11 categories");
+  expect(html).not.toContain("Schedule cache loaded"); expect(html).not.toContain("赛程缓存载入于"); expect(html).not.toContain("11 categories");
   expect((html.match(/aria-pressed=/g) ?? [])).toHaveLength(3);
   expect(current).not.toHaveBeenCalled(); expect(recorded).toHaveBeenCalledOnce(); expect(fetch).not.toHaveBeenCalled();
 });
@@ -76,4 +77,13 @@ it("derives all three boards exactly from immutable local finals, without networ
 it("keeps recorded metadata season- and source-specific", async () => {
   const metadata = await generateMetadata({ searchParams: Promise.resolve({ season: "2025-26" }) });
   expect(metadata.description).toContain("2025-26 recorded"); expect(metadata.description).not.toContain("FG%");
+});
+
+it.each(["en", "zh"])("labels a warm current empty schedule as cache age in %s", async language => {
+  locale.mockResolvedValue(language); clientLocale.value = language;
+  const html = await render();
+  expect(html).toContain(language === "zh" ? "赛程缓存载入于 刚刚" : "Schedule cache loaded just now");
+  expect(html).not.toContain("刚刚更新");
+  expect(html).not.toContain('title="Data freshness"');
+  expect(html).toContain(language === "zh" ? "并非 NBA 来源的更新时间" : "not when the NBA source was updated");
 });

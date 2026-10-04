@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy, Flame, Target, Crown, Award, BookOpen, History } from "lucide-react";
-import { getScheduleAge } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { finalsResult, seasonRecordExtremes, seasonBestGames, type ExtremeGame, type RecapGame } from "@/lib/season-recap";
@@ -115,7 +114,6 @@ export default async function SeasonRecapPage() {
         subtitle={finals.champion
           ? (isZh ? `${finals.champion} 夺冠 · 总决赛 ${finals.seriesText} 击败 ${finals.runnerUp}` : `${finals.champion} — ${finals.seriesText} in the Finals over the ${finals.runnerUp}`)
           : undefined}
-        updatedAt={getScheduleAge()}
       />
 
       {finals.games.length > 0 && (

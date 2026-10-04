@@ -72,3 +72,13 @@ export function formatRelative(
   if (days < 7) return isZh ? `${days} 天前` : `${days}d ago`;
   return "";
 }
+
+/** Elapsed schedule-cache load time only; never claims provider freshness. */
+export function formatCacheAge(ms: number, locale: string): string {
+  const isZh = locale === "zh";
+  if (ms < 60_000) return isZh ? "刚刚" : "just now";
+  if (ms < 60 * 60_000) return minutesLabel(Math.floor(ms / 60_000), isZh);
+  if (ms < 24 * 60 * 60_000) return hoursLabel(Math.floor(ms / (60 * 60_000)), isZh);
+  const days = Math.floor(ms / (24 * 60 * 60_000));
+  return isZh ? `${days} 天前` : `${days}d ago`;
+}

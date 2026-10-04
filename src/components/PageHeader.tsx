@@ -8,7 +8,8 @@ interface PageHeaderProps {
   subtitle?: string;
   action?: React.ReactNode;
   className?: string;
-  // ms since underlying data was fetched. Renders a "Updated X ago" pill when set.
+  // Elapsed ms since this server loaded its schedule cache (getScheduleAge).
+  // This is not a provider update timestamp or a claim of data freshness.
   updatedAt?: number | null;
 }
 
@@ -27,7 +28,7 @@ export default function PageHeader({ eyebrow, icon: Icon, title, subtitle, actio
         </h1>
         {subtitle && <p className="text-sm text-text-secondary mt-1.5 text-pretty">{subtitle}</p>}
         {updatedAt !== undefined && updatedAt !== null && (
-          <div className="mt-1.5"><UpdatedPill ageMs={updatedAt} /></div>
+          <div className="mt-1.5"><UpdatedPill ageMs={updatedAt} meaning="cache" /></div>
         )}
       </div>
       {action && <div className="max-w-full min-w-0 sm:shrink-0">{action}</div>}
