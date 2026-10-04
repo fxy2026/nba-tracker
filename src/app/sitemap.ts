@@ -1,18 +1,19 @@
 import type { MetadataRoute } from "next";
 import { TEAM_META } from "@/lib/teams";
-import { getFullSchedule } from "@/lib/api";
-import { isPlayoff, isPreseason } from "@/lib/games";
-import { getPlayerIdentityDirectory } from "@/lib/player-identity-server";
+import { OFFICIAL_PLAYER_IDENTITIES } from "@/lib/official-player-registry";
+import { getSitemapGameCatalog } from "@/lib/sitemap-catalog";
 import { GAME_DECADES, SEASON_DECADES } from "@/lib/decades";
 
 const BASE = "https://nba.xpy.me";
 
 type ChangeFreq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
-type SitemapEntry = { url: string; changeFrequency: ChangeFreq; priority: number; lastModified?: Date };
+type SitemapEntry = MetadataRoute.Sitemap[number];
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+// Bundled catalogs change on deployment. Keep this metadata route prerendered
+// and fail the build if a future edit accidentally adds request-time data.
+export const dynamic = "error";
 
+export default function sitemap(): MetadataRoute.Sitemap {
   // Core, high-priority pages updated frequently
   const live: SitemapEntry[] = [
     { url: BASE, changeFrequency: "hourly", priority: 1 },
@@ -67,6 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/by-position`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE}/by-country`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/by-college`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/shot-archive`, changeFrequency: "monthly", priority: 0.6 },
   ];
 
   // News & history
@@ -84,7 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/explore`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/glossary`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/quiz`, changeFrequency: "weekly", priority: 0.4 },
-    { url: `${BASE}/favorites`, changeFrequency: "weekly", priority: 0.3 },
     { url: `${BASE}/about`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
@@ -95,68 +96,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Dynamic: every individual game page (regular season + playoffs only, finished games
-  // have the most SEO value because they have full box scores; upcoming games are useful too).
-  const gamePages: SitemapEntry[] = [];
-  const seriesPages: SitemapEntry[] = [];
-  try {
-    const schedule = await getFullSchedule();
-    // Playoff series hubs — the 9-char series id is a playoff gameId minus
-    // its final game digit. Only series with at least one finished game are
-    // emitted, which skips TBD/ifNecessary placeholder rows.
-    const seriesLatest = new Map<string, Date | undefined>();
-    for (const gd of schedule) {
-      for (const g of gd.games) {
-        // Skip preseason (001) — those are exhibition vs international teams
-        if (isPreseason(g.gameId)) continue;
-        // Skip "if necessary" placeholder games (ghost games)
-        if (g.ifNecessary === true && g.gameStatus === 1) continue;
-        // Finished games freeze on their game date — feeding Google the real
-        // date stops it treating every box score as "updated today" and lets
-        // search results show accurate recency.
-        const lastModified = g.gameStatus === 3 && g.gameDateTimeUTC
-          ? new Date(g.gameDateTimeUTC)
-          : undefined;
-        gamePages.push({
-          url: `${BASE}/game/${g.gameId}`,
-          changeFrequency: g.gameStatus === 3 ? "monthly" : "daily",
-          priority: g.gameStatus === 3 ? 0.5 : 0.6,
-          lastModified,
-        });
-        if (g.gameStatus === 3 && isPlayoff(g.gameId)) {
-          const seriesId = g.gameId.slice(0, 9);
-          const prev = seriesLatest.get(seriesId);
-          if (lastModified && (!prev || lastModified > prev)) seriesLatest.set(seriesId, lastModified);
-          else if (!seriesLatest.has(seriesId)) seriesLatest.set(seriesId, undefined);
-        }
-      }
-    }
-    for (const [seriesId, lastModified] of seriesLatest) {
-      seriesPages.push({
-        url: `${BASE}/series/${seriesId}`,
-        changeFrequency: "weekly",
-        priority: 0.5,
-        lastModified,
-      });
-    }
-  } catch {
-    // If schedule fetch fails during build, just skip game pages — they'll be indexed via crawl
-  }
+  // The same bundled schedule and validated observed finals used by game
+  // pages. Never fetch the NBA/ESPN feed to discover URLs while building or
+  // serving sitemap.xml, and never invent IDs for the planned-fixture PDF.
+  const catalog = getSitemapGameCatalog();
+  const gamePages: SitemapEntry[] = catalog.games.map((game) => ({
+    url: `${BASE}/game/${game.id}`,
+    changeFrequency: game.finished ? "monthly" : "daily",
+    priority: game.finished ? 0.5 : 0.6,
+  }));
+  const seriesPages: SitemapEntry[] = catalog.seriesIds.map((id) => ({
+    url: `${BASE}/series/${id}`,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
 
-  // Canonical profiles for every known current and historical identity
-  const playerPages: SitemapEntry[] = [];
-  try {
-    const players = await getPlayerIdentityDirectory();
-    for (const p of players) {
-      playerPages.push({
-        url: `${BASE}/player/${p.id}`,
-        changeFrequency: "weekly",
-        priority: 0.5,
-      });
-    }
-  } catch {
-    // If player index fetch fails during build, skip — they'll be indexed via crawl
-  }
+  // Every canonical ID in the reviewed registry resolves to a player profile.
+  // This registry covers the bundled current, historical-shot and legend IDs;
+  // coverage tests require it to remain a superset when those catalogs change.
+  // It needs no API fallback or optional compressed shooting archive.
+  const playerPages: SitemapEntry[] = OFFICIAL_PLAYER_IDENTITIES.map((player) => ({
+    url: `${BASE}/player/${player.id}`,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
 
   // Iconic seasons + iconic games — gallery index pages. Individual cards
   // deep-link to /compare or /game from inside the gallery.
@@ -179,6 +142,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
+  // No source tracks a page's last significant content change. Event dates,
+  // registry retrieval dates and the current clock are not that timestamp.
+  // Omit lastModified until a genuine per-page revision record is available.
   return [
     ...live,
     ...standings,
@@ -191,5 +157,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...seriesPages,
     ...playerPages,
     ...iconicSeasonsIndex,
-  ].map((p) => ({ ...p, lastModified: p.lastModified || now }));
+  ];
 }

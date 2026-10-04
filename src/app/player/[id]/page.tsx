@@ -220,10 +220,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </Link>
       </div>
 
+      {/* Link keeps hash entries restorable when leaving and returning to this player. */}
       <nav aria-label={isZh ? "球员页导航" : "Player page navigation"} className="mt-3 flex flex-wrap gap-2">
-        <a href="#overview" className="chip min-h-11 inline-flex items-center">{isZh ? "概览" : "Overview"}</a>
-        <a href="#shooting" className="chip min-h-11 inline-flex items-center">{isZh ? "投篮分布" : "Shooting"}</a>
-        <a href="#career" className="chip min-h-11 inline-flex items-center">{isZh ? "生涯数据" : "Career"}</a>
+        <Link href="#overview" prefetch={false} className="chip min-h-11 inline-flex items-center">{isZh ? "概览" : "Overview"}</Link>
+        <Link href="#shooting" prefetch={false} className="chip min-h-11 inline-flex items-center">{isZh ? "投篮分布" : "Shooting"}</Link>
+        <Link href="#career" prefetch={false} className="chip min-h-11 inline-flex items-center">{isZh ? "生涯数据" : "Career"}</Link>
       </nav>
 
       {/* ─── Bento Hero ─────────────────────────────────────── */}

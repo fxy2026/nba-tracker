@@ -69,11 +69,11 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
         </div>
       </div>
       <nav aria-label={isZh ? "球员页导航" : "Player page navigation"} className="mt-5 flex flex-wrap gap-2">
-        <a href="#overview" className="chip min-h-11 inline-flex items-center gap-1.5"><UserRound size={14} />{isZh ? "概览" : "Overview"}</a>
-        {identityOnly ? <a href="#shooting" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "数据可用情况" : "Data availability"}</a> : <>
-          {historicalCareer && <a href="#career" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</a>}
-          <a href="#shooting" className="chip min-h-11 inline-flex items-center gap-1.5"><Target size={14} />{isZh ? "投篮分布" : "Shooting"}</a>
-          {!historicalCareer && <a href="#career" className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</a>}
+        <Link href="#overview" prefetch={false} className="chip min-h-11 inline-flex items-center gap-1.5"><UserRound size={14} />{isZh ? "概览" : "Overview"}</Link>
+        {identityOnly ? <Link href="#shooting" prefetch={false} className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "数据可用情况" : "Data availability"}</Link> : <>
+          {historicalCareer && <Link href="#career" prefetch={false} className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</Link>}
+          <Link href="#shooting" prefetch={false} className="chip min-h-11 inline-flex items-center gap-1.5"><Target size={14} />{isZh ? "投篮分布" : "Shooting"}</Link>
+          {!historicalCareer && <Link href="#career" prefetch={false} className="chip min-h-11 inline-flex items-center gap-1.5"><Database size={14} />{isZh ? "生涯数据" : "Career"}</Link>}
         </>}
       </nav>
     </header>

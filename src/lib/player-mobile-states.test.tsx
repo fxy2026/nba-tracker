@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PlayerIdentity } from "./player-identity";
@@ -51,7 +52,8 @@ describe.each(["en", "zh"] as const)("archived profile navigation in %s", locale
     const tree = ArchivedPlayerProfile({ player: { ...player, shotArchiveStatus }, locale, catalog: [], initialSelection: null, initialResource: null });
     const all = nodes(tree);
     const nav = all.find(node => node.type === "nav")!;
-    const links = nodes(nav).filter(node => node.type === "a");
+    const links = nodes(nav).filter(node => node.type === Link);
+    expect(links.every(link => link.props.prefetch === false)).toBe(true);
     expect(links.map(link => link.props.href)).toEqual(["#overview", "#shooting"]);
     expect(text(links[1])).toBe(locale === "zh" ? "数据可用情况" : "Data availability");
     expect(all.filter(node => node.props.id === "shooting")).toHaveLength(1);
@@ -65,7 +67,9 @@ describe.each(["en", "zh"] as const)("archived profile navigation in %s", locale
       initialResource: null,
     });
     const nav = nodes(tree).find(node => node.type === "nav")!;
-    expect(nodes(nav).filter(node => node.type === "a").map(node => node.props.href)).toEqual(["#overview", "#shooting", "#career"]);
+    const links = nodes(nav).filter(node => node.type === Link);
+    expect(links.every(link => link.props.prefetch === false)).toBe(true);
+    expect(links.map(node => node.props.href)).toEqual(["#overview", "#shooting", "#career"]);
   });
 });
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { isValidElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -85,6 +86,10 @@ describe("one canonical player home", () => {
   });
   it("preserves current rich stats props and places shooting before the long career table", async () => {
     const tree = await page(201939); const nodes = elements(tree);
+    const nav = nodes.find(node => node.type === "nav")!;
+    const sectionLinks = elements(nav).filter(node => node.type === Link);
+    expect(sectionLinks.map(node => node.props.href)).toEqual(["#overview", "#shooting", "#career"]);
+    expect(sectionLinks.every(node => node.props.prefetch === false)).toBe(true);
     expect(nodes.filter(node => node.props.playerId === 201939 && node.props.playerName === "Stephen Curry" && node.props.teamTricode === "GSW")).toHaveLength(2);
     expect(nodes.findIndex(node => node.props.id === "shooting")).toBeLessThan(nodes.findIndex(node => node.props.id === "career"));
     expect(nodes.find(node => node.props.initialResource)?.props.initialResource).toMatchObject({ status: "ready", data: { totals: { fga: 799 } } });

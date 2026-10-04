@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fira_Sans, Fira_Code } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import SkipToContent from "@/components/SkipToContent";
 import MobileNav from "@/components/MobileNav";
 import BackToTop from "@/components/BackToTop";
 import SiteFooter from "@/components/SiteFooter";
@@ -123,9 +124,9 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
           <ToastProvider>
           {/* Skip to main content for accessibility */}
-          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-lg">
+          <SkipToContent>
             {t.nav.skipToContent}
-          </a>
+          </SkipToContent>
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -161,7 +162,7 @@ export default async function RootLayout({
             }}
           />
           <Navbar />
-          <main id="main-content" className="flex-1 relative">
+          <main id="main-content" tabIndex={-1} className="flex-1 relative">
             {/* Global aurora mesh — visible behind every page, gives glass tiles something to refract.
                 Perf: changed from `fixed` (composites with every scroll on slow GPUs) to a static
                 absolute element scoped to top 70vh so the browser can paint it once and forget. */}
