@@ -338,6 +338,47 @@ describe.each(locales)('click-first shot details (%s)', locale => {
     }
   });
 
+  it.each(spatialViews)('announces distinct bin IDs for equal-count neighboring %s cells without moving focus', view => {
+    const app = mount({ locale, initialView: view });
+    const from = bins.find(bin => bin.q === -7 && bin.r === 8)!;
+    const to = bins.find(bin => bin.q === -6 && bin.r === 8)!;
+    expect(from).toBeDefined(); expect(to).toBeDefined();
+    expect([from.fgm, from.fga, to.fgm, to.fga]).toEqual([1, 3, 1, 3]);
+    expect(displayPct(fgRate(from))).toBe('33.3%');
+    const fixtureBefore = JSON.stringify(data);
+    let tree = app.render();
+    clickBin(tree, from);
+    tree = app.render();
+    const courtHost = host(court(tree));
+    const statusId = liveStatus(tree).props;
+    const expected = (bin: ShotMapBin) => locale === 'en'
+      ? `Spatial bin ID (${bin.q}, ${bin.r}): 33.3%, 1 / 3`
+      : `空间分箱编号（${bin.q}，${bin.r}）: 33.3%, 1 / 3`;
+    const before = text(liveStatus(tree));
+    expect(before).toBe(expected(from));
+    expectBinDetails(tree, from, locale);
+    expect(key(tree, 'ArrowRight').preventDefault).toHaveBeenCalledOnce();
+    tree = app.render();
+    const after = text(liveStatus(tree));
+    expect(after).toBe(expected(to));
+    expect(after).not.toBe(before);
+    expectBinDetails(tree, to, locale);
+    expect(host(court(tree))).toBe(courtHost);
+    expect(courtHost.focus).not.toHaveBeenCalled();
+    expect(liveStatus(tree).props.role).toBe(statusId.role);
+    expect(liveStatus(tree).props['aria-live']).toBe(statusId['aria-live']);
+    expect(`${before} ${after}`).not.toMatch(/feet|meters|ft|英尺|米|Shot location|投篮位置/);
+    // Returning to the first bin restores its identifier, rather than announcing
+    // an artificial navigation counter or implying an individual shot location.
+    key(tree, 'ArrowLeft');
+    tree = app.render();
+    expect(text(liveStatus(tree))).toBe(before);
+    expectBinDetails(tree, from, locale);
+    expect(JSON.stringify(data)).toBe(fixtureBefore);
+    key(tree, 'Escape');
+    expect(text(liveStatus(app.render()))).toBe('');
+  });
+
   it('opens zones with pointer, Enter and Space, preserves the zone list and clears with Escape', () => {
     const app = mount({ locale, initialView: 'zones' });
     let tree = app.render();

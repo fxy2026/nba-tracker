@@ -47,7 +47,9 @@ function ChartPanel({data,zones,view,locale,spatial,aggregate,onRetry,selection}
  const active=view==='zones'?zones:data,resource=view==='zones'?aggregate:spatial;
  const selectedRow=view==='zones'?selectedZone:selectedBin;
  useEffect(()=>{if(selectedRow)detailRef.current?.scrollIntoView({block:'nearest'});},[selectedRow]);
- const announcement=selectedRow?`${view==='zones'&&selectedZone?zoneName(selectedZone.id,locale):(zh?'投篮位置':'Shot location')}: ${displayPct(fgRate(selectedRow))}, ${selectedRow.fgm} / ${selectedRow.fga}`:'';
+ // Axial indices identify an aggregate bin, not physical units or an individual shot.
+ const selectedLabel=view==='zones'&&selectedZone?zoneName(selectedZone.id,locale):selectedBin?(zh?`空间分箱编号（${selectedBin.q}，${selectedBin.r}）`:`Spatial bin ID (${selectedBin.q}, ${selectedBin.r})`):'';
+ const announcement=selectedRow?`${selectedLabel}: ${displayPct(fgRate(selectedRow))}, ${selectedRow.fgm} / ${selectedRow.fga}`:'';
  function dismiss(){setSelected(null);courtRef.current?.focus({preventScroll:true});courtRef.current?.scrollIntoView({block:'nearest'});}
  if(!active){const wrong=resource.status==='ready',status=wrong?'error':resource.status;return <div className={styles.state} aria-busy={status==='loading'} role={status==='error'?'alert':'status'}>
    <h3>{status==='loading'?(zh?'正在载入投篮记录':'Loading the shot archive'):status==='error'?(zh?'暂时无法载入':'Unable to load this dataset'):(zh?'这个赛季暂无此项数据':'This view is not available for this season')}</h3>

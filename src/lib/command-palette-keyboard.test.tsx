@@ -1,4 +1,6 @@
-import { isValidElement, type ReactNode } from 'react';
+import { cloneElement, isValidElement, type ReactNode } from 'react';
+import en from '@/locales/en';
+import zh from '@/locales/zh';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type Effect = { run: () => void | (() => void); deps?: readonly unknown[]; cleanup?: () => void };
@@ -10,15 +12,17 @@ type Hook =
   | { kind: 'memo'; value: unknown; deps: readonly unknown[] }
   | { kind: 'id'; value: string };
 const runtime = vi.hoisted(() => ({
-  hooks: [] as Hook[], cursor: 0, effects: [] as { index: number; effect: Effect; old?: Effect }[],
+  hooks: [] as Hook[], cursor: 0, effects: [] as { index: number; effect: Effect; old?: Effect; hooks: Hook[] }[],
   dirty: true, mounted: true, lateSetters: 0,
 }));
 
 const context = vi.hoisted(() => ({ locale: 'en', path: '/search', router: { push: vi.fn() } }));
 vi.mock('react-dom', () => ({ createPortal: (node: ReactNode) => node }));
 vi.mock('next/navigation', () => ({ usePathname: () => context.path, useRouter: () => context.router }));
-vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: context.locale }) }));
+vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: context.locale, t: context.locale === 'zh' ? zh : en }) }));
 import CommandPalette, { type PaletteGroup } from '@/components/CommandPalette';
+import Navbar from '@/components/Navbar';
+import MobileNav from '@/components/MobileNav';
 
 type Props = Record<string, unknown>;
 type Key = { key: string; keyCode: number; target: FixtureNode; shiftKey: boolean; isComposing: boolean; defaultPrevented: boolean; preventDefault: ReturnType<typeof vi.fn> };
@@ -27,6 +31,7 @@ class FixtureNode {
   props: Props = {};
   offsetParent: object | null = {};
   style = { overflow: '' };
+  scrollTop = 0;
   constructor(public tag: string, public name = '') {}
   contains(target: unknown): boolean { return this === target || this.children.some(child => child.contains(target)); }
   hasAttribute(name: string) { return this.props[name] !== undefined && this.props[name] !== false; }
@@ -38,13 +43,15 @@ let tree: ReactNode;
 let open: boolean;
 let groups: PaletteGroup[];
 let close: ReturnType<typeof vi.fn<() => void>>;
-let doc: { activeElement: FixtureNode | null; body: FixtureNode; addEventListener: ReturnType<typeof vi.fn>; removeEventListener: ReturnType<typeof vi.fn> };
+let doc: { activeElement: FixtureNode | null; body: FixtureNode; documentElement: { scrollTop: number }; addEventListener: ReturnType<typeof vi.fn>; removeEventListener: ReturnType<typeof vi.fn> };
 let trigger: FixtureNode;
 let outside: FixtureNode;
 let hosts: Map<string, FixtureNode>;
 let listeners: Set<(event: Key) => void>;
 let nativeDestinations: string[];
 let triggerAttached: boolean;
+let composedOwners: boolean;
+let componentHooks: Map<string, Hook[]>;
 let historyListeners: Set<() => void>;
 let historyEntries: string[];
 let historyIndex: number;
@@ -66,8 +73,9 @@ function commitHosts(node: ReactNode, position = 'root'): FixtureNode[] {
   if (Array.isArray(node)) return node.flatMap((child, i) => commitHosts(child, `${position}.${i}`));
   if (!isValidElement<Props>(node)) return [];
   const tag = typeof node.type === 'string' ? node.type : typeof node.props.href === 'string' ? 'a' : 'icon';
-  const key = typeof node.props.href === 'string' ? `a:${node.props.href}`
+  const identity = typeof node.props.href === 'string' ? `a:${node.props.href}`
     : ['input', 'button'].includes(tag) ? `${tag}:${node.props['aria-label'] ?? position}` : `${tag}:${position}`;
+  const key = composedOwners ? `${position.split(':')[0]}:${identity}` : identity;
   let host = hosts.get(key);
   if (!host) { host = new FixtureNode(tag, key); hosts.set(key, host); }
   host.props = node.props; host.children = commitHosts(node.props.children as ReactNode, `${position}.child`);
@@ -75,12 +83,36 @@ function commitHosts(node: ReactNode, position = 'root'): FixtureNode[] {
   if (ref && typeof ref === 'object' && 'current' in ref) (ref as { current: unknown }).current = host;
   return [host];
 }
+function renderInstance(key: string, render: () => ReactNode) {
+  let hooks = componentHooks.get(key);
+  if (!hooks) { hooks = []; componentHooks.set(key, hooks); }
+  runtime.hooks = hooks; runtime.cursor = 0;
+  return render();
+}
+function resolvePalettes(node: ReactNode, position: string): ReactNode {
+  if (Array.isArray(node)) return node.map((child, i) => resolvePalettes(child, `${position}.${i}`));
+  if (!isValidElement<Props>(node)) return node;
+  if (node.type === CommandPalette) {
+    return renderInstance(`${position}:palette`, () => CommandPalette(node.props as unknown as Parameters<typeof CommandPalette>[0]));
+  }
+  return cloneElement(node, {}, resolvePalettes(node.props.children as ReactNode, `${position}.child`));
+}
+const hookSets = () => composedOwners ? [...componentHooks.values()] : [runtime.hooks];
 function flush() {
   for (let renders = 0; runtime.dirty; renders++) {
     if (renders > 40) throw new Error('Effects did not settle');
     runtime.dirty = false; runtime.cursor = 0; runtime.effects = [];
-    tree = CommandPalette({ open, onClose: close, groups });
-    doc.body.children = [...(triggerAttached ? [trigger] : []), ...commitHosts(tree), outside];
+    if (composedOwners) {
+      // Match RootLayout's two persistent navigation owners. Their real state
+      // setters supply each palette's open/onClose props; no test-owned boolean.
+      const desktop = resolvePalettes(renderInstance('desktop', Navbar), 'desktop');
+      const mobile = resolvePalettes(renderInstance('mobile', MobileNav), 'mobile');
+      tree = [desktop, mobile];
+      doc.body.children = [...commitHosts(desktop, 'desktop:root'), ...commitHosts(mobile, 'mobile:root'), outside];
+    } else {
+      tree = CommandPalette({ open, onClose: close, groups });
+      doc.body.children = [...(triggerAttached ? [trigger] : []), ...commitHosts(tree), outside];
+    }
     // Removing a focused native control falls back to body unless its handler
     // explicitly moves focus to a surviving element before this commit.
     if (doc.activeElement && !doc.body.contains(doc.activeElement)) doc.activeElement = doc.body;
@@ -88,7 +120,7 @@ function flush() {
     for (const pending of effects) pending.old?.cleanup?.();
     for (const pending of effects) {
       const cleanup = pending.effect.run();
-      runtime.hooks[pending.index] = { kind: 'effect', value: { ...pending.effect, cleanup: cleanup || undefined } };
+      pending.hooks[pending.index] = { kind: 'effect', value: { ...pending.effect, cleanup: cleanup || undefined } };
     }
   }
 }
@@ -105,11 +137,11 @@ function setLocation(href: string) {
   context.path = win.location.pathname;
   runtime.dirty = true;
 }
-function travel(delta: number) {
+function travel(delta: number, dispatchPopstate = true) {
   const next = historyIndex + delta;
   if (next < 0 || next >= historyEntries.length) return;
   historyIndex = next; setLocation(historyEntries[next]);
-  for (const listener of [...historyListeners]) listener();
+  if (dispatchPopstate) for (const listener of [...historyListeners]) listener();
   flush();
 }
 function clientNavigate(href: string) { win.history.pushState(null, '', href); flush(); }
@@ -135,11 +167,11 @@ function enter(target: FixtureNode) {
 }
 function unmount() {
   if (!runtime.mounted) return;
-  for (const slot of runtime.hooks) if (slot.kind === 'effect') slot.value.cleanup?.();
+  for (const hooks of hookSets()) for (const slot of hooks) if (slot.kind === 'effect') slot.value.cleanup?.();
   runtime.mounted = false;
 }
 function replayEffects() {
-  const effects = runtime.hooks.filter((h): h is Extract<Hook, { kind: 'effect' }> => h.kind === 'effect');
+  const effects = hookSets().flat().filter((h): h is Extract<Hook, { kind: 'effect' }> => h.kind === 'effect');
   for (const slot of effects) slot.value.cleanup?.();
   for (const slot of effects) slot.value.cleanup = slot.value.run() || undefined;
   flush();
@@ -147,7 +179,7 @@ function replayEffects() {
 
 beforeEach(() => {
   runtime.hooks = []; runtime.cursor = 0; runtime.effects = []; runtime.dirty = true;
-  runtime.mounted = true; runtime.lateSetters = 0;
+  runtime.mounted = true; runtime.lateSetters = 0; composedOwners = false; componentHooks = new Map();
   vi.useFakeTimers(); context.locale = 'en'; context.path = '/search'; context.router.push.mockReset();
   trigger = new FixtureNode('button', 'More'); outside = new FixtureNode('button', 'outside');
   hosts = new Map(); listeners = new Set(); nativeDestinations = []; triggerAttached = true;
@@ -168,11 +200,12 @@ beforeEach(() => {
     removeEventListener: vi.fn((name: string, listener: () => void) => { if (name === 'popstate') historyListeners.delete(listener); }),
   };
   doc = {
-    activeElement: trigger, body: new FixtureNode('body'),
+    activeElement: trigger, body: new FixtureNode('body'), documentElement: { scrollTop: 0 },
     addEventListener: vi.fn((name: string, listener: (e: Key) => void) => { if (name === 'keydown') listeners.add(listener); }),
     removeEventListener: vi.fn((name: string, listener: (e: Key) => void) => { if (name === 'keydown') listeners.delete(listener); }),
   };
   doc.body.style.overflow = 'auto';
+  vi.stubGlobal('requestAnimationFrame', (callback: () => void) => { callback(); return 0; });
   vi.stubGlobal('document', doc); vi.stubGlobal('window', win); vi.stubGlobal('Node', FixtureNode);
   groups = [{ title: 'Common', color: '#123456', items: [{ href: '/compare', label: 'Compare players' }, { href: '/standings', label: 'Standings' }, { href: '/favorites', label: 'Favorites' }] }];
   open = false; close = vi.fn(() => { open = false; runtime.dirty = true; }); flush();
@@ -331,7 +364,7 @@ vi.mock('react', async original => ({
     const slot = runtime.hooks[index];
     const old = slot?.kind === 'effect' ? slot.value : undefined;
     if (!old || !deps || deps.length !== old.deps?.length || deps.some((d, i) => !Object.is(d, old.deps?.[i]))) {
-      runtime.effects.push({ index, effect: { run, deps }, old });
+      runtime.effects.push({ index, effect: { run, deps }, old, hooks: runtime.hooks });
     }
   },
 }));
@@ -436,5 +469,72 @@ describe('CommandPalette persistent-layout history dismissal', () => {
     win.history.back();
     expect(restoreFocus).not.toHaveBeenCalled(); expect(doc.activeElement).toBe(doc.body);
     expect(open).toBe(false); expect(doc.body.style.overflow).toBe('auto');
+  });
+});
+
+
+// The first history fixture proved only that a synthetic popstate closed an
+// externally controlled palette. These regressions retain the actual Navbar
+// and MobileNav state owners as the shared RootLayout does, and exercise a
+// committed usePathname change independently of native callback delivery.
+function mountNavigationOwners(href: string) {
+  unmount(); runtime.mounted = true; composedOwners = true;
+  runtime.hooks = []; componentHooks = new Map();
+  setLocation(href); flush();
+}
+function navMore(owner: 'desktop' | 'mobile') {
+  const name = owner === 'desktop' ? 'Main navigation' : 'Mobile navigation';
+  const nav = [...hosts.values()].find(node => node.isConnected && node.props['aria-label'] === name)!;
+  return nav.querySelectorAll().find(node => node.props['aria-haspopup'] === 'dialog' && String(node.props['aria-label']).includes(context.locale === 'zh' ? '更多' : 'More'))!;
+}
+const visibleDialogs = () => [...hosts.values()].filter(node => node.isConnected && node.props.role === 'dialog');
+async function openOwner(owner: 'desktop' | 'mobile') {
+  const button = navMore(owner); button.focus(); (button.props.onClick as () => void)(); flush(); await timers();
+  expect(visibleDialogs()).toHaveLength(1); expect(navMore(owner).props['aria-expanded']).toBe(true);
+  return button;
+}
+
+describe.each(['desktop', 'mobile'] as const)('shared root-layout %s palette route commits', owner => {
+  it.each(['en', 'zh'])('dismisses different-path Back/Forward on the committed pathname even without popstate (%s)', async locale => {
+    context.locale = locale; mountNavigationOwners('/schedule-heatmap');
+    clientNavigate('/schedule-heatmap'); clientNavigate('/back-to-back');
+    const retainedInstances = new Map(componentHooks);
+    const entries = [...historyEntries], pushes = win.history.pushState.mock.calls.length;
+    const button = await openOwner(owner); await type('heatmap');
+    travel(-1, false); // Router context commit is independent from a native event.
+    expect(context.path).toBe('/schedule-heatmap'); expect(visibleDialogs()).toHaveLength(0);
+    expect(navMore(owner).props['aria-expanded']).toBe(false); expect(doc.activeElement).toBe(button);
+    expect(doc.body.style.overflow).toBe('auto'); expect(historyListeners.size).toBe(0);
+    await timers(); expect(visibleDialogs()).toHaveLength(0);
+    travel(1, false); // Returning to the opening path must not resurrect the menu.
+    expect(context.path).toBe('/back-to-back'); expect(visibleDialogs()).toHaveLength(0);
+    travel(-1, false); await openOwner(owner);
+    expect(input().props.value).toBe('');
+    travel(1, false);
+    expect(context.path).toBe('/back-to-back'); expect(visibleDialogs()).toHaveLength(0);
+    for (const [key, hooks] of retainedInstances) expect(componentHooks.get(key)).toBe(hooks);
+    expect(historyEntries).toEqual(entries); expect(win.history.pushState).toHaveBeenCalledTimes(pushes);
+    expect(win.history.replaceState).not.toHaveBeenCalled(); expect(context.router.push).not.toHaveBeenCalled();
+    expect(historyListeners.size).toBe(0); expect(doc.body.style.overflow).toBe('auto');
+    await openOwner(owner); enter(closeButton()); expect(visibleDialogs()).toHaveLength(0);
+  });
+  it('retains query-only native traversal cleanup with both owners mounted', async () => {
+    mountNavigationOwners('/standings?season=2023-24');
+    clientNavigate('/standings?season=2023-24'); clientNavigate('/standings?season=2024-25');
+    await openOwner(owner); win.history.back();
+    expect(win.location.search).toBe('?season=2023-24'); expect(visibleDialogs()).toHaveLength(0);
+    expect(navMore(owner).props['aria-expanded']).toBe(false); expect(historyListeners.size).toBe(0);
+    await openOwner(owner); win.history.forward();
+    expect(win.location.search).toBe('?season=2024-25'); expect(visibleDialogs()).toHaveLength(0);
+    expect(doc.body.style.overflow).toBe('auto'); expect(context.router.push).not.toHaveBeenCalled();
+  });
+  it('does not close on same-path rerenders, callback replacement or StrictMode effect replay', async () => {
+    mountNavigationOwners('/back-to-back'); const button = await openOwner(owner);
+    await type('heatmap'); runtime.dirty = true; flush();
+    expect(visibleDialogs()).toHaveLength(1); expect(input().props.value).toBe('heatmap');
+    replayEffects(); await timers();
+    expect(visibleDialogs()).toHaveLength(1); expect(historyListeners.size).toBe(1);
+    key(input(), 'Escape'); expect(visibleDialogs()).toHaveLength(0); expect(doc.activeElement).toBe(button);
+    expect(historyListeners.size).toBe(0); expect(doc.body.style.overflow).toBe('auto');
   });
 });

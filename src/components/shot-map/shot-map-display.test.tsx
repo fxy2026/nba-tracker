@@ -9,6 +9,7 @@ import type { SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from '@/lib/se
 import { courtBasicGeometry, courtBasicStatisticalDividers } from '@/lib/season-heatmap-court-geometry';
 import RefinedShotExplorer from './RefinedShotExplorer';
 import ShotMapCourt, { ShotMapLegend } from './ShotMapCourt';
+import CareerArchiveCourt from '@/app/lab/career-arc/CareerArchiveCourt';
 import { axialCenter, binColor, binDelta, displayPct, fgRate, hexPoints, hexRadius, projectShot, zoneColor, zoneBand, zoneReference, SHOT_MAP_PALETTE, SHOT_MAP_ZONE_PALETTE } from './shot-map-display';
 let data:SeasonShotMapDTO,zones:SeasonHeatmapRendererDTO;
 beforeAll(async()=>{
@@ -44,6 +45,36 @@ describe('exact spatial encoding',()=>{
  });
 });
 describe('refined product states and provenance',()=>{
+ it.each(['en','zh'] as const)('names aggregate-only zones accurately without spatial data (%s)',locale=>{
+  const title=`${locale==='en'?'Source-zone aggregate distribution':'来源分区汇总分布'} · ${zones.season}`;
+  const description=locale==='en'?'Illustrative source court categories.':'来源球场分区示意。';
+  const renders=[
+   renderToStaticMarkup(<ShotMapCourt data={null} zones={zones} view="zones" locale={locale} selected={null} onSelect={()=>{}}/>),
+   explorer({locale,initialView:'zones',spatial:{status:'unavailable'}}),
+   renderToStaticMarkup(<CareerArchiveCourt data={zones} locale={locale} selectedId={null} onSelect={()=>{}} onDismissDetails={()=>{}} detailsId="career-details"/>),
+  ];
+  for(const html of renders){
+   expect(html).toContain(`>${title}</title>`);
+   expect(html).toContain(description);
+   expect(html).not.toContain(locale==='en'?'Shot-coordinate distribution':'逐次投篮坐标分布');
+   expect(html).not.toContain('data-spatial-geometry');
+   expect(html).not.toContain('data-bin-id');
+   expect((html.match(/data-zone-id=/g)??[])).toHaveLength(12);
+   const svg=html.match(/<svg[^>]*data-shot-map-view="zones"[^>]*>/)?.[0];
+   const titleId=svg?.match(/aria-labelledby="([^"]+)"/)?.[1];
+   const descriptionId=svg?.match(/aria-describedby="([^"]+)"/)?.[1];
+   expect(titleId).toBeTruthy();expect(descriptionId).toBeTruthy();
+   expect(html).toContain(`<title id="${titleId}">${title}</title>`);
+   expect(html).toContain(`<desc id="${descriptionId}">${description}`);
+  }
+ });
+ it.each(['en','zh'] as const)('retains spatial court names, years and mode-specific descriptions (%s)',locale=>{
+  for(const view of ['hex','density'] as const){
+   const html=renderToStaticMarkup(<ShotMapCourt data={data} zones={zones} view={view} locale={locale} selected={null} onSelect={()=>{}}/>);
+   expect(html).toContain(`>${locale==='en'?'Shot-coordinate distribution':'逐次投篮坐标分布'} · ${data.season}</title>`);
+   expect(html).toContain(view==='density'?(locale==='en'?'not shooting percentage':'不代表命中率'):(locale==='en'?'Hex area represents attempts':'六边形面积表示出手次数'));
+  }
+ });
  it.each(['en','zh'] as const)('starts every view with no empty panel or location chooser (%s)',locale=>{
   for(const view of ['hex','density','zones'] as const){
    const html=explorer({locale,initialView:view});

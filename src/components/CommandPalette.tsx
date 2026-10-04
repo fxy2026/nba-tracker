@@ -47,6 +47,16 @@ export default function CommandPalette({ open, onClose, groups }: Props) {
   const baseId = useId();
   const listboxId = `${baseId}-results`;
 
+  // The shared layout can survive a router pathname commit independently of
+  // the native history callback. Dismiss its transient open state on that
+  // committed change too; popstate below still covers query-only traversal.
+  const previousPathnameRef = useRef(pathname);
+  useEffect(() => {
+    const previousPathname = previousPathnameRef.current;
+    previousPathnameRef.current = pathname;
+    if (open && previousPathname !== pathname) onClose();
+  }, [pathname, open, onClose]);
+
   // Each opening owns its focus timer and restores the trigger on close.
   useEffect(() => {
     if (!open) return;
