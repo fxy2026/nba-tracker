@@ -196,6 +196,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       />
 
       <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
+      <p id="profile-comparison-basis" className="mt-1 text-xs leading-relaxed text-text-secondary break-words">
+        {isZh
+          ? "对比口径：按本球员索引已记录的场均值，各项仅纳入场均得分大于 0 且该项有记录的球员。样本均值按球员等权计算，不设出场数或上场时间门槛。名次为严格高于该值的人数加 1；P 为样本中严格低于该值的人数占比（百分比四舍五入）。同值并列。"
+          : "Comparison basis: recorded per-game values in this player index, with positive PPG and a known value for each stat. Sample averages weight players equally, with no games-played or minutes minimum. Rank is 1 + the number strictly higher; P is the rounded percentage of the sample strictly below. Ties share rank and P."}
+      </p>
 
       {/* Quick-action row — one-click into /compare with this player primed */}
       <div className="mt-2 flex flex-wrap gap-2">
@@ -282,20 +287,20 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </div>
 
         {/* Tile 2 — PPG HERO (the star number, with rank + delta + percentile bar) */}
-        <div className="glass-tile col-span-2 sm:col-span-2 row-span-2 group bento-rise" style={{ animationDelay: "60ms" }}>
+        <div aria-describedby="profile-comparison-basis" className="glass-tile col-span-2 sm:col-span-2 row-span-2 group bento-rise" style={{ animationDelay: "60ms" }}>
           <div className="h-full flex flex-col justify-between p-4 sm:p-5">
-            <div className="flex items-start justify-between">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">Points / Game</p>
+            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{isZh ? "场均得分" : "Points / Game"}</p>
               {ptsCtx && ptsCtx.rank > 0 && (
-                <span className="text-[9px] font-mono tabular-nums uppercase tracking-[0.15em] text-accent-amber flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-accent-amber" />
-                  #{ptsCtx.rank} in NBA
+                <span className="min-w-0 break-words text-[9px] font-mono tabular-nums text-accent-amber flex items-center gap-1">
+                  <span className="w-1 h-1 shrink-0 rounded-full bg-accent-amber" />
+                  {profileRankLabel(ptsCtx, isZh)}
                 </span>
               )}
             </div>
             <div>
-              <div className="flex items-baseline gap-3">
-                <p className="text-[clamp(3rem,8vw,6rem)] font-light font-mono tabular-nums leading-none text-accent-amber">
+              <div className="flex flex-wrap items-baseline gap-3">
+                <p className="shrink-0 text-[clamp(3rem,8vw,6rem)] font-light font-mono tabular-nums leading-none text-accent-amber">
                   {ppg !== null ? <CountUpNumber value={ppg} decimals={1} stripTrailingZero durationMs={1100} /> : "—"}
                 </p>
                 {ptsCtx && ptsCtx.delta !== null && (
@@ -308,12 +313,12 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-3 mt-3">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-text-secondary font-mono">
-                  vs league avg <span className="text-text-primary">{ptsCtx ? ptsCtx.leagueAvg.toFixed(1) : "—"}</span>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mt-3">
+                <p className="min-w-0 break-words text-[10px] uppercase tracking-[0.1em] text-text-secondary font-mono">
+                  {isZh ? "对比样本均值" : "vs sample avg"} <span className="text-text-primary">{ptsCtx ? ptsCtx.sampleAvg.toFixed(1) : "—"}</span>
                 </p>
-                {ptsCtx && ptsCtx.percentile > 0 && (
-                  <p className="text-[9px] font-mono tabular-nums text-text-secondary">P{ptsCtx.percentile}</p>
+                {ptsCtx && (
+                  <p className="shrink-0 text-[9px] font-mono tabular-nums text-text-secondary">P{ptsCtx.percentile}</p>
                 )}
               </div>
               {ptsCtx && ptsCtx.percentile > 0 && (
@@ -329,10 +334,10 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </div>
 
         {/* Tile 3 — RPG (with full context like PPG) */}
-        <DataStatTile label="Rebounds" value={rpg} ctx={rebCtx} delayMs={120} />
+        <DataStatTile label={isZh ? "篮板" : "Rebounds"} value={rpg} ctx={rebCtx} isZh={isZh} delayMs={120} />
 
         {/* Tile 4 — APG (with full context like PPG) */}
-        <DataStatTile label="Assists" value={apg} ctx={astCtx} delayMs={180} />
+        <DataStatTile label={isZh ? "助攻" : "Assists"} value={apg} ctx={astCtx} isZh={isZh} delayMs={180} />
 
         {/* Tile 5 — Source-index season-start range; not played-season count */}
         <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: "240ms" }}>
@@ -896,23 +901,28 @@ function ExternalLinkTile({ icon: Icon, iconColor, label, title, subtitle, href 
   );
 }
 
-function DataStatTile({ label, value, ctx, delayMs = 0 }: {
+function profileRankLabel(ctx: StatContext, isZh: boolean): string {
+  return isZh ? `${ctx.cohortSize} 人中第 ${ctx.rank}` : `#${ctx.rank} of ${ctx.cohortSize}`;
+}
+
+function DataStatTile({ label, value, ctx, isZh, delayMs = 0 }: {
   label: string;
   value: number | null;
   ctx: StatContext | null;
+  isZh: boolean;
   delayMs?: number;
 }) {
   return (
-    <div className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between bento-rise" style={{ animationDelay: `${delayMs}ms` }}>
-      <div className="flex items-center justify-between">
+    <div aria-describedby="profile-comparison-basis" className="glass-tile col-span-1 sm:col-span-1 row-span-1 p-3 flex flex-col justify-between gap-2 bento-rise" style={{ animationDelay: `${delayMs}ms` }}>
+      <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
         <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-text-secondary">{label}</p>
-        {ctx && ctx.rank > 0 && ctx.rank <= 50 && (
-          <p className="text-[9px] font-mono tabular-nums text-accent-amber">#{ctx.rank}</p>
+        {ctx && ctx.rank > 0 && (
+          <p className="min-w-0 break-words text-[9px] font-mono tabular-nums text-accent-amber">{profileRankLabel(ctx, isZh)}</p>
         )}
       </div>
       <div>
-        <div className="flex items-baseline gap-1.5">
-          <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums leading-none text-text-primary">
+        <div className="flex flex-wrap items-baseline gap-1.5">
+          <p className="shrink-0 text-2xl sm:text-3xl font-light font-mono tabular-nums leading-none text-text-primary">
             {value !== null ? <CountUpNumber value={value} decimals={1} stripTrailingZero durationMs={900} /> : "—"}
           </p>
           {ctx && ctx.delta !== null && (
@@ -933,4 +943,3 @@ function DataStatTile({ label, value, ctx, delayMs = 0 }: {
     </div>
   );
 }
-
