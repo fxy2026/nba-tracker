@@ -140,3 +140,44 @@ Approved factual-artifact SHA-256:
 
 The JSON bytes are preserved exactly. Full third-party webpage text stays in the
 separate retained audit materials and is not redistributed in this repository.
+
+## Shaquille O'Neal, Magic Johnson and Larry Bird, 2026-10-04
+
+The dated archives add 87 independently audited played-season rows:
+
+- Shaquille O'Neal, NBA ID 406: 19 regular seasons and 17 playoff seasons.
+  Regular totals: 1,207 games and 28,596 points; playoffs: 216 games and
+  5,250 points. Regular 2005-06 MIN is quarantined, leaving regular career
+  MIN/MPG unknown. The 2007-08 regular season has one TOT row (61 games);
+  MIA (33) and PHX (28) corroboration splits remain audit data and are never
+  added to the displayed whole-season row.
+- Magic Johnson, NBA ID 77142: 13 regular seasons and 13 playoff seasons.
+  Regular totals: 906 games and 17,707 points; playoffs: 190 games and
+  3,701 points. Regular 1985-86 MIN/REB/DREB/AST/FG3A/FG3_PCT,
+  1986-87 FGA/FG_PCT and 1987-88 REB/DREB remain quarantined. Dependent
+  career totals, averages and shooting percentages remain unknown.
+- Larry Bird, NBA ID 1449: 13 regular seasons and 12 playoff seasons.
+  Regular totals: 897 games and 21,791 points; playoffs: 164 games and
+  3,897 points. Regular 1985-86 MIN, playoff 1985-86 FTA/FT_PCT and
+  playoff 1987-88 AST remain quarantined, including dependent career rates.
+
+Selected StatMuse records and RealGM corroboration cover every row. Additional
+Basketball Monster regular-season observations are retained for Shaq. These
+sources do not establish independent upstream collection or official NBA
+statistical verification. All three complete datasets remain secondary-source.
+Only factual JSON and this provenance documentation ship; retained full webpage
+extracts remain in the separate local audit record.
+
+`retrievedAt: 2026-10-04` explicitly has `retrievalTimePrecision: day` throughout
+this source batch. The validator accepts calendar dates only with that marker,
+and the display labels day precision rather than inventing retrieval seconds.
+These are collection dates, not publisher update dates.
+
+Games started are unavailable throughout. Magic/Bird plus-minus is unavailable;
+Shaq plus-minus has only 15 regular seasons / 912 games and 14 playoff seasons /
+180 games. Those partial subtotals are not complete career totals and are never
+divided by his full-career game counts. Missing seasons are not fabricated.
+Zero-attempt shooting percentages remain null, while recorded zero counts remain
+zero. Percentage quarantine must also leave the derived canonical rate unknown;
+source-published career totals and TS% observations never override canonical
+missing operands. Exact count values are never reconstructed from rounded rates.

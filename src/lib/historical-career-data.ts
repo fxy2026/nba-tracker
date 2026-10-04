@@ -32,13 +32,15 @@ export interface HistoricalCareerData {
   rows: HistoricalCareerRow[];
   sources: HistoricalCareerSource[];
   disputes: HistoricalCareerDispute[];
-  retrievalPrecision?: "approximate-minute";
+  retrievalPrecision?: "approximate-minute" | "day";
 }
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 const timestamp = (value: unknown): value is string => isIsoTimestamp(value) || (typeof value === "string"
   && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)
   && Number.isFinite(new Date(value).getTime()) && new Date(value).toISOString() === value.replace("Z", ".000Z"));
+const calendarDate = (value: unknown): value is string => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && Number.isFinite(new Date(`${value}T00:00:00.000Z`).getTime()) && new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10) === value;
 const statMuseUrl = (value: unknown): value is string => {
   if (typeof value !== "string") return false;
   try {
@@ -49,15 +51,19 @@ const statMuseUrl = (value: unknown): value is string => {
 
 /** Project only checked public totals and attribution; never trust stored averages. */
 export function normalizeHistoricalCareerData(raw: unknown, playerId: number): HistoricalCareerData | null {
-  if (!record(raw) || raw.schemaVersion !== 1 || !record(raw.player)
+  if (!record(raw)) return null;
+  // Date-only evidence is explicit. Never invent collection seconds or permit
+  // an unmarked date to silently weaken the existing timestamp contract.
+  const retrievalTimestamp = raw.retrievalTimePrecision === "day" ? calendarDate : timestamp;
+  if (raw.schemaVersion !== 1 || !record(raw.player)
     || raw.player.nbaPlayerId !== playerId || !Number.isSafeInteger(playerId) || playerId < 1
     || typeof raw.player.name !== "string" || !raw.player.name.trim()
-    || !timestamp(raw.retrievedAt) || !Array.isArray(raw.rows) || !raw.rows.length
+    || !retrievalTimestamp(raw.retrievedAt) || !Array.isArray(raw.rows) || !raw.rows.length
     || raw.officialNbaVerified === true || !Array.isArray(raw.sources) || !Array.isArray(raw.disputes)) return null;
   const sources: HistoricalCareerSource[] = [];
   for (const source of raw.sources) {
     if (!record(source) || typeof source.id !== "string" || !source.id || sources.some(row => row.id === source.id)
-      || typeof source.publisher !== "string" || !source.publisher.trim() || !timestamp(source.retrievedAt)
+      || typeof source.publisher !== "string" || !source.publisher.trim() || !retrievalTimestamp(source.retrievedAt)
       || typeof source.url !== "string"
       || new Date(source.retrievedAt).getTime() > new Date(raw.retrievedAt).getTime()) return null;
     try {
@@ -81,7 +87,7 @@ export function normalizeHistoricalCareerData(raw: unknown, playerId: number): H
       || (candidate.seasonType !== "Regular Season" && candidate.seasonType !== "Playoffs")
       || typeof candidate.teamAbbreviation !== "string" || !/^[A-Z]{2,4}$/.test(candidate.teamAbbreviation)
       || candidate.sourceStatus !== "secondary_source" || typeof candidate.sourceId !== "string" || !candidate.sourceId
-      || !statMuseUrl(candidate.sourceUrl) || !timestamp(candidate.retrievedAt) || candidate.officialNbaVerified === true
+      || !statMuseUrl(candidate.sourceUrl) || !retrievalTimestamp(candidate.retrievedAt) || candidate.officialNbaVerified === true
       || new Date(candidate.retrievedAt).getTime() > new Date(raw.retrievedAt).getTime() || !record(candidate.totals)) return null;
     if (!sources.some(source => source.id === candidate.sourceId && source.url === candidate.sourceUrl && source.retrievedAt === candidate.retrievedAt)) return null;
     const identity = `${candidate.seasonType}:${candidate.season}`;
@@ -143,6 +149,10 @@ export function normalizeHistoricalCareerData(raw: unknown, playerId: number): H
     if (dispute.resolution === "quarantined_null" ? canonicalValue !== null
       : typeof canonicalValue !== "number" || !Number.isFinite(canonicalValue)
         || (isPercentage && (canonicalValue < 0 || canonicalValue > 1))) return null;
+    if (dispute.resolution === "quarantined_null" && isPercentage) {
+      const kind = field === "FG_PCT" ? "FG" : field === "FG3_PCT" ? "FG3" : "FT";
+      if (historicalCareerPercentage(row.totals, kind) !== null) return null;
+    }
     const observations: HistoricalCareerDispute["observations"] = [];
     for (const observation of dispute.observations) {
       if (!record(observation) || typeof observation.sourceId !== "string" || !sources.some(source => source.id === observation.sourceId)
@@ -162,7 +172,8 @@ export function normalizeHistoricalCareerData(raw: unknown, playerId: number): H
     }
     disputes.push({ season: row.season, seasonType: row.seasonType, field, resolution: dispute.resolution, observations });
   }
-  return { playerId, playerName: raw.player.name, retrievedAt: raw.retrievedAt, rows, sources, disputes };
+  return { playerId, playerName: raw.player.name, retrievedAt: raw.retrievedAt, rows, sources, disputes,
+    ...(raw.retrievalTimePrecision === "day" ? { retrievalPrecision: "day" as const } : {}) };
 }
 
 /** Missing values stay missing, including career aggregates with any gap. */

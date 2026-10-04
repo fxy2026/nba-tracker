@@ -26,6 +26,18 @@ const archives: Record<number, { sha256: string; read: () => Promise<unknown>; r
     retrievalPrecision: "approximate-minute",
     read: () => import("@/data/historical-career-archives/76375-2026-10-04.json").then(module => module.default),
   },
+  406: {
+    sha256: "9f6dfabb0c0ea4852880d6c6be586b29651c970864a511f84a339264fe193a25",
+    read: () => import("@/data/historical-career-archives/406-2026-10-04.json").then(module => module.default),
+  },
+  77142: {
+    sha256: "c368f36994021e80c20b0ec1d25f3db00761488c4edff3ab73260069ef8c9158",
+    read: () => import("@/data/historical-career-archives/77142-2026-10-04.json").then(module => module.default),
+  },
+  1449: {
+    sha256: "45b4a77bc8b485d7b48ae28ecab57cb190191171715d480f1c78e2823a344710",
+    read: () => import("@/data/historical-career-archives/1449-2026-10-04.json").then(module => module.default),
+  },
 };
 
 export function validateHistoricalCareerArchive(raw: unknown, playerId: number, sha256: string): HistoricalCareerData | null {
