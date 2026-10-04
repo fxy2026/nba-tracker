@@ -8,7 +8,7 @@ import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
-import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
+import ScheduleToolNotes from "@/components/ScheduleToolNotes";
 import { selectScheduleToolSource } from "@/lib/schedule-tools-server";
 import { currentSeason } from "@/lib/constants";
 
@@ -74,12 +74,10 @@ export default async function ScheduleHeatmapPage() {
         updatedAt={planned ? null : getScheduleAge()}
       />
 
-      {planned && <div className="glass-tile p-4 mb-4">
-        <p className="text-sm font-semibold mb-2">{isZh ? '2026-27 部分计划赛程 · 每队已分配 80 场' : '2026-27 partial planned schedule · 80 assigned games per team'}</p>
-        <p className="text-sm text-text-secondary mb-2">{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。数字仅表示计划，日期过去也不代表比赛已完成。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Counts describe plans; passing dates do not confirm results.'}</p>
-        <PlannedSnapshotNote timeZone="America/New_York" />
-      </div>}
-      <p className="text-sm text-text-secondary mb-4">{isZh ? "日期按美国东部时间（America/New_York）；数量仅为已列比赛或已分配的计划比赛。零表示没有已列比赛，不代表当天确定没有比赛。" : "Dates use America/New_York (Eastern Time); counts reflect only listed games or assigned planned fixtures. A zero means no listed fixtures, not a confirmed empty date."}</p>
+      <ScheduleToolNotes planned={planned} isZh={isZh}>
+        {planned && <p>{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。数字仅表示计划，日期过去也不代表比赛已完成。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Counts describe plans; passing dates do not confirm results.'}</p>}
+        <p>{isZh ? "日期按美国东部时间（America/New_York）；数量仅为已列比赛或已分配的计划比赛。零表示没有已列比赛，不代表当天确定没有比赛。" : "Dates use America/New_York (Eastern Time); counts reflect only listed games or assigned planned fixtures. A zero means no listed fixtures, not a confirmed empty date."}</p>
+      </ScheduleToolNotes>
       <div className="space-y-6">
         {months.map((ym) => {
           const days = byMonth.get(ym)!;

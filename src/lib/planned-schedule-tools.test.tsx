@@ -199,3 +199,46 @@ it('retains officially covered international preseason and All-Star heatmap fixt
   const excluded = selectScheduleToolSource([invalidCompetitive], { source: 'nba-schedule', season: '2026-27' }, '2026-27');
   if (excluded.mode === 'planned') throw new Error(); expect(buildScheduleHeatmap(excluded.schedule).totalGames).toBe(0);
 });
+
+it.each(['en', 'zh'])('keeps compact scope visible and full source/method notes in a closed native disclosure in %s', async locale => {
+  runtime.locale = locale;
+  for (const page of [HeatmapPage, BackToBackPage]) {
+    const html = renderToStaticMarkup(await page());
+    const details = html.match(/<details\b[^>]*>[\s\S]*?<\/details>/g) ?? [];
+    expect(details).toHaveLength(1);
+    expect(details[0]).not.toMatch(/<details[^>]*\bopen(?:[=>\s])/);
+    expect(details[0]).toMatch(/<summary[^>]*min-h-\[44px\]/);
+    expect(details[0]).toContain(locale === 'en' ? 'Source and calculation notes' : '来源与计算说明');
+    expect(details[0]).toContain(PLANNED_SOURCE_URL);
+    expect(details[0]).toContain(locale === 'en' ? 'not complete 82-game season totals' : '不是完整 82 场赛季总数');
+    const visible = html.replace(/<details\b[^>]*>[\s\S]*?<\/details>/g, '');
+    expect(visible).toContain(locale === 'en' ? '2026-27 partial plan · 80 assigned/team · 2 pending/team' : '2026-27 部分计划 · 每队 80 场已分配、2 场待定');
+    expect(visible).toContain(locale === 'en' ? 'Eastern Time (ET) · Aug 13, 2026 snapshot · may change' : '美国东部时间（ET）· 2026 年 8 月 13 日版本 · 可能变更');
+    expect(visible).not.toContain(PLANNED_SOURCE_URL);
+    if (page === HeatmapPage) {
+      expect(details[0]).toContain(locale === 'en' ? 'A zero means no listed fixtures' : '零表示没有已列比赛');
+      expect(details[0]).toContain(locale === 'en' ? 'passing dates do not confirm results' : '日期过去也不代表比赛已完成');
+      expect(visible).toContain('1,200'); expect(visible).toContain('156'); expect(visible).toContain('date=2026-10-20');
+    } else {
+      expect(details[0]).toContain(locale === 'en' ? 'no travel, venue or actual recovery-time inference' : '不推断旅行、场馆或实际休息时长');
+      expect(details[0]).toContain(locale === 'en' ? 'A three-day run can form two pairs' : '三天连赛可形成两组');
+      expect(details[0]).toContain(locale === 'en' ? 'Passing planned dates do not confirm games were played' : '计划日期过去也不代表比赛已经进行');
+      expect(visible).toContain(locale === 'en' ? '426 total · showing first 15' : '共 426 组 · 显示前 15 组');
+    }
+  }
+});
+it.each(['en', 'zh'])('keeps canonical scope and verified-sample explanations correct with collapsed notes in %s', async locale => {
+  runtime.locale = locale;
+  runtime.schedule = [day('2026-11-01', 1, 3, 110, 100), day('2026-11-02', 2)];
+  for (const page of [HeatmapPage, BackToBackPage]) {
+    const html = renderToStaticMarkup(await page()); const details = html.match(/<details\b[^>]*>[\s\S]*?<\/details>/)![0];
+    const visible = html.replace(details, '');
+    expect(visible).toContain(locale === 'en' ? 'Dates in Eastern Time (ET)' : '日期按美国东部时间（ET）');
+    expect(html).not.toContain(PLANNED_SOURCE_URL); expect(html).not.toContain('80 assigned/team');
+    if (page === BackToBackPage) {
+      expect(visible).toContain(locale === 'en' ? '1/1 verified final B2B games won (100%)' : '1/1 场已确认背靠背比赛获胜（100%）');
+      expect(details).toContain(locale === 'en' ? 'including a final first game whose second game is pending' : '包括第二场尚未完成时的第一场');
+      expect(details).toContain(locale === 'en' ? 'A game shared by overlapping pairs counts once' : '重叠组中的同一场比赛只算一次');
+    }
+  }
+});

@@ -5,14 +5,14 @@ import { Repeat, Activity, Calendar } from "lucide-react";
 import { getCurrentSeasonSchedule, getScheduleAge, getScheduleCoverage } from "@/lib/api";
 import { currentSeason } from "@/lib/constants";
 import { calendarDateLabels } from "@/lib/calendar-date";
-import { buildBackToBacks, selectScheduleToolSource, SCHEDULE_TIME_ZONE } from "@/lib/schedule-tools-server";
+import { buildBackToBacks, selectScheduleToolSource } from "@/lib/schedule-tools-server";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { getLocale } from "@/lib/locale";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RelatedPages from "@/components/RelatedPages";
-import { PlannedSnapshotNote } from "@/components/PlannedFixtures";
+import ScheduleToolNotes from "@/components/ScheduleToolNotes";
 
 export const metadata: Metadata = {
   title: "Back-to-Backs",
@@ -41,12 +41,13 @@ export default async function BackToBackPage() {
         : (isZh ? `${totalPairs} 组已列背靠背 · ${completedCount} 组已确认完成 · ${upcomingCount} 组即将到来或进行中` : `${totalPairs} listed team-specific pairs · ${completedCount} confirmed complete · ${upcomingCount} upcoming or in progress`)}
       updatedAt={planned ? null : getScheduleAge()} />
 
-    {planned && <div className="glass-tile p-4 mb-4">
-      <p className="text-sm font-semibold mb-2">{isZh ? '2026-27 部分计划赛程 · 每队已分配 80 场' : '2026-27 partial planned schedule · 80 assigned games per team'}</p>
-      <p className="text-sm text-text-secondary mb-2">{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。计划日期过去也不代表比赛已经进行。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Passing planned dates do not confirm games were played.'}</p>
-      <PlannedSnapshotNote timeZone={SCHEDULE_TIME_ZONE} />
-    </div>}
-    <p className="text-sm text-text-secondary mb-5">{isZh ? '按美国东部时间（America/New_York）的连续两个日历日计算，每支球队分别计数。仅涉及已列比赛，不推断旅行、场馆或实际休息时长。' : 'Consecutive calendar days in America/New_York (Eastern Time), counted separately for each team. Listed fixtures only; no travel, venue or actual recovery-time inference.'}</p>
+    <ScheduleToolNotes planned={planned} isZh={isZh}>
+      {planned && <p>{isZh ? '每队另有 2 场取决于杯赛结果，尚未分配；这些不是完整 82 场赛季总数。计划日期过去也不代表比赛已经进行。' : 'Two Cup-dependent games per team are unassigned, so these are not complete 82-game season totals. Passing planned dates do not confirm games were played.'}</p>}
+      <p>{isZh ? '按美国东部时间（America/New_York）的连续两个日历日计算，每支球队分别计数。仅涉及已列比赛，不推断旅行、场馆或实际休息时长。' : 'Consecutive calendar days in America/New_York (Eastern Time), counted separately for each team. Listed fixtures only; no travel, venue or actual recovery-time inference.'}</p>
+      <h2 className="text-sm font-semibold">{isZh ? '计算方法' : 'How pairs are counted'}</h2>
+      <p>{isZh ? '每组包含同一球队在连续两个东部日历日的已列比赛。三天连赛可形成两组；两队连续交手会分别计入各自的组数。待定、条件性、延期或无效日期不计入。未分配的杯赛场次可能改变这些数量。' : 'Each pair contains one team’s listed games on consecutive ET dates. A three-day run can form two pairs; consecutive meetings between the same two teams count once per team. TBD, conditional, postponed and invalid dates are excluded. Unassigned Cup games may change these counts.'}</p>
+      {!planned && <p>{isZh ? '只有两场都有已确认最终比分才算完成一组。胜率仅包含这些背靠背中有已确认最终比分的独立比赛，包括第二场尚未完成时的第一场；重叠组中的同一场比赛只算一次。' : 'A pair is complete only when both games have verified final scores. Win rates use unique verified final games belonging to a listed pair, including a final first game whose second game is pending. A game shared by overlapping pairs counts once.'}</p>}
+    </ScheduleToolNotes>
     {!planned && unresolvedCount > 0 && <p className="text-sm text-text-secondary mb-5">{isZh ? `${unresolvedCount} 组日期已过但结果尚未确认，不计为已完成。` : `${unresolvedCount} pairs have past dates but unconfirmed results; they are not counted as complete.`}</p>}
 
     <div className="grid min-w-0 grid-cols-1 lg:grid-cols-2 gap-5">
@@ -90,11 +91,6 @@ export default async function BackToBackPage() {
           </div>)}
         </div>
       </section>
-    </div>
-    <div className="glass-tile p-4 mt-6">
-      <h2 className="text-sm font-semibold mb-2">{isZh ? '计算方法' : 'How pairs are counted'}</h2>
-      <p className="text-sm text-text-secondary leading-relaxed">{isZh ? '每组包含同一球队在连续两个东部日历日的已列比赛。三天连赛可形成两组；两队连续交手会分别计入各自的组数。待定、条件性、延期或无效日期不计入。未分配的杯赛场次可能改变这些数量。' : 'Each pair contains one team’s listed games on consecutive ET dates. A three-day run can form two pairs; consecutive meetings between the same two teams count once per team. TBD, conditional, postponed and invalid dates are excluded. Unassigned Cup games may change these counts.'}</p>
-      {!planned && <p className="text-sm text-text-secondary leading-relaxed mt-2">{isZh ? '只有两场都有已确认最终比分才算完成一组。胜率仅包含这些背靠背中有已确认最终比分的独立比赛，包括第二场尚未完成时的第一场；重叠组中的同一场比赛只算一次。' : 'A pair is complete only when both games have verified final scores. Win rates use unique verified final games belonging to a listed pair, including a final first game whose second game is pending. A game shared by overlapping pairs counts once.'}</p>}
     </div>
     <RelatedPages eyebrow={isZh ? "继续探索" : "Keep exploring"} pages={[
       { href: "/schedule-heatmap", label: isZh ? "赛程热力图" : "Schedule Heatmap", description: isZh ? "各日比赛密度" : "Game counts by date", icon: Activity },
