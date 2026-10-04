@@ -27,18 +27,16 @@ interface GamesListProps {
   selectedDate: string;
   timeZone?: string;
   initialGames?: ScheduleGame[];
-  initialReplayIds?: string[];
   // Computed in HomeClient behind a post-mount flag (false until hydration) so
   // the tz-dependent live UI — ScoreTicker/LiveScoreRefresher/auto badge/
   // TodayStars — stays absent on first paint and matches the SSR HTML.
   isToday: boolean;
 }
 
-export default function GamesList({ selectedDate, initialGames, initialReplayIds, isToday, timeZone }: GamesListProps) {
+export default function GamesList({ selectedDate, initialGames, isToday, timeZone }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const [{ games, navigation, planned, date: responseDate }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; date: string }>({ games: initialGames || [], navigation: null, planned: null, date: selectedDate });
-  const [replayIds, setReplayIds] = useState<string[]>(initialReplayIds || []);
   const [loading, setLoading] = useState(!initialGames);
   const [error, setError] = useState(false);
   const initialFetchDone = useRef(!!initialGames?.length);
@@ -49,19 +47,6 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     const { signal } = request;
     setError(false);
     setResults((previous) => ({ ...previous, navigation: null, planned: null }));
-    // Optional replay metadata shares the refresh/date cancellation gate, but
-    // never holds up score rendering or changes the scoreboard's error state.
-    void (async () => {
-      try {
-        const replayRes = await fetch("/api/replay?action=ids", { signal });
-        if (!replayRes.ok || !request.isCurrent()) return;
-        const replayJson = await replayRes.json();
-        if (request.isCurrent() && replayJson) setReplayIds(replayJson.ids || []);
-      } catch {
-        // Keep the last known replay IDs when this optional request fails.
-      }
-    })();
-
     try {
       const gamesRes = await fetch(`/api/games?date=${date}&tz=${encodeURIComponent(timeZone ?? localTz())}&navigation=1`, { signal });
       if (!gamesRes.ok) throw new Error("Failed to fetch games");
@@ -94,7 +79,6 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
     fetchGames(selectedDate);
   }, [fetchGames, selectedDate]);
 
-  const replaySet = useMemo(() => new Set(replayIds), [replayIds]);
   const { liveNow, upcoming, final } = useMemo(() => ({
     liveNow: games.filter((g) => g.gameStatus === 2),
     upcoming: games.filter((g) => g.gameStatus === 1),
@@ -319,7 +303,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {liveNow.map((game) => (
-                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                  <GameCard key={game.gameId} game={game} />
                 ))}
               </div>
             </div>
@@ -339,7 +323,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcoming.map((game) => (
-                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                  <GameCard key={game.gameId} game={game} />
                 ))}
               </div>
             </div>
@@ -359,7 +343,7 @@ export default function GamesList({ selectedDate, initialGames, initialReplayIds
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {final.map((game) => (
-                  <GameCard key={game.gameId} game={game} hasReplay={replaySet.has(game.gameId)} />
+                  <GameCard key={game.gameId} game={game} />
                 ))}
               </div>
             </div>

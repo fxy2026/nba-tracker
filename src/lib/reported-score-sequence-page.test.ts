@@ -10,11 +10,15 @@ import OfficialGameReport from "@/app/game/[id]/_components/OfficialGameReport";
 import BoxScoreSection from "@/app/game/[id]/_components/BoxScoreSection";
 import GamePreview from "@/app/game/[id]/_components/GamePreview";
 import WithPlayByPlay from "@/app/game/[id]/_components/WithPlayByPlay";
+import VerifiedShotChartSection from "@/app/game/[id]/_components/VerifiedShotChartSection";
 import ShotChartSection from "@/app/game/[id]/_components/ShotChartSection";
 import PlayByPlaySection from "@/app/game/[id]/_components/PlayByPlaySection";
 import KeyMomentsSection from "@/app/game/[id]/_components/KeyMomentsSection";
 import ReplaySection from "@/app/game/[id]/_components/ReplaySection";
 import ScoringFlowSection from "@/app/game/[id]/_components/ScoringFlowSection";
+import GameRecap from "@/app/game/[id]/_components/GameRecap";
+import ShootingEfficiency from "@/app/game/[id]/_components/ShootingEfficiency";
+import type { GamePlayByPlay } from "./game-play-by-play";
 import GameAutoRefresh from "@/components/GameAutoRefresh";
 
 const mocks = vi.hoisted(() => ({
@@ -204,6 +208,7 @@ describe("reported score sequence game-page isolation", () => {
     const box = genuineBox(gameStatus);
     mocks.box.mockResolvedValue(box);
     const tree = await GamePage({ params: Promise.resolve({ id: gameId }) });
+    expect(elementsOf(tree, ReplaySection)).toHaveLength(0);
     expect(elementsOf(tree, ReportedScoreSequence)).toHaveLength(0);
     expect(elementsOf(tree, RecoveredPlayerBox)).toHaveLength(0);
     expect(elementsOf(tree, ProviderPlayerBox)).toHaveLength(0);
@@ -217,6 +222,18 @@ describe("reported score sequence game-page isolation", () => {
       const tables = elementsOf(tree, BoxScoreSection);
       expect(tables.map((element) => element.props.team)).toEqual([box.awayTeam, box.homeTeam]);
       expect(tables.every((element) => Array.isArray(element.props.shots) && element.props.shots.length === 0)).toBe(true);
+      // The video component is retired; statistical PBP, field-goal charts,
+      // scoring flow, and the final-game recap retain their streaming paths.
+      const data: GamePlayByPlay = { actions: [], shots: [], scoringShots: [], scoreEvents: [] };
+      const streamed = elementsOf(tree, WithPlayByPlay).map(element =>
+        (element.props.children as unknown as (data: GamePlayByPlay) => ReactNode)(data));
+      expect(elementsOf(streamed, ReplaySection)).toHaveLength(0);
+      expect(elementsOf(streamed, ShotChartSection).length + elementsOf(tree, VerifiedShotChartSection).length).toBe(1);
+      expect(elementsOf(streamed, PlayByPlaySection)).toHaveLength(1);
+      expect(elementsOf(tree, ShootingEfficiency)).toHaveLength(1);
+      expect(elementsOf(streamed, GameRecap)).toHaveLength(gameStatus === 3 ? 1 : 0);
+      expect(elementsOf(streamed, ScoringFlowSection)).toHaveLength(gameStatus === 3 ? 1 : 0);
+      expect(elementsOf(streamed, KeyMomentsSection)).toHaveLength(gameStatus === 3 ? 1 : 0);
     }
     expect(fetch).not.toHaveBeenCalled();
   });

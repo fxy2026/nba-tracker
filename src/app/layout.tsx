@@ -9,6 +9,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import OnlineStatus from "@/components/OnlineStatus";
 import WebVitalsReporter from "@/components/WebVitalsReporter";
 import CloudflareAnalytics from "@/components/CloudflareAnalytics";
+import VisitorAnalytics from "@/components/VisitorAnalytics";
 import SwRegister from "@/components/SwRegister";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -16,6 +17,7 @@ import ThemeScript from "@/components/ThemeScript";
 import SpeculationRules from "@/components/SpeculationRules";
 import { getLocale } from "@/lib/locale";
 import { getTranslations } from "@/locales";
+import { getVisitorAnalyticsClientConfig } from "@/lib/visitor-analytics-server";
 
 // Audit 2026-07-08 (batch-1 font trim): every loaded weight has real sans
 // usage — 300 on big stat numerals (TodayStars/streaks/by-country), 400 as
@@ -97,6 +99,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const t = getTranslations(locale);
+  const visitorAnalytics = getVisitorAnalyticsClientConfig();
 
   return (
     <html
@@ -177,6 +180,9 @@ export default async function RootLayout({
           <OnlineStatus />
           <WebVitalsReporter />
           <CloudflareAnalytics />
+          {visitorAnalytics.enabled && (
+            <VisitorAnalytics enabled productionOrigin={visitorAnalytics.origin} />
+          )}
           <SwRegister />
           </ToastProvider>
         </LocaleProvider>

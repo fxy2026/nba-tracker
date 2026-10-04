@@ -85,6 +85,11 @@ self.addEventListener("fetch", (event) => {
   // Same-origin /api routes — never intercept. Live scoreboards must hit network.
   if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) return;
 
+  // Administrative pages must never be served from the offline page cache.
+  // This also bypasses copies cached by earlier worker versions.
+  if (url.origin === self.location.origin &&
+      (url.pathname === "/admin" || url.pathname.startsWith("/admin/"))) return;
+
   // Navigation: network-first with offline shell fallback
   if (req.mode === "navigate") {
     event.respondWith(

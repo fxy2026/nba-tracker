@@ -1,6 +1,8 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
+import en from '@/locales/en';
+import zh from '@/locales/zh';
 import type { ScheduleGame } from '@/lib/api';
 import { LocaleProvider } from './LocaleProvider';
 import GameCard from './GameCard';
@@ -53,4 +55,27 @@ it.each(['homeTeam', 'awayTeam'] as const)('invalid seeds are hidden without los
     expect(render(row).records, `${side}.seed=${String(seed)}`).toEqual(['0-3']);
     expect(render(row).scores).toEqual([95, 114]);
   }
+});
+
+it.each(['en', 'zh'] as const)('game-card navigation and score states remain intact without a replay badge in %s', locale => {
+  for (const gameStatus of [1, 2, 3]) {
+    const row = game(); row.gameStatus = gameStatus;
+    row.gameStatusText = gameStatus === 3 ? 'Final' : gameStatus === 2 ? 'Q2 5:30' : '7:00 PM';
+    const { html, scores } = render(row, locale);
+    expect(html).toContain('href="/game/0022600001"');
+    expect(html).toContain('Portland Trail Blazers');
+    expect(html).toContain('San Antonio Spurs');
+    expect(scores).toEqual(gameStatus === 1 ? [] : [95, 114]);
+    expect(html).not.toContain((locale === 'zh' ? zh : en).gameCard.replay);
+    expect(html).not.toContain('lucide-play');
+  }
+});
+it.each(['en', 'zh'] as const)('the final-game quarters and scorer control remains available in %s', locale => {
+  const row = game();
+  row.homeTeam.periods = [{ period: 1, periodType: 'REGULAR', score: 25 }];
+  row.awayTeam.periods = [{ period: 1, periodType: 'REGULAR', score: 24 }];
+  const { html } = render(row, locale);
+  expect(html).toContain('aria-expanded="false"');
+  expect(html).toContain(locale === 'zh' ? '节次·得分王' : 'Quarters · Top scorer');
+  expect(html).toContain('href="/game/0022600001"');
 });

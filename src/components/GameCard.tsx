@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Play } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { GameLeader, ScheduleGame } from "@/lib/api";
 import { getGameStatusDisplay } from "@/lib/nba-display";
 import TeamLogo from "./TeamLogo";
@@ -84,10 +84,9 @@ function LeaderItem({ label, leader, tiedText }: { label: string; leader: Catego
 
 interface GameCardProps {
   game: ScheduleGame;
-  hasReplay?: boolean;
 }
 
-export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
+export default memo(function GameCard({ game }: GameCardProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const status = getGameStatusDisplay(game.gameStatus, game.gameStatusText);
@@ -189,12 +188,6 @@ export default memo(function GameCard({ game, hasReplay }: GameCardProps) {
           )}
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          {hasReplay && (
-            <span className="flex items-center gap-0.5 text-xs text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-              <Play size={10} fill="currentColor" />
-              {t.gameCard.replay}
-            </span>
-          )}
           <span
             className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
               isFinal

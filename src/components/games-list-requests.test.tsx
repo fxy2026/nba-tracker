@@ -74,59 +74,56 @@ beforeEach(() => {
     const reply = deferred<Response>(); calls.push({ url, signal: init.signal as AbortSignal, reply }); return reply.promise;
   }));
 });
-afterEach(() => { unmount(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  unmount();
+  // Every mount, date change, refresh, retry, and cancellation is score-only.
+  expect(replays()).toHaveLength(0);
+  expect(calls.every(call => call.url.startsWith("/api/games?"))).toBe(true);
+  vi.unstubAllGlobals();
+});
 
-describe("independent optional replay loading", () => {
-  it.each(["response", "JSON"])("renders valid scores while replay %s stays pending", async pending => {
+describe("score loading after video replay retirement", () => {
+  it("fetches only games and preserves live, upcoming, and final card ordering", async () => {
     render();
-    if (pending === "JSON") replays()[0].reply.resolve(response(deferred().promise));
+    expect(calls).toHaveLength(1);
     scores()[0].reply.resolve(response({ data: [game("final", 3), game("upcoming", 1), game("live", 2)] }));
     await settle();
-    expect(cards(render()).map(node => (node.props.game as ScheduleGame).gameId)).toEqual(["live", "upcoming", "final"]);
+    const view = cards(render());
+    expect(view.map(node => (node.props.game as ScheduleGame).gameId)).toEqual(["live", "upcoming", "final"]);
+    expect(view.every(node => !Object.hasOwn(node.props, "hasReplay"))).toBe(true);
     expect(scores()[0].url).toBe("/api/games?date=2026-03-01&tz=Pacific%2FAuckland&navigation=1");
-    expect(scores()[0].signal).toBe(replays()[0].signal);
   });
-  it.each(["network", "HTTP", "JSON"])("replay %s failure keeps valid scores and known replay IDs", async failure => {
-    render({ initialReplayIds: ["0022500001"] });
-    if (failure === "network") replays()[0].reply.reject(new Error("offline"));
-    else if (failure === "HTTP") replays()[0].reply.resolve(response(null, false));
-    else replays()[0].reply.resolve({ ok: true, json: async () => { throw new Error("bad JSON"); } } as unknown as Response);
-    scores()[0].reply.resolve(response({ data: [game()] })); await settle();
-    const view = render(); expect(cards(view)).toHaveLength(1); expect(cards(view)[0].props.hasReplay).toBe(true);
+  it("renders initial games without a scoreboard or replay lookup", () => {
+    const view = render({ initialGames: [game()] });
+    expect(cards(view)).toHaveLength(1);
+    expect(calls).toHaveLength(0);
     expect(view.some(node => node.type === EmptyState)).toBe(false);
-    expect(view.some(node => node.props.children === en.home.refreshFailed)).toBe(false);
   });
-  it.each(["success", "failure"])("replay %s never finishes score loading or changes its error state", async result => {
-    render();
-    if (result === "success") replays()[0].reply.resolve(response({ ids: ["0022500001"] }));
-    else replays()[0].reply.reject(new Error("optional failure"));
-    await settle(); const view = render();
+  it("keeps the existing loading state until the games response arrives", async () => {
+    render(); await settle(); const view = render();
     expect(cards(view)).toHaveLength(0); expect(view.some(node => node.type === EmptyState)).toBe(false);
     expect(view.some(node => String(node.props.className).includes("skeleton-shimmer"))).toBe(true);
+    expect(scores()).toHaveLength(1);
   });
-  it("late replay IDs can update cards without another scoreboard fetch", async () => {
-    render(); scores()[0].reply.resolve(response({ data: [game()] })); await settle();
-    expect(cards(render())[0].props.hasReplay).toBe(false);
-    replays()[0].reply.resolve(response({ ids: ["0022500001"] })); await settle();
-    expect(cards(render())[0].props.hasReplay).toBe(true); expect(scores()).toHaveLength(1);
-  });
-  it("late old-date score and replay JSON never overwrite the newer date", async () => {
-    const oldGames = deferred(), oldReplay = deferred();
-    render(); scores()[0].reply.resolve(response(oldGames.promise)); replays()[0].reply.resolve(response(oldReplay.promise)); await settle();
+  it("late old-date score JSON never overwrites the newer date", async () => {
+    const oldGames = deferred();
+    render(); scores()[0].reply.resolve(response(oldGames.promise)); await settle();
     const props = { selectedDate: "2026-03-02", timeZone: "America/New_York" };
-    render(props); expect(calls.slice(0, 2).every(call => call.signal.aborted)).toBe(true);
-    scores()[1].reply.resolve(response({ data: [game("new")] })); replays()[1].reply.resolve(response({ ids: ["new"] })); await settle();
-    oldGames.resolve({ data: [game("old")] }); oldReplay.resolve({ ids: ["old"] }); await settle();
+    render(props); expect(scores()[0].signal.aborted).toBe(true);
+    scores()[1].reply.resolve(response({ data: [game("new")] })); await settle();
+    oldGames.resolve({ data: [game("old")] }); await settle();
     const view = cards(render(props)); expect(view.map(node => (node.props.game as ScheduleGame).gameId)).toEqual(["new"]);
-    expect(view[0].props.hasReplay).toBe(true); expect(scores()[1].url).toContain("tz=America%2FNew_York");
+    expect(scores()[1].url).toContain("tz=America%2FNew_York");
   });
-  it("a newer refresh aborts both old requests and keeps the same replay cadence", async () => {
+  it("a newer refresh aborts the old request without restoring replay polling", async () => {
     const props = { initialGames: [game("live", 2)], isToday: true };
     refresh(render(props)); refresh(render(props));
-    expect(scores()).toHaveLength(2); expect(replays()).toHaveLength(2); expect(calls.slice(0, 2).every(call => call.signal.aborted)).toBe(true);
-    scores()[1].reply.resolve(response({ data: [game("new", 2)] })); replays()[1].reply.resolve(response({ ids: ["new"] })); await settle();
-    scores()[0].reply.reject(new Error("late failure")); replays()[0].reply.resolve(response({ ids: ["old"] })); await settle();
-    const view = render(props); expect(cards(view)[0].props.hasReplay).toBe(true); expect(view.some(node => node.props.children === en.home.refreshFailed)).toBe(false);
+    expect(scores()).toHaveLength(2); expect(scores()[0].signal.aborted).toBe(true);
+    scores()[1].reply.resolve(response({ data: [game("new", 2)] })); await settle();
+    scores()[0].reply.reject(new Error("late failure")); await settle();
+    const view = render(props);
+    expect((cards(view)[0].props.game as ScheduleGame).gameId).toBe("new");
+    expect(view.some(node => node.props.children === en.home.refreshFailed)).toBe(false);
   });
   it("an old score failure cannot dismiss the new date's loading state", async () => {
     render(); render({ selectedDate: "2026-03-02" }); scores()[0].reply.reject(new Error("old failure")); await settle();
@@ -134,17 +131,17 @@ describe("independent optional replay loading", () => {
     expect(cards(view)).toHaveLength(0); expect(view.some(node => node.type === EmptyState)).toBe(false);
     expect(view.some(node => String(node.props.className).includes("skeleton-shimmer"))).toBe(true);
   });
-  it("unmount aborts both requests and ignores late bodies without state updates", async () => {
-    const games = deferred(), replay = deferred();
-    render(); scores()[0].reply.resolve(response(games.promise)); replays()[0].reply.resolve(response(replay.promise)); await settle();
+  it("unmount aborts the request and ignores late bodies without state updates", async () => {
+    const games = deferred();
+    render(); scores()[0].reply.resolve(response(games.promise)); await settle();
     unmount(); const before = [...runtime.slots]; expect(calls.every(call => call.signal.aborted)).toBe(true);
-    games.resolve({ data: [game()] }); replay.resolve({ ids: ["0022500001"] }); await settle(); expect(runtime.slots).toEqual(before);
+    games.resolve({ data: [game()] }); await settle(); expect(runtime.slots).toEqual(before);
   });
-  it("current games failure shows the existing full error even with replay pending and retry recovers", async () => {
+  it("current games failure shows the existing full error and retry recovers", async () => {
     render(); scores()[0].reply.resolve(response(null, false)); await settle();
     const error = render().find(node => node.type === EmptyState)!; expect(error.props.title).toBe(en.home.failedToLoad);
     (error.props.action as { onClick: () => void }).onClick(); scores()[1].reply.resolve(response({ data: [game()] })); await settle();
-    expect(cards(render())).toHaveLength(1); expect(calls.slice(0, 2).every(call => call.signal.aborted)).toBe(true);
+    expect(cards(render())).toHaveLength(1); expect(scores()[0].signal.aborted).toBe(true);
   });
   it("current refresh failure retains the existing scores with a soft error", async () => {
     const props = { initialGames: [game()], isToday: true };

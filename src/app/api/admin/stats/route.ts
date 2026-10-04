@@ -1,56 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { isAdminRequest, privateAdminJson } from "@/lib/admin-auth";
 
-// Admin stats endpoint — requires auth
+export interface AdminStats {
+  generatedAt: string;
+  data: {
+    status: "available" | "unavailable";
+    source: "bundled-archive";
+    recordedSeason: string | null;
+    recordedGames: number | null;
+    completedRecordedGames: number | null;
+    recordedDates: number | null;
+    indexedPlayers: number | null;
+    playerIndexSeason: string | null;
+    playerIndexFetchedAt: string | null;
+  };
+  environment: { adminConfigured: true; deployment: string };
+}
+
+// Operator-only bundled coverage. No live provider, database or traffic reads.
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("x-admin-password");
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword || authHeader !== adminPassword) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const results: Record<string, unknown> = {};
-
-  // 1. Count total replay links
+  if (!isAdminRequest(request)) return privateAdminJson({ error: "Unauthorized" }, 401);
+  const results: AdminStats = {
+    generatedAt: new Date().toISOString(),
+    data: { status: "unavailable", source: "bundled-archive", recordedSeason: null, recordedGames: null, completedRecordedGames: null, recordedDates: null, indexedPlayers: null, playerIndexSeason: null, playerIndexFetchedAt: null },
+    environment: { adminConfigured: true, deployment: ["production", "preview", "development"].includes(process.env.VERCEL_ENV ?? "") ? process.env.VERCEL_ENV! : "local" },
+  };
   try {
-    const { createClient } = await import("@supabase/supabase-js");
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (url && key) {
-      const supabase = createClient(url, key);
-      const { count } = await supabase.from("replay_links").select("*", { count: "exact", head: true });
-      const { data: recentLinks } = await supabase.from("replay_links").select("*").order("created_at", { ascending: false }).limit(5);
-      const { data: gameIds } = await supabase.from("replay_links").select("game_id");
-      results.replayCount = count || 0;
-      results.replayGames = new Set((gameIds || []).map(g => g.game_id)).size;
-      results.recentLinks = recentLinks || [];
-    }
-  } catch { results.replayCount = -1; }
-
-  // 2. Schedule data freshness
-  try {
-    const { getFullSchedule } = await import("@/lib/api");
-    const schedule = await getFullSchedule();
-    const totalGames = schedule.reduce((s, d) => s + d.games.length, 0);
-    const finishedGames = schedule.reduce((s, d) => s + d.games.filter(g => g.gameStatus === 3).length, 0);
-    results.scheduleGames = totalGames;
-    results.finishedGames = finishedGames;
-    results.scheduleDates = schedule.length;
-  } catch { results.scheduleGames = -1; }
-
-  // 3. Player index size
-  try {
-    const { getPlayerIndex } = await import("@/lib/api");
-    const players = await getPlayerIndex();
-    results.playerCount = players.length;
-    results.activeTeams = new Set(players.map(p => p.teamAbbr)).size;
-  } catch { results.playerCount = -1; }
-
-  // 4. Environment check
-  results.hasSupabase = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  results.hasAdminPw = !!process.env.ADMIN_PASSWORD;
-  results.hasBdlKey = !!process.env.BALLDONTLIE_API_KEY;
-  results.nodeEnv = process.env.NODE_ENV;
-  results.vercelEnv = process.env.VERCEL_ENV || "local";
-
-  return NextResponse.json(results);
+    const { getRecorded2025SeasonSchedule, getBundledPlayerIndexSnapshot } = await import("@/lib/api");
+    const schedule = getRecorded2025SeasonSchedule();
+    const players = getBundledPlayerIndexSnapshot();
+    results.data = {
+      status: "available", source: "bundled-archive", recordedSeason: "2025-26",
+      recordedGames: schedule.reduce((sum, day) => sum + day.games.length, 0),
+      completedRecordedGames: schedule.reduce((sum, day) => sum + day.games.filter(game => game.gameStatus === 3).length, 0),
+      recordedDates: schedule.length, indexedPlayers: players.players.length,
+      playerIndexSeason: players.provenance.season, playerIndexFetchedAt: players.provenance.retrievedAt,
+    };
+  } catch { /* Unavailable bundled data is not a measured zero or live outage. */ }
+  return privateAdminJson(results);
 }

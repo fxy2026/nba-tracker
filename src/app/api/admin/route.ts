@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { adminPasswordMatches, privateAdminJson, readAdminJson } from "@/lib/admin-auth";
 
 // Simple password-based admin auth
 export async function POST(request: NextRequest) {
-  let body: { password?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+  const body = await readAdminJson(request);
+  if (!body.ok) return privateAdminJson({ success: false, error: body.error }, body.status);
+  if (Object.keys(body.value).some(key => key !== "password") || typeof body.value.password !== "string" || !body.value.password || Buffer.byteLength(body.value.password, "utf8") > 4096) {
+    return privateAdminJson({ success: false, error: "Invalid request" }, 400);
   }
 
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
-    return NextResponse.json({ success: false, error: "Admin not configured" }, { status: 503 });
+    return privateAdminJson({ success: false, error: "Admin not configured" }, 503);
   }
 
-  if (body.password === adminPassword) {
-    return NextResponse.json({ success: true });
+  if (adminPasswordMatches(body.value.password)) {
+    return privateAdminJson({ success: true });
   }
-  return NextResponse.json({ success: false, error: "Wrong password" }, { status: 401 });
+  return privateAdminJson({ success: false, error: "Wrong password" }, 401);
 }

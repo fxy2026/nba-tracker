@@ -49,7 +49,6 @@ import ShotChartSection from "./_components/ShotChartSection";
 import PlayByPlaySection from "./_components/PlayByPlaySection";
 import KeyMomentsSection from "./_components/KeyMomentsSection";
 import MatchupSection from "./_components/MatchupSection";
-import ReplaySection from "./_components/ReplaySection";
 import ScoringFlowSection from "./_components/ScoringFlowSection";
 
 interface PageProps {
@@ -442,11 +441,6 @@ export default async function GamePage({ params }: PageProps) {
       {isLiveOrFinal && (
         <GameLeaders homeTeam={boxScore.homeTeam} awayTeam={boxScore.awayTeam} playerInfoMap={playerInfoMap} isLive={isLive} t={t} />
       )}
-
-      {/* Replay links — streamed (Supabase fetch is independent) */}
-      <Suspense fallback={null}>
-        <ReplaySection gameId={id} t={t} />
-      </Suspense>
 
       {isFinal && (
         <div className="mt-6">

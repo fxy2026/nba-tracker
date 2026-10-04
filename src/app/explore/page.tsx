@@ -85,7 +85,7 @@ function buildCategories(isZh: boolean): FeatureCategory[] {
     },
     {
       title: isZh ? "比赛档案" : "Game Archive",
-      eyebrow: isZh ? "回放" : "Replay",
+      eyebrow: isZh ? "历史回顾" : "History",
       color: "#22C55E",
       features: [
         { href: "/best-games", label: isZh ? "经典之战" : "Best Games", description: isZh ? "最焦灼、最大胜差、加时大战" : "Closest, biggest, OT thrillers", icon: Flame },

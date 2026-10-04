@@ -197,11 +197,15 @@ cp .env.example .env.local
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `BALLDONTLIE_API_KEY` | Yes | Free key from [balldontlie.io](https://www.balldontlie.io/) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Optional | Supabase project URL (for replay links) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase anon key |
-| `ADMIN_PASSWORD` | Optional | Password for the `/admin` replay management page |
+| `NEXT_PUBLIC_SUPABASE_URL` | Optional | Supabase project URL (legacy replay-link storage only) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase anon key (legacy replay-link storage only) |
+| `ADMIN_PASSWORD` | Optional | Password for the `/admin` management dashboard |
 
 > The core features (scores, box scores, shot charts, standings, analytics) work without any API keys — they use the free NBA CDN.
+
+Video replay links are retired from the public site and management dashboard. Public pages no longer load replay metadata or Supabase replay links. Existing database records, storage configuration, and the legacy replay API remain preserved; statistical game archives, recaps, and play-by-play remain available.
+
+The rebuilt `/admin` dashboard provides protected bundled-data coverage and an optional visitor-analytics overview. Visitor collection is disabled by default and shows an explicit unconfigured state until durable storage and access controls are verified. Basketball analytics and visitor analytics are separate features. See [visitor analytics setup and verification](docs/design/visitor-analytics.md) before enabling collection; the proposed SQL is not automatically applied.
 
 ### 3. Run
 
@@ -227,7 +231,7 @@ npm run lint       # ESLint with react-hooks strict rules
 | Language | TypeScript 5 (strict mode, zero `any` in new code) |
 | Styling | Tailwind CSS 4 — `@theme inline`, `:has()`, container queries |
 | Icons | Lucide React |
-| Database | Supabase (PostgreSQL) — optional, for replay links |
+| Database | Supabase (PostgreSQL) — optional, retained for legacy replay-link data |
 | Data | NBA CDN + ESPN injuries + BallDontLie |
 | Deploy | Vercel (edge + Node runtime mix) |
 | Telemetry | `next/web-vitals` — local logs + localStorage buffer |
