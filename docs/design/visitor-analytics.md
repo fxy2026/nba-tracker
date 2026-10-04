@@ -1,9 +1,11 @@
-# Visitor analytics: offline implementation and activation checklist
+# Visitor analytics: implementation and activation checklist
 
-Status: analytics is disabled by default. This SQL is a proposed schema, not an
-applied migration. Database permissions and runtime behavior must be verified on
-the target project before activation. Keep `VISITOR_ANALYTICS_ENABLED` unset until
-the checks below pass.
+Status: analytics is disabled by default. The dedicated database migration has
+been applied; its exact SQL and verified boundaries are recorded in
+[deployment status](visitor-analytics-deployment.md). The original
+`visitor-analytics-proposed.sql` remains a historical proposal, not the applied
+record. SQL verification does not establish HTTP RPC connectivity or collection
+activation. Keep `VISITOR_ANALYTICS_ENABLED` unset until the checks below pass.
 
 ## Small scope and metrics
 
@@ -43,8 +45,9 @@ the checks below pass.
 
 ## Durable design and failure behavior
 
-`visitor_analytics_collect` is one database transaction. A per-day row lock
-serializes the budget, dedupe, daily browser insertion, and all aggregate
+`visitor_analytics_collect` is one database transaction. Mutation paths acquire
+the singleton state lock before the per-day row lock to keep pruning and ingestion
+in the same lock order. The locks serialize the budget, dedupe, daily browser insertion, and all aggregate
 increments. Reusing an event UUID (even across midnight while retained) cannot
 increment counters twice. Failures roll back the entire function. If a network
 timeout occurs after commit, the same event ID can be retried without double
@@ -123,16 +126,20 @@ security step.
 A scoped database role would be preferable if already supported, but is not
 created, guessed, or silently substituted here.
 
-## Mandatory activation steps (owner-authorized, not performed)
+## Mandatory activation checklist
+
+Completed database work and still-unverified items are separated in
+[deployment status](visitor-analytics-deployment.md). This checklist is not a
+claim that collection is active or that every prerequisite has passed.
 
 1. Select the owner's separately approved new free analytics project; inspect
    its plan, usage, schemas and actual migration workflow. Do not assume old
    credentials work or reuse/repoint the legacy replay project. Keep legacy
    replay storage and its generic environment settings intact.
-2. Review `visitor-analytics-proposed.sql`; turn it into a migration through the
-   real project workflow. This file is deliberately a proposal, not an applied
-   schema or a migration-history entry.
-   Applying it creates schema/table/function access and requires explicit approval.
+2. Preserve the exact applied migration and its returned history version through
+   the real project workflow. The original `visitor-analytics-proposed.sql` is
+   retained for design history; do not run it over the applied schema. Further
+   schema/table/function access changes require a new approved migration.
 3. Apply and verify on a disposable/local DB first: duplicate/concurrent events,
    rollback, quotas, midnight, bounds, day sums and retention. Then verify anon
    and authenticated roles cannot SELECT tables or execute either public RPC;

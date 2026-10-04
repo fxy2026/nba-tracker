@@ -68,6 +68,7 @@ export default function SiteFooter() {
         { href: "/glossary", label: isZh ? "术语表" : "Glossary" },
         { href: "/quiz", label: isZh ? "NBA 测验" : "NBA Quiz" },
         { href: "/about", label: isZh ? "关于" : "About" },
+        { href: "/about#visitor-statistics", label: isZh ? "访问统计与隐私" : "Visit statistics & privacy" },
       ],
     },
   ];
@@ -80,7 +81,7 @@ export default function SiteFooter() {
           index — with bottom clearance for the 56px bottom nav. */}
       <Link
         href="/explore"
-        className="sm:hidden glass-tile mt-12 mb-20 mx-4 p-4 flex items-center justify-between group cursor-pointer safe-area-bottom"
+        className="sm:hidden glass-tile mt-12 mb-2 mx-4 p-4 flex items-center justify-between group cursor-pointer safe-area-bottom"
       >
         <span className="flex items-center gap-3 min-w-0">
           <span className="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
@@ -96,6 +97,14 @@ export default function SiteFooter() {
           </span>
         </span>
         <ArrowRight size={16} className="text-text-secondary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
+      </Link>
+
+      <Link
+        href="/about#visitor-statistics"
+        prefetch={false}
+        className="sm:hidden flex min-h-11 items-center justify-center mx-4 mb-20 text-xs text-text-secondary hover:text-accent transition-colors"
+      >
+        {isZh ? "访问统计与隐私" : "Visit statistics & privacy"}
       </Link>
 
       <footer className="border-t border-border relative hidden sm:block pb-4 mt-12 safe-area-bottom">

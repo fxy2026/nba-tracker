@@ -128,6 +128,34 @@ export default async function AboutPage() {
           </ul>
         </section>
 
+        <section id="visitor-statistics" className="glass-tile p-5 scroll-mt-24">
+          <h2 className="text-base font-semibold text-text-primary mb-2">
+            {isZh ? "访问统计与隐私" : "Visit statistics & privacy"}
+          </h2>
+          <div className="space-y-3 text-sm text-text-secondary leading-relaxed">
+            <p>
+              {isZh
+                ? "启用后，本站的第一方统计用于了解各类页面的浏览量，帮助改进网站。只按预设页面类别汇总（不含具体球员或比赛 ID），并统计来源类别和屏幕尺寸类别（手机、平板、桌面或未知）。浏览量不等于独立访客人数。"
+                : "When enabled, our first-party statistics count page views to help improve the site. Counts use a fixed set of page categories, without individual player or game IDs, plus source categories and screen-size categories (mobile, tablet, desktop or unknown). Page views are not a count of unique people."}
+            </p>
+            <p>
+              {isZh
+                ? "这些统计存放在 Supabase 的非公开数据库表中，不保存原始 IP 地址、原始 User-Agent、完整页面或来源网址、查询参数或搜索词。每次浏览生成一个随机事件 ID，仅用于防止重复计数。此功能默认不设置统计 Cookie 或持久浏览器标识，并遵循浏览器的 Do Not Track 和 Global Privacy Control 信号。"
+                : "These statistics are stored in private Supabase tables, without raw IP addresses, raw User-Agent strings, full page or referrer URLs, query parameters or search terms. Each page view gets a random event ID only to prevent duplicate counting. This feature uses no analytics cookies or persistent browser identifier by default and honors browser Do Not Track and Global Privacy Control signals."}
+            </p>
+            <p>
+              {isZh
+                ? "保留目标：事件 ID 约 48 小时，按日汇总数据 90 天。实际删除依赖清理任务成功执行，服务暂停或故障可能延迟删除。托管、CDN 和数据库服务商可能另行处理 IP 等网络数据，其日志和备份不适用上述统计数据保留期限。"
+                : "Retention targets are about 48 hours for event IDs and 90 days for daily aggregates. Deletion depends on successful cleanup; service pauses or failures may delay it. Hosting, CDN and database providers may separately process network data such as IP addresses. Their logs and backups have separate retention policies."}
+            </p>
+            <p>
+              {isZh
+                ? "此外，生产版本会加载 Cloudflare Web Analytics。WebVitals 性能诊断会在浏览器本地保存最近 50 条指标（含页面路径），并输出到控制台；该诊断模块不向后端上传这些记录。它们与上述第一方访问统计分开运行。"
+                : "Separately, production builds load Cloudflare Web Analytics. WebVitals performance diagnostics keep the latest 50 metrics, including page paths, in browser local storage and write to the console; that diagnostic module does not upload those records to a backend. These operate separately from the first-party visit statistics above."}
+            </p>
+          </div>
+        </section>
+
         <section className="glass-tile p-5 ring-1 ring-accent-amber/30 bg-accent-amber/[0.03]">
           <h2 className="text-base font-semibold text-accent-amber mb-2">{isZh ? "免责声明" : "Disclaimer"}</h2>
           <p className="text-sm text-text-secondary leading-relaxed">
