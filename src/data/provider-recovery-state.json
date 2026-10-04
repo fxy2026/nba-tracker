@@ -1,38 +1,18 @@
 {
   "version": 2,
-  "cursor": "0022501187",
+  "cursor": "0022501167",
   "observedRetries": {},
-  "lastRunAt": "2026-10-03T09:14:47.883Z",
+  "lastRunAt": "2026-10-04T09:54:33.937Z",
   "lastBatch": {
-    "requests": 23,
-    "accepted": 13,
+    "requests": 24,
+    "accepted": 18,
     "withheld": [
       {
-        "gameId": "0052500201",
-        "reason": "incomplete-or-mismatched-points-total"
-      },
-      {
-        "gameId": "0052500131",
-        "reason": "no-matching-finished-game"
-      },
-      {
-        "gameId": "0052500101",
-        "reason": "no-matching-finished-game"
-      },
-      {
-        "gameId": "0052500121",
-        "reason": "no-matching-finished-game"
-      },
-      {
-        "gameId": "0052500111",
-        "reason": "no-matching-finished-game"
-      },
-      {
-        "gameId": "0022501200",
+        "gameId": "0022501183",
         "reason": "quarantined-player-identity"
       },
       {
-        "gameId": "0022501197",
+        "gameId": "0022501182",
         "reason": "incomplete-or-mismatched-points-total"
       }
     ]
