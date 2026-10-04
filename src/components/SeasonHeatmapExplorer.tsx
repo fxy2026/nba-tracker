@@ -158,6 +158,9 @@ export function ArchiveContext({ data, locale }: { data: SeasonHeatmapRendererDT
       : zh ? "档案总数尚未与官方赛季总数核验；不宣称全赛季完整覆盖。" : "Archive totals have not been reconciled to official season totals; complete season coverage is not claimed.";
   return <div className={styles.archiveContext} data-archive-coverage={archive.coverageStatus}>
     <p>{status}</p>
+    {archive.sourceRowExclusions && <p data-source-row-exclusions="true">{zh
+      ? `来源中 ${archive.sourceRowExclusions.leagueRows} 条投篮类型缺失记录已隔离，未计入球员或联盟统计；其中本球员 ${archive.sourceRowExclusions.playerRows} 条。未猜测两分或三分。`
+      : `${archive.sourceRowExclusions.leagueRows} source record(s) with missing shot type are quarantined and excluded from player and league counts; ${archive.sourceRowExclusions.playerRows} belong to this player. No two- or three-point value is inferred.`}</p>}
     {hasShortfall && <p data-archive-shortfall="true">{zh
       ? `档案较官方核验值少 ${shortfall.fgm} 次投篮命中、${shortfall.fga} 次出手；其中三分少 ${shortfall.fg3m} 次命中、${shortfall.fg3a} 次出手。缺口不分配到球场分区。`
       : `Archive shortfall vs official control: ${shortfall.fgm} made field ${shortfall.fgm === 1 ? "goal" : "goals"} and ${shortfall.fga} ${shortfall.fga === 1 ? "attempt" : "attempts"}; ${shortfall.fg3m} made ${shortfall.fg3m === 1 ? "three-pointer" : "three-pointers"} and ${shortfall.fg3a} three-point ${shortfall.fg3a === 1 ? "attempt" : "attempts"}. The shortfall is not assigned to court zones.`}</p>}

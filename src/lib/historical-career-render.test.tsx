@@ -3,6 +3,8 @@ import { createElement, isValidElement, type ReactElement, type ReactNode } from
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import archive from "@/data/historical-career-archives/893-2026-10-04.json";
+import kobe from "@/data/historical-career-archives/977-2026-10-04.json";
+import duncan from "@/data/historical-career-archives/1495-2026-10-04.json";
 import { normalizeHistoricalCareerData, type HistoricalCareerSeasonType } from "./historical-career-data";
 
 const state = vi.hoisted(() => ({ index: 0, seasonType: "Regular Season", mode: "per-game" }));
@@ -87,4 +89,35 @@ it("contains mobile overflow locally and uses opaque sticky season cells", () =>
   expect(css).toContain("position: sticky"); expect(css).toContain("background-color: var(--bg-card)");
   expect(css).toContain("background-color: var(--bg-secondary)");
   expect(css).toContain("@media (max-width: 639px)"); expect(css).not.toContain("100vw");
+});
+
+
+describe.each(["en", "zh"] as const)("legend archive rendering in %s", locale => {
+  it.each([
+    { archive: kobe, id: 977, regular: 20, playoffs: 15, points: 33643 },
+    { archive: duncan, id: 1495, regular: 19, playoffs: 18, points: 26496 },
+  ])("renders $id in both competitions and display modes", fixture => {
+    const legend = normalizeHistoricalCareerData(fixture.archive, fixture.id)!;
+    for (const seasonType of ["Regular Season", "Playoffs"] as const) {
+      for (const mode of ["per-game", "totals"] as const) {
+        const html = renderToStaticMarkup(createElement(HistoricalCareerTable, { data: legend, locale, seasonType, mode }));
+        expect(html.match(/scope="row"/g)).toHaveLength((seasonType === "Regular Season" ? fixture.regular : fixture.playoffs) + 1);
+        expect(html).not.toContain("NaN");
+        expect(html).toContain('role="region"');
+        if (seasonType === "Regular Season") expect(html).toContain(String(fixture.points));
+      }
+    }
+    const html = renderToStaticMarkup(createElement(HistoricalPlayerCareer, { data: legend, locale }));
+    expect(html).toContain(`data-historical-career="${fixture.id}"`);
+    expect(html).toContain(locale === "zh" ? "暂未解决，显示为 —" : "Unresolved; displayed as —");
+    expect(html).toContain(locale === "zh" ? "采用相符的第三方来源值" : "Matching secondary-source values retained");
+    expect(html).toContain(locale === "zh" ? "并非 NBA 官方核验" : "not an NBA-officially verified");
+    expect(html).toContain(locale === "zh" ? "不是精确秒数" : "not exact seconds");
+    expect(html).toMatch(/\d+\.\d%/);
+    expect(html).not.toMatch(/<details[^>]*open/);
+    if (fixture.id === 977) {
+      expect(html).toContain(locale === "zh" ? "官方交叉核对仅覆盖常规赛" : "Official corroboration covers regular-season");
+      expect(html).toContain(locale === "zh" ? "常规赛 / 季后赛" : "Regular season / Playoffs");
+    } else expect(html).toContain("2782.6");
+  });
 });

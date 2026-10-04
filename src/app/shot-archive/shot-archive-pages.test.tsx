@@ -58,8 +58,8 @@ describe("historical shot archive directory", () => {
     const html = renderToStaticMarkup(page);
     expect(html).toContain("Kobe Bryant");
     expect(html).toContain('href="/player/977#shooting"');
-    expect(html).toContain("2005–2025");
-    expect(html).not.toContain("1996–2025");
+    expect(html).toContain("1996–2025");
+    expect(html).not.toContain("2005–2025");
     expect(html).toContain(locale === "zh" ? "并不表示零次出手" : "never zero attempts");
     expect(html).toContain(locale === "zh" ? "可能不完整" : "may be incomplete");
     expect(html).toContain(locale === "zh" ? "对应来源、赛季及赛事类型" : "corresponding source, season, and season type");

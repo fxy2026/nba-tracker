@@ -119,6 +119,16 @@ describe("archive-summary display rules", () => {
     expect(render(data)).toContain("Official GP: unavailable");
     expect(render(data)).toContain("have not been reconciled to official season totals");
   });
+  it.each(["en", "zh"] as const)("discloses excluded unknown-type source rows and local verification dates (%s)", locale => {
+    const data = archiveFixture();
+    data.archive!.sourceObservationKind = "local-blob-verification";
+    data.archive!.sourceRowExclusions = { reason: "unknown-shot-type", leagueRows: 1, playerRows: 1 };
+    const html = render(data, locale);
+    expect(html).toContain('data-source-row-exclusions="true"');
+    expect(html).toContain(locale === "zh" ? "未猜测两分或三分" : "No two- or three-point value is inferred");
+    expect(html).toContain(locale === "zh" ? "本地来源核验日期" : "Local source verification");
+    expect(html).not.toContain(locale === "zh" ? "原始下载日期" : "Original download");
+  });
   it("never compares archive colors using an official displayed-LA label", () => {
     const data = archiveFixture();
     expect(referenceDifference(data.zones[0], data.benchmark)).toBe(10);

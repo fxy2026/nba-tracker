@@ -24,13 +24,13 @@ function testStore(mutate: (file: string, data: Buffer) => Buffer = (_, data) =>
 }
 
 describe("historical shooting archive server boundary", () => {
-  it("ships exactly the verified 42-file checkpoint, not blocked older seasons", async () => {
-    expect(index.stagedArchiveCount).toBe(42);
-    expect(index.playerCount).toBe(2224);
-    expect(index.summaries.map(row => row.season).sort()[0]).toBe("2005-06");
+  it("ships all 60 pinned packs with only source-backed player seasons", async () => {
+    expect(index.stagedArchiveCount).toBe(60);
+    expect(index.playerCount).toBe(2840);
+    expect(index.summaries.map(row => row.season).sort()[0]).toBe("1996-97");
     expect(index.summaries.map(row => row.season).sort().at(-1)).toBe("2025-26");
     const search = await searchHistoricalShotPlayers("", 1);
-    expect(search).toMatchObject({ status: "ready", total: 2224, page: 1, pageSize: 48, seasonCount: 21, archiveCount: 42 });
+    expect(search).toMatchObject({ status: "ready", total: 2840, page: 1, pageSize: 48, seasonCount: 30, archiveCount: 60 });
     if (search.status === "ready") expect(search.players).toHaveLength(48);
   });
 
@@ -51,11 +51,11 @@ describe("historical shooting archive server boundary", () => {
       expect(decodeSeasonHeatmapResource(resource, identity), entry.file).toEqual(resource);
       expect(Buffer.byteLength(JSON.stringify(resource))).toBeLessThan(16000);
     }
-    expect(attempts).toBe(4571321);
-    expect(identities).toBe(14824);
+    expect(attempts).toBe(6328070);
+    expect(identities).toBe(20421);
   });
 
-  it("projects all 14,824 player-season/type records without dropping control mismatches", () => {
+  it("projects all 20,421 player-season/type records without dropping control mismatches", () => {
     let visited = 0, matches = 0, mismatches = 0;
     for (const entry of index.summaries) {
       const raw = JSON.parse(gunzipSync(read(entry.file)).toString());
@@ -70,7 +70,7 @@ describe("historical shooting archive server boundary", () => {
         visited++;
       }
     }
-    expect(visited).toBe(14824); expect(matches).toBe(56); expect(mismatches).toBe(6);
+    expect(visited).toBe(20421); expect(matches).toBe(56); expect(mismatches).toBe(6);
   }, 120000);
 
   it("does not infer point value from 14-zone boundaries in a synthetic shortened-line season", () => {
@@ -170,7 +170,7 @@ describe("historical shooting archive server boundary", () => {
   });
 
   it("bounds directory responses, normalizes search, and provides older players absent current index", async () => {
-    expect(await getHistoricalShotPlayer(977)).toMatchObject({ playerId: 977, name: "Kobe Bryant", firstSeason: "2005-06", lastSeason: "2015-16" });
+    expect(await getHistoricalShotPlayer(977)).toMatchObject({ playerId: 977, name: "Kobe Bryant", firstSeason: "1996-97", lastSeason: "2015-16" });
     expect(await getHistoricalShotPlayer(999999999)).toBeNull();
     expect(await getHistoricalShotCatalog(999999999)).toEqual([]);
     expect(await searchHistoricalShotPlayers("Kobe Bryant", 999)).toMatchObject({ status: "ready", page: 1, total: 1, players: [{ playerId: 977 }] });

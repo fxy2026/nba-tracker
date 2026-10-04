@@ -13,7 +13,7 @@ const rawSummary = (season = "2025-26", type = "regular") => JSON.parse(gunzipSy
 const current: HeatmapIdentity = { playerId: 201939, season: "2025-26", seasonType: "Regular Season" };
 
 describe("court-aligned shooting archive", () => {
-  it("reconciles all 14,824 identities and retains every explicit point-type contradiction outside the court", () => {
+  it("reconciles all 20,421 identities and retains every explicit point-type contradiction outside the court", () => {
     let players = 0, zeroZones = 0;
     const totals = { fgm: 0, fga: 0, fg3m: 0, fg3a: 0 }, conflict = { ...totals };
     for (const entry of index.summaries) {
@@ -42,9 +42,9 @@ describe("court-aligned shooting archive", () => {
         players++;
       }
     }
-    expect(players).toBe(14824); expect(zeroZones).toBe(40304);
-    expect(totals).toEqual({ fgm: 2100828, fga: 4571321, fg3m: 504695, fg3a: 1408408 });
-    expect(conflict).toEqual({ fgm: 518, fga: 1505, fg3m: 430, fg3a: 1206 });
+    expect(players).toBe(20421); expect(zeroZones).toBe(57343);
+    expect(totals).toEqual({ fgm: 2882556, fga: 6328070, fg3m: 617195, fg3a: 1728784 });
+    expect(conflict).toEqual({ fgm: 8741, fga: 23688, fg3m: 8590, fg3a: 23213 });
   }, 120000);
 
   it("recomputes Curry's paint groups instead of relabelling the old under-8-ft total", async () => {

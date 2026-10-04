@@ -90,14 +90,14 @@ export function heatmapCopy(data: SeasonHeatmapRendererDTO | null, locale: Heatm
   } : copy[locale];
   if (data?.status !== "archive-summary") return base;
   return locale === "zh" ? {
-    ...base, verified: "历史档案汇总", source: "固定版本投篮档案", sourceDate: "原始下载日期", reference: "档案联盟参考",
+    ...base, verified: "历史档案汇总", source: "固定版本投篮档案", sourceDate: data.archive?.sourceObservationKind === "local-blob-verification" ? "本地来源核验日期" : "原始下载日期", reference: "档案联盟参考",
     shareRead: "占档案出手总数比例 · 命中 / 出手", attempts: "档案出手占比", la: "档案加权命中率", difference: "与档案参考之差",
     benchmark: "参考颜色使用所选赛季与类型的档案联盟分区命中数 ÷ 出手数。按出手加权，不平均球员命中率，也不等同于 NBA 页面 LA。±3 个百分点为本图规则；档案的联盟覆盖完整性尚未独立核验。",
     noBaseline: "部分分区缺少档案联盟参考，使用中性色。仍可查看实际命中率和出手占比。",
     residualNote: data.geometryVersion === "nba-court-basic12-v1" ? "后场、未知分类，以及区域标签与明确投篮类型冲突的出手单列，均保留在档案总数和占比分母中；不猜测或重新分配位置。" : "原始分类中其余出手按后场或未分类汇总，保留在档案总数及占比分母中。三分只按明确的投篮类型统计，不推断空间位置。",
     partial: "档案来源总数；不宣称全赛季完整覆盖", total: "档案合计",
   } : {
-    ...base, verified: "HISTORICAL ARCHIVE SUMMARY", source: "Pinned shot archive", sourceDate: "Original download", reference: "Archive league reference",
+    ...base, verified: "HISTORICAL ARCHIVE SUMMARY", source: "Pinned shot archive", sourceDate: data.archive?.sourceObservationKind === "local-blob-verification" ? "Local source verification" : "Original download", reference: "Archive league reference",
     shareRead: "Share of archived attempts · made / attempts", attempts: "Archive shot share", la: "Archive weighted FG%", difference: "Difference from archive reference",
     benchmark: "Reference colors use league zone makes ÷ attempts from this archive, season and season type. This is attempt-weighted, never an average of player percentages or NBA-displayed LA. The ±3 percentage-point band is this product’s rule; complete league coverage is not independently verified.",
     noBaseline: "Archive league reference is unavailable for one or more zones; those zones are neutral. Absolute FG% and shot share remain available.",

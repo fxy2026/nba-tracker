@@ -10,7 +10,7 @@ import { isSeasonHeatmapIdentity } from "./verified-season-heatmap-archive";
 import { courtBasic12Zones, courtZoneForSource, SEASON_HEATMAP_COURT_GEOMETRY_VERSION, type CourtBasic12ZoneId } from "./season-heatmap-court-zones";
 import type { HeatmapIdentity, SeasonHeatmapArchiveResource, SeasonHeatmapCatalogEntry, SeasonHeatmapDisplayRow, SeasonHeatmapRendererDTO } from "./season-heatmap";
 
-const PARSER_VERSIONS = ["nba-shot-summary-v1.0.0", "nba-shot-summary-v1.1.0"];
+const PARSER_VERSIONS = ["nba-shot-summary-v1.0.0", "nba-shot-summary-v1.1.0", "nba-shot-summary-v1.2.0"];
 const PIN = "e829d4678be1e075f99e5d41a1c5f97089be446b";
 const BENCHMARK = "weighted-archive-counts-not-official-displayed-LA" as const;
 const DIRECTORY_PAGE_SIZE = 48;
@@ -112,6 +112,15 @@ export function projectHistoricalShotSummary(raw: unknown, identity: HeatmapIden
     for (const key of countKeys) requireValue(selected.totals[key] <= league.totals[key]);
     // Validate league weighting against all source-player totals, without summing team/TOT splits.
     requireValue(sameCounts(sum(Object.values(players).map(counts)), league.totals));
+    const localImport = value.parserVersion === "nba-shot-summary-v1.2.0";
+    let sourceRowExclusions: NonNullable<SeasonHeatmapRendererDTO["archive"]>["sourceRowExclusions"];
+    if (localImport) {
+      requireValue(year >= 1996 && year <= 2004 && provenance.acquisitionMethod === "user-authorized-git-clone-local-blob-verification");
+      const excluded = integer(quality.quarantinedRowCount), playerExcluded = integer(player.quarantinedRowCount);
+      requireValue(quality.rowCountConvention === "csvRows-accepted-explicit-point-type-only" && integer(quality.sourceCsvRows) === league.totals.fga + excluded && playerExcluded <= excluded);
+      requireValue(Object.values(players).reduce<number>((sum, row) => sum + integer(object(row).quarantinedRowCount), 0) === excluded);
+      if (excluded > 0) sourceRowExclusions = { reason: "unknown-shot-type", leagueRows: excluded, playerRows: playerExcluded };
+    }
     const coverageStatus = player.coverageStatus;
     requireValue(coverageStatus === "not-officially-reconciled" || coverageStatus === "official-shooting-totals-match" || coverageStatus === "official-shooting-totals-mismatch");
     const officialGp = player.officialGp === null ? null : integer(player.officialGp);
@@ -134,11 +143,11 @@ export function projectHistoricalShotSummary(raw: unknown, identity: HeatmapIden
     const residuals = (["backcourt", "unclassified"] as const).filter(id => selected.residuals.has(id)).map(id => row(id, id === "backcourt" ? "Back Court(BC) | Back Court Shot" : "null | null", selected.residuals.get(id)!, league.residuals.get(id)));
     return freeze({
       ...identity, geometryVersion: SEASON_HEATMAP_GEOMETRY_VERSION, status: "archive-summary",
-      source: { url: sourceUrl(identity), capturedAtUtc: timestamp(provenance.downloadedAt), observedAtWindowUtc: null },
+      source: { url: sourceUrl(identity), capturedAtUtc: timestamp(localImport ? provenance.localVerifiedAt : provenance.downloadedAt), observedAtWindowUtc: null },
       zones, residuals, totals: { fgm: selected.totals.fgm, fga: selected.totals.fga },
       coverage: { aggregate: "archive-source-only", rawPoints: "not-captured", normalZoneAttempts: sum([...selected.zones.values()]).fga, residualAttempts: sum([...selected.residuals.values()]).fga, seasonAttemptDenominator: selected.totals.fga },
       benchmark: { kind: BENCHMARK, season: identity.season, seasonType: identity.seasonType, from, to, shotBearingGames: leagueGames, leagueFgm: league.totals.fgm, leagueFga: league.totals.fga },
-      archive: { fg3m: selected.totals.fg3m, fg3a: selected.totals.fg3a, shotBearingGames, officialGp, coverageStatus, sourceCoverage: { from, to }, metadataObservedAtUtc: timestamp(provenance.metadataVerifiedAt), officialControl },
+      archive: { fg3m: selected.totals.fg3m, fg3a: selected.totals.fg3a, shotBearingGames, officialGp, coverageStatus, sourceCoverage: { from, to }, metadataObservedAtUtc: timestamp(provenance.metadataVerifiedAt), officialControl, ...(localImport ? { sourceObservationKind: "local-blob-verification" as const } : {}), ...(sourceRowExclusions ? { sourceRowExclusions } : {}) },
     });
   } catch { return null; }
 }

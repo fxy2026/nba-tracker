@@ -91,7 +91,12 @@ export function decodeSeasonHeatmapResource(value: unknown, expected: HeatmapIde
 }
 
 export function validArchiveMetadata(value: unknown, total: { fgm: number; fga: number }, expected: HeatmapIdentity): value is import("./season-heatmap").HeatmapArchiveMetadata {
-  if (!object(value) || !keys(value, ["fg3m", "fg3a", "shotBearingGames", "officialGp", "coverageStatus", "sourceCoverage", "metadataObservedAtUtc", "officialControl"]) || !shooting({ ...total, fg3m: value.fg3m, fg3a: value.fg3a }) || !count(value.shotBearingGames) || value.shotBearingGames > total.fga || !calendarTimestamp(value.metadataObservedAtUtc) || !object(value.sourceCoverage) || !keys(value.sourceCoverage, ["from", "to"]) || !date(value.sourceCoverage.from) || !date(value.sourceCoverage.to) || value.sourceCoverage.from > value.sourceCoverage.to) return false;
+  if (!object(value) || !keys(value, ["fg3m", "fg3a", "shotBearingGames", "officialGp", "coverageStatus", "sourceCoverage", "metadataObservedAtUtc", "officialControl", ...(Object.hasOwn(value, "sourceObservationKind") ? ["sourceObservationKind"] : []), ...(Object.hasOwn(value, "sourceRowExclusions") ? ["sourceRowExclusions"] : [])]) || !shooting({ ...total, fg3m: value.fg3m, fg3a: value.fg3a }) || !count(value.shotBearingGames) || value.shotBearingGames > total.fga || !calendarTimestamp(value.metadataObservedAtUtc) || !object(value.sourceCoverage) || !keys(value.sourceCoverage, ["from", "to"]) || !date(value.sourceCoverage.from) || !date(value.sourceCoverage.to) || value.sourceCoverage.from > value.sourceCoverage.to) return false;
+  if (Object.hasOwn(value, "sourceObservationKind") && value.sourceObservationKind !== "local-blob-verification") return false;
+  if (Object.hasOwn(value, "sourceRowExclusions")) {
+    const exclusions = value.sourceRowExclusions;
+    if (value.sourceObservationKind !== "local-blob-verification" || !object(exclusions) || !keys(exclusions, ["reason", "leagueRows", "playerRows"]) || exclusions.reason !== "unknown-shot-type" || !count(exclusions.leagueRows) || exclusions.leagueRows < 1 || !count(exclusions.playerRows) || exclusions.playerRows > exclusions.leagueRows) return false;
+  }
   const year = Number(expected.season.slice(0, 4));
   if (value.sourceCoverage.from < `${year}-07-01` || value.sourceCoverage.to > `${year + 1}-12-31`) return false;
   if (value.officialControl === null) return value.coverageStatus === "not-officially-reconciled" && value.officialGp === null;

@@ -50,7 +50,7 @@ describe("dated historical career data", () => {
     const row = data.rows.find(row => row.season === "2001-02")!;
     expect(row.totals.MIN).toBeNull();
     expect(historicalCareerAverage(row.totals, "MIN")).toBeNull();
-    expect(data.disputes).toEqual([{ season: "2001-02", seasonType: "Regular Season", field: "MIN", observations: [
+    expect(data.disputes).toEqual([{ season: "2001-02", seasonType: "Regular Season", field: "MIN", resolution: "quarantined_null", observations: [
       { sourceId: "statmuse_regular_totals", value: 2093 }, { sourceId: "basketballmonster_regular_totals", value: 2094 },
     ] }]);
   });

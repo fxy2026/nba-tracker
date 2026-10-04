@@ -3,10 +3,28 @@
 import { createHash } from "node:crypto";
 import { normalizeHistoricalCareerData, type HistoricalCareerData } from "./historical-career-data";
 
-const archives: Record<number, { sha256: string; read: () => Promise<unknown> }> = {
+const archives: Record<number, { sha256: string; read: () => Promise<unknown>; retrievalPrecision?: "approximate-minute" }> = {
   893: {
     sha256: "8006fe4fb1aec9e98c9d967f1b25188025ff083ff787e4f997472f68f6c28e23",
     read: () => import("@/data/historical-career-archives/893-2026-10-04.json").then(module => module.default),
+  },
+  977: {
+    sha256: "5d851d07b14e2c3e8eb46152b00113e05b07f73afd9bad1f34946b4180979490",
+    read: () => import("@/data/historical-career-archives/977-2026-10-04.json").then(module => module.default),
+  },
+  1495: {
+    sha256: "d2c974405e6e3dc2b4ffbfb20d89885bacb1a227a273bd0a240d228f76a53ad6",
+    read: () => import("@/data/historical-career-archives/1495-2026-10-04.json").then(module => module.default),
+  },
+  76003: {
+    sha256: "3be60da0aaf6a7784b0d6a8b8377df9bcca5be0f05a1bf31615e81a512b4c571",
+    retrievalPrecision: "approximate-minute",
+    read: () => import("@/data/historical-career-archives/76003-2026-10-04.json").then(module => module.default),
+  },
+  76375: {
+    sha256: "5e9fab865536a6d3f8bb0a572ed5c83f978020b176321d9fd9f9685a91bde0b5",
+    retrievalPrecision: "approximate-minute",
+    read: () => import("@/data/historical-career-archives/76375-2026-10-04.json").then(module => module.default),
   },
 };
 
@@ -20,6 +38,9 @@ export function validateHistoricalCareerArchive(raw: unknown, playerId: number, 
 export async function getHistoricalCareerArchive(playerId: number): Promise<HistoricalCareerData | null> {
   if (!Object.hasOwn(archives, playerId)) return null;
   const archive = archives[playerId];
-  try { return validateHistoricalCareerArchive(await archive.read(), playerId, archive.sha256); }
+  try {
+    const data = validateHistoricalCareerArchive(await archive.read(), playerId, archive.sha256);
+    return data && archive.retrievalPrecision ? { ...data, retrievalPrecision: archive.retrievalPrecision } : data;
+  }
   catch { return null; }
 }

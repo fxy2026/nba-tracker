@@ -42,12 +42,14 @@ describe("one canonical player home", () => {
     const html = renderToStaticMarkup(tree);
     expect(html).toContain(locale === "zh" ? "此来源未收录个人资料" : "Biographical details");
     expect(html).toContain(locale === "zh" ? "不是生涯起止年份" : "not career dates");
-    expect(html).toContain("2005-06"); expect(html).toContain("1994"); expect(html).toContain("2026-10-03");
+    expect(html).toContain("1996-97"); expect(html).toContain("1994"); expect(html).toContain("2026-10-03");
     expect(html).not.toContain("PPG"); expect(html).not.toContain("0.0"); expect(html).not.toContain("undefined");
   });
-  it("registry-only historical players get a profile and honest missing shooting state", async () => {
+  it("Jordan now gets a profile with six genuinely recorded shooting selections", async () => {
     const tree = await page(893); const html = renderToStaticMarkup(tree);
-    expect(html).toContain("Michael Jordan"); expect(html).toContain("Missing records do not mean zero attempts");
+    expect(html).toContain("Michael Jordan"); expect(html).toContain('data-testid="shooting-explorer"');
+    expect(tree.props.catalog).toHaveLength(6);
+    expect(tree.props.initialSelection).toEqual({ playerId: 893, season: "2002-03", seasonType: "Regular Season" });
     expect(html).toContain("Existing curated career summary"); expect(html).toContain("30.1");
   });
   it.each(["en", "zh"] as const)("integrates Jordan season totals into the canonical page without hiding shot availability (%s)", async locale => {
@@ -56,10 +58,20 @@ describe("one canonical player home", () => {
     expect(tree.props.historicalCareer.rows).toHaveLength(28);
     expect(html).toContain('data-historical-career="893"');
     expect(html).toContain("1984-85"); expect(html).toContain("2002-03");
-    expect(html).toContain(locale === "zh" ? "缺失记录并不代表零次出手" : "Missing records do not mean zero attempts");
+    expect(html).toContain('data-testid="shooting-explorer"');
+    expect(tree.props.initialResource).toMatchObject({ status: "ready", data: { totals: { fgm: 679, fga: 1527 } } });
     expect(html).not.toContain(locale === "zh" ? "完整逐赛季生涯表暂未收录" : "A complete season-by-season career table has not been recorded");
     expect(html.indexOf('id="career"')).toBeLessThan(html.indexOf('id="shooting"'));
     expect(JSON.stringify(tree.props.historicalCareer)).not.toMatch(/evidenceSha256|publishedCareerTotals|sourceObservations/);
+  });
+  it.each([[76003, "Kareem Abdul-Jabbar", 38], [76375, "Wilt Chamberlain", 27]])("integrates early-era profile %s with genuine played rows", async (id, name, rowCount) => {
+    const tree = await page(id); const html = renderToStaticMarkup(tree);
+    expect(tree.props.historicalCareer.rows).toHaveLength(rowCount);
+    expect(tree.props.historicalCareer.retrievalPrecision).toBe("approximate-minute");
+    expect(html).toContain(name); expect(html).toContain(`data-historical-career="${id}"`);
+    expect(html).toContain("categories not recorded at the time");
+    expect(html).toContain("Missing records do not mean zero attempts");
+    expect(html).not.toContain("A complete season-by-season career table has not been recorded");
   });
   it("retains the usable canonical profile when the historical archive fails validation or loading", async () => {
     state.careerUnavailable = true;
@@ -68,7 +80,8 @@ describe("one canonical player home", () => {
     expect(html).toContain("Michael Jordan"); expect(html).toContain("Existing curated career summary");
     expect(html).toContain("A complete season-by-season career table has not been recorded");
     expect(html).not.toContain("data-historical-career");
-    expect(html).toContain("Missing records do not mean zero attempts");
+    expect(html).toContain('data-testid="shooting-explorer"');
+    expect(tree.props.catalog).toHaveLength(6);
   });
   it("preserves current rich stats props and places shooting before the long career table", async () => {
     const tree = await page(201939); const nodes = elements(tree);

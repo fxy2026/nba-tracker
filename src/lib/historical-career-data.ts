@@ -9,15 +9,20 @@ export interface HistoricalCareerRow {
   season: string;
   seasonType: HistoricalCareerSeasonType;
   teamAbbreviation: string;
+  teamName?: string;
+  eraUnavailableFields?: HistoricalCareerTotalKey[];
   totals: HistoricalCareerTotals;
   sourceId: string;
   sourceUrl: string;
   sourceStatus: "secondary_source";
   retrievedAt: string;
 }
-export interface HistoricalCareerSource { id: string; publisher: string; url: string; retrievedAt: string }
+export interface HistoricalCareerSource { id: string; publisher: string; url: string; retrievedAt: string; verifiedScope?: string; scope?: "playoffs-and-historical-team-labels" }
+const HISTORICAL_CAREER_PERCENTAGE_KEYS = ["FG_PCT", "FG3_PCT", "FT_PCT"] as const;
+type HistoricalCareerPercentageKey = typeof HISTORICAL_CAREER_PERCENTAGE_KEYS[number];
 export interface HistoricalCareerDispute {
-  season: string; seasonType: HistoricalCareerSeasonType; field: HistoricalCareerTotalKey;
+  season: string; seasonType: HistoricalCareerSeasonType; field: HistoricalCareerTotalKey | HistoricalCareerPercentageKey;
+  resolution: "quarantined_null" | "selected_secondary_consensus";
   observations: { sourceId: string; value: number }[];
 }
 export interface HistoricalCareerData {
@@ -27,6 +32,7 @@ export interface HistoricalCareerData {
   rows: HistoricalCareerRow[];
   sources: HistoricalCareerSource[];
   disputes: HistoricalCareerDispute[];
+  retrievalPrecision?: "approximate-minute";
 }
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
@@ -52,13 +58,21 @@ export function normalizeHistoricalCareerData(raw: unknown, playerId: number): H
   for (const source of raw.sources) {
     if (!record(source) || typeof source.id !== "string" || !source.id || sources.some(row => row.id === source.id)
       || typeof source.publisher !== "string" || !source.publisher.trim() || !timestamp(source.retrievedAt)
-      || typeof source.url !== "string" || source.officialNbaVerified === true
+      || typeof source.url !== "string"
       || new Date(source.retrievedAt).getTime() > new Date(raw.retrievedAt).getTime()) return null;
     try {
       const url = new URL(source.url);
-      if (url.username || url.password || !["https://www.statmuse.com", "https://history.basketballmonster.com"].includes(url.origin)) return null;
+      const partialOfficial = playerId === 977 && source.url === "https://www.nba.com/lakers/history/alumni/kobe-bryant"
+        && source.role === "partial_official_corroboration" && source.officialNbaVerified === true
+        && source.verifiedScope === "Only season GP, FGM, FGA, FG3M, FG3A totals independently compared. This does not verify every selected row field.";
+      const apbrScope = playerId === 76375 && source.url === "https://apbr.org/wilt.html"
+        && source.id === "apbr_playoff_totals" && source.role === "corroboration" && source.officialNbaVerified === false;
+      if (url.username || url.password || (!partialOfficial && !apbrScope
+        && (source.officialNbaVerified === true || !["https://www.statmuse.com", "https://history.basketballmonster.com", "https://basketball.realgm.com"].includes(url.origin)))) return null;
     } catch { return null; }
-    sources.push({ id: source.id, publisher: source.publisher, url: source.url, retrievedAt: source.retrievedAt });
+    sources.push({ id: source.id, publisher: source.publisher, url: source.url, retrievedAt: source.retrievedAt,
+      ...(source.officialNbaVerified === true ? { verifiedScope: source.verifiedScope as string } : {}),
+      ...(source.url === "https://apbr.org/wilt.html" ? { scope: "playoffs-and-historical-team-labels" as const } : {}) });
   }
   const rows: HistoricalCareerRow[] = [];
   const identities = new Set<string>();
@@ -88,24 +102,65 @@ export function normalizeHistoricalCareerData(raw: unknown, playerId: number): H
     if (totals.OREB !== null && totals.DREB !== null && totals.REB !== null && totals.OREB + totals.DREB !== totals.REB) return null;
     if (totals.FGM !== null && totals.FG3M !== null && totals.FTM !== null && totals.PTS !== null
       && 2 * totals.FGM + totals.FG3M + totals.FTM !== totals.PTS) return null;
+    if (candidate.teamName !== undefined && (typeof candidate.teamName !== "string" || !candidate.teamName.trim() || candidate.teamName.length > 100)) return null;
+    const eraUnavailableFields: HistoricalCareerTotalKey[] = [];
+    if (candidate.eraUnavailableFields !== undefined) {
+      if (!Array.isArray(candidate.eraUnavailableFields)) return null;
+      for (const value of candidate.eraUnavailableFields) {
+        if (value === "percentages.FG3_PCT") {
+          if (totals.FG3M !== null || totals.FG3A !== null) return null;
+          continue;
+        }
+        if (typeof value !== "string" || !value.startsWith("totals.")) return null;
+        const key = value.slice(7) as HistoricalCareerTotalKey;
+        if (!["STL", "BLK", "OREB", "DREB", "TOV", "FG3M", "FG3A"].includes(key)
+          || totals[key] !== null || eraUnavailableFields.includes(key)) return null;
+        eraUnavailableFields.push(key);
+      }
+    }
     rows.push({ nbaPlayerId: playerId, season: candidate.season, seasonType: candidate.seasonType,
-      teamAbbreviation: candidate.teamAbbreviation, totals, sourceId: candidate.sourceId,
+      teamAbbreviation: candidate.teamAbbreviation,
+      ...(typeof candidate.teamName === "string" ? { teamName: candidate.teamName } : {}),
+      ...(eraUnavailableFields.length ? { eraUnavailableFields } : {}), totals, sourceId: candidate.sourceId,
       sourceUrl: candidate.sourceUrl, sourceStatus: "secondary_source", retrievedAt: candidate.retrievedAt });
   }
   const disputes: HistoricalCareerDispute[] = [];
   for (const dispute of raw.disputes) {
-    if (!record(dispute) || typeof dispute.field !== "string" || !dispute.field.startsWith("totals.")
-      || !Array.isArray(dispute.observations) || dispute.observations.length < 2 || dispute.resolution !== "quarantined_null") return null;
-    const field = dispute.field.slice(7) as HistoricalCareerTotalKey;
+    if (!record(dispute) || typeof dispute.field !== "string"
+      || !Array.isArray(dispute.observations) || dispute.observations.length < 2
+      || (dispute.resolution !== "quarantined_null" && dispute.resolution !== "selected_secondary_consensus")) return null;
+    const [group, key, extra] = dispute.field.split(".");
+    if (extra !== undefined) return null;
+    const isTotal = group === "totals" && HISTORICAL_CAREER_TOTAL_KEYS.includes(key as HistoricalCareerTotalKey);
+    const isPercentage = group === "percentages" && HISTORICAL_CAREER_PERCENTAGE_KEYS.includes(key as HistoricalCareerPercentageKey);
+    if (!isTotal && !isPercentage) return null;
+    const field = key as HistoricalCareerDispute["field"];
     const row = rows.find(row => row.season === dispute.season && row.seasonType === dispute.seasonType);
-    if (!row || !HISTORICAL_CAREER_TOTAL_KEYS.includes(field) || row.totals[field] !== null) return null;
+    const rawRow = raw.rows.find(candidate => record(candidate) && candidate.season === dispute.season && candidate.seasonType === dispute.seasonType);
+    if (!row || !record(rawRow)) return null;
+    const canonicalValue = isTotal ? row.totals[field as HistoricalCareerTotalKey]
+      : record(rawRow.percentages) ? rawRow.percentages[field] : undefined;
+    if (dispute.resolution === "quarantined_null" ? canonicalValue !== null
+      : typeof canonicalValue !== "number" || !Number.isFinite(canonicalValue)
+        || (isPercentage && (canonicalValue < 0 || canonicalValue > 1))) return null;
     const observations: HistoricalCareerDispute["observations"] = [];
     for (const observation of dispute.observations) {
       if (!record(observation) || typeof observation.sourceId !== "string" || !sources.some(source => source.id === observation.sourceId)
-        || typeof observation.value !== "number" || !Number.isSafeInteger(observation.value)) return null;
+        || observations.some(previous => previous.sourceId === observation.sourceId)
+        || typeof observation.value !== "number" || !Number.isFinite(observation.value)
+        || (field !== "PLUS_MINUS" && observation.value < 0)
+        || (isPercentage ? observation.value > 1 : field !== "MIN" && !Number.isSafeInteger(observation.value))) return null;
       observations.push({ sourceId: observation.sourceId, value: observation.value });
     }
-    disputes.push({ season: row.season, seasonType: row.seasonType, field, observations });
+    if (new Set(observations.map(observation => observation.value)).size < 2) return null;
+    if (dispute.resolution === "selected_secondary_consensus") {
+      // Fractional corroborating minutes may round to the selected whole-minute
+      // total. Other counts and displayed source percentages must agree exactly.
+      const agrees = (value: number) => field === "MIN" ? Math.abs(value - (canonicalValue as number)) <= 0.5 : value === canonicalValue;
+      if (!observations.some(observation => observation.sourceId === row.sourceId && observation.value === canonicalValue)
+        || observations.filter(observation => agrees(observation.value)).length < 2) return null;
+    }
+    disputes.push({ season: row.season, seasonType: row.seasonType, field, resolution: dispute.resolution, observations });
   }
   return { playerId, playerName: raw.player.name, retrievedAt: raw.retrievedAt, rows, sources, disputes };
 }
@@ -123,4 +178,13 @@ export function historicalCareerPercentage(totals: HistoricalCareerTotals, kind:
   const made = totals[`${kind}M`];
   const attempts = totals[`${kind}A`];
   return made === null || attempts === null || attempts <= 0 ? null : made / attempts * 100;
+}
+
+/** Coverage counts describe recorded fields, never a full-career rate denominator. */
+export function historicalCareerEraCoverage(rows: readonly HistoricalCareerRow[]) {
+  return HISTORICAL_CAREER_TOTAL_KEYS.filter(key => rows.some(row => row.eraUnavailableFields?.includes(key))).map(key => {
+    const recorded = rows.filter(row => row.totals[key] !== null);
+    return { key, recordedSeasons: recorded.length, totalSeasons: rows.length,
+      recordedGames: recorded.length ? recorded.reduce((sum, row) => sum + row.totals.GP!, 0) : null };
+  });
 }

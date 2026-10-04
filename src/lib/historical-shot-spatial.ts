@@ -5,6 +5,7 @@ import { gunzipSync } from "node:zlib";
 import path from "node:path";
 import spatialIndex from "@/data/historical-shot-spatial/index.json";
 import summaryIndex from "@/data/historical-shot-archive/catalog-index.json";
+import earlyImportSourceManifest from "@/data/historical-shot-archive/early-import-source-manifest.json";
 import { loadHistoricalCourtArchive } from "./historical-shot-archive";
 import { isSeasonHeatmapIdentity } from "./verified-season-heatmap-archive";
 import { decodeSeasonShotMapResource } from "./season-shot-map-client";
@@ -14,6 +15,7 @@ import type { HeatmapIdentity, SeasonHeatmapArchiveResource, SeasonHeatmapRender
 const ROOT = path.join(process.cwd(), "src/data/historical-shot-spatial");
 const PIN = "e829d4678be1e075f99e5d41a1c5f97089be446b";
 const SOURCE_RELEASE = "0273d933ce91f777b790f126fffb95ac2012d2a5d2749ec76d0f059714a534a4";
+const EARLY_SOURCE_RELEASE = createHash("sha256").update(JSON.stringify(earlyImportSourceManifest) + "\n").digest("hex");
 const MAX_COMPRESSED = 2 * 1024 * 1024, MAX_EXPANDED = 16 * 1024 * 1024;
 const countKeys = ["fgm", "fga", "fg3m", "fg3a"] as const;
 type ObjectValue = Record<string, unknown>;
@@ -39,7 +41,7 @@ const summaries = new Map(summaryIndex.summaries.map(row => [`${row.season}:${ro
 
 function indexEntries(index: unknown): Map<string, Entry> {
   const value = object(index);
-  requireValue(value.schemaVersion === "nba-spatial-v1" && value.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && Array.isArray(value.entries) && value.entries.length <= 42);
+  requireValue(value.schemaVersion === "nba-spatial-v1" && value.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && Array.isArray(value.entries) && value.entries.length <= 60 && value.stagedArchiveCount === value.entries.length);
   const entries = new Map<string, Entry>();
   for (const item of value.entries) {
     const row = object(item), identity = { playerId: 1, season: row.season, seasonType: row.seasonType };
@@ -84,11 +86,18 @@ function countBlock(raw: unknown): Block {
 }
 function parsePack(raw: unknown, identity: HeatmapIdentity): Pack {
   const value = object(raw), frame = object(value.coordinateFrame), geometry = object(value.geometry), metrics = object(value.metrics), provenance = object(value.provenance), source = object(provenance.sourceArchive), quality = object(value.quality);
-  requireValue(value.schemaVersion === "nba-spatial-v1" && value.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && value.parserVersion === "nba-spatial-importer-v1.1.0" && value.season === identity.season && value.seasonStartYear === Number(identity.season.slice(0, 4)) && value.seasonType === identity.seasonType);
+  requireValue(value.schemaVersion === "nba-spatial-v1" && value.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && value.season === identity.season && value.seasonStartYear === Number(identity.season.slice(0, 4)) && value.seasonType === identity.seasonType);
   requireValue(frame.id === "nba-legacy-tenths-feet" && frame.unitsPerFoot === 10 && frame.origin === "basket-center" && frame.positiveX === "right" && frame.positiveY === "toward-half-court" && frame.xMin === -250 && frame.xMax === 250 && frame.yMin === -52.5 && frame.yMax === 417.5 && frame.fullCourtYMax === 887.5 && frame.boundsInclusive === true && frame.coordinateTransform === "none" && frame.officialEventCoordinateVerification === false);
   requireValue(geometry.geometryVersion === SHOT_MAP_GEOMETRY_VERSION && geometry.orientation === "pointy" && JSON.stringify(geometry.origin) === "[0,0]" && object(geometry.resolutions).fine === 25 && object(geometry.resolutions).coarse === 40 && Object.keys(object(geometry.resolutions)).length === 2 && JSON.stringify(geometry.binColumns) === '["q","r","fgm","fga","fg3m","fg3a"]' && geometry.tieRule === "floor(v+0.5); largest-error correction; equal-error priority z,y,x" && geometry.maxBinsPerResolution === 400);
   requireValue(metrics.baseline === "same-season-type-bin-weighted-archive-including-player" && metrics.efficiency === "raw-field-goal-percentage-point-difference" && metrics.minimumPlayerAttemptsForColor === 5 && metrics.minimumLeagueAttemptsForColor === 20 && metrics.regularization === "none" && metrics.density === "optional-smoothed-binned-attempt-frequency-estimate");
-  const summary = summaries.get(keyFor(identity)); requireValue(summary && provenance.sourceSummarySha256 === summary.sha256 && provenance.sourceReleaseSha256 === SOURCE_RELEASE);
+  const earlyImport = Number(identity.season.slice(0, 4)) < 2005;
+  requireValue(Number(identity.season.slice(0, 4)) >= 1996 && Number(identity.season.slice(0, 4)) <= 2025);
+  requireValue(value.parserVersion === (earlyImport ? "nba-spatial-importer-v1.2.0" : "nba-spatial-importer-v1.1.0"));
+  const summary = summaries.get(keyFor(identity)); requireValue(summary && provenance.sourceSummarySha256 === summary.sha256 && provenance.sourceReleaseSha256 === (earlyImport ? EARLY_SOURCE_RELEASE : SOURCE_RELEASE));
+  if (earlyImport) {
+    requireValue(provenance.generatingCodeSha256 === earlyImportSourceManifest.parserCodeSha256 && source.acquisitionMethod === "user-authorized-git-clone-local-blob-verification");
+    requireValue(integer(quality.sourceCsvRows) === integer(quality.csvRows) + integer(quality.quarantinedRowCount));
+  }
   requireValue(source.repository === "fxy2026/nba_data" && source.revision === PIN && source.path === `datasets/shotdetail_${identity.seasonType === "Playoffs" ? "po_" : ""}${identity.season.slice(0, 4)}.tar.xz` && source.sourceUrl === `https://raw.githubusercontent.com/fxy2026/nba_data/${PIN}/${source.path}` && quality.duplicateGameEventKeys === 0 && quality.officialCoverage === "not-officially-reconciled");
   const league = countBlock(value.league), rawPlayers = object(value.players), players = new Map<number, Block>(), sum = zero(), plotted = zero();
   requireValue(Object.keys(rawPlayers).length <= 1000 && quality.csvRows === league.total.fga);

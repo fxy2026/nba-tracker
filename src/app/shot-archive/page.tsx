@@ -8,7 +8,7 @@ import styles from "./shot-archive.module.css";
 
 export const metadata: Metadata = {
   title: "Historical Shot Archive",
-  description: "Find archived player-season shooting heatmaps for available NBA shot records, with season starts from 2005 through 2025.",
+  description: "Find archived player-season shooting heatmaps for available NBA shot records, with season starts from 1996 through 2025.",
 };
 
 interface ArchivePageProps {
@@ -42,7 +42,7 @@ export default async function ShotArchivePage({ searchParams }: ArchivePageProps
     <section className={styles.intro} aria-label={isZh ? "档案覆盖范围" : "Archive coverage"}>
       <div className={styles.introCopy}>
         <span className={styles.eyebrow}><Database size={13} aria-hidden="true" /> {isZh ? "有记录，才展示" : "Built from recorded shots"}</span>
-        <h2>{isZh ? "2005–2025 赛季起始年" : "2005–2025 season starts"}</h2>
+        <h2>{isZh ? "1996–2025 赛季起始年" : "1996–2025 season starts"}</h2>
         <p>{isZh ? "仅收录该历史数据源中有投篮记录的球员与赛季。缺失的球员或赛季表示数据不可用，并不表示零次出手。" : "Includes only players and seasons with shot records in this historical source. A missing player or season means unavailable data, never zero attempts."}</p>
       </div>
       {result.status === "ready" && <dl className={styles.stats}>

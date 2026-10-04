@@ -21,12 +21,12 @@ const snapshot = { players: archive.resultSets[0].rowSet.map(r => ({ personId: r
 let directory: Awaited<ReturnType<typeof getPlayerIdentityDirectory>>;
 beforeAll(async () => { directory = await getPlayerIdentityDirectory(snapshot); });
 describe("canonical all-player identities", () => {
-  it("resolves all 5,238 official IDs and every 2,224 shot ID without duplicate profiles", async () => {
+  it("resolves all 5,238 official IDs and every 2,840 shot ID without duplicate profiles", async () => {
     expect(directory).toHaveLength(5238);
     expect(new Set(directory.map(p => p.id)).size).toBe(directory.length);
     const map = new Map(directory.map(p => [p.id, p]));
     for (const p of OFFICIAL_PLAYER_IDENTITIES) expect(map.get(p.id)?.href, String(p.id)).toBe(`/player/${p.id}`);
-    const historical = await getHistoricalShotPlayers(); expect(historical).toHaveLength(2224);
+    const historical = await getHistoricalShotPlayers(); expect(historical).toHaveLength(2840);
     for (const p of historical) expect(map.get(p.playerId)?.sources).toContain("historical-shots");
     for (const p of snapshot.players) expect(map.get(p.personId)?.sources).toContain("player-index");
     // Exercise the actual route resolver, not just the pure union.
@@ -37,7 +37,7 @@ describe("canonical all-player identities", () => {
     expect(directory.filter(p => p.sources.includes("player-index"))).toHaveLength(587);
     expect(directory.find(p => p.id === 1642850)).toMatchObject({ name: "Thomas Sorber", shotCoverage: null });
     const old = directory.find(p => p.id === 15)!;
-    expect(old).toMatchObject({ name: "Eric Piatkowski", shotCoverage: { firstSeason: "2005-06", lastSeason: "2007-08" }, sourceYears: { from: 1994, to: 2007 }, teamLabel: null, indexProvenance: null });
+    expect(old).toMatchObject({ name: "Eric Piatkowski", shotCoverage: { firstSeason: "1996-97", lastSeason: "2007-08" }, sourceYears: { from: 1994, to: 2007 }, teamLabel: null, indexProvenance: null });
     expect(old).not.toHaveProperty("active"); expect(old).not.toHaveProperty("pts"); expect(old).not.toHaveProperty("birthday");
   });
   it("keeps namesakes distinct, including Patrick Ewing father and son", () => {
@@ -115,9 +115,9 @@ describe("canonical all-player identities", () => {
     const row = registry.rows[0];
     for (const rows of [[row, row], [[0, "Unknown", 2000, 2001]], [[4, "", 2000, 2001]], [[4, "Name", 2001, 2000]]]) expect(() => parseOfficialPlayerRegistry({ ...registry, rows })).toThrow();
   });
-  it("retains original archive catalog player counts and source identity data", () => {
+  it("retains expanded archive catalog player counts and original identity data", () => {
     const raw = JSON.parse(gunzipSync(readFileSync("src/data/historical-shot-archive/player-season-catalog.json.gz")).toString());
-    expect(Object.keys(raw.players)).toHaveLength(2224); expect(raw.stagedArchiveCount).toBe(42);
+    expect(Object.keys(raw.players)).toHaveLength(2840); expect(raw.stagedArchiveCount).toBe(60);
     expect(raw.players["977"].names).toContain("Kobe Bryant");
   });
 });

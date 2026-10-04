@@ -118,6 +118,10 @@ export interface HeatmapArchiveMetadata {
   /** Archive-wide game dates, not this player's individual game-date range. */
   sourceCoverage: { from: string; to: string };
   metadataObservedAtUtc: string;
+  /** A local pinned-blob verification timestamp is not an original HTTP download date. */
+  sourceObservationKind?: "local-blob-verification";
+  /** These source rows have no explicit point type and are excluded from every derived count. */
+  sourceRowExclusions?: { reason: "unknown-shot-type"; leagueRows: number; playerRows: number };
   officialControl: (HeatmapCounts & {
     fg3m: number;
     fg3a: number;
