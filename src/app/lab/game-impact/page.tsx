@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Activity, ArrowRight, Flame } from "lucide-react";
-import { getBoxScore, getFullSchedule, getScheduleAge, toBeijingTime, type ScheduleGame } from "@/lib/api";
+import { getBoxScore, getFullSchedule, getRecorded2025SeasonSchedule, getScheduleAge, toBeijingTime, type ScheduleGame } from "@/lib/api";
 import { getLocale } from "@/lib/locale";
 import { getGamePlayByPlay } from "@/lib/game-play-by-play";
 import { takeoverActionPoints as actionPoints, validatedTakeoverActions } from "@/lib/takeover-actions";
+import { getVerifiedHistoricalScoring } from "@/lib/verified-historical-scoring";
+import { buildTakeoverSeries, type TakeoverScoringEvent } from "@/lib/takeover-series";
 import { TEAM_META } from "@/lib/teams";
 import PageHeader from "@/components/PageHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -53,8 +55,10 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const locale = await getLocale();
   const isZh = locale === "zh";
   let matchup = "";
-  const box = typeof id === "string" && /^\d{10}$/.test(id) ? await getBoxScore(id).catch(() => null) : null;
-  if (box) matchup = ` — ${box.awayTeam.teamTricode} ${box.awayTeam.score} @ ${box.homeTeam.teamTricode} ${box.homeTeam.score}`;
+  const gameId = typeof id === "string" && /^\d{10}$/.test(id.trim()) ? id.trim() : "";
+  const historical = gameId ? getVerifiedHistoricalScoring(gameId) : null;
+  const game = historical?.game ?? (gameId ? await getBoxScore(gameId).catch(() => null) : null);
+  if (game) matchup = ` — ${game.awayTeam.teamTricode} ${game.awayTeam.score} @ ${game.homeTeam.teamTricode} ${game.homeTeam.score}`;
   return {
     title: isZh ? `比赛得分接管曲线${matchup}` : `Game Takeover Curve${matchup}`,
     description: isZh
@@ -69,10 +73,14 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
   const isZh = locale === "zh";
 
   const invalidId = rawId !== undefined && (typeof rawId !== "string" || !/^\d{10}$/.test(rawId.trim()));
-  const schedule = invalidId ? [] : await getFullSchedule().catch(() => []);
+  const explicitId = typeof rawId === "string" && /^\d{10}$/.test(rawId.trim()) ? rawId.trim() : "";
+  const explicitHistorical = explicitId ? getVerifiedHistoricalScoring(explicitId) : null;
+  // Explicit reviewed history is immutable. Do not block it on live schedule,
+  // box or PBP availability; recent links are honestly the recorded season.
+  const schedule = invalidId ? [] : explicitHistorical ? getRecorded2025SeasonSchedule() : await getFullSchedule().catch(() => []);
 
-  // Resolve the target game: explicit ?id, else most recent finished game.
-  let gameId = typeof rawId === "string" && /^\d{10}$/.test(rawId.trim()) ? rawId.trim() : "";
+  // No-ID selection still uses the full schedule, never a pinned archive ID.
+  let gameId = explicitId;
   if (!gameId && rawId === undefined) {
     const latest = findLatestFinished(schedule);
     gameId = latest?.gameId || "";
@@ -102,9 +110,11 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
     );
   }
 
-  const box = await getBoxScore(gameId).catch(() => null);
+  const selectedGame = schedule.flatMap(day => day.games).find(game => game.gameId === gameId);
+  const historical = explicitHistorical ?? getVerifiedHistoricalScoring(gameId, selectedGame);
+  const box = historical ? null : await getBoxScore(gameId).catch(() => null);
 
-  if (!box) {
+  if (!historical && !box) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6">
         {breadcrumbs}
@@ -120,75 +130,27 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
     );
   }
 
-  const feed = await getGamePlayByPlay(gameId);
-  const actions = validatedTakeoverActions(feed.actions, box);
-  const away = box.awayTeam;
-  const home = box.homeTeam;
+  // Keep the live reconciliation path and the reviewed archive distinct.
+  // Both feed only the existing chart's narrow cumulative-scoring input.
+  let scoringEvents: readonly TakeoverScoringEvent[];
+  if (historical) scoringEvents = historical.events;
+  else {
+    const feed = await getGamePlayByPlay(gameId);
+    scoringEvents = validatedTakeoverActions(feed.actions, box!).flatMap(action => {
+      const points = actionPoints(action);
+      return points && action.personId ? [{ personId: action.personId, playerName: action.playerNameI,
+        teamTricode: action.teamTricode, period: action.period, points: points as 1 | 2 | 3 }] : [];
+    });
+  }
+  const away = historical?.game.awayTeam ?? box!.awayTeam;
+  const home = historical?.game.homeTeam ?? box!.homeTeam;
   const others = recentFinished(schedule, gameId, 8);
-
-  // ---- build cumulative-points series from scoring actions ------------------
-  // Walk the actions chronologically. Each made shot / free throw is one x-step;
-  // we snapshot every tracked player's running total at that step so all series
-  // share the same x-axis (the index of the scoring event).
-  type Acc = { personId: number; name: string; teamTricode: string; running: number; snapshots: number[] };
-  const accs = new Map<number, Acc>();
-  const stepRunning = new Map<number, number>(); // personId -> running total
-  // quarterStarts records the x-step at which a new quarter's first scoring play lands.
-  const quarterStarts: { index: number; label: string }[] = [];
-  let seenPeriod = 0;
-  let step = 0; // index 0 reserved for the pre-tip 0-0 state
-
-  // Pre-scan to find which players ever score, so each series starts at step 0.
-  const scoringActions = actions.filter((a) => actionPoints(a) > 0 && a.personId);
-
-  for (const a of scoringActions) {
-    if (a.period > seenPeriod) {
-      seenPeriod = a.period;
-      if (a.period >= 2) {
-        const label = a.period <= 4 ? (isZh ? `第${a.period}节` : `Q${a.period}`) : isZh ? `加时${a.period - 4}` : `OT${a.period - 4}`;
-        quarterStarts.push({ index: step + 1, label });
-      }
-    }
-    step++;
-    const pts = actionPoints(a);
-    stepRunning.set(a.personId, (stepRunning.get(a.personId) || 0) + pts);
-
-    // Lazily create an accumulator; back-fill leading zeros to the current step.
-    let acc = accs.get(a.personId);
-    if (!acc) {
-      acc = { personId: a.personId, name: a.playerNameI, teamTricode: a.teamTricode, running: 0, snapshots: new Array(step).fill(0) };
-      accs.set(a.personId, acc);
-    }
-    // Snapshot EVERY tracked player at this step (those without an action this
-    // step just repeat their last total), so all series have equal length.
-    for (const other of accs.values()) {
-      other.snapshots[step] = stepRunning.get(other.personId) || 0;
-    }
-  }
-
-  const totalSteps = step + 1; // includes index 0
-
-  // Normalize lengths (a player created late had a shorter prefill; pad tails).
-  for (const acc of accs.values()) {
-    while (acc.snapshots.length < totalSteps) acc.snapshots.push(acc.snapshots[acc.snapshots.length - 1] ?? 0);
-  }
-
-  // Top ~6 scorers by final total.
-  const ranked = [...accs.values()].sort((a, b) => (b.snapshots[totalSteps - 1] || 0) - (a.snapshots[totalSteps - 1] || 0));
-  const top = ranked.slice(0, 6);
-
-  const series: ScorerSeries[] = top.map((acc) => ({
-    personId: acc.personId,
-    name: acc.name,
-    teamTricode: acc.teamTricode,
-    color: teamColor(acc.teamTricode),
-    total: acc.snapshots[totalSteps - 1] || 0,
-    points: acc.snapshots,
-  }));
+  const { scorers, quarterStarts, steps: totalSteps } = buildTakeoverSeries(scoringEvents, isZh);
+  const series: ScorerSeries[] = scorers.map(scorer => ({ ...scorer, color: teamColor(scorer.teamTricode) }));
 
   const hasData = series.length > 0 && totalSteps > 1;
   const gameHigh = series[0]; // ranked desc
-  const beijing = toBeijingTime(box.gameTimeUTC);
+  const beijing = toBeijingTime(historical?.game.gameDateTimeUTC ?? box!.gameTimeUTC);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -202,7 +164,7 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
             ? "逐球还原每位主要得分手的累计得分，看谁在何时接管了比赛"
             : "Cumulative points per scorer, reconstructed play-by-play — who took over, and when"
         }
-        updatedAt={getScheduleAge()}
+        updatedAt={historical ? null : getScheduleAge()}
       />
 
       {/* Game header card — links to the full game page */}
@@ -222,6 +184,17 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
           <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
         </span>
       </Link>
+
+      {historical && (
+        <section aria-label={isZh ? "历史逐球来源" : "Historical scoring source"} className="glass-tile p-4 mb-5 space-y-2 text-xs text-text-secondary">
+          <p>{isZh ? "历史存档：" : "Historical archive: "}<a href={historical.source.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">fxy2026/nba_data · NBA stats-v3</a>
+            {isZh ? "。按原始事件顺序核验 554 条记录；曲线包含 64 次运动战得分和 32 次实际罚球得分。" : ". 554 source-ordered records checked; the curve includes 64 made field goals and 32 actual made free throws."}</p>
+          <p>{isZh ? "终场、各节及 21 名实际出场球员的得分已与独立保存的统计核对。" : "Final, quarter and all 21 played-player point totals reconcile with separately saved records."}{" "}
+            <a href={historical.source.reportUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{isZh ? "NBA 赛后报告" : "NBA final report"}</a>{" · "}
+            <a href={historical.source.officialChartsUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{isZh ? "已核验的投篮记录" : "Reviewed shot records"}</a></p>
+          <p>{isZh ? `核验日期：${historical.source.verifiedOn}；原始逐球采集时间未知。` : `Verified ${historical.source.verifiedOn}; original play-by-play capture time is unknown.`}</p>
+        </section>
+      )}
 
       {hasData && gameHigh && (
         <div className="glass-tile p-3 flex items-center gap-3 mb-5">
@@ -269,7 +242,7 @@ export default async function GameImpactPage({ searchParams }: PageProps) {
       {others.length > 0 && (
         <section className="mt-6">
           <div className="mb-3 flex items-center gap-3">
-            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {isZh ? "换一场看" : "Other recent games"}</p>
+            <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-text-secondary/60">/ {explicitHistorical ? (isZh ? "其他历史比赛" : "Other recorded games") : (isZh ? "换一场看" : "Other recent games")}</p>
             <span className="h-px flex-1 bg-border" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

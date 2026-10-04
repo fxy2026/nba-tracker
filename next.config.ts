@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Compressed archives are server-only; never put them under public or import into client code.
   outputFileTracingIncludes: {
+    "/lab/game-impact": [
+      "./src/data/verified-play-by-play/0042500405.json",
+      "./src/data/recovered-player-boxes/0042500405.json",
+      "./src/data/verified-shot-charts/0042500405.json",
+      "./src/data/official-period-scores/0042500405.json",
+    ],
     "/api/player-season-heatmap": ["./src/data/historical-shot-archive/**/*.gz"],
     "/api/player-season-shot-map": ["./src/data/historical-shot-archive/**/*.gz", "./src/data/historical-shot-spatial/**/*.gz"],
     "/sitemap.xml": ["./src/data/historical-shot-archive/player-season-catalog.json.gz"],

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "kind": "reviewed-historical-scoring-evidence",
+  "gameId": "0042500405",
+  "verifiedOn": "2026-10-04",
+  "source": {
+    "repository": "https://github.com/fxy2026/nba_data",
+    "commit": "e829d4678be1e075f99e5d41a1c5f97089be446b",
+    "archivePath": "datasets/nbastatsv3_po_2025.tar.xz",
+    "archiveGitBlob": "e7237d33250fc71b5f1f5fa643988170420f4b3e",
+    "archiveSha256": "22f8479396ee7c5cd5a286f884eab4f9020d145e49cdfd7499d8abad5e70852c",
+    "csvSha256": "0dd9a89e44c9b92026eb2fad2f5371b00fa650d8b6745184974fc2e1acd12812",
+    "feed": "nbastatsv3",
+    "captureTime": null,
+    "verifiedOn": "2026-10-04"
+  },
+  "factsSha256": "c1bcd29760ebbf00dc6331ff98026ecbd4d6cae5fc2622f246b8ebfb6c129e92",
+  "coverage": {
+    "sourceRows": 554,
+    "fieldGoalAttempts": 173,
+    "freeThrowAttempts": 47,
+    "freeThrowMakes": 32,
+    "scoreObservations": 110,
+    "scoringEvents": 96,
+    "playedPlayers": 21,
+    "actors": {
+      "player": 491,
+      "team": 48,
+      "opaqueReplay": 6,
+      "none": 9
+    }
+  },
+  "chart": {
+    "steps": 97,
+    "quarterStarts": [
+      {
+        "index": 18,
+        "label": "Q2"
+      },
+      {
+        "index": 39,
+        "label": "Q3"
+      },
+      {
+        "index": 69,
+        "label": "Q4"
+      }
+    ],
+    "topSix": [
+      {
+        "personId": 1628973,
+        "name": "Jalen Brunson",
+        "teamTricode": "NYK",
+        "points": 45
+      },
+      {
+        "personId": 1642844,
+        "name": "Dylan Harper",
+        "teamTricode": "SAS",
+        "points": 25
+      },
+      {
+        "personId": 1641705,
+        "name": "Victor Wembanyama",
+        "teamTricode": "SAS",
+        "points": 19
+      },
+      {
+        "personId": 1630577,
+        "name": "Julian Champagnie",
+        "teamTricode": "SAS",
+        "points": 14
+      },
+      {
+        "personId": 1628969,
+        "name": "Mikal Bridges",
+        "teamTricode": "NYK",
+        "points": 14
+      },
+      {
+        "personId": 1628404,
+        "name": "Josh Hart",
+        "teamTricode": "NYK",
+        "points": 13
+      }
+    ]
+  },
+  "sourceFacts": {
+    "allOriginalCellsPreserved": 13296,
+    "sourceRows": 554,
+    "sourceColumns": 24,
+    "blankScorePairs": 444,
+    "repeatedActionNumberGroups": 25,
+    "fieldGoalRecordsMatchReviewedArchive": 173,
+    "independentlyMatchedPlayedPlayers": 21,
+    "unplayedRosterStatusInferred": false
+  },
+  "scope": [
+    "one-game scoring curve",
+    "no current-live freshness claim",
+    "no new generic PBP capabilities",
+    "no all-playoffs promotion"
+  ]
+}
