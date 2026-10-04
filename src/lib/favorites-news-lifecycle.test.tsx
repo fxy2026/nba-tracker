@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeamDigest } from "./follow-digest-types";
@@ -75,6 +76,7 @@ vi.mock("react", async original => ({
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: runtime.locale }) }));
 vi.mock("@/lib/locale", () => ({ getLocale: async () => "en" }));
 
+import { GET as getNews } from "@/app/api/news/route";
 import Dashboard, { TeamCard } from "@/app/favorites/FavoritesDashboard";
 import Page from "@/app/favorites/page";
 import { TEAM_META } from "./teams";
@@ -173,7 +175,7 @@ beforeEach(() => {
     throw new Error(`Unexpected request ${url}`);
   }));
 });
-afterEach(() => { unmount(); vi.unstubAllGlobals(); });
+afterEach(() => { unmount(); vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe("favorites news request lifecycle", () => {
   it.each(["en", "zh"])("real page/card/remove path replaces still-followed pending news in %s", async locale => {
@@ -326,6 +328,47 @@ describe("favorites news request lifecycle", () => {
     newsRequests("BOS")[1].resolve(response({ data: [news("Recovered Boston")] }));
     await settle();
     expect(card("BOS").props.news).toEqual([news("Recovered Boston")]);
+  });
+
+  it.each(["upstream HTTP failure", "missing articles"])("keeps real-handler %s eligible on a follow change while caching valid empty news", async failure => {
+    vi.useFakeTimers();
+    storage.set("fav_teams", '["LAL","BOS","MIA"]');
+    flush(); await settle();
+    const toggleLakers = removeHandler("LAL");
+    // Only the provider transport is mocked here. The actual route's Response
+    // (status, headers, and body) crosses into the real dashboard's effect.
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ articles: [] }));
+    const empty = await getNews(new NextRequest("http://local.test/api/news?q=Lakers"));
+    expect(empty.status).toBe(200);
+    newsRequests("LAL")[0].resolve(empty);
+    await settle();
+    vi.mocked(fetch).mockResolvedValueOnce(failure === "upstream HTTP failure"
+      ? Response.json({ articles: [] }, { status: 502 })
+      : Response.json({}));
+    const failed = await getNews(new NextRequest("http://local.test/api/news?q=Celtics"));
+    newsRequests("BOS")[0].resolve(failed);
+    await settle();
+    expect(card("BOS").props.news).toBeUndefined();
+    expect(card("LAL").props.news).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(60_000);
+    for (let i = 0; i < 3; i++) { runtime.dirty = true; flush(); await settle(); }
+    expect(newsRequests("BOS")).toHaveLength(1);
+    expect(newsRequests("LAL")).toHaveLength(1);
+    removeTeam("MIA"); await settle();
+    expect(newsRequests("BOS")).toHaveLength(2);
+    expect(newsRequests("LAL")).toHaveLength(1);
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ articles: [{
+      headline: "Celtics recovered", links: { web: { href: "https://example.test/recovered" } },
+    }] }));
+    newsRequests("BOS")[1].resolve(await getNews(new NextRequest("http://local.test/api/news?q=Celtics")));
+    await settle();
+    expect(card("BOS").props.news).toMatchObject([{ headline: "Celtics recovered", link: "https://example.test/recovered" }]);
+    removeTeam("LAL"); await settle();
+    toggleLakers(); flush(); await settle();
+    expect(newsRequests("BOS")).toHaveLength(2);
+    expect(newsRequests("LAL")).toHaveLength(1);
+    expect(failed.status).toBe(503);
+    expect(failed.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("aborts on actual unmount and never commits a late response or parsed body", async () => {

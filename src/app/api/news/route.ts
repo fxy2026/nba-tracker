@@ -6,6 +6,13 @@ const ESPN_NEWS = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/
 const DEFAULT_LIMIT = 30;
 const MAX_LIMIT = 50;
 
+function newsUnavailable() {
+  return NextResponse.json({ data: [] }, {
+    status: 503,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
 interface EspnCategory {
   type?: string;
   description?: string;
@@ -29,9 +36,10 @@ export async function GET(request: NextRequest) {
     });
     clearTimeout(timeout);
 
-    if (!res.ok) return NextResponse.json({ data: [] });
+    if (!res.ok) return newsUnavailable();
     const data = await res.json();
-    const articles = Array.isArray(data.articles) ? data.articles : [];
+    if (!Array.isArray(data?.articles)) return newsUnavailable();
+    const articles = data.articles;
 
     // Filter by player name if query provided
     let filtered = articles;
@@ -74,6 +82,6 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
     });
   } catch {
-    return NextResponse.json({ data: [] });
+    return newsUnavailable();
   }
 }
