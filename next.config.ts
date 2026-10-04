@@ -33,7 +33,8 @@ const nextConfig: NextConfig = {
     const securityHeaders = [
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
-      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      // Domain-only referrers protect search terms; HTTPS-to-HTTP sends no referrer.
+      { key: "Referrer-Policy", value: "strict-origin" },
       { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
       // HSTS — tells browsers (and feeds into Google's ranking signal for
       // HTTPS sites) that this host is HTTPS-only for the next year. No

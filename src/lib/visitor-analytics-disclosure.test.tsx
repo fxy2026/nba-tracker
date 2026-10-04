@@ -24,21 +24,23 @@ function nodes(node: ReactNode): ReactElement<Props>[] {
 }
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-it.each(["en", "zh"] as const)("renders an anchored, conditional disclosure in %s", async locale => {
+it.each(["en", "zh"] as const)("renders an anchored Vercel migration disclosure in %s", async locale => {
   state.locale = locale;
   const sections = nodes(await AboutPage()).filter(node => node.props.id === "visitor-statistics");
   expect(sections).toHaveLength(1);
   expect(sections[0].props.className).toContain("scroll-mt-24");
   const html = renderToStaticMarkup(sections[0]);
   for (const text of locale === "en" ? [
-    "When enabled", "Page views are not a count of unique people", "private Supabase tables",
-    "no analytics cookies or persistent browser identifier by default", "Do Not Track", "Global Privacy Control",
-    "about 48 hours", "90 days", "may delay", "logs and backups have separate retention policies",
-    "Cloudflare Web Analytics", "latest 50 metrics", "browser local storage", "does not upload",
+    "Vercel Web Analytics", "Page views are not a count of unique people", "daily-reset hash",
+    "without analytics cookies", "Do Not Track", "Global Privacy Control", "remove URL queries and fragments",
+    "skip analytics", "country, region, city", "about 48 hours", "90 days", "may delay deletion",
+    "reporting window is not a guaranteed deletion deadline", "Provider logs and backups have separate retention policies",
+    "Cloudflare Web Analytics beacon are retired", "latest 50 metrics", "browser local storage", "does not upload",
   ] : [
-    "启用后", "浏览量不等于独立访客人数", "非公开数据库表", "默认不设置统计 Cookie 或持久浏览器标识",
-    "Do Not Track", "Global Privacy Control", "约 48 小时", "90 天", "可能延迟删除",
-    "日志和备份不适用", "Cloudflare Web Analytics", "最近 50 条指标", "浏览器本地", "不向后端上传",
+    "Vercel Web Analytics", "浏览量不等于独立访客人数", "每日重置的散列值", "不使用统计 Cookie",
+    "Do Not Track", "Global Privacy Control", "移除页面网址的查询参数和片段", "跳过统计",
+    "国家、地区、城市", "约 48 小时", "90 天", "可能延迟删除", "不代表保证删除期限",
+    "日志和备份有独立保留政策", "信标已停用", "最近 50 条指标", "浏览器本地", "不向后端上传",
   ]) expect(html).toContain(text);
   expect(html).not.toMatch(/<script|<iframe|sb_secret_|service_role|ANALYTICS_SUPABASE/);
 });
@@ -111,12 +113,10 @@ it("keeps WebVitals diagnostics local with the disclosed 50-entry path buffer", 
   expect(log).toHaveBeenCalledTimes(55); expect(fetch).not.toHaveBeenCalled();
 });
 
-it("keeps the existing Cloudflare beacon production-only and separate", () => {
-  vi.stubEnv("NODE_ENV", "development");
-  expect(CloudflareAnalytics()).toBeNull();
-  vi.stubEnv("NODE_ENV", "production");
-  const html = renderToStaticMarkup(createElement(CloudflareAnalytics));
-  expect(html).toContain("https://static.cloudflareinsights.com/beacon.min.js");
-  expect(html).toContain("data-cf-beacon");
-  expect(html).not.toContain("/api/analytics/pageview");
+it("keeps the retired Cloudflare beacon inert even in production", () => {
+  for (const environment of ["development", "production"]) {
+    vi.stubEnv("NODE_ENV", environment);
+    expect(CloudflareAnalytics()).toBeNull();
+    expect(renderToStaticMarkup(createElement(CloudflareAnalytics))).toBe("");
+  }
 });

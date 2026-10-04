@@ -135,23 +135,29 @@ export default async function AboutPage() {
           <div className="space-y-3 text-sm text-text-secondary leading-relaxed">
             <p>
               {isZh
-                ? "启用后，本站的第一方统计用于了解各类页面的浏览量，帮助改进网站。只按预设页面类别汇总（不含具体球员或比赛 ID），并统计来源类别和屏幕尺寸类别（手机、平板、桌面或未知）。浏览量不等于独立访客人数。"
-                : "When enabled, our first-party statistics count page views to help improve the site. Counts use a fixed set of page categories, without individual player or game IDs, plus source categories and screen-size categories (mobile, tablet, desktop or unknown). Page views are not a count of unique people."}
+                ? "本站使用 Vercel Web Analytics 了解公开页面的使用情况；只有 Vercel 生产部署会加载该统计。浏览量不等于独立访客人数。Vercel 不使用统计 Cookie，而是根据请求信息生成每日重置的散列值来估算访问者。"
+                : "We use Vercel Web Analytics to understand use of our public pages, loaded only on Vercel production deployments. Page views are not a count of unique people. Vercel uses a daily-reset hash derived from request information to estimate visitors, without analytics cookies."}
             </p>
             <p>
               {isZh
-                ? "这些统计存放在 Supabase 的非公开数据库表中，不保存原始 IP 地址、原始 User-Agent、完整页面或来源网址、查询参数或搜索词。每次浏览生成一个随机事件 ID，仅用于防止重复计数。此功能默认不设置统计 Cookie 或持久浏览器标识，并遵循浏览器的 Do Not Track 和 Global Privacy Control 信号。"
-                : "These statistics are stored in private Supabase tables, without raw IP addresses, raw User-Agent strings, full page or referrer URLs, query parameters or search terms. Each page view gets a random event ID only to prevent duplicate counting. This feature uses no analytics cookies or persistent browser identifier by default and honors browser Do Not Track and Global Privacy Control signals."}
+                ? "发送前，本站会移除页面网址的查询参数和片段，并把具体球员、比赛等路径归为页面类别；不发送搜索词或自定义事件。管理、API 和其他非公开路径不参与统计，并遵循浏览器的 Do Not Track 和 Global Privacy Control 信号。"
+                : "Before sending page-view events, we remove URL queries and fragments and group player, game and similar paths into page categories. We do not send search terms or custom events. Admin, API and other non-public paths are excluded, and browser Do Not Track and Global Privacy Control signals are honored."}
             </p>
             <p>
               {isZh
-                ? "保留目标：事件 ID 约 48 小时，按日汇总数据 90 天。实际删除依赖清理任务成功执行，服务暂停或故障可能延迟删除。托管、CDN 和数据库服务商可能另行处理 IP 等网络数据，其日志和备份不适用上述统计数据保留期限。"
-                : "Retention targets are about 48 hours for event IDs and 90 days for daily aggregates. Deletion depends on successful cleanup; service pauses or failures may delay it. Hosting, CDN and database providers may separately process network data such as IP addresses. Their logs and backups have separate retention policies."}
+                ? "本站将发出的来源网址限制为域名级别，HTTPS 跳转到 HTTP 时不发送来源。Vercel 的发送前接口无法修改来源字段，因此当进入页面的来源仍包含路径或查询内容时，本站会跳过统计。Vercel 仍会处理请求相关信息，并可能提供国家、地区、城市、浏览器、操作系统和设备类型等汇总。统计可能因隐私设置、拦截器或服务额度而不完整。"
+                : "Our referrer policy sends only the origin and sends no referrer on HTTPS-to-HTTP navigation. Vercel’s before-send API cannot edit the referrer field, so we skip analytics when an incoming referrer still contains a path or query. Vercel still processes request information and may provide country, region, city, browser, operating-system and device-type breakdowns. Privacy settings, blockers and service quotas can make statistics incomplete."}
+              {" "}<a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{isZh ? "Vercel 统计隐私说明" : "Vercel analytics privacy details"}</a>
             </p>
             <p>
               {isZh
-                ? "此外，生产版本会加载 Cloudflare Web Analytics。WebVitals 性能诊断会在浏览器本地保存最近 50 条指标（含页面路径），并输出到控制台；该诊断模块不向后端上传这些记录。它们与上述第一方访问统计分开运行。"
-                : "Separately, production builds load Cloudflare Web Analytics. WebVitals performance diagnostics keep the latest 50 metrics, including page paths, in browser local storage and write to the console; that diagnostic module does not upload those records to a backend. These operate separately from the first-party visit statistics above."}
+                ? "原自建 Supabase 采集入口和 Cloudflare Web Analytics 信标已停用。Supabase 历史数据保留，且不会导入 Vercel；原清理目标仍为事件 ID 约 48 小时、按日汇总数据 90 天。清理失败或服务暂停可能延迟删除。Vercel 的报表可查看时段不代表保证删除期限；各服务商的日志和备份有独立保留政策。"
+                : "The former Supabase collection endpoint and Cloudflare Web Analytics beacon are retired. Historical Supabase data is preserved and is not imported into Vercel. Existing cleanup targets remain about 48 hours for event IDs and 90 days for daily aggregates; failures or service pauses may delay deletion. Vercel’s reporting window is not a guaranteed deletion deadline. Provider logs and backups have separate retention policies."}
+            </p>
+            <p>
+              {isZh
+                ? "WebVitals 性能诊断仍在浏览器本地保存最近 50 条指标（含页面路径），并输出到控制台；该诊断模块不向后端上传这些记录。"
+                : "WebVitals performance diagnostics still keep the latest 50 metrics, including page paths, in browser local storage and write to the console; that diagnostic module does not upload those records to a backend."}
             </p>
           </div>
         </section>

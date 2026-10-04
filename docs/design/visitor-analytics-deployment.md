@@ -1,5 +1,12 @@
 # Visitor analytics deployment status
 
+> Historical Supabase design/deployment record, superseded on 2026-10-04 by
+> [the Vercel Web Analytics migration](vercel-web-analytics.md). Do not follow the
+> old activation checklist. The public collector and both former browser
+> collectors are now inert even if legacy environment flags remain enabled.
+> Applied SQL, historical data, retention jobs, credentials and RLS are unchanged.
+> The text below records its original verification point, not current activation.
+
 Recorded on 2026-10-04. First-party collection remains disabled. This record
 separates verified database work from the HTTP/deployment checks still required
 before activation; it is not a claim of production traffic collection.

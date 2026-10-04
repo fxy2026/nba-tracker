@@ -1,5 +1,12 @@
 # Visitor analytics: implementation and activation checklist
 
+> Historical Supabase design/deployment record, superseded on 2026-10-04 by
+> [the Vercel Web Analytics migration](vercel-web-analytics.md). Do not follow the
+> old activation checklist. The public collector and both former browser
+> collectors are now inert even if legacy environment flags remain enabled.
+> Applied SQL, historical data, retention jobs, credentials and RLS are unchanged.
+> The text below records its original verification point, not current activation.
+
 Status: analytics is disabled by default. The dedicated database migration has
 been applied; its exact SQL and verified boundaries are recorded in
 [deployment status](visitor-analytics-deployment.md). The original

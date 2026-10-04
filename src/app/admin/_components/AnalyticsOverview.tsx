@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { BarChart3, CalendarDays, ChevronDown, Database, Eye, Info, Monitor, RefreshCw, ShieldCheck, Users, Waypoints } from "lucide-react";
+import { ArrowUpRight, BarChart3, CalendarDays, ChevronDown, Database, Eye, Info, Monitor, RefreshCw, ShieldCheck, Users, Waypoints } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { AdminRequestError, createLatestRequest, readAdminResponse, fetchAdmin, adminErrorText } from "./admin-client";
 import styles from "../admin.module.css";
@@ -29,7 +29,29 @@ export function validAnalytics(value: VisitorAnalytics): boolean {
     && Array.isArray(value.devices) && value.devices.every(row => typeof row.device === "string" && numeric(row.pageViews));
 }
 
-export default function AnalyticsOverview({ password, onUnauthorized }: { password: string; onUnauthorized: () => void }) {
+type AnalyticsProps = { password: string; onUnauthorized: () => void };
+
+export default function AnalyticsOverview({ password, onUnauthorized }: AnalyticsProps) {
+  const { locale } = useLocale();
+  const zh = locale === "zh";
+  const [showLegacy, setShowLegacy] = useState(false);
+
+  return <div className={styles.stack}>
+    <section className={styles.card} aria-labelledby="admin-vercel-analytics-title">
+      <div className={styles.cardHeader}><div><h2 id="admin-vercel-analytics-title" className={styles.sectionTitle}>Vercel Web Analytics</h2><p className={styles.caption}>{zh ? "当前访问统计请查看 Vercel 项目的 Analytics 面板。" : "View current traffic in your Vercel project's Analytics dashboard."}</p></div></div>
+      <div className={styles.stack}>
+        <div className={styles.note}><Info size={15} /><p>{zh ? "需先在 Vercel 项目中启用 Web Analytics 并重新部署，才能开始采集。请使用有权访问该项目的 Vercel 账号登录。" : "To start collecting, enable Web Analytics in the Vercel project and redeploy. Sign in with a Vercel account that has access to the project."}</p></div>
+        <div><a className={styles.button} href="https://vercel.com/fdgs-projects-f2130961/nba-tracker" target="_blank" rel="noopener noreferrer">{zh ? "打开 Vercel 项目 → Analytics" : "Open Vercel project → Analytics"}<ArrowUpRight size={15} aria-hidden="true" /></a></div>
+      </div>
+    </section>
+    <section className={styles.card} aria-labelledby="admin-legacy-analytics-title">
+      <div className={styles.cardHeader}><div><h2 id="admin-legacy-analytics-title" className={styles.sectionTitle}>{zh ? "旧版访问统计 · 已停止采集" : "Legacy analytics · collection stopped"}</h2><p className={styles.caption}>{zh ? "可选的只读历史报表，仅包含原有 Supabase 记录，与 Vercel 统计分开。" : "An optional, read-only report of existing Supabase records, separate from Vercel analytics."}</p></div><button type="button" className={styles.button} aria-expanded={showLegacy} aria-controls="admin-legacy-analytics-report" onClick={() => setShowLegacy(value => !value)}>{showLegacy ? (zh ? "收起历史报表" : "Hide historical report") : (zh ? "加载历史报表" : "Load historical report")}</button></div>
+      <div id="admin-legacy-analytics-report" hidden={!showLegacy}>{showLegacy && <LegacyAnalyticsReport password={password} onUnauthorized={onUnauthorized} />}</div>
+    </section>
+  </div>;
+}
+
+export function LegacyAnalyticsReport({ password, onUnauthorized }: AnalyticsProps) {
   const { locale } = useLocale();
   const zh = locale === "zh";
   const [days, setDays] = useState<7 | 30>(7);
@@ -77,12 +99,12 @@ export default function AnalyticsOverview({ password, onUnauthorized }: { passwo
 
   return <div className={styles.stack}>
     <div className={styles.toolbar}>
-      <div><h2 className={styles.sectionTitle}>{zh ? "访问概览" : "Audience overview"}</h2><p className={styles.caption}>{zh ? "从真实浏览记录，了解网站的使用情况。" : "A clear view of how your site is being used."}</p></div>
+      <div><h3 className={styles.sectionTitle}>{zh ? "历史访问报表" : "Historical audience report"}</h3><p className={styles.caption}>{zh ? "旧版采集已停止。所选时段可能没有历史记录，刷新仅重新读取已保存的数据。" : "Legacy collection has stopped. The selected period may have no historical records; refresh only rereads saved data."}</p></div>
       <div className={styles.toolbarActions}>
-        <div className={styles.range} aria-label={zh ? "统计时间范围" : "Analytics period"}>
+        <div className={styles.range} aria-label={zh ? "历史统计时间范围" : "Historical analytics period"}>
           {([7, 30] as const).map(value => <button key={value} type="button" aria-pressed={value === days} onClick={() => changeRange(value)}>{zh ? `近 ${value} 天` : `${value} days`}</button>)}
         </div>
-        <button type="button" className={styles.iconButton} disabled={state.kind === "loading"} onClick={reload} aria-label={zh ? "刷新访问统计" : "Refresh analytics"}><RefreshCw size={16} className={state.kind === "loading" ? styles.spin : undefined} /></button>
+        <button type="button" className={styles.iconButton} disabled={state.kind === "loading"} onClick={reload} aria-label={zh ? "刷新历史统计" : "Refresh historical analytics"}><RefreshCw size={16} className={state.kind === "loading" ? styles.spin : undefined} /></button>
       </div>
     </div>
     {state.kind === "loading" ? <AnalyticsSkeleton zh={zh} /> : state.kind === "error" ? <div className={styles.status} role="alert">
@@ -122,8 +144,8 @@ export function AnalyticsContent({ data, zh, onRetry }: { data: VisitorAnalytics
   return <>
     {!ready && <div className={styles.status} role={data.status === "unavailable" ? "alert" : "status"}>
       <div className={styles.statusIcon}><Database size={23} /></div>
-      <h3>{data.status === "unconfigured" ? (zh ? "访问统计尚未接入" : "Visitor analytics isn't connected yet") : (zh ? "统计服务暂时不可用" : "Analytics is temporarily unavailable")}</h3>
-      <p>{data.status === "unconfigured" ? (zh ? "统计存储尚未配置。接入后，这里会展示真实的浏览趋势、热门页面和来源；不会补写过去的数据。" : "Analytics storage hasn't been configured. Once connected, this space will show real traffic trends, top pages, and sources. Past visits cannot be backfilled.") : (zh ? "暂时无法读取已保存的统计。未将读取失败显示为零次访问，请稍后重试。" : "Stored analytics couldn't be read. A failed request doesn't mean zero visits. Please try again shortly.")}</p>
+      <h3>{data.status === "unconfigured" ? (zh ? "旧版统计存储未配置" : "Legacy analytics storage isn't configured") : (zh ? "历史统计暂时不可用" : "Historical analytics is temporarily unavailable")}</h3>
+      <p>{data.status === "unconfigured" ? (zh ? "当前环境未配置旧版 Supabase 统计存储，无法在此读取已保存的记录。旧版采集已停止。" : "Legacy Supabase storage is not configured in this environment, so saved records cannot be read here. Legacy collection has stopped.") : (zh ? "暂时无法读取已保存的统计。未将读取失败显示为零次访问，请稍后重试。" : "Stored analytics couldn't be read. A failed request doesn't mean zero visits. Please try again shortly.")}</p>
       <button type="button" onClick={onRetry} className={styles.button}><RefreshCw size={14} />{zh ? "重新检查" : "Check again"}</button>
     </div>}
     <div className={styles.metrics}>
@@ -135,7 +157,7 @@ export function AnalyticsContent({ data, zh, onRetry }: { data: VisitorAnalytics
     {ready && <>
       <section className={styles.card} aria-labelledby="admin-traffic-title">
         <div className={styles.cardHeader}><div><h3 id="admin-traffic-title" className={styles.cardTitle}><BarChart3 size={16} />{zh ? "每日访问趋势" : "Daily traffic"}</h3><p className={styles.caption}>{rangeLabel} · UTC+8</p></div><div className={styles.legend}><span><i />{zh ? "页面浏览量" : "Page views"}</span>{!noIdentity && <span><i className={styles.secondaryDot} />{zh ? "已同意的浏览器" : "Opted-in browsers"}</span>}</div></div>
-        {period?.pageViews === 0 ? <div className={styles.emptySmall}>{zh ? "这段时间还没有记录到页面浏览。采集到数据后，趋势会显示在这里。" : "No page views have been recorded in this period. Your traffic trend will appear here as data arrives."}</div> : <TrafficChart series={data.series ?? []} zh={zh} />}
+        {period?.pageViews === 0 ? <div className={styles.emptySmall}>{zh ? "这段时间没有保存的旧版页面浏览记录。旧版采集已停止。" : "No legacy page views are stored for this period. Legacy collection has stopped."}</div> : <TrafficChart series={data.series ?? []} zh={zh} />}
       </section>
       <div className={styles.breakdowns}>
         <Ranking title={zh ? "热门页面" : "Top pages"} detail={zh ? "按页面浏览量排序" : "Ranked by page views"} icon={<Eye size={15} />} items={(data.pages ?? []).map(item => ({ label: item.path, count: item.pageViews }))} zh={zh} />
@@ -145,7 +167,7 @@ export function AnalyticsContent({ data, zh, onRetry }: { data: VisitorAnalytics
       {data.limited && <div className={styles.error} role="status">{zh ? "已达到每日采集上限，部分浏览未计入，统计可能不完整。" : "The daily collection limit was reached. Some views were not counted, so these figures may be incomplete."}</div>}
       <div className={styles.note}><ShieldCheck size={15} /><p>{zh ? "浏览量记录页面打开次数。浏览器统计仅包含明确同意统计的浏览器，每个北京时间自然日去重；同一浏览器跨日会重复计入，不代表人数。" : "Page views count page openings. Browser counts include only explicitly opted-in browsers, deduplicated per Shanghai calendar day. The same browser can count again on another day; these are not people."}{coverage !== null && ` ${zh ? "可用于浏览器去重的浏览量占比" : "Views with a usable opted-in identity"}: ${coverage}%.`}{zh ? ` 日均值按已开始采集的 ${period?.observedDays ?? 0} 天计算；今日尚未结束，采集前的日期不补记。` : ` Daily averages use ${period?.observedDays ?? 0} observed days. Today is incomplete; dates before collection started are not backfilled.`}</p></div>
     </>}
-    <div className={styles.note}><Info size={14} /><p>{collectedAt ? (zh ? `最早记录：${collectedAt}。` : `First recorded view: ${collectedAt}. `) : ready ? (zh ? "尚无历史采集记录。" : "No collection history yet. ") : (zh ? "采集历史暂不可用。" : "Collection history unavailable. ")}{updatedAt ? (zh ? ` 读取时间：${updatedAt}。` : ` Retrieved: ${updatedAt}. `) : ""}{zh ? "统计时间统一为北京时间（UTC+8）。" : "All analytics use Shanghai time (UTC+8)."}</p></div>
+    <div className={styles.note}><Info size={14} /><p>{collectedAt ? (zh ? `最早记录：${collectedAt}。` : `First recorded view: ${collectedAt}. `) : ready ? (zh ? "尚无历史采集记录。" : "No collection history yet. ") : (zh ? "采集历史暂不可用。" : "Collection history unavailable. ")}{updatedAt ? (zh ? ` 读取时间：${updatedAt}。` : ` Retrieved: ${updatedAt}. `) : ""}{zh ? "此历史报表使用北京时间（UTC+8）。" : "This historical report uses Shanghai time (UTC+8)."}</p></div>
   </>;
 }
 

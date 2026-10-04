@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { collectAnalyticsPageview, getVisitorAnalyticsClientConfig, getVisitorAnalyticsReport, parseAnalyticsDays, readAnalyticsPageview } from "./visitor-analytics-server";
 import { GET } from "../app/api/admin/analytics/route";
-import { POST } from "../app/api/analytics/pageview/route";
+// Historical collector unit coverage only: the public POST route is retired.
+const POST = collectAnalyticsPageview;
 const event = { eventId: "18b18274-df2a-4f7c-b4cc-e737f3200302", path: "/player/201939", referrer: "direct", device: "mobile" };
 const token = "345827fb-0c05-4629-ae03-98b42faeebca";
 const now = new Date("2026-10-04T08:00:00Z");

@@ -27,7 +27,7 @@ vi.mock("react", async original => {
 });
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: hooks.locale, t: getTranslations(hooks.locale) }) }));
 import AdminPage from "../page";
-import AnalyticsOverview, { AnalyticsContent } from "./AnalyticsOverview";
+import AnalyticsOverview, { AnalyticsContent, LegacyAnalyticsReport } from "./AnalyticsOverview";
 import type { VisitorAnalytics } from "./AnalyticsOverview";
 import OperationsStatus from "./OperationsStatus";
 
@@ -103,12 +103,49 @@ describe("real admin component auth callbacks", () => {
   });
 });
 
-describe("real analytics component async flows", () => {
+describe("current Vercel analytics entry", () => {
+  it.each(["en", "zh"] as const)("shows the project dashboard and no metrics or legacy fetch until explicitly opened, %s", locale => {
+    hooks.locale = locale;
+    const unauthorized = vi.fn();
+    const component = () => AnalyticsOverview({ password: "test-only-password", onUnauthorized: unauthorized });
+    let tree = render(component);
+    const link = find(tree, node => node.type === "a");
+    expect(link.props.href).toBe("https://vercel.com/fdgs-projects-f2130961/nba-tracker");
+    expect(link.props.target).toBe("_blank");
+    expect(link.props.rel).toBe("noopener noreferrer");
+    expect(hasText(link, locale === "zh" ? "打开 Vercel 项目 → Analytics" : "Open Vercel project → Analytics")).toBe(true);
+    expect(hasText(tree, "Vercel Web Analytics")).toBe(true);
+    expect(hasText(tree, locale === "zh" ? "启用 Web Analytics 并重新部署" : "enable Web Analytics in the Vercel project and redeploy")).toBe(true);
+    expect(hasText(tree, locale === "zh" ? "已停止采集" : "collection stopped")).toBe(true);
+    expect(hasText(tree, locale === "zh" ? "与 Vercel 统计分开" : "separate from Vercel analytics")).toBe(true);
+    expect(elements(tree).some(node => node.type === LegacyAnalyticsReport || node.type === AnalyticsContent)).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+    const toggle = find(tree, node => node.type === "button");
+    expect(toggle.props["aria-expanded"]).toBe(false);
+    expect(find(tree, node => node.props.id === toggle.props["aria-controls"]).props.hidden).toBe(true);
+
+    click(toggle); tree = render(component);
+    expect(find(tree, node => node.type === "button").props["aria-expanded"]).toBe(true);
+    const legacy = find(tree, node => node.type === LegacyAnalyticsReport);
+    expect(legacy.props.password).toBe("test-only-password");
+    expect(legacy.props.onUnauthorized).toBe(unauthorized);
+    expect(find(tree, node => node.props.id === "admin-legacy-analytics-report").props.hidden).toBe(false);
+
+    // Locale updates preserve the explicit choice to open the historical report.
+    hooks.locale = locale === "en" ? "zh" : "en"; tree = render(component);
+    expect(elements(tree).some(node => node.type === LegacyAnalyticsReport)).toBe(true);
+    click(find(tree, node => node.type === "button")); tree = render(component);
+    expect(elements(tree).some(node => node.type === LegacyAnalyticsReport)).toBe(false);
+    expect(find(tree, node => node.type === "button").props["aria-expanded"]).toBe(false);
+  });
+});
+
+describe("legacy analytics component async flows", () => {
   it("keeps the selected range across locale changes and ignores old-locale unauthorized responses", async () => {
     const seven = deferred<Response>(); const oldThirty = deferred<Response>(); const translatedThirty = deferred<Response>();
     fetchMock.mockReturnValueOnce(seven.promise).mockReturnValueOnce(oldThirty.promise).mockReturnValueOnce(translatedThirty.promise);
     const oldUnauthorized = vi.fn(); const currentUnauthorized = vi.fn();
-    const component = () => AnalyticsOverview({ password: "test", onUnauthorized: hooks.locale === "en" ? oldUnauthorized : currentUnauthorized });
+    const component = () => LegacyAnalyticsReport({ password: "test", onUnauthorized: hooks.locale === "en" ? oldUnauthorized : currentUnauthorized });
     let tree = render(component);
     click(find(tree, node => node.type === "button" && node.props.children === "30 days")); render(component);
     const oldSignal = fetchMock.mock.calls[1][1]?.signal;
@@ -130,7 +167,7 @@ describe("real analytics component async flows", () => {
 
   it("keeps the newest range when the old request finishes later and repeated current-range clicks do nothing", async () => {
     const seven = deferred<Response>(); const thirty = deferred<Response>(); fetchMock.mockReturnValueOnce(seven.promise).mockReturnValueOnce(thirty.promise);
-    const component = () => AnalyticsOverview({ password: "test", onUnauthorized: vi.fn() }); let tree = render(component);
+    const component = () => LegacyAnalyticsReport({ password: "test", onUnauthorized: vi.fn() }); let tree = render(component);
     expect(fetchMock).toHaveBeenCalledTimes(1); click(find(tree, node => node.type === "button" && node.props.children === "30 days")); tree = render(component);
     expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(true); expect(fetchMock).toHaveBeenCalledTimes(2);
     thirty.resolve(response(report(30))); await flush(); tree = render(component); expect((find(tree, node => node.type === AnalyticsContent).props.data as VisitorAnalytics).range.days).toBe(30);
@@ -138,18 +175,18 @@ describe("real analytics component async flows", () => {
     click(find(tree, node => node.type === "button" && node.props.children === "30 days")); render(component); expect(fetchMock).toHaveBeenCalledTimes(2);
   });
   it("ignores an old unauthorized response after unmount, as with logout or navigation", async () => {
-    const pending = deferred<Response>(); const unauthorized = vi.fn(); fetchMock.mockReturnValueOnce(pending.promise); render(() => AnalyticsOverview({ password: "test", onUnauthorized: unauthorized }));
+    const pending = deferred<Response>(); const unauthorized = vi.fn(); fetchMock.mockReturnValueOnce(pending.promise); render(() => LegacyAnalyticsReport({ password: "test", onUnauthorized: unauthorized }));
     unmount(); const writes = hooks.writes; pending.resolve(response({ error: "Unauthorized" }, 401)); await flush(); expect(unauthorized).not.toHaveBeenCalled(); expect(hooks.writes).toBe(writes);
   });
   it("asks for authentication only on a current unauthorized response", async () => {
-    const unauthorized = vi.fn(); fetchMock.mockResolvedValueOnce(response({ error: "Unauthorized" }, 401)); render(() => AnalyticsOverview({ password: "test", onUnauthorized: unauthorized })); await flush(); expect(unauthorized).toHaveBeenCalledOnce();
+    const unauthorized = vi.fn(); fetchMock.mockResolvedValueOnce(response({ error: "Unauthorized" }, 401)); render(() => LegacyAnalyticsReport({ password: "test", onUnauthorized: unauthorized })); await flush(); expect(unauthorized).toHaveBeenCalledOnce();
   });
   it("preserves the backend unavailable DTO on HTTP 503 instead of treating it as an empty success", async () => {
-    fetchMock.mockResolvedValueOnce(response({ ...report(7), status: "unavailable" }, 503)); const component = () => AnalyticsOverview({ password: "test", onUnauthorized: vi.fn() }); render(component); await flush(); const tree = render(component);
+    fetchMock.mockResolvedValueOnce(response({ ...report(7), status: "unavailable" }, 503)); const component = () => LegacyAnalyticsReport({ password: "test", onUnauthorized: vi.fn() }); render(component); await flush(); const tree = render(component);
     expect((find(tree, node => node.type === AnalyticsContent).props.data as VisitorAnalytics).status).toBe("unavailable");
   });
   it("can retry a network failure without running provider-health requests", async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockResolvedValueOnce(response(report(7))); const component = () => AnalyticsOverview({ password: "test", onUnauthorized: vi.fn() }); render(component); await flush(); let tree = render(component);
+    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockResolvedValueOnce(response(report(7))); const component = () => LegacyAnalyticsReport({ password: "test", onUnauthorized: vi.fn() }); render(component); await flush(); let tree = render(component);
     click(find(tree, node => node.type === "button" && hasText(node, "Try again"))); render(component); await flush(); tree = render(component);
     expect(elements(tree).some(node => node.type === AnalyticsContent)).toBe(true); expect(fetchMock.mock.calls.map(call => call[0])).toEqual(["/api/admin/analytics?days=7", "/api/admin/analytics?days=7"]);
   });
