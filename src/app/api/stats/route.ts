@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { STATS_BASE, fetchStatsJson } from "@/lib/statsProxy";
 
 // Proxy for stats.nba.com — avoids CORS issues, adds timeout + security
 const ALLOWED_ENDPOINTS = new Set([
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   const url = `${STATS_BASE}/${endpoint}?${params.toString()}`;
   const revalidate = REVALIDATE[endpoint] ?? DEFAULT_REVALIDATE;
 
-  const res = await fetchStats(url, {
+  const res = await fetchStatsJson(url, {
     key: endpoint,
     timeoutMs: TIMEOUT_MS[endpoint] || DEFAULT_TIMEOUT,
     revalidate,
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     );
   }
   try {
-    return respond(await res.json(), limit, revalidate);
+    return respond(res.data, limit, revalidate);
   } catch {
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }

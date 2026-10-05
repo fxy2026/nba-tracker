@@ -6,15 +6,15 @@ import curry from "@/data/player-career-archives/201939-2026-10-03.json";
 import giannis from "@/data/player-career-archives/203507-2026-10-03.json";
 import { getReviewedCareerArchive } from "./player-career-archive";
 const providers = vi.hoisted(() => ({ nba: vi.fn(), roster: vi.fn(), espn: vi.fn() }));
-vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStats: providers.nba }));
+vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStatsJson: providers.nba }));
 vi.mock("@/lib/espn", () => ({ findESPNId: providers.roster, getESPNCareerStats: providers.espn }));
 import { GET } from "@/app/api/player/route";
 const now = "2026-10-03T04:00:00.000Z";
 const request = (id = "2544", extra = "", signal?: AbortSignal) => new NextRequest(`http://localhost/api/player?id=${id}${extra}`, { signal });
 const nba = (rows = lebron.data.careerSeasons, id = 2544) => {
   const headers = [...Object.keys(lebron.data.careerSeasons[0]), "PLAYER_ID"];
-  return { ok: true, json: async () => ({ resultSets: [{ name: "SeasonTotalsRegularSeason", headers,
-    rowSet: rows.map(row => [...headers.slice(0, -1).map(k => (row as Record<string, unknown>)[k]), id]) }] }) };
+  return { ok: true, data: { resultSets: [{ name: "SeasonTotalsRegularSeason", headers,
+    rowSet: rows.map(row => [...headers.slice(0, -1).map(k => (row as Record<string, unknown>)[k]), id]) }] } };
 };
 beforeEach(async () => {
   await Promise.all(["2544", "203999", "201939", "203507"].map(getReviewedCareerArchive));
@@ -120,16 +120,16 @@ describe("reviewed dated fallback after the bounded live chain", () => {
     expect(providers.nba).toHaveBeenCalledTimes(1); expect(providers.roster).toHaveBeenCalledTimes(1); expect(providers.espn).toHaveBeenCalledTimes(1);
   });
 
-  it("serves the fixed capture at 14s when a provider body ignores cancellation", async () => {
+  it("serves the fixed capture at 14s when the stats JSON helper ignores cancellation", async () => {
     let finishBody!: (body: unknown) => void;
-    providers.nba.mockResolvedValue({ ok: true, json: () => new Promise(resolve => { finishBody = resolve; }) });
+    providers.nba.mockImplementation(() => new Promise(resolve => { finishBody = resolve; }));
     const pending = GET(request());
     await vi.waitFor(() => expect(providers.nba).toHaveBeenCalledTimes(1));
     await vi.advanceTimersByTimeAsync(14000);
     const res = await pending;
     expect(res.status).toBe(200); expect(await res.json()).toEqual({ ...lebron.data, recentGames: null });
     expect(providers.nba.mock.calls[0][1].signal.aborted).toBe(true);
-    finishBody(await nba().json()); await vi.advanceTimersByTimeAsync(0);
+    finishBody(nba()); await vi.advanceTimersByTimeAsync(0);
     expect(providers.roster).not.toHaveBeenCalled(); expect(vi.getTimerCount()).toBe(0);
   });
 

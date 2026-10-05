@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { STATS_BASE, fetchStatsJson } from "@/lib/statsProxy";
 
 // Dedicated proxy for stats.nba.com boxscorematchupsv3 (who-guarded-whom
 // tracking data on finished games). Kept separate from /api/stats because the
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "gameId must be 10 digits" }, { status: 400 });
   }
 
-  const res = await fetchStats(`${UPSTREAM}?GameID=${gameId}`, {
+  const res = await fetchStatsJson(`${UPSTREAM}?GameID=${gameId}`, {
     key: "boxscorematchupsv3",
     timeoutMs: TIMEOUT_MS,
     revalidate: UPSTREAM_REVALIDATE,
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
   }
   let players: Record<string, MatchupDefenderRow[]> | null;
   try {
-    players = parseMatchups(await res.json());
+    players = parseMatchups(res.data);
   } catch {
     return NextResponse.json({ error: "NBA API request failed or timed out" }, { status: 504 });
   }

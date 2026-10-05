@@ -2,7 +2,7 @@ import { parseShotGameDate, orderUniqueShotGames, type DatedShotGame } from "@/l
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSeasonSchedule, getPlayByPlaySnapshot, type ShotAction } from "@/lib/api";
 import { isRegular as isRegularGame, isPlayoff as isPlayoffGame } from "@/lib/games";
-import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { STATS_BASE, fetchStatsJson } from "@/lib/statsProxy";
 import { CURRENT_SEASON } from "@/lib/constants";
 
 // Aggregate shot data for a player across multiple games.
@@ -113,9 +113,9 @@ async function getGameIdsFromStatsNba(playerId: number, season: string, seasonTy
     const url = `${STATS_BASE}/playergamelog?PlayerID=${playerId}&Season=${encodeURIComponent(season)}&SeasonType=${encodeURIComponent(st)}`;
     // stats.nba.com data is stable for past seasons — cache 24h
     try {
-      const res = await fetchStats(url, { key: "playergamelog", revalidate: 86400 });
+      const res = await fetchStatsJson<{ resultSets?: { headers?: unknown; rowSet?: unknown }[] }>(url, { key: "playergamelog", revalidate: 86400 });
       if (!res?.ok) return null;
-      const data = await res.json();
+      const data = res.data;
       const rs = Array.isArray(data?.resultSets) ? data.resultSets[0] : null;
       if (!Array.isArray(rs?.headers) || !Array.isArray(rs?.rowSet)
         || !rs.headers.every((header: unknown) => typeof header === "string")

@@ -22,10 +22,36 @@ const PROBE_TIMEOUT_MS = 1500;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_REVALIDATE = 300;
 
-export async function fetchStats(
+interface StatsOptions {
+  key: string;
+  timeoutMs?: number;
+  revalidate?: number;
+  signal?: AbortSignal;
+}
+
+type StatsJsonResult<T> =
+  | { ok: true; status: number; data: T }
+  | { ok: false; status: number };
+
+// Raw-response callers retain their existing contract. JSON consumers use the
+// variant below so headers alone cannot count as a completed request.
+export function fetchStats(url: string, opts: StatsOptions): Promise<Response | null> {
+  return fetchStatsWithResponse(url, opts, async res => res);
+}
+
+export function fetchStatsJson<T = unknown>(url: string, opts: StatsOptions): Promise<StatsJsonResult<T> | null> {
+  return fetchStatsWithResponse<StatsJsonResult<T>>(url, opts, async res => {
+    // Preserve HTTP errors even when their body is empty, non-JSON or stalled.
+    if (!res.ok) return { ok: false, status: res.status };
+    return { ok: true, status: res.status, data: await res.json() };
+  });
+}
+
+async function fetchStatsWithResponse<T>(
   url: string,
-  opts: { key: string; timeoutMs?: number; revalidate?: number; signal?: AbortSignal },
-): Promise<Response | null> {
+  opts: StatsOptions,
+  read: (res: Response) => Promise<T>,
+): Promise<T | null> {
   const { key, timeoutMs = DEFAULT_TIMEOUT_MS, revalidate = DEFAULT_REVALIDATE, signal } = opts;
   if (signal?.aborted) return null;
 
@@ -37,16 +63,20 @@ export async function fetchStats(
   const fetchTimeout = breakerOpen ? PROBE_TIMEOUT_MS : timeoutMs;
 
   try {
+    const requestSignal = signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(fetchTimeout)])
+      : AbortSignal.timeout(fetchTimeout);
     const res = await fetch(url, {
       headers: STATS_HEADERS,
       next: { revalidate },
       // Keep both deadlines attached to the response body, not just headers.
-      signal: signal
-        ? AbortSignal.any([signal, AbortSignal.timeout(fetchTimeout)])
-        : AbortSignal.timeout(fetchTimeout),
+      signal: requestSignal,
     });
+    const result = await read(res);
+    // Ignore a late result from a non-cooperative body/cache implementation.
+    requestSignal.throwIfAborted();
     BLACKHOLED_UNTIL.delete(key);
-    return res;
+    return result;
   } catch {
     // Only a full-timeout failure arms/extends the breaker — the short probe
     // must leave the existing deadline so the breaker still half-opens on time.

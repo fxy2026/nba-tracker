@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({ stats: vi.fn(), schedule: vi.fn(), pbp: vi.fn() }));
-vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStats: mocks.stats }));
+vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStatsJson: mocks.stats }));
 vi.mock("@/lib/api", () => ({ getCurrentSeasonSchedule: mocks.schedule, getPlayByPlaySnapshot: mocks.pbp }));
 vi.mock("@/lib/constants", () => ({ CURRENT_SEASON: "2026-27" }));
 import { GET } from "@/app/api/player-shots/route";
 
 const request = (query: string) => new NextRequest(`http://localhost/api/player-shots?${query}`);
-const ok = (payload: unknown) => ({ ok: true, json: async () => payload });
+const ok = (payload: unknown) => ({ ok: true, data: payload });
 const log = (ids: unknown[] = [], header = "Game_ID") => ({ resultSets: [{ name: "PlayerGameLog", headers: [header, "GAME_DATE"], rowSet: ids.map((id,index) => [id,new Date(Date.UTC(2026,0,index+1)).toISOString().slice(0,10)]) }] });
 const query = "playerId=2544&team=LAL&season=2025-26";
 const shot = { personId: 2544, actionType: "2pt", shotResult: "Made", x: 10, y: 20, shotDistance: 5 };
@@ -80,7 +80,8 @@ describe("player shot season routing and unavailable game logs", () => {
     if (failure === "null") mocks.stats.mockResolvedValueOnce(null);
     if (failure === "403") mocks.stats.mockResolvedValueOnce({ ok: false, status: 403 });
     if (failure === "network") mocks.stats.mockRejectedValueOnce(new Error("offline"));
-    if (failure === "json") mocks.stats.mockResolvedValueOnce({ ok: true, json: async () => { throw new SyntaxError("malformed"); } });
+    // The JSON helper reports parse failures as null.
+    if (failure === "json") mocks.stats.mockResolvedValueOnce(null);
     mocks.stats.mockResolvedValueOnce(ok(log(["0022500340"])));
     const failed = await GET(request(query));
     expect(failed.status).toBe(503); expect(failed.headers.get("Cache-Control")).toBe("no-store");

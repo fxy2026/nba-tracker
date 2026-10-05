@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findESPNId, getESPNCareerStats } from "@/lib/espn";
-import { STATS_BASE, fetchStats } from "@/lib/statsProxy";
+import { STATS_BASE, fetchStatsJson } from "@/lib/statsProxy";
 import { parseCareerShootingTable } from "@/lib/career-shooting";
 import { normalizePlayerCareerData, type PlayerCareerData } from "@/lib/player-career-data";
 import type { LiveCareerProvenance } from "@/lib/player-career-provenance";
@@ -42,12 +42,12 @@ function parseResultSet(rs: { headers?: unknown; rowSet?: unknown } | undefined,
 
 async function fetchCareerData(playerId: string, signal: AbortSignal) {
   try {
-    const res = await fetchStats(
+    const res = await fetchStatsJson<{ resultSets?: { name?: string; headers?: unknown; rowSet?: unknown }[] }>(
       `${STATS_BASE}/playercareerstats?PlayerID=${playerId}&PerMode=PerGame`,
       { key: "playercareerstats", timeoutMs: 4000, revalidate: 3600, signal },
     );
     if (!res?.ok) return null;
-    const data = await res.json();
+    const data = res.data;
     if (signal.aborted) return null;
     if (!Array.isArray(data?.resultSets)) return null;
     const rs = data.resultSets.find((r: { name?: string } | null) => r?.name === "SeasonTotalsRegularSeason");

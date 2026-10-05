@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import jokic from "@/data/player-career-archives/203999-2026-10-03.json";
 import { findESPNId } from "./espn";
-vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStats: vi.fn().mockResolvedValue(null) }));
+vi.mock("@/lib/statsProxy", () => ({ STATS_BASE: "https://stats.nba.com/stats", fetchStatsJson: vi.fn().mockResolvedValue(null) }));
 import { GET } from "@/app/api/player/route";
 const ok = (body: unknown) => ({ ok: true, json: async () => body });
 afterEach(() => vi.unstubAllGlobals());
