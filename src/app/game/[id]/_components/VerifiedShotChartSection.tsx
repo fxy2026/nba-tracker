@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 import type { VerifiedShotChart } from "@/lib/court-shots";
 
