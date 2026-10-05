@@ -12,6 +12,7 @@
 .filters .seasonSelect { min-width:114px; border-color:var(--map-border); background:var(--map-bg); color:var(--map-ink); font-size:13px; }
 .segments { display:flex; padding:3px; border:1px solid var(--map-border); border-radius:8px; background:var(--map-soft); }
 .segments button { min-height:38px; padding:8px 12px; font-size:13px; border:0; background:transparent; color:var(--map-muted); border-radius:5px; white-space:nowrap; }
+.segments button:disabled { opacity:.45; cursor:not-allowed; }
 .segments button[aria-pressed='true'] { color:var(--map-ink); background:var(--map-bg); box-shadow:var(--map-shadow); font-weight:600; }
 .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--map-border); border-bottom:1px solid var(--map-border); padding:17px 0; margin-bottom:22px; }
 .stat { min-width:0; padding-left:22px; border-left:1px solid var(--map-border); }

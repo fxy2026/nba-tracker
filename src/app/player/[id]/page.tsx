@@ -1,3 +1,5 @@
+import PlayerProfilePanels, { PlayerProfilePart, PlayerDesktopOnly, PlayerDeferred } from "@/components/player/PlayerProfilePanels";
+import PlayerMobileIdentity from "@/components/player/PlayerMobileIdentity";
 import mobileStyles from "@/components/player/player-mobile.module.css";
 import { knownAverage, hasCompleteAverages, profileStatContext, type StatContext } from "@/lib/player-profile-stats";
 import { currentSeason } from "@/lib/constants";
@@ -39,6 +41,8 @@ const PlayerHonors = nextDynamic(() => import("@/components/player/PlayerHonors"
 const PlayerStatsBundle = nextDynamic(() => import("@/components/player/PlayerStatsBundle"));
 const PlayerAdvancedStats = nextDynamic(() => import("@/components/player/PlayerAdvancedStats"));
 const PlayerSeasonHeatmap = nextDynamic(() => import("@/components/player/PlayerSeasonHeatmap"));
+const PlayerGameLog = nextDynamic(() => import("@/components/player/PlayerGameLog"));
+const PlayerVisibleNews = nextDynamic(() => import("@/components/player/PlayerVisibleNews"));
 const ShotHeatmap = nextDynamic(() => import("@/components/ShotHeatmap"));
 
 interface PageProps {
@@ -94,7 +98,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
   if (!player) {
     const historicalCareer = await getHistoricalCareerArchive(personId);
-    return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} historicalCareer={historicalCareer} />;
+    return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} historicalCareer={historicalCareer} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} />;
   }
 
   const t = getTranslations(locale);
@@ -189,13 +193,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <RecentVisitTracker kind="player" id={String(personId)} label={fullName} />
-      <Breadcrumbs
+      <PlayerDesktopOnly><Breadcrumbs
         items={[
           { label: isZh ? "球员" : "Players", href: "/search" },
           { label: fullName },
         ]}
       />
 
+      </PlayerDesktopOnly>
+      <PlayerProfilePanels key={personId} playerId={personId} locale={locale} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} header={<PlayerMobileIdentity id={personId} name={fullName} subtitle={`${player.teamCity} ${player.teamName}`} teamHref={player.teamAbbr ? `/team/${player.teamAbbr}` : undefined} facts={[player.position, player.jersey ? `#${player.jersey}` : "", player.height || ""].filter(Boolean)} source={playerIndexLabel(snapshot.provenance, locale)} color={teamColor} locale={locale} />}>
+      <PlayerProfilePart panel="data">
+      <p className="sm:hidden mt-5 text-sm font-semibold">{snapshot.provenance.season} · {isZh ? "常规赛快照" : "Regular-season snapshot"}</p>
       <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
       <details className="mt-1 text-xs text-text-secondary">
         <summary className="min-h-11 cursor-pointer rounded-md py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
@@ -208,6 +216,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </p>
       </details>
 
+      </PlayerProfilePart>
+      <PlayerDesktopOnly>
       {/* Quick-action row — one-click into /compare with this player primed */}
       <div className="mt-2 flex flex-wrap gap-2">
         <Link
@@ -227,6 +237,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         <Link href="#career" prefetch={false} className="chip min-h-11 inline-flex items-center">{isZh ? "生涯数据" : "Career"}</Link>
       </nav>
 
+      </PlayerDesktopOnly>
+      <PlayerProfilePart panel="data">
       {/* ─── Bento Hero ─────────────────────────────────────── */}
       <div id="overview" className={`${mobileStyles.overview} scroll-mt-24 mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]`}>
 
@@ -400,9 +412,18 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </Link>
       </div>
 
+      </PlayerProfilePart>
+      <PlayerProfilePart panel="honors" deferred>
       {/* ─── Honor wall (real awards via stats proxy — hides itself on failure) ─ */}
-      <PlayerHonors playerId={personId} accolades={accolades} />
+      <PlayerHonors playerId={personId} accolades={accolades} showLoading />
+      </PlayerProfilePart>
+      <PlayerProfilePart panel="details">
 
+      <div className="sm:hidden glass-tile mt-5 p-4 space-y-3">
+        <p className="text-xs text-text-secondary">{isZh ? "名录赛季起始年" : "Indexed season starts"}: {player.fromYear || "—"} → {player.toYear || "—"}</p>
+        <p className="text-xs text-text-secondary">{player.draftYear ? `${isZh ? "选秀" : "Draft"} ${player.draftYear} · R${player.draftRound} · #${player.draftNumber}` : (isZh ? "未被选中" : "Undrafted")}</p>
+        <Link href={`/compare?p1=${personId}`} className="inline-flex items-center gap-2 min-h-11 text-sm text-accent"><GitCompareArrows size={16} />{isZh ? "对比此球员" : "Compare this player"}</Link>
+      </div>
       {/* ─── Profile (snapshot tags + body metrics) ─── */}
       {(() => {
         const tags: { label: string; tone: "amber" | "blue" | "green" }[] = [];
@@ -450,23 +471,35 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         );
       })()}
 
+      </PlayerProfilePart>
       {/* ─── Stats Deep Dive (dynamic client sections — own styling) ─ */}
-      <section className="mt-8 sm:mt-10 space-y-4">
-        <SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" />
+      <section className="contents sm:block sm:mt-10 sm:space-y-4">
+        <PlayerDesktopOnly><SectionHeader icon={TrendingUp} title={t.playerDetail.statsDeepDiveTitle} eyebrow="03" /></PlayerDesktopOnly>
+        <PlayerProfilePart panel="shooting">
         <div id="shooting" className="scroll-mt-24">
         {identity.shotArchiveStatus === "error" && <p role="alert" className="mb-3 text-sm text-text-secondary">{isZh ? "投篮档案暂时加载失败；这不表示没有记录。请重新加载页面重试。" : "The shot archive could not load; this does not mean no records exist. Reload the page to retry."}</p>}
-        {heatmapSelection && heatmapResource ? <PlayerSeasonHeatmap
+        <PlayerDeferred panel="shooting">{heatmapSelection && heatmapResource ? <PlayerSeasonHeatmap
           player={{ id: personId, name: fullName }} locale={locale}
           datasets={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource}
-        /> : <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />}
+        /> : <ShotHeatmap key={`${personId}:${player.fromYear}:${player.toYear}`} playerId={personId} teamTricode={player.teamAbbr} fromYear={player.fromYear} toYear={player.toYear} />}</PlayerDeferred>
         </div>
+        </PlayerProfilePart>
+        <PlayerProfilePart panel="career">
         <div id="career" className="scroll-mt-24 space-y-4">
-          <PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+          <PlayerDeferred panel="career"><PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
+          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} /></PlayerDeferred>
         </div>
-        <PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} />
+        </PlayerProfilePart>
+        <PlayerProfilePart panel="details" deferred>
+        <PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} includeNews={false} />
+        </PlayerProfilePart>
+        <PlayerProfilePart panel="news" deferred><PlayerVisibleNews playerName={fullName} /></PlayerProfilePart>
+        <PlayerProfilePart panel="games" deferred mobileOnly>
+          <PlayerGameLog playerId={personId} playerName={fullName} />
+        </PlayerProfilePart>
       </section>
 
+      <PlayerProfilePart panel="details">
       {/* ─── Connections (Teammates + Similar) ──────────── */}
       {(() => {
         const teammates = player.teamAbbr
@@ -826,6 +859,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           { href: "/milestones", label: isZh ? "里程碑追踪" : "Career milestones", icon: Award },
         ]}
       />
+      </PlayerProfilePart>
+      </PlayerProfilePanels>
     </div>
   );
 }

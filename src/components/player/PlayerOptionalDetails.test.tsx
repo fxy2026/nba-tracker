@@ -60,6 +60,7 @@ import PlayerOptionalDetails from "./PlayerOptionalDetails";
 import PlayerMeasurements from "./PlayerMeasurements";
 import PlayerSalary from "./PlayerSalary";
 import PlayerNews from "./PlayerNews";
+import PlayerVisibleNews from "./PlayerVisibleNews";
 import { PlayerNewsLoading, PlayerSalaryLoading } from "./PlayerDetailsLoading";
 
 type Props = ComponentProps<typeof PlayerOptionalDetails>;
@@ -144,7 +145,7 @@ describe("optional player details visibility and requests", () => {
     eager(props); expect(calls).toHaveLength(draftYear ? 3 : 2);
     unmount(); calls = [];
     render(props); observers[0].intersect(false); render(props);
-    expect(calls).toHaveLength(0); expect(runtime.lazy.map(state => state.loads)).toEqual([0, 0, 0]);
+    expect(calls).toHaveLength(0); expect(runtime.lazy.map(state => state.loads)).toEqual([0, 0, 0, 0]);
     expect(observers[0].options).toEqual({ rootMargin: "300px 0px" });
     expect(observers[0].observe).toHaveBeenCalledExactlyOnceWith(sentinel);
   });
@@ -169,7 +170,7 @@ describe("optional player details visibility and requests", () => {
     expect(html).toContain("$50.0M"); expect(html).toContain("Curry headline");
     observers[0].intersect(false); render(); observers[0].intersect(); render();
     expect(calls).toHaveLength(3); expect(observers).toHaveLength(1);
-    expect(runtime.lazy.map(state => state.loads)).toEqual([1, 1, 1]);
+    expect(runtime.lazy.map(state => state.loads)).toEqual([1, 1, 1, 0]);
     expect(observers[0].disconnect).toHaveBeenCalled();
   });
   it("remains keyboard and screen-reader reachable without waiting for an observer entry", async () => {
@@ -278,7 +279,19 @@ describe("optional player details visibility and requests", () => {
     expect(boundary).toContain('dynamic(() => import("./PlayerSalary"), { loading: PlayerSalaryLoading })');
     expect(boundary).toContain('dynamic(() => import("./PlayerNews"), { loading: PlayerNewsLoading })');
     const page = readFileSync(new URL("../../app/player/[id]/page.tsx", import.meta.url), "utf8");
-    expect(page).toContain('<PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} />');
-    expect(page).not.toMatch(/const Player(?:Measurements|Salary|News) =/);
+    expect(page).toContain('<PlayerOptionalDetails playerId={personId} draftYear={player.draftYear} playerName={fullName} teamAbbr={player.teamAbbr} includeNews={false} />');
+    expect(page).not.toMatch(/const Player(?:Measurements|Salary) =/);
+  });
+});
+
+
+describe("standalone news panel visibility", () => {
+  it("keeps desktop news request-free until its own visibility boundary is reached", async () => {
+    const panel = () => renderNode(<PlayerVisibleNews playerName="Stephen Curry" />);
+    panel(); await settle(); panel();
+    expect(calls).toHaveLength(0);
+    observers.at(-1)!.intersect(); panel(); await settle(); panel();
+    expect(calls.map(call => call.url)).toEqual(["/api/news?q=Stephen%20Curry"]);
+    panel(); expect(calls).toHaveLength(1);
   });
 });

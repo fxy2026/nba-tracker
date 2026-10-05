@@ -13,7 +13,7 @@ const TIER_CLASS: Record<Tier, string> = {
   plain: "border-border bg-bg-card/60 text-text-secondary",
 };
 
-export default function PlayerHonors({ playerId, accolades }: { playerId: number; accolades: PlayerAccolades | null }) {
+export default function PlayerHonors({ playerId, accolades, showLoading = false, archived = false }: { playerId: number; accolades: PlayerAccolades | null; showLoading?: boolean; archived?: boolean }) {
   const { locale } = useLocale();
   const isZh = locale === "zh";
   const [upstream, setUpstream] = useState<{ playerId: number; honors: HonorChip[] | null; retrievedAt: string | null; status: "success" | "empty" | "unavailable" } | null>(null);
@@ -23,6 +23,7 @@ export default function PlayerHonors({ playerId, accolades }: { playerId: number
   const honors = current?.honors?.length ? current.honors : staticHonors(accolades);
 
   useEffect(() => {
+    if (archived) return;
     const controller = new AbortController();
     (async () => {
       try {
@@ -38,11 +39,11 @@ export default function PlayerHonors({ playerId, accolades }: { playerId: number
       }
     })();
     return () => controller.abort();
-  }, [playerId]);
+  }, [playerId, archived]);
 
   // No initial data stays unobtrusive; settled empty/error responses explain
   // availability without asserting that the player has no awards.
-  if (!honors?.length && !current) return null;
+  if (!honors?.length && !current) return showLoading ? <p role="status" className="sm:hidden rounded-xl bg-bg-secondary p-5 text-sm text-text-secondary">{isZh ? (archived ? "荣誉记录暂未收录，不代表没有荣誉。" : "正在加载荣誉记录…") : (archived ? "Honors are not yet recorded; this does not mean zero awards." : "Loading award records…")}</p> : null;
 
   return (
     <section className="mt-8 sm:mt-10">

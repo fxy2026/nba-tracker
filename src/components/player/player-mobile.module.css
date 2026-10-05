@@ -12,3 +12,28 @@
   .overview p { overflow-wrap: anywhere; }
   .overview [class~="text-[9px]"], .overview [class~="text-[10px]"] { font-size: 11px; letter-spacing: .04em; line-height: 1.4; }
 }
+
+.identity { position: relative; overflow: hidden; padding: 0 0 15px; border-bottom: 1px solid var(--border); }
+.identity::before { content: ""; position: absolute; inset: 24px 0 0; pointer-events: none; background: radial-gradient(ellipse at 10% 60%, color-mix(in srgb, var(--player-accent) 16%, transparent), transparent 70%); }
+.identityTop { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-bottom: 8px; }
+.back { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: var(--text-secondary); }
+.identityActions { display: flex; align-items: center; }
+.identityActions button { min-width: 44px; min-height: 44px; }
+.identityRow { position: relative; display: flex; align-items: center; gap: 14px; }
+.headshot { flex: 0 0 88px; overflow: hidden; border-radius: 18px; background: color-mix(in srgb, var(--player-accent) 12%, transparent); }
+.identityName { min-width: 0; }
+.identityName h1 { margin: 0 0 8px; font-size: 24px; line-height: 1.12; font-weight: 750; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.identityName > a, .identityName > p { font-size: 12px; line-height: 1.5; color: var(--text-secondary); }
+.identityName .identityFacts { margin-top: 6px; font-size: 11px; }
+.identitySource { position: relative; margin-top: 12px; font-size: 10px; line-height: 1.5; color: var(--text-secondary); }
+@media (max-width: 639px) {
+  .overview { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; }
+  .overview > .portrait, .overview > :nth-child(n+5) { display: none; }
+  .overview > div:nth-child(2) { grid-column: span 1; grid-row: span 1; min-height: 140px; }
+  .overview > div { padding: 12px 10px; }
+  .overview > div:nth-child(2) > div { gap: 12px; padding: 0; }
+  .overview > div:nth-child(2) > div > div:last-child > div:nth-child(n+2) { display: none; }
+  .overview > div:nth-child(2) p[class*="clamp"] { font-size: 28px; }
+  .overview > div:nth-child(2) span[class*="bg-success"], .overview > div:nth-child(2) span[class*="bg-danger"] { display: none; }
+  .overview p { letter-spacing: 0 !important; }
+}

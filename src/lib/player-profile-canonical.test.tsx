@@ -48,7 +48,7 @@ describe("one canonical player home", () => {
   });
   it("Jordan now gets a profile with six genuinely recorded shooting selections", async () => {
     const tree = await page(893); const html = renderToStaticMarkup(tree);
-    expect(html).toContain("Michael Jordan"); expect(html).toContain('data-testid="shooting-explorer"');
+    expect(html).toContain("Michael Jordan"); expect(html).toContain('data-player-deferred="shooting"');
     expect(tree.props.catalog).toHaveLength(6);
     expect(tree.props.initialSelection).toEqual({ playerId: 893, season: "2002-03", seasonType: "Regular Season" });
     expect(html).toContain("Existing curated career summary"); expect(html).toContain("30.1");
@@ -59,7 +59,7 @@ describe("one canonical player home", () => {
     expect(tree.props.historicalCareer.rows).toHaveLength(28);
     expect(html).toContain('data-historical-career="893"');
     expect(html).toContain("1984-85"); expect(html).toContain("2002-03");
-    expect(html).toContain('data-testid="shooting-explorer"');
+    expect(html).toContain('data-player-deferred="shooting"');
     expect(tree.props.initialResource).toMatchObject({ status: "ready", data: { totals: { fgm: 679, fga: 1527 } } });
     expect(html).not.toContain(locale === "zh" ? "完整逐赛季生涯表暂未收录" : "A complete season-by-season career table has not been recorded");
     expect(html.indexOf('id="career"')).toBeLessThan(html.indexOf('id="shooting"'));
@@ -81,7 +81,7 @@ describe("one canonical player home", () => {
     expect(html).toContain("Michael Jordan"); expect(html).toContain("Existing curated career summary");
     expect(html).toContain("A complete season-by-season career table has not been recorded");
     expect(html).not.toContain("data-historical-career");
-    expect(html).toContain('data-testid="shooting-explorer"');
+    expect(html).toContain('data-player-deferred="shooting"');
     expect(tree.props.catalog).toHaveLength(6);
   });
   it("preserves current rich stats props and places shooting before the long career table", async () => {

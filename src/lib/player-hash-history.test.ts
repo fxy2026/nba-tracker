@@ -56,6 +56,10 @@ function historyFixture(initial = "/player/201939") {
     router = { tree: saved.tree, canonicalUrl: next.pathname + next.search + next.hash, renderedSearch: saved.renderedSearch, pushRef: { pendingPush: false, preserveCustomHistoryState: true } };
     commit();
   });
+  const copyNextState = new Function("window", `${excerpt(routerSource, "function copyNextJsInternalHistoryState(", "\nfunction Head(")}\nreturn copyNextJsInternalHistoryState;`)(window);
+  const pushPatched = new Function("window", "originalPushState", "copyNextJsInternalHistoryState", "applyUrlFromHistoryPushReplace", `${excerpt(routerSource, "window.history.pushState = function pushState(", "\n        /**\n     * Patch replaceState")}\nreturn window.history.pushState;`)(
+    { history: {} }, window.history.pushState, copyNextState, (href: string) => { router = { ...router, canonicalUrl: href }; },
+  ) as (data: unknown, unused: string, href: string) => void;
   const onPopState = new Function("window", "_react", "_approuterinstance", `${excerpt(routerSource, "const onPopState = (event)=>{", "\n        // Register popstate")}\nreturn onPopState;`)(
     window, { startTransition: (run: () => void) => run() }, { dispatchTraverseAction },
   ) as (event: { state: HistoryState }) => void;
@@ -85,6 +89,7 @@ function historyFixture(initial = "/player/201939") {
       onClick(event);
       return event.preventDefault;
     },
+    pushPatched(href: string) { pushPatched(null, "", href); },
     nativeHash(href: string) { write(null, href, true); onPopState({ state: null }); },
     back: () => traverse(-1), forward: () => traverse(1),
   };
@@ -141,5 +146,24 @@ describe("router-owned player hash history", () => {
     expect(session.href).toBe("/player/201939#career");
     session.click("#main-content", false, focusMain);
     expect(focusMain).toHaveBeenCalledOnce();
+  });
+});
+
+
+describe("installed native-history adapter for mobile player panels", () => {
+  it("retains the matching Next player tree across panel and season entries, another player, and Back/Forward", () => {
+    const session = historyFixture("/player/2544");
+    session.pushPatched("/player/2544?panel=shooting");
+    session.pushPatched("/player/2544?panel=shooting&season=2012-13&seasonType=Playoffs");
+    session.pushPatched("/player/2544?panel=honors&season=2012-13&seasonType=Playoffs");
+    expect(session.entries.slice(1).every(entry => entry.state?.__PRIVATE_NEXTJS_INTERNALS_TREE.tree.playerId === "2544")).toBe(true);
+    session.click("/player/977?panel=career");
+    expect(session.playerId).toBe("977");
+    session.back(); expect(session.playerId).toBe("2544"); expect(session.href).toContain("panel=honors");
+    session.back(); expect(session.href).toBe("/player/2544?panel=shooting&season=2012-13&seasonType=Playoffs");
+    session.back(); expect(session.href).toBe("/player/2544?panel=shooting");
+    session.forward(); expect(session.href).toContain("season=2012-13");
+    session.forward(); expect(session.href).toContain("panel=honors");
+    session.forward(); expect(session.playerId).toBe("977");
   });
 });

@@ -1,5 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { commitPlayerProfileUrl, usePlayerProfileLocation } from './PlayerProfilePanels';
+import { playerSeasonHref } from '@/lib/player-mobile-navigation';
+import { playerShootingSelection } from '@/lib/player-profile-navigation';
 import type { SeasonHeatmapDatasetMetadata, SeasonHeatmapResource } from '../SeasonHeatmapExplorer';
 import RefinedShotExplorer, {type SpatialResource} from '../shot-map/RefinedShotExplorer';
 import { retainSelection, startSeasonRequest } from '../shot-map/shot-map-request-state';
@@ -33,10 +36,15 @@ function useSeasonResource<T extends SeasonHeatmapResource|SpatialResource>(iden
  return snapshot.key===key?snapshot.resource:{status:'loading'};
 }
 function HeatmapSession({player,locale,datasets,initialSelection,initialResource}:PlayerSeasonHeatmapProps) {
- const [selection,setSelection]=useState<HeatmapIdentity>(initialSelection),[retry,setRetry]=useState(0);
+ const [retry,setRetry]=useState(0);
+ const initialQuery=new URLSearchParams({season:initialSelection.season,seasonType:initialSelection.seasonType}).toString();
+ const location=usePlayerProfileLocation(player.id,initialQuery);
+ const params=new URLSearchParams(location.split('#')[0]);
+ const catalog=datasets.filter((entry):entry is typeof entry & {availability:'available'}=>entry.playerId===player.id&&entry.availability==='available');
+ const selection=playerShootingSelection(player.id,catalog,{season:params.get('season')??undefined,seasonType:params.get('seasonType')??undefined})??initialSelection;
  const key=datasetKey(selection),available=datasets.some(d=>d.playerId===player.id&&datasetKey(d)===key&&d.availability==='available');
  const aggregate=useSeasonResource(selection,available,retry,courtSeasonHeatmapUrl,decodeCourtSeasonHeatmapResource,{key:datasetKey(initialSelection),resource:decodeCourtSeasonHeatmapResource(initialResource,initialSelection)});
  const spatial=useSeasonResource(selection,available,retry,seasonShotMapUrl,decodeSeasonShotMapResource);
- return <RefinedShotExplorer player={player} locale={locale} datasets={datasets} selection={selection} aggregate={aggregate} spatial={spatial}
-  onChoose={identity=>{if(identity.playerId===player.id)setSelection(identity);}} onRetry={()=>setRetry(value=>value+1)}/>;
+ return <RefinedShotExplorer restrictToCatalog player={player} locale={locale} datasets={datasets} selection={selection} aggregate={aggregate} spatial={spatial}
+  onChoose={identity=>{if(identity.playerId!==player.id)return;const chosen=catalog.find(entry=>entry.season===identity.season&&entry.seasonType===identity.seasonType)??catalog.find(entry=>entry.season===identity.season);if(chosen)commitPlayerProfileUrl(playerSeasonHref(window.location.href,chosen.season,chosen.seasonType));}} onRetry={()=>setRetry(value=>value+1)}/>;
 }

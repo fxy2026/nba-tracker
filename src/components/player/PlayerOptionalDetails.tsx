@@ -14,6 +14,7 @@ interface Props {
   draftYear: number | null;
   playerName: string;
   teamAbbr: string;
+  includeNews?: boolean;
 }
 
 export default function PlayerOptionalDetails(props: Props) {
@@ -22,7 +23,7 @@ export default function PlayerOptionalDetails(props: Props) {
   return <VisiblePlayerDetails key={JSON.stringify([props.playerId, props.draftYear, props.playerName, props.teamAbbr])} {...props} />;
 }
 
-function VisiblePlayerDetails({ playerId, draftYear, playerName, teamAbbr }: Props) {
+function VisiblePlayerDetails({ playerId, draftYear, playerName, teamAbbr, includeNews = true }: Props) {
   const { t } = useLocale();
   const target = useRef<HTMLDivElement>(null);
   const [activated, setActivated] = useState(false);
@@ -58,7 +59,7 @@ function VisiblePlayerDetails({ playerId, draftYear, playerName, teamAbbr }: Pro
     <div
       ref={target}
       role="region"
-      aria-label={`${t.playerMeasurements.title}, ${t.playerSalary.title}, ${t.playerNews.title}`}
+      aria-label={`${t.playerMeasurements.title}, ${t.playerSalary.title}${includeNews ? `, ${t.playerNews.title}` : ""}`}
       tabIndex={0}
       onFocus={() => setActivated(true)}
       className="space-y-4 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
@@ -67,12 +68,12 @@ function VisiblePlayerDetails({ playerId, draftYear, playerName, teamAbbr }: Pro
         <>
           <PlayerMeasurements playerId={playerId} draftYear={draftYear} />
           <PlayerSalary playerName={playerName} teamAbbr={teamAbbr} />
-          <PlayerNews playerName={playerName} />
+          {includeNews && <PlayerNews playerName={playerName} />}
         </>
       ) : (
         <>
           <PlayerSalaryLoading />
-          <PlayerNewsLoading />
+          {includeNews && <PlayerNewsLoading />}
         </>
       )}
     </div>

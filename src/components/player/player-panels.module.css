@@ -1,0 +1,30 @@
+.shell, .body, .part, .desktopOnly { display: contents; }
+.mobileHeader, .tabs, .mobileOnly { display: none; }
+.loading { min-height: 100px; padding: 20px 0; }
+.loading span { display: block; height: 72px; border-radius: 16px; background: var(--bg-secondary); }
+@media (max-width: 639px) {
+  .shell { display: block; min-width: 0; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  .mobileHeader { display: block; }
+  .desktopOnly { display: none; }
+  .body { display: block; min-width: 0; outline-offset: 4px; }
+  .part { display: block; min-width: 0; }
+  .part[hidden] { display: none; }
+  .shell[data-player-panel="data"] .part:not([data-profile-part="data"]),
+  .shell[data-player-panel="shooting"] .part:not([data-profile-part="shooting"]),
+  .shell[data-player-panel="honors"] .part:not([data-profile-part="honors"]),
+  .shell[data-player-panel="career"] .part:not([data-profile-part="career"]),
+  .shell[data-player-panel="games"] .part:not([data-profile-part="games"]),
+  .shell[data-player-panel="news"] .part:not([data-profile-part="news"]),
+  .shell[data-player-panel="details"] .part:not([data-profile-part="details"]) { display: none; }
+  .tabs { display: flex; position: sticky; scroll-margin-top: var(--site-header-height, 48px); top: var(--site-header-height, 48px); z-index: 20; gap: 5px; margin: 16px -4px 0; padding: 0 4px; border-bottom: 1px solid var(--border); background: var(--bg-primary); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { position: relative; flex: 1 0 auto; min-width: 53px; min-height: 52px; padding: 12px 9px; font-size: 15px; font-weight: 600; color: var(--text-secondary); touch-action: manipulation; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--text-primary); }
+  .tabs button[aria-selected="true"]::after { content: ""; position: absolute; bottom: 0; left: 11px; right: 11px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent-amber); }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 8px; }
+  .part > section, .part > div { margin-top: 18px; }
+}
+
+@media (min-width: 640px) {
+  .body > section > .part > div { margin-top: 1rem; }
+}

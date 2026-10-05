@@ -13,8 +13,8 @@ interface NewsItem {
   image?: string;
 }
 
-export default function PlayerNews({ playerName }: { playerName: string }) {
-  const { t } = useLocale();
+export default function PlayerNews({ playerName, showEmpty = false }: { playerName: string; showEmpty?: boolean }) {
+  const { t, locale } = useLocale();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +35,7 @@ export default function PlayerNews({ playerName }: { playerName: string }) {
 
   if (loading) return <PlayerNewsLoading />;
 
-  if (news.length === 0) return null;
+  if (news.length === 0) return showEmpty ? <p role="status" className="sm:hidden rounded-xl bg-bg-secondary p-5 text-sm text-text-secondary">{locale === "zh" ? "暂时没有可展示的相关新闻。新闻来源可能不可用，请稍后再试。" : "No related news is available to display. The news source may be unavailable; try again later."}</p> : null;
 
   return (
     <div className="glass-tile overflow-hidden">

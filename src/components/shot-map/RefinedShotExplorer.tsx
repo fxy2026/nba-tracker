@@ -12,6 +12,7 @@ export type SpatialResource = SeasonShotMapResource | {status:'loading'};
 interface Props {
  player:{id:number;name:string;secondaryName?:string;teamLabel?:string}; locale:'en'|'zh'; datasets:readonly SeasonHeatmapDatasetMetadata[];
  selection:HeatmapIdentity; aggregate:SeasonHeatmapResource; spatial:SpatialResource;
+ restrictToCatalog?:boolean;
  onChoose:(selection:HeatmapIdentity)=>void; onRetry:()=>void; initialView?:ShotMapView;
 }
 export default function RefinedShotExplorer(props:Props) {
@@ -21,11 +22,12 @@ export default function RefinedShotExplorer(props:Props) {
  const data=props.spatial.status==='ready'&&sameIdentity(props.spatial.data,selection)?props.spatial.data:null;
  const zones=props.aggregate.status==='ready'&&sameIdentity(props.aggregate.data,selection)?props.aggregate.data:null;
  const totals=data?.totals??zones?.totals, threes=data?.totals??zones?.archive;
+ const typeAvailable=(type:HeatmapSeasonType)=>datasets.some(entry=>entry.playerId===player.id&&entry.season===selection.season&&entry.seasonType===type&&entry.availability==='available');
  const typeName=(type:HeatmapSeasonType)=>type==='Playoffs'?(zh?'季后赛':'Playoffs'):(zh?'常规赛':'Regular season');
  return <section className={styles.explorer} lang={zh?'zh-CN':'en'} aria-labelledby={`${id}-title`} data-refined-shot-explorer="true">
    <header className={styles.header}><div><span className={styles.eyebrow}>{zh?'球员投篮档案':'PLAYER SHOT ARCHIVE'}</span><h2 id={`${id}-title`}>{zh?'投篮分布':'Shot distribution'}</h2><p className={styles.subtitle}>{player.name} · {selection.season.replace('-','–')} · {typeName(selection.seasonType)}</p></div>
     <div className={styles.filters}><Select className={styles.seasonSelect} value={selection.season} aria-label={zh?'赛季':'Season'} onValueChange={season=>onChoose({...selection,season})} options={seasons.map(season=>({value:season,label:season}))}/>
-    <div className={styles.segments} role="group" aria-label={zh?'赛季类型':'Season type'}>{(['Regular Season','Playoffs'] as const).map(type=><button type="button" key={type} aria-pressed={selection.seasonType===type} onClick={()=>onChoose({...selection,seasonType:type})}>{typeName(type)}</button>)}</div></div>
+    <div className={styles.segments} role="group" aria-label={zh?'赛季类型':'Season type'}>{(['Regular Season','Playoffs'] as const).map(type=><button type="button" key={type} disabled={props.restrictToCatalog&&!typeAvailable(type)} title={props.restrictToCatalog&&!typeAvailable(type)?(zh?"此赛季未收录该赛事类型":"This competition is not recorded for the season"):undefined} aria-pressed={selection.seasonType===type} onClick={()=>onChoose({...selection,seasonType:type})}>{typeName(type)}</button>)}</div></div>
    </header>
    <div className={styles.stats} aria-label={zh?'档案统计':'Archive statistics'}>
     <Stat label={zh?'档案出手':'Archived attempts'} compactLabel={zh?'出手':'Attempts'} value={totals?countFormat(totals.fga,props.locale):'—'} note={totals?`${countFormat(totals.fgm,props.locale)} ${zh?'命中':'made'}`:' '}/>
