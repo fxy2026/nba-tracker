@@ -1,19 +1,23 @@
 {
   "version": 2,
-  "cursor": "0022501167",
+  "cursor": "0022501147",
   "observedRetries": {},
-  "lastRunAt": "2026-10-04T09:54:33.937Z",
+  "lastRunAt": "2026-10-05T10:34:42.161Z",
   "lastBatch": {
     "requests": 24,
-    "accepted": 18,
+    "accepted": 17,
     "withheld": [
       {
-        "gameId": "0022501183",
+        "gameId": "0022501162",
+        "reason": "incomplete-or-mismatched-points-total"
+      },
+      {
+        "gameId": "0022501161",
         "reason": "quarantined-player-identity"
       },
       {
-        "gameId": "0022501182",
-        "reason": "incomplete-or-mismatched-points-total"
+        "gameId": "0022501147",
+        "reason": "quarantined-player-identity"
       }
     ]
   }
