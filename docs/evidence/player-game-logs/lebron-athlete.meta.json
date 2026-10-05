@@ -1,0 +1,9 @@
+{
+  "name": "lebron-athlete",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966",
+  "observedAt": "2026-10-05T07:49:02.842234+00:00",
+  "status": 200,
+  "bytes": 129504,
+  "sha256": "b2faee39efbec3464ca642e46f7a9d892f7ed2ef015372075344961a1fcaf446",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

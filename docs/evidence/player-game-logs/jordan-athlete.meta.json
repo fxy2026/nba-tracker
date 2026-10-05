@@ -1,0 +1,9 @@
+{
+  "name": "jordan-athlete",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035",
+  "observedAt": "2026-10-05T07:49:02.844061+00:00",
+  "status": 200,
+  "bytes": 143612,
+  "sha256": "8fdb440ddeddc0501e845a00095f8c896f576683d599792d2da758000cd2ba22",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

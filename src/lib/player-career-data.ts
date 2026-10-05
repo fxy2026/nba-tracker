@@ -19,6 +19,14 @@ export interface CareerSeasonRow {
   FGA?: number | null;
   FG3A?: number | null;
   FTA?: number | null;
+  FGM?: number | null;
+  FG3M?: number | null;
+  FTM?: number | null;
+  GS?: number | null;
+  TOV?: number | null;
+  PF?: number | null;
+  OREB?: number | null;
+  DREB?: number | null;
 }
 
 export interface CareerAverage {
@@ -36,7 +44,7 @@ export interface PlayerCareerData {
 }
 
 
-// Validate only fields consumed by the existing career table/derived panels.
+// Validate every field consumed by the career and selected-season panels.
 // Null shooting percentages/volumes stay unknown; never fill absent stats.
 export function normalizePlayerCareerData(raw: unknown): PlayerCareerData | null {
   if (!raw || typeof raw !== "object" || !("careerSeasons" in raw) || !Array.isArray(raw.careerSeasons)) return null;
@@ -48,7 +56,9 @@ export function normalizePlayerCareerData(raw: unknown): PlayerCareerData | null
     if (typeof r.SEASON_ID !== "string" || !/^\d{4}-\d{2}$/.test(r.SEASON_ID) || typeof r.TEAM_ABBREVIATION !== "string") return false;
     if (!["GP", "MIN", "PTS", "REB", "AST", "STL", "BLK"].every(k => nonnegative(r[k]))) return false;
     if (!["FG_PCT", "FG3_PCT", "FT_PCT"].every(k => r[k] === null || (nonnegative(r[k]) && (r[k] as number) <= 1))) return false;
-    return ["FGA", "FG3A", "FTA"].every(k => r[k] == null || nonnegative(r[k]));
+    if (!["FGA", "FG3A", "FTA", "FGM", "FG3M", "FTM", "TOV", "PF", "OREB", "DREB"].every(k => r[k] == null || nonnegative(r[k]))) return false;
+    if (r.GS != null && (!Number.isSafeInteger(r.GS) || (r.GS as number) < 0 || (r.GS as number) > (r.GP as number))) return false;
+    return ["FG", "FG3", "FT"].every(kind => r[`${kind}M`] == null || r[`${kind}A`] == null || (r[`${kind}M`] as number) <= (r[`${kind}A`] as number));
   });
   if (!valid) return null;
   const rates = "careerShooting" in raw ? normalizeCareerShooting(raw.careerShooting) : null;

@@ -28,8 +28,8 @@ describe("player-page verified season heatmap integration", () => {
       { playerId: 201939, season: "2015-16", seasonType: "Regular Season", availability: "available" },
     ]));
     expect(nodes.filter(node => node.props.fromYear !== undefined)).toHaveLength(0);
-    // Career / advanced stats still receive the same player and team props.
-    expect(nodes.filter(node => node.props.playerId === 201939 && node.props.playerName === "Stephen Curry" && node.props.teamTricode === "GSW")).toHaveLength(2);
+    // Career / advanced stats retain the same props; Data now shares that identity too.
+    expect(nodes.filter(node => node.props.playerId === 201939 && node.props.playerName === "Stephen Curry" && node.props.teamTricode === "GSW")).toHaveLength(3);
     expect(JSON.stringify(panel.props)).not.toMatch(/evidenceSha256|factsSha256|review|publicationStatus|rawPointCoverage|sourceOrder|pathD/);
   });
   it.each([999999999])("retains the existing partial legacy component for unsupported player %s", async id => {

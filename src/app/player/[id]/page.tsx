@@ -1,3 +1,6 @@
+import PlayerSeasonStats from "@/components/player/PlayerSeasonStats";
+import { getReviewedCareerArchive } from "@/lib/player-career-archive";
+import { getPlayerGameLogProfile } from "@/lib/player-game-log-profile";
 import PlayerProfilePanels, { PlayerProfilePart, PlayerDesktopOnly, PlayerDeferred } from "@/components/player/PlayerProfilePanels";
 import PlayerMobileIdentity from "@/components/player/PlayerMobileIdentity";
 import PlayerMobileSummary from "@/components/player/PlayerMobileSummary";
@@ -98,10 +101,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   const heatmapSelection = playerShootingSelection(personId, heatmapCatalog, query);
   const heatmapResource = heatmapSelection ? await loadPlayerSeasonHeatmapArchive(heatmapSelection) : null;
   if (!player) {
-    const historicalCareer = await getHistoricalCareerArchive(personId);
-    return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} historicalCareer={historicalCareer} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} />;
+    const [historicalCareer, gameLog] = await Promise.all([getHistoricalCareerArchive(personId), getPlayerGameLogProfile(personId, identity.sourceYears)]);
+    return <ArchivedPlayerProfile player={identity} locale={locale} catalog={heatmapCatalog} initialSelection={heatmapSelection} initialResource={heatmapResource} historicalCareer={historicalCareer} gameLog={gameLog} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} />;
   }
 
+  const [careerArchive, gameLog] = await Promise.all([getReviewedCareerArchive(String(personId)), getPlayerGameLogProfile(personId, identity.sourceYears, snapshot.provenance.season)]);
   const t = getTranslations(locale);
   const isZh = locale === "zh";
 
@@ -422,6 +426,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       </div>
 
       </PlayerProfilePart>
+      <PlayerProfilePart panel="data" deferred mobileOnly><PlayerSeasonStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} locale={locale} initialData={careerArchive?.data} /></PlayerProfilePart>
       <PlayerProfilePart panel="honors" deferred>
       {/* ─── Honor wall (real awards via stats proxy — hides itself on failure) ─ */}
       <PlayerHonors playerId={personId} accolades={accolades} showLoading />
@@ -504,7 +509,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </PlayerProfilePart>
         <PlayerProfilePart panel="news" deferred><PlayerVisibleNews playerName={fullName} /></PlayerProfilePart>
         <PlayerProfilePart panel="games" deferred mobileOnly>
-          <PlayerGameLog playerId={personId} playerName={fullName} />
+          <PlayerGameLog playerId={personId} playerName={fullName} {...gameLog} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} />
         </PlayerProfilePart>
       </section>
 

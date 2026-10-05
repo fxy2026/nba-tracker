@@ -1,3 +1,5 @@
+import type { CareerSeasonRow } from "./player-career-data";
+
 // ESPN NBA team ID mapping (tricode -> ESPN team ID)
 const ESPN_TEAMS: Record<string, number> = {
   ATL: 1, BOS: 2, BKN: 17, CHA: 30, CHI: 4,
@@ -50,23 +52,7 @@ export async function findESPNId(playerName: string, teamTricode: string, signal
   return typeof match?.id === "string" && /^\d+$/.test(match.id) ? match.id : null;
 }
 
-interface ESPNSeasonStats {
-  SEASON_ID: string;
-  TEAM_ABBREVIATION: string;
-  GP: number;
-  MIN: number;
-  PTS: number;
-  REB: number;
-  AST: number;
-  STL: number;
-  BLK: number;
-  FG_PCT: number | null;
-  FG3_PCT: number | null;
-  FT_PCT: number | null;
-  FGA: number | null;
-  FG3A: number | null;
-  FTA: number | null;
-}
+type ESPNSeasonStats = CareerSeasonRow;
 
 // Fetch career season-by-season stats from ESPN
 export async function getESPNCareerStats(espnId: string, signal?: AbortSignal): Promise<{ careerSeasons: ESPNSeasonStats[] | null; recentGames: null }> {
@@ -110,10 +96,10 @@ export async function getESPNCareerStats(espnId: string, signal?: AbortSignal): 
         const n = Number(value);
         return Number.isFinite(n) && n <= 100 ? n / 100 : undefined;
       };
-      const attempts = (raw: string | null): number | null => {
-        if (typeof raw !== "string" || !/^\d+(?:\.\d+)?-\d+(?:\.\d+)?$/.test(raw)) return null;
+      const shooting = (raw: string | null): [number | null, number | null] => {
+        if (typeof raw !== "string" || !/^\d+(?:\.\d+)?-\d+(?:\.\d+)?$/.test(raw)) return [null, null];
         const [made, attempted] = raw.split("-").map(Number);
-        return Number.isFinite(attempted) && made <= attempted ? attempted : null;
+        return Number.isFinite(attempted) && made <= attempted ? [made, attempted] : [null, null];
       };
       const gp = num("GP");
       const min = num("MIN");
@@ -125,6 +111,9 @@ export async function getESPNCareerStats(espnId: string, signal?: AbortSignal): 
       const fgPct = percentage("FG%");
       const fg3Pct = percentage("3P%");
       const ftPct = percentage("FT%");
+      const [fgm, fga] = shooting(get(v, "FG"));
+      const [fg3m, fg3a] = shooting(get(v, "3PT"));
+      const [ftm, fta] = shooting(get(v, "FT"));
       // A missing label means ESPN changed the payload — a fake all-zero season
       // row would silently corrupt career charts and advanced-stat math.
       if (gp === null || min === null || pts === null || reb === null || ast === null
@@ -145,9 +134,13 @@ export async function getESPNCareerStats(espnId: string, signal?: AbortSignal): 
         FG_PCT: fgPct,
         FG3_PCT: fg3Pct,
         FT_PCT: ftPct,
-        FGA: attempts(get(v, "FG")),
-        FG3A: attempts(get(v, "3PT")),
-        FTA: attempts(get(v, "FT")),
+        FGM: fgm, FGA: fga,
+        FG3M: fg3m, FG3A: fg3a,
+        FTM: ftm, FTA: fta,
+        // Optional provider columns remain unknown when absent or unrecorded.
+        ...Object.fromEntries(([['GS', 'GS'], ['TOV', 'TO'], ['PF', 'PF'], ['OREB', 'OR'], ['DREB', 'DR']] as const)
+          .filter(([, label]) => labels.includes(label))
+          .map(([key, label]) => [key, num(label)])),
       };
     })
     .filter((row): row is ESPNSeasonStats => row !== null);

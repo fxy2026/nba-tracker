@@ -1,0 +1,9 @@
+{
+  "name": "kobe2016",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110/gamelog?season=2016",
+  "observedAt": "2026-10-05T07:47:41.383315+00:00",
+  "status": 200,
+  "bytes": 643693,
+  "sha256": "38e107b9896833239d14ec22ff4f2ff6661607099b10c385109bf7713012ce8b",
+  "httpDate": "Mon, 05 Oct 2026 07:47:49 GMT"
+}

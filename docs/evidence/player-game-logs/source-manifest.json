@@ -1,0 +1,761 @@
+{
+  "generatedAt": "2026-10-05T07:54:31.925657+00:00",
+  "purpose": "Read-only public-source research for NBA player Games/Data recovery",
+  "players": [
+    {
+      "nbaPlayerId": 2544,
+      "nbaRegistryRow": [
+        2544,
+        "LeBron James",
+        2003,
+        2026
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "1966",
+      "espnFullName": "LeBron James",
+      "espnDebutYear": 2003,
+      "espnDisplayDOB": "30/12/1984",
+      "espnDisplayDraft": "2003: Rd 1, Pk 1 (CLE)",
+      "espnProfileSource": {
+        "name": "lebron-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966",
+        "observedAt": "2026-10-05T07:49:02.842234+00:00",
+        "status": 200,
+        "bytes": 129504,
+        "sha256": "b2faee39efbec3464ca642e46f7a9d892f7ed2ef015372075344961a1fcaf446",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    },
+    {
+      "nbaPlayerId": 201939,
+      "nbaRegistryRow": [
+        201939,
+        "Stephen Curry",
+        2009,
+        2026
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "3975",
+      "espnFullName": "Stephen Curry",
+      "espnDebutYear": 2009,
+      "espnDisplayDOB": "14/3/1988",
+      "espnDisplayDraft": "2009: Rd 1, Pk 7 (GS)",
+      "espnProfileSource": {
+        "name": "curry-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975",
+        "observedAt": "2026-10-05T07:49:02.842712+00:00",
+        "status": 200,
+        "bytes": 155133,
+        "sha256": "fd59c7b2bb548172a450abb5ddb380f6b5c5d1184e287fc38975f1406e527b1a",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    },
+    {
+      "nbaPlayerId": 977,
+      "nbaRegistryRow": [
+        977,
+        "Kobe Bryant",
+        1996,
+        2015
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "110",
+      "espnFullName": "Kobe Bryant",
+      "espnDebutYear": 1996,
+      "espnDisplayDOB": "23/8/1978",
+      "espnDisplayDraft": "1996: Rd 1, Pk 13 (CHA)",
+      "espnProfileSource": {
+        "name": "kobe-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110",
+        "observedAt": "2026-10-05T07:49:02.843639+00:00",
+        "status": 200,
+        "bytes": 135299,
+        "sha256": "5ca6d79fb9d94320c333ff5fff677ac05669a991713a2dcaba85f7ec615ea6e8",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    },
+    {
+      "nbaPlayerId": 893,
+      "nbaRegistryRow": [
+        893,
+        "Michael Jordan",
+        1984,
+        2002
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "1035",
+      "espnFullName": "Michael Jordan",
+      "espnDebutYear": 1984,
+      "espnDisplayDOB": "17/2/1963",
+      "espnDisplayDraft": "1984: Rd 1, Pk 3 (CHI)",
+      "espnProfileSource": {
+        "name": "jordan-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035",
+        "observedAt": "2026-10-05T07:49:02.844061+00:00",
+        "status": 200,
+        "bytes": 143612,
+        "sha256": "8fdb440ddeddc0501e845a00095f8c896f576683d599792d2da758000cd2ba22",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    },
+    {
+      "nbaPlayerId": 201142,
+      "nbaRegistryRow": [
+        201142,
+        "Kevin Durant",
+        2007,
+        2026
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "3202",
+      "espnFullName": "Kevin Durant",
+      "espnDebutYear": 2007,
+      "espnDisplayDOB": "29/9/1988",
+      "espnDisplayDraft": "2007: Rd 1, Pk 2 (SEA)",
+      "espnProfileSource": {
+        "name": "durant-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3202",
+        "observedAt": "2026-10-05T07:52:43.529376+00:00",
+        "status": 200,
+        "bytes": 69152,
+        "sha256": "1401b5e0a8d7fa37a909329c48904aba027ebc5cdb645e7d81fcbe15588f5d30",
+        "httpDate": "Mon, 05 Oct 2026 07:52:51 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    },
+    {
+      "nbaPlayerId": 203999,
+      "nbaRegistryRow": [
+        203999,
+        "Nikola Jokić",
+        2015,
+        2026
+      ],
+      "nbaRegistrySource": {
+        "name": "NBA Stats CommonAllPlayers",
+        "url": "https://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2026-27",
+        "leagueId": "00",
+        "season": "2026-27",
+        "isOnlyCurrentSeason": 0,
+        "retrievedDate": "2026-10-03",
+        "httpStatus": 200,
+        "rawSha256": "9f68e4f68c4cf0b6705325db6fb0794e401f3ed8592434771005149ae92c765d",
+        "rawBytes": 646577,
+        "sourceType": "official-nba",
+        "coverageClaim": "Every row returned by NBA CommonAllPlayers with current-only disabled; independent universal historical completeness is not asserted."
+      },
+      "nbaRegistryFile": "src/data/player-identity/official-all-player-identities.compact.json",
+      "nbaRegistryFileSha256": "70afeb7aae99f804d2f6553c19ca63f68155c3939a85129998a43219e5fa00cd",
+      "espnAthleteId": "3112335",
+      "espnFullName": "Nikola Jokic",
+      "espnDebutYear": 2015,
+      "espnDisplayDOB": "19/2/1995",
+      "espnDisplayDraft": "2014: Rd 2, Pk 41 (DEN)",
+      "espnProfileSource": {
+        "name": "jokic-athlete",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3112335",
+        "observedAt": "2026-10-05T07:52:43.529885+00:00",
+        "status": 200,
+        "bytes": 70930,
+        "sha256": "50cdd753a32c3bae1996d08a74a09ac0af4b08d96716538e0b16ed087cf1661b",
+        "httpDate": "Mon, 05 Oct 2026 07:52:51 GMT"
+      },
+      "exactNameAfterCaseDiacriticOnly": true,
+      "debutMatchesNbaFromYear": true,
+      "mappingMethod": "Reviewed explicit NBA identity row against public ESPN athlete fullName and NBA debutYear; current team is not an identity requirement. No fuzzy names."
+    }
+  ],
+  "gamelogs": [
+    {
+      "name": "lebron2025",
+      "file": "lebron2025.json",
+      "source": {
+        "name": "lebron2025",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2025",
+        "observedAt": "2026-10-05T07:49:02.841061+00:00",
+        "status": 200,
+        "bytes": 750486,
+        "sha256": "b1368fe77602a0dbba92ff2f6920c835d59a2bd9ad8485d72f6fedffd5da97d0",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2025",
+      "groups": [
+        {
+          "displayName": "2024-25 Postseason",
+          "rowsBeforeExclusions": 5,
+          "rowsExcludingAllStar": 5,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2025-04-20T00:30:00.000+00:00",
+          "lastEventUTC": "2025-05-01T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2024-25 Regular Season",
+          "rowsBeforeExclusions": 70,
+          "rowsExcludingAllStar": 70,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2024-10-23T02:00:00.000+00:00",
+          "lastEventUTC": "2025-04-12T02:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2024-25 Preseason",
+          "rowsBeforeExclusions": 3,
+          "rowsExcludingAllStar": 3,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2024-10-07T01:30:00.000+00:00",
+          "lastEventUTC": "2024-10-16T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "lebron2026",
+      "file": "lebron2026.json",
+      "source": {
+        "name": "lebron2026",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2026",
+        "observedAt": "2026-10-05T07:45:35.816145+00:00",
+        "observationPrecision": "body-received-local-file-mtime",
+        "status": 200,
+        "bytes": 689862,
+        "sha256": "804e3a587e947ddaf4d9c0f43ef756e2d047547d75a6cbdbdd6a97d9d9f52f3b",
+        "note": "Initial fetch explicitly returned HTTP 200; timestamp is local file creation immediately after response body read, not provider update time."
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2026",
+      "groups": [
+        {
+          "displayName": "2025-26 Postseason",
+          "rowsBeforeExclusions": 10,
+          "rowsExcludingAllStar": 10,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2026-04-19T00:30:00.000+00:00",
+          "lastEventUTC": "2026-05-12T02:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2025-26 Regular Season",
+          "rowsBeforeExclusions": 63,
+          "rowsExcludingAllStar": 60,
+          "excludedAllStarEventIds": [
+            "401838143",
+            "401838142",
+            "401838141"
+          ],
+          "firstEventUTC": "2025-11-19T03:30:00.000+00:00",
+          "lastEventUTC": "2026-04-13T00:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "lebron2027",
+      "file": "lebron2027.json",
+      "source": {
+        "name": "lebron2027",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2027",
+        "observedAt": "2026-10-05T07:45:35.751311+00:00",
+        "observationPrecision": "body-received-local-file-mtime",
+        "status": 200,
+        "bytes": 170,
+        "sha256": "6609d14ec37818d8a77bc1c248f4ef61fe747128f5995338aa7732dac958a8dd",
+        "note": "Initial fetch explicitly returned HTTP 200; timestamp is local file creation immediately after response body read, not provider update time."
+      },
+      "labels": null,
+      "selectedSeasonFilter": null,
+      "groups": [],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "curry2025",
+      "file": "curry2025.json",
+      "source": {
+        "name": "curry2025",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2025",
+        "observedAt": "2026-10-05T07:49:02.841755+00:00",
+        "status": 200,
+        "bytes": 810459,
+        "sha256": "4b2aaa755cceef2f660c56ba8204e435f75926277f741bbd80349ba796a6e1e9",
+        "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2025",
+      "groups": [
+        {
+          "displayName": "2024-25 Postseason",
+          "rowsBeforeExclusions": 8,
+          "rowsExcludingAllStar": 8,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2025-04-21T01:30:00.000+00:00",
+          "lastEventUTC": "2025-05-07T01:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2024-25 Play In Regular Season",
+          "rowsBeforeExclusions": 1,
+          "rowsExcludingAllStar": 1,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2025-04-16T02:00:00.000+00:00",
+          "lastEventUTC": "2025-04-16T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2024-25 Regular Season",
+          "rowsBeforeExclusions": 72,
+          "rowsExcludingAllStar": 70,
+          "excludedAllStarEventIds": [
+            "401752957",
+            "401752956"
+          ],
+          "firstEventUTC": "2024-10-24T02:00:00.000+00:00",
+          "lastEventUTC": "2025-04-13T19:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2024-25 Preseason",
+          "rowsBeforeExclusions": 4,
+          "rowsExcludingAllStar": 4,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2024-10-05T23:00:00.000+00:00",
+          "lastEventUTC": "2024-10-16T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": [
+            "401717008",
+            "401716950"
+          ]
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "curry2026",
+      "file": "curry2026.json",
+      "source": {
+        "name": "curry2026",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2026",
+        "observedAt": "2026-10-05T07:45:35.833491+00:00",
+        "observationPrecision": "body-received-local-file-mtime",
+        "status": 200,
+        "bytes": 470032,
+        "sha256": "b6c8a07205d522cf81bc53d1181c2200dd5fb4832bbeaab7e5dca638e19b8f8e",
+        "note": "Initial fetch explicitly returned HTTP 200; timestamp is local file creation immediately after response body read, not provider update time."
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2026",
+      "groups": [
+        {
+          "displayName": "2025-26 Play In Regular Season",
+          "rowsBeforeExclusions": 2,
+          "rowsExcludingAllStar": 2,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2026-04-16T02:00:00.000+00:00",
+          "lastEventUTC": "2026-04-18T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2025-26 Regular Season",
+          "rowsBeforeExclusions": 43,
+          "rowsExcludingAllStar": 43,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2025-10-22T02:00:00.000+00:00",
+          "lastEventUTC": "2026-04-13T00:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2025-26 Preseason",
+          "rowsBeforeExclusions": 4,
+          "rowsExcludingAllStar": 4,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2025-10-06T00:30:00.000+00:00",
+          "lastEventUTC": "2025-10-18T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "curry2027",
+      "file": "curry2027.json",
+      "source": {
+        "name": "curry2027",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2027",
+        "observedAt": "2026-10-05T07:45:35.665507+00:00",
+        "observationPrecision": "body-received-local-file-mtime",
+        "status": 200,
+        "bytes": 11908,
+        "sha256": "64dd4adfcc6f0150b6296d2bd7e14830cc73618103ded6bbd5ee2f7a8fcaee10",
+        "note": "Initial fetch explicitly returned HTTP 200; timestamp is local file creation immediately after response body read, not provider update time."
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2027",
+      "groups": [
+        {
+          "displayName": "2026-27 Preseason",
+          "rowsBeforeExclusions": 1,
+          "rowsExcludingAllStar": 1,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2026-10-04T23:00:00.000+00:00",
+          "lastEventUTC": "2026-10-04T23:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": [
+            "401918010"
+          ]
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "jordan1998",
+      "file": "jordan1998.json",
+      "source": {
+        "name": "jordan1998",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035/gamelog?season=1998",
+        "observedAt": "2026-10-05T07:47:41.385586+00:00",
+        "status": 200,
+        "bytes": 853354,
+        "sha256": "cd735cd21da9e44eaf9f6ea927665647e0b406e42ea65952faa18452268a8d97",
+        "httpDate": "Mon, 05 Oct 2026 07:47:49 GMT"
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "1998",
+      "groups": [
+        {
+          "displayName": "1997-98 Postseason",
+          "rowsBeforeExclusions": 21,
+          "rowsExcludingAllStar": 21,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "1998-04-24T23:00:00.000+00:00",
+          "lastEventUTC": "1998-06-14T21:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "1997-98 Regular Season",
+          "rowsBeforeExclusions": 82,
+          "rowsExcludingAllStar": 82,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "1997-11-01T01:00:00.000+00:00",
+          "lastEventUTC": "1998-04-18T23:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "jordan2003",
+      "file": "jordan2003.json",
+      "source": {
+        "name": "jordan2003",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035/gamelog?season=2003",
+        "observedAt": "2026-10-05T07:47:41.383961+00:00",
+        "status": 200,
+        "bytes": 777971,
+        "sha256": "ac6625851f9667ecfc92acb81049a30911633a76d1e25957a3e23cf278311abe",
+        "httpDate": "Mon, 05 Oct 2026 07:47:49 GMT"
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2003",
+      "groups": [
+        {
+          "displayName": "2002-03 Regular Season",
+          "rowsBeforeExclusions": 82,
+          "rowsExcludingAllStar": 82,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2002-10-31T00:00:00.000+00:00",
+          "lastEventUTC": "2003-04-16T23:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Provider-returned recorded rows; full-season completeness is not implied by HTTP200."
+    },
+    {
+      "name": "kobe2016",
+      "file": "kobe2016.json",
+      "source": {
+        "name": "kobe2016",
+        "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110/gamelog?season=2016",
+        "observedAt": "2026-10-05T07:47:41.383315+00:00",
+        "status": 200,
+        "bytes": 643693,
+        "sha256": "38e107b9896833239d14ec22ff4f2ff6661607099b10c385109bf7713012ce8b",
+        "httpDate": "Mon, 05 Oct 2026 07:47:49 GMT"
+      },
+      "labels": [
+        "MIN",
+        "FG",
+        "FG%",
+        "3PT",
+        "3P%",
+        "FT",
+        "FT%",
+        "REB",
+        "AST",
+        "BLK",
+        "STL",
+        "PF",
+        "TO",
+        "PTS"
+      ],
+      "selectedSeasonFilter": "2016",
+      "groups": [
+        {
+          "displayName": "2015-16 Regular Season",
+          "rowsBeforeExclusions": 63,
+          "rowsExcludingAllStar": 62,
+          "excludedAllStarEventIds": [
+            "400829482"
+          ],
+          "firstEventUTC": "2015-10-29T02:30:00.000+00:00",
+          "lastEventUTC": "2016-04-14T02:30:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        },
+        {
+          "displayName": "2015-16 Preseason",
+          "rowsBeforeExclusions": 5,
+          "rowsExcludingAllStar": 5,
+          "excludedAllStarEventIds": [],
+          "firstEventUTC": "2015-10-05T01:00:00.000+00:00",
+          "lastEventUTC": "2015-10-14T02:00:00.000+00:00",
+          "atVsContradictsHomeDesignation": []
+        }
+      ],
+      "coverageCaveat": "Kobe 2015-16: 62 returned NBA regular appearances versus archive GP66. Partial, four games/70 points missing."
+    }
+  ],
+  "contract": {
+    "publicGamelogEndpoint": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/{espnAthleteId}/gamelog?season={endYear}",
+    "identitySearchEndpoint": "https://site.api.espn.com/apis/search/v2?query={URL-encoded official NBA name}&type=player&limit=50",
+    "identityDetailEndpoint": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/{espnAthleteId}",
+    "identityChecks": [
+      "NBA name/fromYear from immutable official registry or verified official player record, not client-provided name.",
+      "Search result type player, sport basketball, defaultLeagueSlug nba, UID exact s:40~l:46~a:<digits>; inspect full result set and reject ambiguity.",
+      "Require profile athlete.id and UID match candidate; exact fullName after only case/diacritic normalization; numeric debutYear equals NBA fromYear.",
+      "Michael Jordan search returns NBA1035 and NBA411; 1035 has debut1984 and DOB17/2/1963, 411 has missing debut/DOB and must not qualify.",
+      "Current team is not used to bind historical identities; LeBron current ESPN profile team differs from 2025-26 Lakers."
+    ],
+    "rowAssembly": "Find exact seasonTypes.displayName including YYYY-YY and type, use only categories[type=event].events, pair eventId to root events[eventId], ensure event.id matches; do not use summary/totals as individual rows.",
+    "groups": [
+      "YYYY-YY Regular Season",
+      "YYYY-YY Postseason",
+      "YYYY-YY Preseason",
+      "YYYY-YY Play In Regular Season"
+    ],
+    "safety": [
+      "Exclude event.team.isAllStar=true and special non-NBA-team identities; ESPN may put All-Star rows into regular group.",
+      "Keep Play-In separate; substring Regular Season matching is unsafe.",
+      "No NBA game ID is present. Use ESPN event identity and verified ESPN boxscore link; never /game/{ESPN eventId}.",
+      "Full gamelog payload does not repeat athlete identity: bind endpoint to verified mapping.",
+      "MIN values are source whole-minute rounded values. Do not equate sums to exact played minutes.",
+      "PLUS_MINUS, OREB, DREB, GS, DNP and inactive rows are absent in this gamelog contract; use null/unavailable.",
+      "UTC datetime is supplied; use explicit league calendar/timezone convention, not raw UTC date to label U.S. evening games.",
+      "atVs may say vs even when team.id equals awayTeamId (Curry preseason401918010); do not infer home from this display token.",
+      "No-data response can be only filters. Do not fabricate normal zero rows or equate provider-malformed with verified zero appearances.",
+      "Current2026-27 regular-season default is empty; select latest recorded regular season and show season selector."
+    ]
+  },
+  "reconciliation": {
+    "jordan2002_03": "All15 comparable basic totals including GP82 and PTS1640 match existing secondary-source career archive.",
+    "jordan1997_98_regular": "All15 comparable basic totals including GP82 and PTS2357 match existing secondary-source career archive.",
+    "jordan1997_98_playoffs": "All15 comparable basic totals including GP21 and PTS680 match existing secondary-source career archive.",
+    "lebronRegularGP": "2024-25 70 and2025-26 60 match reviewed NBA career archive.",
+    "curryRegularGP": "2024-25 70 and2025-26 43 match reviewed NBA career archive.",
+    "kobe2015_16": "62 regular rows,1091 points versus archived66 GP,1161 points; explicit partial coverage required."
+  },
+  "nbaStatsProbe": {
+    "name": "nba-lebron-gamelog2026",
+    "url": "https://stats.nba.com/stats/playergamelog?PlayerID=2544&Season=2025-26&SeasonType=Regular+Season",
+    "observedAt": "2026-10-05T07:47:41.386550+00:00",
+    "error": "The read operation timed out"
+  },
+  "archiveLimit": "Existing recovered-player-boxes87 games:85 playoffs and2 regular. LeBron10 playoff appearances, Curry0. Provider archive31 games has historical teams unassigned and no reviewed NBA player-ID link; cannot use a name join to form logs."
+}

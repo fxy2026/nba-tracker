@@ -1,3 +1,6 @@
+import PlayerSeasonStats from "./PlayerSeasonStats";
+import PlayerGameLog from "./PlayerGameLog";
+import type { PlayerGameLogData } from "@/lib/player-game-log-data";
 import PlayerProfilePanels, { PlayerProfilePart, PlayerDesktopOnly, PlayerDeferred } from "./PlayerProfilePanels";
 import PlayerMobileIdentity from "./PlayerMobileIdentity";
 import mobileStyles from "./player-mobile.module.css";
@@ -27,9 +30,10 @@ interface Props {
   initialSelection: HeatmapIdentity | null;
   initialResource: SeasonHeatmapArchiveResource | null;
   historicalCareer?: HistoricalCareerData | null;
+  gameLog?: { seasons: string[]; initialData: PlayerGameLogData | null; defaultSeason?: string };
 }
 /** Historical identities get real profiles without invented current-roster facts. */
-export default function ArchivedPlayerProfile({ player, locale, catalog, initialSelection, initialResource, historicalCareer = null, initialSearch = "" }: Props) {
+export default function ArchivedPlayerProfile({ player, locale, catalog, initialSelection, initialResource, historicalCareer = null, gameLog, initialSearch = "" }: Props) {
   const isZh = locale === "zh";
   const legend = ALL_TIME_LEADERS.find(row => row.personId === player.id && !row.active);
   const identityOnly = !initialSelection && !legend && !historicalCareer;
@@ -87,7 +91,7 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
 
     </PlayerDesktopOnly>
     <PlayerProfilePanels key={player.id} playerId={player.id} locale={locale} initialSearch={initialSearch}
-      panels={accolades ? ["data", "shooting", "honors", "career", "details"] : ["data", "shooting", "career", "details"]}
+      panels={accolades ? ["data", "shooting", "honors", "career", "games", "details"] : ["data", "shooting", "career", "games", "details"]}
       header={<PlayerMobileIdentity id={player.id} name={player.name} subtitle={isZh ? "已收录球员身份" : "Recorded player identity"} source={sourceLabel} locale={locale} />}>
     <PlayerProfilePart panel="data" mobileOnly>
       <section className={mobileStyles.archiveSummary}>
@@ -98,6 +102,8 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
         {player.shotCoverage && <p className="mt-3 text-xs text-text-secondary">{isZh ? "投篮档案覆盖，不代表生涯起止年份" : "Shot archive coverage, not career dates"}: {player.shotCoverage.firstSeason} → {player.shotCoverage.lastSeason}</p>}
       </section>
     </PlayerProfilePart>
+    {historicalCareer && <PlayerProfilePart panel="data" mobileOnly><PlayerSeasonStats playerId={player.id} playerName={player.name} locale={locale} historicalCareer={historicalCareer} /></PlayerProfilePart>}
+    <PlayerProfilePart panel="games" deferred mobileOnly><PlayerGameLog playerId={player.id} playerName={player.name} {...gameLog} initialSearch={initialSearch} /></PlayerProfilePart>
     <PlayerProfilePart panel="details">
     <details className="mt-3 text-xs text-text-secondary leading-relaxed">
       <summary className="min-h-11 flex items-center cursor-pointer text-sm font-medium text-text-secondary">{isZh ? "资料与数据来源" : "Profile and data sources"}<span aria-hidden="true" className="ml-2">＋</span></summary>

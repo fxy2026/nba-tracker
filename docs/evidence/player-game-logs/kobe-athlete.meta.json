@@ -1,0 +1,9 @@
+{
+  "name": "kobe-athlete",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110",
+  "observedAt": "2026-10-05T07:49:02.843639+00:00",
+  "status": 200,
+  "bytes": 135299,
+  "sha256": "5ca6d79fb9d94320c333ff5fff677ac05669a991713a2dcaba85f7ec615ea6e8",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

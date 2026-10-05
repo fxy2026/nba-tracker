@@ -11,8 +11,16 @@ describe("ESPN career fallback cancellation and safety", () => {
   it("preserves known zeros and keeps unknown shooting attempts null", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => body() }));
     const result = await getESPNCareerStats("1966");
-    expect(result.careerSeasons?.[0]).toMatchObject({ BLK: 0, FGA: 18, FG3A: 0, FTA: null });
+    expect(result.careerSeasons?.[0]).toMatchObject({ BLK: 0, FGM: 9, FGA: 18, FG3M: 0, FG3A: 0, FTM: null, FTA: null });
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("preserves optional detail columns only when the source supplies them", async () => {
+    const payload = body();
+    payload.categories[0].labels = [...labels, "GS", "TO", "PF", "OR", "DR"];
+    payload.categories[0].statistics[0].stats = [...stats, "65", "2.1", "1.8", "0", "--"];
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => payload }));
+    expect((await getESPNCareerStats("1966")).careerSeasons?.[0]).toMatchObject({ GS: 65, TOV: 2.1, PF: 1.8, OREB: 0, DREB: null });
   });
 
   it.each(["", "  ", null, "--", "-"])("preserves a career row with missing percentage marker %j", async marker => {

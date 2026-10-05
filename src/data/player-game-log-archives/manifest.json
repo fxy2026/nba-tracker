@@ -1,0 +1,72 @@
+[
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2025-26",
+    "file": "2544-2025-26.json.gz",
+    "sha256": "804e3a587e947ddaf4d9c0f43ef756e2d047547d75a6cbdbdd6a97d9d9f52f3b",
+    "retrievedAt": "2026-10-05T07:45:35.816145+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2026"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2024-25",
+    "file": "2544-2024-25.json.gz",
+    "sha256": "b1368fe77602a0dbba92ff2f6920c835d59a2bd9ad8485d72f6fedffd5da97d0",
+    "retrievedAt": "2026-10-05T07:49:02.841061+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2025"
+  },
+  {
+    "playerId": 201939,
+    "espnId": "3975",
+    "season": "2025-26",
+    "file": "201939-2025-26.json.gz",
+    "sha256": "b6c8a07205d522cf81bc53d1181c2200dd5fb4832bbeaab7e5dca638e19b8f8e",
+    "retrievedAt": "2026-10-05T07:45:35.833491+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2026"
+  },
+  {
+    "playerId": 201939,
+    "espnId": "3975",
+    "season": "2024-25",
+    "file": "201939-2024-25.json.gz",
+    "sha256": "4b2aaa755cceef2f660c56ba8204e435f75926277f741bbd80349ba796a6e1e9",
+    "retrievedAt": "2026-10-05T07:49:02.841755+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2025"
+  },
+  {
+    "playerId": 893,
+    "espnId": "1035",
+    "season": "2002-03",
+    "file": "893-2002-03.json.gz",
+    "sha256": "ac6625851f9667ecfc92acb81049a30911633a76d1e25957a3e23cf278311abe",
+    "retrievedAt": "2026-10-05T07:47:41.383961+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035/gamelog?season=2003"
+  },
+  {
+    "playerId": 893,
+    "espnId": "1035",
+    "season": "1997-98",
+    "file": "893-1997-98.json.gz",
+    "sha256": "cd735cd21da9e44eaf9f6ea927665647e0b406e42ea65952faa18452268a8d97",
+    "retrievedAt": "2026-10-05T07:47:41.385586+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035/gamelog?season=1998"
+  },
+  {
+    "playerId": 977,
+    "espnId": "110",
+    "season": "2015-16",
+    "file": "977-2015-16.json.gz",
+    "sha256": "38e107b9896833239d14ec22ff4f2ff6661607099b10c385109bf7713012ce8b",
+    "retrievedAt": "2026-10-05T07:47:41.383315+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110/gamelog?season=2016"
+  }
+]

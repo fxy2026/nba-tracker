@@ -14,6 +14,12 @@ vi.mock("@/lib/api", () => ({
   getPlayerIndexSnapshot: snapshot,
   getPlayerHeadshotUrl: (id: number) => `https://cdn.nba.com/headshots/${id}.png`,
 }));
+vi.mock("@/lib/player-profile-loader", () => ({ getPlayerProfileContext: async (id: string) => {
+  const value = await snapshot();
+  const player = value.players.find((row: PlayerInfo) => row.personId === Number(id));
+  return player ? { snapshot: value, identity: { id: player.personId, name: `${player.firstName} ${player.lastName}`, sourceYears: { from: Number(player.fromYear), to: Number(player.toYear) } } } : null;
+} }));
+vi.mock("@/lib/player-game-log-profile", () => ({ getPlayerGameLogProfile: async () => ({ seasons: ["2025-26", "2026-27"], initialData: null, defaultSeason: "2025-26" }) }));
 vi.mock("@/lib/locale", () => ({ getLocale: locale }));
 vi.mock("@/lib/constants", () => ({ CURRENT_SEASON: "2026-27" }));
 vi.mock("@/components/player/PlayerGameLog", () => ({ default: gameLog }));
@@ -51,7 +57,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe.each(["en", "zh"] as const)("game-log affiliation provenance in %s", (language) => {
   beforeEach(() => locale.mockResolvedValue(language));
   const teamPrefix = language === "zh" ? "球队归属：" : "Team affiliation: ";
-  const logHeading = language === "zh" ? "比赛日志 · 2026-27" : "Game log · 2026-27";
+  const logHeading = language === "zh" ? "比赛日志 · 已收录赛季" : "Game log · Recorded seasons";
 
   it.each([lebron, giannis])("keeps $teamName's archived affiliation separate from the current log", async (player) => {
     const html = renderToStaticMarkup(await GameLogPage(params(String(player.personId))));
@@ -64,6 +70,7 @@ describe.each(["en", "zh"] as const)("game-log affiliation provenance in %s", (l
     expect(html).toContain(`href="/player/${player.personId}"`);
     expect(gameLog.mock.calls[0]?.[0]).toEqual({
       playerId: player.personId, playerName: `${player.firstName} ${player.lastName}`,
+      seasons: ["2025-26", "2026-27"], initialData: null, defaultSeason: "2025-26", initialSearch: "",
     });
     expect(snapshot).toHaveBeenCalledExactlyOnceWith();
     expect(fetch).not.toHaveBeenCalled();
@@ -99,14 +106,14 @@ describe.each(["en", "zh"] as const)("game-log affiliation provenance in %s", (l
     expect(paragraphs(html)).toContain(`${teamPrefix}${language === "zh" ? "赛季未注明 · 存档快照" : "season unspecified · archived snapshot"}`);
   });
 
-  it("preserves the current log metadata without relabeling its season", async () => {
+  it("describes recorded selectable seasons without promising a complete current season", async () => {
     const metadata = await generateMetadata(params());
     expect(metadata.title).toBe(language === "zh"
-      ? "LeBron James 比赛日志 — 2026-27 赛季逐场数据"
-      : "LeBron James Game Log — 2026-27 Season");
+      ? "LeBron James 比赛日志 — 已收录赛季逐场数据"
+      : "LeBron James Game Log — Recorded Seasons");
     expect(metadata.description).toBe(language === "zh"
-      ? "LeBron James 2026-27 赛季完整比赛日志：逐场得分、篮板、助攻、抢断、盖帽与月度拆分。"
-      : "LeBron James full 2026-27 game log: game-by-game points, rebounds, assists, steals, blocks plus monthly splits.");
+      ? "LeBron James 已收录赛季的逐场得分、篮板、助攻、投篮、抢断、盖帽与月度拆分；来源和缺失范围分别标注。"
+      : "LeBron James recorded game logs, shooting, rebounds, assists and monthly splits with source and coverage labels.");
     expect(metadata.openGraph?.title).toBe(metadata.title);
     expect(metadata.openGraph?.description).toBe(metadata.description);
     expect(metadata.alternates?.canonical).toBe("/player/2544/gamelog");
@@ -124,7 +131,7 @@ it("still qualifies a displayed team logo when its abbreviation is unavailable",
 it("does not invent a team or team label for a player without affiliation", async () => {
   snapshot.mockResolvedValue({ players: [{ ...lebron, teamAbbr: "", teamId: 0, teamCity: "", teamName: "" }], provenance: archived });
   const html = renderToStaticMarkup(await GameLogPage(params()));
-  expect(paragraphs(html)).toContain("Game log · 2026-27");
+  expect(paragraphs(html)).toContain("Game log · Recorded seasons");
   expect(html).not.toContain("Team affiliation:");
   expect(html).not.toContain('href="/team/');
 });

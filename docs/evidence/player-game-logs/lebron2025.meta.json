@@ -1,0 +1,9 @@
+{
+  "name": "lebron2025",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2025",
+  "observedAt": "2026-10-05T07:49:02.841061+00:00",
+  "status": 200,
+  "bytes": 750486,
+  "sha256": "b1368fe77602a0dbba92ff2f6920c835d59a2bd9ad8485d72f6fedffd5da97d0",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

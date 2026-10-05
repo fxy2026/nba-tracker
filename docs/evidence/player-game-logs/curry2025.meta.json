@@ -1,0 +1,9 @@
+{
+  "name": "curry2025",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2025",
+  "observedAt": "2026-10-05T07:49:02.841755+00:00",
+  "status": 200,
+  "bytes": 810459,
+  "sha256": "4b2aaa755cceef2f660c56ba8204e435f75926277f741bbd80349ba796a6e1e9",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

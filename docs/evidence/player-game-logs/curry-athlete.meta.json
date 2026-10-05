@@ -1,0 +1,9 @@
+{
+  "name": "curry-athlete",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975",
+  "observedAt": "2026-10-05T07:49:02.842712+00:00",
+  "status": 200,
+  "bytes": 155133,
+  "sha256": "fd59c7b2bb548172a450abb5ddb380f6b5c5d1184e287fc38975f1406e527b1a",
+  "httpDate": "Mon, 05 Oct 2026 07:49:10 GMT"
+}

@@ -1,486 +1,121 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { CalendarRange } from "lucide-react";
-import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
-import { TEAM_META } from "@/lib/teams";
-import { teamLogoUrl } from "@/lib/teamUrls";
-import { formatGameDate } from "@/lib/dates";
-import EmptyState from "@/components/EmptyState";
-
-interface LogRow {
-  gameId: string;
-  date: Date;
-  opponent: string;
-  home: boolean;
-  wl: string;
-  min: number;
-  pts: number;
-  reb: number;
-  ast: number;
-  stl: number;
-  blk: number;
-  fgm: number;
-  fga: number;
-  fg3m: number;
-  fg3a: number;
-  plusMinus: number | null;
-}
-
-interface MonthSplit {
-  key: number;
-  month: number; // 0-based
-  gp: number;
-  wins: number;
-  losses: number;
-  ppg: number;
-  rpg: number;
-  apg: number;
-  fgPct: number | null;
-}
-
-const SEASON_TYPES = ["Regular Season", "Playoffs"] as const;
-type SeasonType = (typeof SEASON_TYPES)[number];
-
-const MONTHS: Record<string, number> = {
-  JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
-  JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
-};
-const MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// playergamelog GAME_DATE looks like "APR 09, 2026" — parse manually so we
-// don't depend on engine-specific Date string parsing.
-function parseGameDate(s: string): Date | null {
-  const m = /^([A-Z]{3})\s+(\d{1,2}),\s*(\d{4})$/i.exec(s.trim());
-  if (m) {
-    const mo = MONTHS[m[1].toUpperCase()];
-    if (mo != null) return new Date(Number(m[3]), mo, Number(m[2]));
-  }
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function parseRows(data: unknown): LogRow[] {
-  const rs = (data as { resultSets?: { headers?: string[]; rowSet?: unknown[][] }[] })
-    ?.resultSets?.[0];
-  if (!Array.isArray(rs?.headers) || !Array.isArray(rs?.rowSet)) return [];
-  const headers = rs.headers;
-  const col = (name: string) => headers.indexOf(name);
-  // playergamelog uses mixed-case "Game_ID" (see /api/player-shots) — accept both.
-  const gi = col("Game_ID") >= 0 ? col("Game_ID") : col("GAME_ID");
-  const di = col("GAME_DATE");
-  const mi = col("MATCHUP");
-  if (gi < 0 || di < 0 || mi < 0) return [];
-  const num = (row: unknown[], i: number) => (i >= 0 && typeof row[i] === "number" ? (row[i] as number) : 0);
-  const idx = {
-    wl: col("WL"), min: col("MIN"), pts: col("PTS"), reb: col("REB"), ast: col("AST"),
-    stl: col("STL"), blk: col("BLK"), fgm: col("FGM"), fga: col("FGA"),
-    fg3m: col("FG3M"), fg3a: col("FG3A"), pm: col("PLUS_MINUS"),
-  };
-  const rows: LogRow[] = [];
-  for (const row of rs.rowSet) {
-    const gameId = row[gi];
-    const date = parseGameDate(String(row[di] ?? ""));
-    if (!gameId || !date) continue;
-    const matchup = String(row[mi] ?? "");
-    const opponent = matchup.split(" ").pop() || "";
-    rows.push({
-      gameId: String(gameId),
-      date,
-      opponent,
-      home: matchup.includes(" vs"),
-      wl: idx.wl >= 0 ? String(row[idx.wl] ?? "") : "",
-      min: num(row, idx.min),
-      pts: num(row, idx.pts),
-      reb: num(row, idx.reb),
-      ast: num(row, idx.ast),
-      stl: num(row, idx.stl),
-      blk: num(row, idx.blk),
-      fgm: num(row, idx.fgm),
-      fga: num(row, idx.fga),
-      fg3m: num(row, idx.fg3m),
-      fg3a: num(row, idx.fg3a),
-      plusMinus: idx.pm >= 0 && typeof row[idx.pm] === "number" ? (row[idx.pm] as number) : null,
-    });
-  }
-  return rows;
-}
+import { CURRENT_SEASON } from "@/lib/constants";
+import { normalizePlayerGameLog, validLogSeason, type PlayerGameLogData, type PlayerLogRow, type PlayerLogSeasonType, type PlayerLogStat } from "@/lib/player-game-log-data";
+import { commitPlayerProfileUrl, usePlayerProfileLocation } from "./PlayerProfilePanels";
 
 interface Props {
   playerId: number;
   playerName?: string;
+  seasons?: string[];
+  initialData?: PlayerGameLogData | null;
+  initialSearch?: string;
+  defaultSeason?: string;
 }
-
-export default function PlayerGameLog({ playerId, playerName }: Props) {
-  const { t, locale } = useLocale();
+interface LoadState { key: string; data: PlayerGameLogData | null; loading: boolean; error: boolean; }
+const cache = new Map<string, PlayerGameLogData>();
+const requests = new Map<string, Promise<PlayerGameLogData | null>>();
+const show = (value: number | null) => value === null ? "—" : Number.isInteger(value) ? String(value) : value.toFixed(1);
+const average = (rows: PlayerLogRow[], key: PlayerLogStat) => rows.length && rows.every(row => row[key] !== null) ? (rows.reduce((sum, row) => sum + row[key]!, 0) / rows.length).toFixed(1) : "—";
+const pct = (rows: PlayerLogRow[], made: PlayerLogStat, attempts: PlayerLogStat) => {
+  if (!rows.length || rows.some(row => row[made] === null || row[attempts] === null)) return "—";
+  const attemptsTotal = rows.reduce((sum, row) => sum + row[attempts]!, 0);
+  return attemptsTotal > 0 ? `${(rows.reduce((sum, row) => sum + row[made]!, 0) / attemptsTotal * 100).toFixed(1)}%` : "—";
+};
+export default function PlayerGameLog({ playerId, playerName, seasons = [], initialData = null, initialSearch = "", defaultSeason: preferredSeason }: Props) {
+  const { locale } = useLocale();
   const isZh = locale === "zh";
-  const [seasonType, setSeasonType] = useState<SeasonType>("Regular Season");
-  const [rows, setRows] = useState<LogRow[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
-
-  // Loading state reset on playerId/seasonType/retry change — intentional
-  // dep-change refetch pattern (same as PlayerStatsBundle).
+  const available = [...new Set([...seasons, initialData?.season, CURRENT_SEASON].filter(validLogSeason))].sort().reverse();
+  const defaultSeason = initialData?.season ?? (validLogSeason(preferredSeason) ? preferredSeason : null) ?? seasons.filter(validLogSeason).sort().at(-1) ?? CURRENT_SEASON;
+  const location = usePlayerProfileLocation(playerId, initialSearch);
+  const query = new URLSearchParams(location.split("#")[0]);
+  const requestedSeason = query.get("gameSeason");
+  const season = requestedSeason && available.includes(requestedSeason) ? requestedSeason : defaultSeason;
+  const seasonType: PlayerLogSeasonType = query.get("gameType") === "Playoffs" ? "Playoffs" : query.get("gameType") === "Pre Season" ? "Pre Season" : "Regular Season";
+  const key = `${playerId}:${season}:${seasonType}`;
+  const seed = initialData && initialData.playerId === playerId && initialData.season === season && initialData.seasonType === seasonType ? initialData : null;
+  const [state, setState] = useState<LoadState>({ key, data: seed, loading: !seed, error: false });
+  const [retry, setRetry] = useState(0);
+  const [limit, setLimit] = useState(20);
   useEffect(() => {
+    let cancelled = false;
+    const saved = cache.get(key) ?? seed ?? null;
+    // Each request owns its identity; a previous season/player can never leak.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(false);
-    const controller = new AbortController();
-    let timedOut = false;
-    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
-
-    (async () => {
-      try {
-        const qs = new URLSearchParams({
-          endpoint: "playergamelog",
-          PlayerID: String(playerId),
-          Season: CURRENT_SEASON,
-          SeasonType: seasonType,
-        });
-        const res = await fetch(`/api/stats?${qs}`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) {
-          if (timedOut || !controller.signal.aborted) { setError(true); setLoading(false); }
-          return;
-        }
-        const data = await res.json();
-        if (!controller.signal.aborted) setRows(parseRows(data));
-      } catch {
-        if (timedOut || !controller.signal.aborted) setError(true);
-      }
-      if (timedOut || !controller.signal.aborted) setLoading(false);
-    })();
-    return () => { controller.abort(); clearTimeout(timeout); };
-  }, [playerId, seasonType, retryKey]);
-
-  // Monthly splits (chronological) + season aggregate, from the loaded rows.
-  const { splits, season } = useMemo(() => {
-    const empty = { splits: [] as MonthSplit[], season: null as MonthSplit | null };
-    if (!rows || rows.length === 0) return empty;
-    const byMonth = new Map<number, LogRow[]>();
-    for (const g of [...rows].reverse()) {
-      const key = g.date.getFullYear() * 12 + g.date.getMonth();
-      const bucket = byMonth.get(key);
-      if (bucket) bucket.push(g);
-      else byMonth.set(key, [g]);
+    setState({ key, data: saved, loading: !saved, error: false });
+    setLimit(20);
+    if (saved && retry === 0) return;
+    const identity = { playerId, season, seasonType };
+    let request = requests.get(key);
+    if (!request) {
+      const params = new URLSearchParams({ playerId: String(playerId), season, seasonType });
+      if (retry) params.set("refresh", "1");
+      request = (async () => {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 32000);
+          try {
+            const response = await fetch(`/api/player-game-log?${params}`, { signal: controller.signal });
+            if (!response.ok) return null;
+            const data = normalizePlayerGameLog(await response.json(), identity);
+            if (data && !controller.signal.aborted) cache.set(key, data);
+            return controller.signal.aborted ? null : data;
+          } finally { clearTimeout(timeout); }
+        } catch { return null; }
+      })().finally(() => { requests.delete(key); });
+      requests.set(key, request);
     }
-    const aggregate = (key: number, month: number, games: LogRow[]): MonthSplit => {
-      let pts = 0, reb = 0, ast = 0, fgm = 0, fga = 0, wins = 0, losses = 0;
-      for (const g of games) {
-        pts += g.pts; reb += g.reb; ast += g.ast; fgm += g.fgm; fga += g.fga;
-        if (g.wl === "W") wins++;
-        else if (g.wl === "L") losses++;
-      }
-      const gp = games.length;
-      return {
-        key, month, gp, wins, losses,
-        ppg: pts / gp, rpg: reb / gp, apg: ast / gp,
-        fgPct: fga > 0 ? fgm / fga : null,
-      };
-    };
-    const splits = [...byMonth.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([key, games]) => aggregate(key, key % 12, games));
-    return { splits, season: aggregate(-1, -1, rows) };
-  }, [rows]);
-
-  const monthLabel = (m: number) => (isZh ? `${m + 1}月` : MONTH_EN[m]);
-
-  // The season-type toggle renders unconditionally so a user who errored on
-  // one season type can always switch back to the other.
-  const toggle = (
-    <div role="group" aria-label={isZh ? "赛事类型" : "Season type"} className="glass-tile inline-flex overflow-hidden p-1">
-      {SEASON_TYPES.map((st) => (
-        <button
-          key={st}
-          type="button"
-          aria-pressed={seasonType === st}
-          onClick={() => setSeasonType(st)}
-          className={`min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-            seasonType === st
-              ? "bg-accent text-white shadow-md"
-              : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-          }`}
-        >
-          {st === "Regular Season" ? t.statsPage.regularSeason : t.statsPage.playoffs}
-        </button>
-      ))}
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        {toggle}
-        <div className="space-y-4">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="glass-tile h-28 w-32 shrink-0 skeleton-shimmer" />
-            ))}
-          </div>
-          <div className="space-y-2">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="glass-tile h-10 skeleton-shimmer" />
-            ))}
-          </div>
-        </div>
+    request.then(data => { if (!cancelled) setState({ key, data: data ?? saved, loading: false, error: !data }); });
+    return () => { cancelled = true; };
+  }, [key, playerId, season, seasonType, seed, retry]);
+  const visible = state.key === key ? state : { key, data: cache.get(key) ?? seed ?? null, loading: !seed && !cache.has(key), error: false };
+  const data = visible.data;
+  const rows = data?.rows ?? [];
+  const monthly = [...new Set(rows.map(row => row.date.slice(0, 7)))].sort().map(month => ({ month, rows: rows.filter(row => row.date.startsWith(month)) }));
+  const choose = (field: "gameSeason" | "gameType", value: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set(field, value);
+    commitPlayerProfileUrl(`${url.pathname}${url.search}${url.hash}`);
+    setRetry(0);
+  };
+  const labelForType = (value: PlayerLogSeasonType) => value === "Playoffs" ? (isZh ? "季后赛" : "Playoffs") : value === "Pre Season" ? (isZh ? "季前赛" : "Preseason") : (isZh ? "常规赛" : "Regular season");
+  const typeLabel = labelForType(seasonType);
+  return <section className="mt-4 space-y-4" aria-label={isZh ? "球员逐场比赛" : "Player game logs"}>
+    <div className="flex flex-wrap items-center gap-2">
+      <label className="flex items-center gap-2 text-xs text-text-secondary">{isZh ? "赛季" : "Season"}
+        <select value={season} onChange={event => choose("gameSeason", event.target.value)} className="min-h-11 rounded-lg border border-border bg-bg-card px-3 text-sm text-text-primary">
+          {available.map(value => <option key={value} value={value}>{value}</option>)}
+        </select>
+      </label>
+      <div role="group" aria-label={isZh ? "赛事类型" : "Season type"} className="flex rounded-lg border border-border p-1">
+        {(["Regular Season", "Playoffs", "Pre Season"] as const).map(value => <button key={value} type="button" aria-pressed={value === seasonType} onClick={() => choose("gameType", value)} className={`min-h-11 rounded-md px-3 text-xs ${value === seasonType ? "bg-accent text-white" : "text-text-secondary"}`}>{labelForType(value)}</button>)}
       </div>
-    );
-  }
-
-  if (error) {
-    const encodedName = encodeURIComponent(playerName || "");
-    return (
-      <div className="space-y-6">
-        {toggle}
-        <div className="bg-bg-secondary/60 rounded-xl p-4 text-center space-y-3">
-          <p className="text-sm text-text-secondary">{t.playerStats.detailedUnavailable}</p>
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <a href={`https://www.nba.com/player/${playerId}`} target="_blank" rel="noopener noreferrer"
-              className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-              {t.playerStats.viewOnNba}
-            </a>
-            <a href={`https://www.basketball-reference.com/search/search.fcgi?search=${encodedName}`} target="_blank" rel="noopener noreferrer"
-              className="text-xs px-3 py-1.5 bg-bg-card border border-border rounded-lg hover:border-accent/50 text-text-primary transition-colors">
-              {t.playerStats.basketballRef}
-            </a>
-            <button onClick={() => setRetryKey((k) => k + 1)} className="text-xs px-3 py-1.5 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors cursor-pointer">
-              {t.common.retry}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {toggle}
-
-      {!rows || rows.length === 0 ? (
-        <EmptyState
-          icon={CalendarRange}
-          tone="neutral"
-          title={
-            seasonType === "Playoffs"
-              ? (isZh ? "暂无季后赛比赛" : "No playoff games yet")
-              : (isZh ? "本赛季暂无比赛数据" : "No games this season")
-          }
-          description={
-            isZh
-              ? `${CURRENT_SEASON} 赛季还没有该类型的比赛记录。`
-              : `No ${seasonType === "Playoffs" ? "playoff" : "regular season"} games recorded for ${CURRENT_SEASON} yet.`
-          }
-        />
-      ) : (
-        <>
-          {/* ─── Monthly splits strip ─────────────────────── */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-[10px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 shrink-0">
-                / {isZh ? "月度拆分" : "Monthly splits"}
-              </h2>
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-[10px] text-text-secondary shrink-0">
-                {isZh ? "场均 得分 / 篮板 / 助攻" : "Per-game PTS / REB / AST"}
-              </span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {season && (
-                <SplitTile
-                  label={isZh ? "赛季" : "Season"}
-                  split={season}
-                  isZh={isZh}
-                  featured
-                />
-              )}
-              {splits.map((s) => (
-                <SplitTile key={s.key} label={monthLabel(s.month)} split={s} isZh={isZh} />
-              ))}
-            </div>
-          </div>
-
-          {/* ─── Full game-by-game table ──────────────────── */}
-          <div className="glass-tile overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-              <h3 className="text-sm font-semibold">
-                {isZh ? "逐场数据" : "Game by game"} ({CURRENT_SEASON})
-              </h3>
-              <span className="ml-auto text-[10px] font-mono tabular-nums text-text-secondary">
-                {isZh ? `${rows.length} 场` : `${rows.length} games`}
-              </span>
-            </div>
-            <div className="overflow-x-auto table-scroll-x">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border text-text-secondary">
-                    {/* OPP pinned (game identity survives horizontal scroll), date scrolls */}
-                    <th className="text-left py-2.5 px-2 sticky left-0 bg-bg-card min-w-[88px]">{isZh ? "对手" : "OPP"}</th>
-                    <th className="text-left py-2.5 px-3">{t.playerStats.date}</th>
-                    <th className="text-center py-2.5 px-2">{t.playerStats.wl}</th>
-                    <th className="text-center py-2.5 px-2">MIN</th>
-                    <th className="text-center py-2.5 px-2 text-accent font-bold">PTS</th>
-                    <th className="text-center py-2.5 px-2">REB</th>
-                    <th className="text-center py-2.5 px-2">AST</th>
-                    <th className="text-center py-2.5 px-2">STL</th>
-                    <th className="text-center py-2.5 px-2">BLK</th>
-                    <th className="text-center py-2.5 px-2">FG</th>
-                    <th className="text-center py-2.5 px-2">3P</th>
-                    <th className="text-center py-2.5 px-2">+/-</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((g) => {
-                    const oppMeta = TEAM_META[g.opponent];
-                    return (
-                      <tr key={g.gameId} className="border-b border-border/30 hover:bg-bg-hover/50">
-                        <td className="py-2 px-2 sticky left-0 bg-bg-card min-w-[88px]">
-                          <Link
-                            href={`/game/${g.gameId}`}
-                            className="inline-flex items-center gap-1.5 text-text-primary hover:text-accent transition-colors whitespace-nowrap cursor-pointer"
-                          >
-                            <span className="text-[10px] text-text-secondary w-4 shrink-0">
-                              {g.home ? (isZh ? "主" : "vs") : (isZh ? "客" : "@")}
-                            </span>
-                            {oppMeta && (
-                              <Image
-                                src={teamLogoUrl(oppMeta.teamId)}
-                                alt={g.opponent}
-                                width={18}
-                                height={18}
-                                unoptimized
-                                className="shrink-0"
-                              />
-                            )}
-                            <span className="font-medium">{g.opponent}</span>
-                          </Link>
-                        </td>
-                        <td className="py-2 px-3 text-text-secondary whitespace-nowrap font-mono tabular-nums">
-                          {formatGameDate(g.date, isZh ? "zh" : "en", { month: "short", day: "numeric" })}
-                        </td>
-                        <td className={`text-center py-2 px-2 font-bold ${g.wl === "W" ? "text-success" : g.wl === "L" ? "text-danger" : "text-text-secondary"}`}>
-                          {g.wl || "-"}
-                        </td>
-                        <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">{g.min}</td>
-                        <td className="text-center py-2 px-2 font-bold text-accent font-mono tabular-nums">
-                          {g.pts}
-                          {g.pts >= 40 && <span className="ml-0.5 text-[8px] text-accent-amber">&#9733;</span>}
-                        </td>
-                        <td className="text-center py-2 px-2 font-mono tabular-nums">{g.reb}</td>
-                        <td className="text-center py-2 px-2 font-mono tabular-nums">{g.ast}</td>
-                        <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">{g.stl}</td>
-                        <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">{g.blk}</td>
-                        <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums whitespace-nowrap">{g.fgm}-{g.fga}</td>
-                        <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums whitespace-nowrap">{g.fg3m}-{g.fg3a}</td>
-                        <td className={`text-center py-2 px-2 font-mono tabular-nums ${
-                          g.plusMinus == null ? "text-text-secondary"
-                            : g.plusMinus > 0 ? "text-success"
-                            : g.plusMinus < 0 ? "text-danger" : "text-text-secondary"
-                        }`}>
-                          {g.plusMinus == null ? "-" : `${g.plusMinus > 0 ? "+" : ""}${g.plusMinus}`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {/* Season averages footer */}
-                  {season && (
-                    <tr className="border-t-2 border-border bg-bg-secondary/50 font-medium">
-                      <td className="py-2 px-2 sticky left-0 bg-bg-secondary/50 text-text-primary font-bold whitespace-nowrap min-w-[88px]">
-                        {isZh ? "场均" : "Avg"}
-                      </td>
-                      <td className="py-2 px-3 text-text-secondary whitespace-nowrap">
-                        {season.gp} {isZh ? "场" : "GP"}
-                      </td>
-                      <td className="text-center py-2 px-2 font-mono tabular-nums whitespace-nowrap">
-                        <span className="text-success">{season.wins}</span>
-                        <span className="text-text-secondary">-</span>
-                        <span className="text-danger">{season.losses}</span>
-                      </td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {(rows.reduce((s, g) => s + g.min, 0) / season.gp).toFixed(1)}
-                      </td>
-                      <td className="text-center py-2 px-2 font-bold text-accent font-mono tabular-nums">{season.ppg.toFixed(1)}</td>
-                      <td className="text-center py-2 px-2 font-mono tabular-nums">{season.rpg.toFixed(1)}</td>
-                      <td className="text-center py-2 px-2 font-mono tabular-nums">{season.apg.toFixed(1)}</td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {(rows.reduce((s, g) => s + g.stl, 0) / season.gp).toFixed(1)}
-                      </td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {(rows.reduce((s, g) => s + g.blk, 0) / season.gp).toFixed(1)}
-                      </td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {season.fgPct != null ? (season.fgPct * 100).toFixed(1) + "%" : "-"}
-                      </td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {(() => {
-                          const m3 = rows.reduce((s, g) => s + g.fg3m, 0);
-                          const a3 = rows.reduce((s, g) => s + g.fg3a, 0);
-                          return a3 > 0 ? ((m3 / a3) * 100).toFixed(1) + "%" : "-";
-                        })()}
-                      </td>
-                      <td className="text-center py-2 px-2 text-text-secondary font-mono tabular-nums">
-                        {(() => {
-                          const withPm = rows.filter((g) => g.plusMinus != null);
-                          if (withPm.length === 0) return "-";
-                          const avg = withPm.reduce((s, g) => s + (g.plusMinus as number), 0) / withPm.length;
-                          return `${avg > 0 ? "+" : ""}${avg.toFixed(1)}`;
-                        })()}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
-      )}
     </div>
-  );
+    <h2 className="text-base font-semibold">{season} · {typeLabel} · {isZh ? "逐场数据" : "Game by game"}</h2>
+    <p className="text-xs leading-relaxed text-text-secondary">{isZh ? "默认显示最近已收录赛季，可切换赛季。常规赛不含季前赛、附加赛与全明星赛。" : "The latest recorded season opens by default. Regular season excludes preseason, play-in and All-Star games."}</p>
+    {visible.loading && <div role="status" aria-busy="true" className="space-y-2"><p className="text-sm text-text-secondary">{isZh ? "正在加载该赛季比赛…" : "Loading this season’s games…"}</p>{Array.from({ length: 5 }, (_, index) => <div key={index} className="h-10 rounded-lg bg-bg-secondary skeleton-shimmer" />)}</div>}
+    {visible.error && <div role="status" className="rounded-lg border border-border p-4 text-sm text-text-secondary"><p>{data ? (isZh ? "刷新未成功，保留已加载记录。" : "Refresh failed; keeping the loaded records.") : (isZh ? "所选赛季的比赛来源暂时不可用，不代表没有出场。可切换赛季或重试。" : "The game-log source is unavailable for this selection. This does not mean no games were played. Choose another season or retry.")}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-2 min-h-11 text-accent">{isZh ? "重试" : "Retry"}</button></div>}
+    {data && <>
+      <p role="status" className="text-xs leading-relaxed text-text-secondary">{isZh ? `已收录 ${rows.length}${data.expectedGames ? ` / ${data.expectedGames}` : ""} 场` : `${rows.length}${data.expectedGames ? ` / ${data.expectedGames}` : ""} recorded games`} · {data.source.provider} · {data.source.archived ? (isZh ? "存档" : "Archive") : (isZh ? "来源响应" : "Source response")} {data.source.retrievedAt.slice(0, 10)}{data.coverage === "partial-source" ? (isZh ? " · 部分记录，不代表完整赛季" : " · Partial records, not a complete season") : ""}</p>
+      {rows.length === 0 ? <div className="glass-tile p-5 text-sm text-text-secondary">{isZh ? "来源未返回此赛季 / 赛事的比赛记录。可切换到有记录的赛季；空白不等于球员零出场。" : "The source returned no game records for this season and competition. Choose another recorded season; an empty source does not establish zero appearances."}</div> : <>
+        <dl className="grid grid-cols-3 gap-2">{[[isZh ? "场均得分" : "PTS / game", average(rows, "pts")], [isZh ? "场均篮板" : "REB / game", average(rows, "reb")], [isZh ? "场均助攻" : "AST / game", average(rows, "ast")], ["FG%", pct(rows, "fgm", "fga")], ["3P%", pct(rows, "fg3m", "fg3a")], ["FT%", pct(rows, "ftm", "fta")]].map(([label, value]) => <div key={label} className="min-w-0 rounded-xl border border-border bg-bg-card p-3"><dt className="text-[10px] text-text-secondary">{label}</dt><dd className="mt-1 text-xl font-mono font-semibold tabular-nums">{value}</dd></div>)}</dl>
+        <p className="text-xs text-text-secondary">{isZh ? "摘要仅按下方已收录比赛计算；MIN 为来源显示的单场分钟，可能经过取整。— 表示该项未提供。左右滑动查看全部数据。" : "Summary uses only the recorded games below. Individual MIN values may be rounded by the source. — means unavailable. Scroll horizontally for all columns."}</p>
+        <details className="rounded-xl border border-border p-3" open={undefined}><summary className="min-h-11 cursor-pointer text-sm font-medium">{isZh ? "月度拆分" : "Monthly splits"}</summary><div className="mt-2 flex gap-2 overflow-x-auto pb-2">{monthly.map(bucket => <div key={bucket.month} className="min-w-36 rounded-lg bg-bg-secondary p-3 text-xs"><h3 className="font-semibold">{bucket.month}</h3><p className="mt-1 text-text-secondary">{bucket.rows.length} {isZh ? "场" : "games"} · {bucket.rows.filter(row => row.wl === "W").length} W / {bucket.rows.filter(row => row.wl === "L").length} L</p><p className="mt-2 font-mono">{average(bucket.rows, "pts")} / {average(bucket.rows, "reb")} / {average(bucket.rows, "ast")}</p><p className="mt-1 text-text-secondary">PTS / REB / AST · FG {pct(bucket.rows, "fgm", "fga")}</p></div>)}</div></details>
+        <div className="glass-tile overflow-hidden"><div className="table-scroll-x overflow-x-auto overscroll-x-contain" role="region" aria-label={isZh ? "逐场比赛数据表，可横向滚动" : "Game log table, horizontally scrollable"} tabIndex={0}>
+          <table className="w-full whitespace-nowrap text-xs"><caption className="sr-only">{playerName} · {season} · {typeLabel}</caption><thead><tr className="border-b border-border text-text-secondary"><th className="sticky left-0 z-10 bg-bg-card px-3 py-3 text-left">{isZh ? "日期 / 对手" : "Date / opponent"}</th>{["W/L", "MIN", "PTS", "REB", "AST", "STL", "BLK", "FG", "3P", "FT", "OREB", "DREB", "TOV", "PF", "+/−"].map(label => <th key={label} className="px-3 py-3 text-center">{label}</th>)}</tr></thead>
+            <tbody>{rows.slice(0, limit).map(row => <tr key={row.id} className="border-b border-border/40"><td className="sticky left-0 bg-bg-card px-3 py-3"><GameLink row={row}><span className="block font-medium">{row.home ? "vs" : "@"} {row.opponent}</span><span className="mt-1 block text-[10px] text-text-secondary">{row.date}</span></GameLink></td><td className={`px-3 text-center ${row.wl === "W" ? "text-success" : row.wl === "L" ? "text-danger" : ""}`}>{row.wl ?? "—"}</td>{["min", "pts", "reb", "ast", "stl", "blk"].map(key => <td key={key} className={`px-3 text-center font-mono tabular-nums ${key === "pts" ? "font-semibold text-accent" : ""}`}>{show(row[key as PlayerLogStat])}</td>)}{([['fgm','fga'],['fg3m','fg3a'],['ftm','fta']] as const).map(([made, attempt]) => <td key={made} className="px-3 text-center font-mono tabular-nums">{show(row[made])}/{show(row[attempt])}</td>)}{["oreb", "dreb", "tov", "pf", "plusMinus"].map(key => <td key={key} className="px-3 text-center font-mono tabular-nums">{show(row[key as PlayerLogStat])}</td>)}</tr>)}</tbody>
+            <tfoot><tr className="border-t-2 border-border bg-bg-secondary font-medium"><th className="sticky left-0 bg-bg-card px-3 py-3 text-left">{isZh ? "已收录场均" : "Recorded averages"}</th><td className="px-3 text-center">—</td>{(["min", "pts", "reb", "ast", "stl", "blk"] as const).map(key => <td key={key} className="px-3 text-center font-mono">{average(rows, key)}</td>)}{([['fgm','fga'],['fg3m','fg3a'],['ftm','fta']] as const).map(([made, attempt]) => <td key={made} className="px-3 text-center font-mono">{average(rows, made)}/{average(rows, attempt)}</td>)}{(["oreb", "dreb", "tov", "pf", "plusMinus"] as const).map(key => <td key={key} className="px-3 text-center font-mono">{average(rows, key)}</td>)}</tr></tfoot>
+          </table>
+        </div></div>
+        {limit < rows.length && <button type="button" onClick={() => setLimit(value => value + 20)} className="min-h-11 w-full rounded-lg border border-border text-sm text-accent">{isZh ? `加载更多 (${limit} / ${rows.length})` : `Show more (${limit} / ${rows.length})`}</button>}
+      </>}
+      <div className="flex flex-wrap items-center gap-4 text-xs"><a href={data.source.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{isZh ? "查看来源" : "View source"} ↗</a><button type="button" onClick={() => setRetry(value => value + 1)} className="min-h-11 text-text-secondary">{isZh ? "刷新来源" : "Refresh source"}</button></div>
+    </>}
+  </section>;
 }
-
-function SplitTile({ label, split, isZh, featured = false }: {
-  label: string;
-  split: MonthSplit;
-  isZh: boolean;
-  featured?: boolean;
-}) {
-  return (
-    <div className={`glass-tile ${featured ? "glass-tile-featured" : ""} p-3 min-w-[128px] shrink-0`}>
-      <div className="flex items-baseline justify-between gap-2">
-        <p className={`text-[10px] font-mono uppercase tracking-[0.2em] ${featured ? "text-accent-amber" : "text-text-secondary"}`}>
-          {label}
-        </p>
-        <p className="text-[9px] font-mono tabular-nums text-text-secondary whitespace-nowrap">
-          {split.gp} {isZh ? "场" : "GP"}
-        </p>
-      </div>
-      <p className="text-[10px] font-mono tabular-nums mt-0.5">
-        <span className="text-success">{split.wins}{isZh ? "胜" : "W"}</span>
-        <span className="text-text-secondary"> · </span>
-        <span className="text-danger">{split.losses}{isZh ? "负" : "L"}</span>
-      </p>
-      <div className="mt-2 space-y-1 text-[11px] font-mono tabular-nums">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[9px] uppercase tracking-[0.15em] text-text-secondary">PTS</span>
-          <span className="font-bold text-accent-amber">{split.ppg.toFixed(1)}</span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[9px] uppercase tracking-[0.15em] text-text-secondary">REB</span>
-          <span className="text-text-primary">{split.rpg.toFixed(1)}</span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[9px] uppercase tracking-[0.15em] text-text-secondary">AST</span>
-          <span className="text-text-primary">{split.apg.toFixed(1)}</span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[9px] uppercase tracking-[0.15em] text-text-secondary">FG%</span>
-          <span className="text-text-secondary">{split.fgPct != null ? (split.fgPct * 100).toFixed(1) : "-"}</span>
-        </div>
-      </div>
-    </div>
-  );
+function GameLink({ row, children }: { row: PlayerLogRow; children: React.ReactNode }) {
+  return row.nbaGameId ? <Link href={`/game/${row.nbaGameId}`} className="block min-h-11 hover:text-accent">{children}</Link> : <a href={row.sourceUrl} target="_blank" rel="noopener noreferrer" className="block min-h-11 hover:text-accent">{children}</a>;
 }

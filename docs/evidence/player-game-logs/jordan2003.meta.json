@@ -1,0 +1,9 @@
+{
+  "name": "jordan2003",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1035/gamelog?season=2003",
+  "observedAt": "2026-10-05T07:47:41.383961+00:00",
+  "status": 200,
+  "bytes": 777971,
+  "sha256": "ac6625851f9667ecfc92acb81049a30911633a76d1e25957a3e23cf278311abe",
+  "httpDate": "Mon, 05 Oct 2026 07:47:49 GMT"
+}

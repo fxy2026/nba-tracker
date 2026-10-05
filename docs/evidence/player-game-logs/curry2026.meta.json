@@ -1,0 +1,10 @@
+{
+  "name": "curry2026",
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2026",
+  "observedAt": "2026-10-05T07:45:35.833491+00:00",
+  "observationPrecision": "body-received-local-file-mtime",
+  "status": 200,
+  "bytes": 470032,
+  "sha256": "b6c8a07205d522cf81bc53d1181c2200dd5fb4832bbeaab7e5dca638e19b8f8e",
+  "note": "Initial fetch explicitly returned HTTP 200; timestamp is local file creation immediately after response body read, not provider update time."
+}

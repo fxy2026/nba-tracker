@@ -33,7 +33,7 @@ export function commitPlayerProfileUrl(href: string) {
   window.dispatchEvent(new Event(NAVIGATION_EVENT));
 }
 export function usePlayerProfileLocation(playerId: number, initialSearch = "") {
-  return useSyncExternalStore(subscribeLocation, () => window.location.pathname === `/player/${playerId}`
+  return useSyncExternalStore(subscribeLocation, () => [`/player/${playerId}`, `/player/${playerId}/gamelog`].includes(window.location.pathname)
     ? `${window.location.search}${window.location.hash}` : initialSearch, () => initialSearch);
 }
 const PanelContext = createContext<{ mobile: boolean | null; active: PlayerPanel }>({ mobile: null, active: "data" });

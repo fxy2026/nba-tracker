@@ -1,0 +1,23 @@
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { parseNbaPlayerGameLog } from "./player-game-log-data";
+const mocks = vi.hoisted(()=>({nba:vi.fn(),espn:vi.fn(),archive:vi.fn(),coverage:vi.fn()}));
+vi.mock('@/lib/statsProxy',()=>({STATS_BASE:'https://stats.nba.com/stats',fetchStatsJson:mocks.nba}));
+vi.mock('@/lib/player-game-log-source',()=>({fetchEspnPlayerGameLog:mocks.espn}));
+vi.mock('@/lib/player-game-log-archive',()=>({getPlayerGameLogArchive:mocks.archive,withPlayerLogCoverage:mocks.coverage}));
+import { GET } from '@/app/api/player-game-log/route';
+const identity={playerId:2544,season:'2025-26',seasonType:'Regular Season' as const};
+const raw={resultSets:[{name:'PlayerGameLog',headers:['Player_ID','Game_ID','GAME_DATE','MATCHUP','PTS'],rowSet:[[2544,'0022500001','OCT 21, 2025','LAL vs. GSW',20]]}]};
+const data=()=>parseNbaPlayerGameLog(raw,identity,'2026-10-05T08:00:00Z')!;
+const request=(extra='',signal?:AbortSignal)=>new NextRequest(`http://localhost/api/player-game-log?playerId=2544&season=2025-26&seasonType=Regular%20Season${extra}`,{signal});
+beforeEach(()=>{mocks.nba.mockReset().mockResolvedValue(null);mocks.espn.mockReset().mockResolvedValue(null);mocks.archive.mockReset().mockResolvedValue(null);mocks.coverage.mockReset().mockImplementation(async data=>data);});
+afterEach(()=>{vi.useRealTimers();});
+it('serves archived rows without waiting for fragile providers',async()=>{mocks.archive.mockResolvedValue(data());const response=await GET(request());expect(response.status).toBe(200);expect((await response.json()).rows).toHaveLength(1);expect(mocks.nba).not.toHaveBeenCalled();expect(mocks.espn).not.toHaveBeenCalled();});
+it('preserves a completed NBA candidate when optional ESPN ignores abort',async()=>{vi.useFakeTimers();mocks.nba.mockResolvedValue({ok:true,data:raw});mocks.espn.mockImplementation(()=>new Promise(()=>{}));const pending=GET(request());await vi.advanceTimersByTimeAsync(28000);const response=await pending;expect(response.status).toBe(200);expect((await response.json()).source.provider).toBe('NBA Stats');expect(vi.getTimerCount()).toBe(0);});
+it('preserves completed ESPN when NBA ignores abort',async()=>{vi.useFakeTimers();mocks.espn.mockResolvedValue({...data(),source:{...data().source,provider:'ESPN'}});mocks.nba.mockImplementation(()=>new Promise(()=>{}));const pending=GET(request());await vi.advanceTimersByTimeAsync(28000);expect((await (await pending).json()).source.provider).toBe('ESPN');});
+it('refresh cannot replace fuller archived rows with an empty provider',async()=>{mocks.archive.mockResolvedValue(data());mocks.espn.mockResolvedValue({...data(),rows:[]});const response=await GET(request('&refresh=1'));expect((await response.json()).rows).toHaveLength(1);});
+it('distinguishes unavailable from successful empty response',async()=>{expect((await GET(request())).status).toBe(503);mocks.espn.mockResolvedValue({...data(),rows:[]});const response=await GET(request());expect(response.status).toBe(200);expect((await response.json()).rows).toEqual([]);});
+it('rejects invalid season/type and preserves explicit cancellation',async()=>{expect((await GET(new NextRequest('http://localhost/api/player-game-log?playerId=2544&season=2025-28'))).status).toBe(400);expect(mocks.nba).not.toHaveBeenCalled();const c=new AbortController();c.abort();mocks.archive.mockResolvedValue(data());expect((await GET(request('',c.signal))).status).toBe(503);});
+
+it('returns nonempty validated rows immediately without waiting for the optional provider',async()=>{vi.useFakeTimers();mocks.nba.mockResolvedValue({ok:true,data:raw});mocks.espn.mockImplementation(()=>new Promise(()=>{}));const response=await GET(request());expect(response.status).toBe(200);expect((await response.json()).rows).toHaveLength(1);expect(vi.getTimerCount()).toBe(0);});
+it('keeps the whole identity-and-log chain bounded and returns unavailable rather than empty on timeout',async()=>{vi.useFakeTimers();mocks.nba.mockImplementation(()=>new Promise(()=>{}));mocks.espn.mockImplementation(()=>new Promise(()=>{}));const pending=GET(request());await vi.advanceTimersByTimeAsync(28000);const response=await pending;expect(response.status).toBe(503);expect(await response.json()).toEqual({error:'Game-log source unavailable'});expect(vi.getTimerCount()).toBe(0);});
