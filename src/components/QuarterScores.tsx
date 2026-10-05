@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { PeriodScore } from "@/lib/api";
+import type { PeriodScore } from "@/lib/nba-contracts";
 import TeamLogo from "./TeamLogo";
 import { useLocale } from "@/components/LocaleProvider";
 

@@ -3,7 +3,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import type { GameLeader, ScheduleGame } from "@/lib/api";
+import type { GameLeader, ScheduleGame } from "@/lib/nba-contracts";
 import { getGameStatusDisplay } from "@/lib/nba-display";
 import TeamLogo from "./TeamLogo";
 import QuarterScores from "./QuarterScores";

@@ -15,7 +15,7 @@ import { localTz as getLocalTz, dateInTz } from "@/lib/timezone";
 import { offsetCalendarDate } from "@/lib/calendar-date";
 import { explicitTimeZone, homeDateUrl } from "@/lib/date-navigation";
 import { selectedDateFromUrl } from "@/lib/schedule-navigation";
-import type { ScheduleGame } from "@/lib/api";
+import type { ScheduleGame } from "@/lib/nba-contracts";
 
 interface HomeClientProps {
   initialDate: string;

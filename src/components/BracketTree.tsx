@@ -4,7 +4,7 @@ import { memo } from "react";
 import { selectPlayoffSeason } from "@/lib/playoff-season";
 import { currentSeason } from "@/lib/constants";
 import { Trophy, Crown } from "lucide-react";
-import type { ScheduleGame } from "@/lib/api";
+import type { ScheduleGame } from "@/lib/nba-contracts";
 import {
   type Series,
   getConference,

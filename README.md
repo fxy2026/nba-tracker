@@ -1,259 +1,206 @@
-<div align="center">
-
 # NBA Tracker
 
-**Real-time NBA scores, stats, analytics, and shot charts — built with Next.js 16 & React 19.**
+NBA 比分、球员数据与投篮可视化网站，支持中英文、移动端和带来源说明的历史档案。
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffxy2026%2Fnba-tracker&env=BALLDONTLIE_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,ADMIN_PASSWORD&envDescription=API%20keys%20needed%20for%20full%20functionality.%20Only%20BALLDONTLIE_API_KEY%20is%20required%2C%20others%20are%20optional.&project-name=nba-tracker&repository-name=nba-tracker)
+*A bilingual NBA dashboard for scores, player research, and source-aware basketball visualizations.*
 
-[Live Demo](https://nba.xpy.me) &nbsp;|&nbsp; [Tech Article](https://www.xpy.me/article/nba-tracker)
+[在线体验](https://nba.xpy.me) · [技术文章](https://www.xpy.me/article/nba-tracker) · [快速开始](#快速开始) · [文档导航](docs/README.md)
 
-![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19-blue?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss&logoColor=white)
-![PWA](https://img.shields.io/badge/PWA-installable-5a3ee5)
-![Bilingual](https://img.shields.io/badge/i18n-zh%20%2F%20en-22c55e)
-![Lines of Code](https://img.shields.io/badge/Lines_of_Code-30k+-green)
+[查看历史演示：2026 年 5 月版本（GIF，约 2.5 MB）](article-images/demo.gif)
 
-</div>
+> 演示图来自较早版本。各页面的数据覆盖、来源和时间以当前页面说明为准；本项目不是 NBA 官方产品。
 
----
+## 可以做什么
 
-![NBA Tracker v2 demo](article-images/demo.gif)
+- **跟踪比赛**：比分、赛程、比赛详情、球员技术统计、可用的逐回合记录与季后赛对阵。
+- **研究球员与球队**：中英文搜索、球员档案、生涯数据、球队表现、对比与排行榜。
+- **探索投篮与趋势**：比赛投篮图、历史投篮档案、赛季热区，以及 `/lab` 下的分析视图；不同图表各有明确的数据范围。
+- **浏览联盟资讯**：新闻、伤病、交易、历史专题、术语表与趣味问答。
+- **按自己的习惯使用**：本地时区、主题切换、收藏和最近浏览；支持安装为 PWA，已缓存页面和静态资源可提供有限离线体验，实时 API 仍需联网。
 
-> **2026-05 update**: full UI rebuild + ~50 commits of polish — bracket → tree structure, top menu → Command Palette, breadcrumbs + RelatedPages on every page, A11y/WCAG AA, true PWA (offline + install), Service Worker, bilingual zh/en, Web Vitals telemetry, modern web platform (Speculation Rules · Container Queries · `:has()` · scroll-driven animations), data accuracy fixes (real all-time career leaders), code-split refactors (BracketTree 911 → 163, game/[id] 1026 → 243). See [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story, [the article](https://www.xpy.me/article/nba-tracker) for the narrative.
+主要入口：[`/explore`](https://nba.xpy.me/explore)、[`/search`](https://nba.xpy.me/search)、[`/calendar`](https://nba.xpy.me/calendar)、[`/shot-archive`](https://nba.xpy.me/shot-archive)、[`/lab`](https://nba.xpy.me/lab)。
 
-## Highlights
+## 快速开始
 
-- **46 routes** — every angle of the season (standings, power-rankings, streaks, momentum, tier-list, awards-race, all-time-leaders, milestones, records, this-day, …)
-- **Real-time game tracking** — 30s auto-refresh on homepage, 15s on game detail, live score flash animation
-- **True PWA** — installable, offline-capable via Service Worker, iOS + Android adaptive icons
-- **Bilingual (zh / en)** — every page translated, cookie-persisted, full Hupu-style basketball terminology in Chinese
-- **A11y first** — focus traps on modals, aria-labels on every icon button, SVG charts with `role="img"`, 44px touch targets
-- **Modern web platform** — Speculation Rules predictive prefetch, scroll-driven CSS progress bar, `:has()` parent-aware hover, container queries on adaptive cards
-- **Data freshness pills** — every cache-backed page shows "X minutes ago" so users know how fresh the numbers are
-- **Search with 230+ aliases** — "字母哥" → Giannis, "King James" → LeBron, "Lakers" → entire roster
-- **100% discoverability** — every detail/analytic page has a `<RelatedPages>` footer; zero dead ends
-- **Recently viewed** — last 8 player/team/game visits surfaced on homepage
+### 环境要求
 
-## Features
+- **Node.js 24**：与仓库现有 GitHub Actions 使用的主版本一致。
+- **npm**：使用仓库的 `package-lock.json` 安装依赖。
+- **Git**：用于获取仓库和项目规模统计。
 
-| Page family | Routes | Notes |
-|-------------|--------|-------|
-| **Live & detail** | `/`, `/game/[id]`, `/player/[id]`, `/team/[tricode]`, `/series/[id]` | Server components, dynamic-import for heavy charts |
-| **League state** | `/standings`, `/conference-race`, `/divisions`, `/power-rankings`, `/tier-list`, `/streaks`, `/momentum` | Schedule-derived, freshness pill |
-| **Awards & leaders** | `/stats`, `/awards-race` (with rookie filter), `/all-time-leaders` (real career data), `/milestones` (projections), `/clutch`, `/best-games`, `/records` | Mix of live + curated static data |
-| **Players** | `/search`, `/compare`, `/h2h`, `/rookie-watch`, `/draft-classes`, `/by-position`, `/by-country`, `/by-college` | Bilingual search aliases |
-| **Schedule** | `/calendar`, `/schedule`, `/schedule-heatmap`, `/back-to-back`, `/game-predictor` | Timezone-aware grouping (user's local TZ) |
-| **News & meta** | `/injuries`, `/transactions`, `/history`, `/rivalries`, `/scoring-output`, `/home-vs-road`, `/this-day` | ESPN + balldontlie sources |
-| **Fan tools** | `/favorites`, `/quiz` (incl. Legend mode), `/glossary` (82 terms, zh+en) | localStorage favorites + recently viewed |
-
-### Notable engineering
-
-| | |
-|---|---|
-| **Pure-SVG shot chart** | Coordinate transform (NBA API axes inverted), Bezier 3-point arc, 2PT/3PT/miss markers |
-| **Auto-narrative game summary** | Detected lead changes, scoring runs (8-0+), clutch shots, quarter MVP, biggest run, AST/TO efficiency |
-| **Playoff bracket** | True tree diagram with SVG connectors; partial projections for in-progress matchups; pre-fills advanced teams |
-| **In-memory schedule cache** | 11 MB JSON cached with stale-while-revalidate + mutex; cold start dedupes concurrent fetches |
-| **`fetchWithRetry`** | Exponential backoff, 5xx-only retry, console.error on terminal failure |
-| **Web Vitals telemetry** | LCP/INP/CLS/FCP/TTFB logged with rating colors, rolling buffer in localStorage |
-
-## Screenshots
-
-### v2 — May 2026 redesign
-
-| | |
-|:---:|:---:|
-| ![Playoff Bracket](article-images/30-bracket-tree.png) | ![Series Detail](article-images/31-series-detail.png) |
-| Playoff Bracket — tree structure with SVG connectors + partial projections | Series Detail — game-by-game · top performers · key moments |
-| ![All-Time Leaders](article-images/21-all-time-leaders-real.png) | ![Legend Quiz](article-images/28-legend-quiz.png) |
-| All-Time Leaders — real career data (Jordan 30.12 PPG, not last-season averages) | Legend Quiz — guess the GOAT from career stats |
-| ![Bilingual Search](article-images/32-bilingual-search.png) | ![Chinese Glossary](article-images/22-glossary-zh.png) |
-| Search 230+ aliases — "字母哥" → Giannis, "司机" → Nowitzki, "湖人" → roster | Glossary — 82 basketball terms with Hupu-style Chinese |
-| ![Breadcrumbs + UpdatedPill](article-images/23-breadcrumbs.png) | ![RelatedPages](article-images/24-related-pages.png) |
-| Breadcrumbs + "X minutes ago" freshness pill on every page | RelatedPages footer — every analytic page links to 5-6 siblings |
-| ![Scroll progress](article-images/25-scroll-progress-updated-pill.png) | ![Recently viewed](article-images/20-recently-viewed.png) |
-| Scroll-driven CSS progress bar (pure CSS, zero JS) | Recently viewed — last 8 player/team/game visits on homepage |
-
-<details>
-<summary><b>Click to expand original feature screenshots</b></summary>
-
-| | |
-|:---:|:---:|
-| ![Game](article-images/03-game-scoreboard.png) | ![BoxScore](article-images/03b-game-boxscore.png) |
-| Game Detail — Scoreboard | Game Detail — Box Score |
-| ![ShotChart](article-images/03c-game-shotchart.png) | ![PlayByPlay](article-images/03d-game-playbybplay.png) |
-| Shot Chart — pure SVG basketball court | Play-by-Play Timeline |
-| ![Player](article-images/05-player-header.png) | ![Stats](article-images/06-stats.png) |
-| Player Profile | Stats Leaders |
-| ![Standings](article-images/04-standings.png) | ![Team](article-images/11-team.png) |
-| Division Standings | Team Page |
-| ![Calendar](article-images/07-calendar.png) | ![Injuries](article-images/08-injuries.png) |
-| Calendar | Injury Report |
-| ![Search](article-images/09-search.png) | ![History](article-images/12-history.png) |
-| Player Search | History |
-| ![GameMobile](article-images/10-game-mobile.png) | ![Mobile](article-images/02-homepage-mobile.png) |
-| Game Detail — Mobile | Homepage — Mobile |
-
-</details>
-
-## Architecture
-
-```
-src/
-├── app/                            # Next.js 16 App Router — 46 routes
-│   ├── page.tsx                    # Homepage — Server + 30s ISR
-│   ├── game/[id]/                  # ✂ split into _components/ (13 files)
-│   │   ├── page.tsx                # 243 lines (composer)
-│   │   └── _components/            # GameHero, GameLeaders, GameHeadlines …
-│   ├── player/[id]/                # next/dynamic for 6 heavy subcomponents
-│   ├── team/[tricode]/              # ✂ 295-line composer + 6 _components
-│   ├── series/[id]/                 # Playoff series deep-dive
-│   ├── all-time-leaders/            # Career data — STATIC (NBA legends)
-│   ├── glossary/, quiz/, …          # 46 total routes
-│   └── api/                         # 16 route handlers
-│       ├── games/, standings/       # Server-cached, retry-aware
-│       ├── search/                  # 230+ player aliases (zh + en)
-│       └── …
-├── components/                      # 71 components
-│   ├── bracket/                     # ✂ Split from 911-line BracketTree
-│   ├── player/                      # Player-page subcomponents
-│   ├── ShotChart, KeyMoments, …     # Game charts (pure SVG)
-│   ├── ToastProvider                # Global toast (createPortal)
-│   ├── ThemeScript                  # Inline-head FOWT killer
-│   ├── SpeculationRules             # Prefetch + prerender hints
-│   ├── SwRegister                   # Service Worker mount
-│   ├── WebVitalsReporter            # LCP/INP/CLS telemetry
-│   ├── InstallPrompt                # PWA install banner (incl. iOS hint)
-│   ├── OnlineStatus                 # Offline/online banner
-│   ├── RecentlyViewed               # Last 8 visited details
-│   └── …
-└── lib/                             # 20 modules
-    ├── api.ts                       # NBA CDN client, fetchWithRetry, cache
-    ├── playoffs.ts                  # Bracket pure helpers (extracted)
-    ├── game-stats.ts                # Game-page narrative helpers
-    ├── team-rank.ts                 # Conference rank helper
-    ├── allTimeLeaders.ts            # 45 NBA legends (static career data)
-    ├── playerAliases.ts             # 230+ search aliases
-    ├── timezone.ts                  # localTz, dateInTz, localToday
-    ├── teamUrls.ts                  # CDN URL builders
-    ├── games.ts                     # gameId predicates + winPct
-    ├── recentlyViewed.ts            # localStorage visit tracker
-    └── …
-```
-
-### Key technical decisions
-
-- **Data source**: NBA CDN (`cdn.nba.com/static/json/`) — free, no API key. `stats.nba.com` is CORS-blocked from Vercel IPs, so career-historical data is bundled statically.
-- **11 MB schedule cache**: In-memory stale-while-revalidate + mutex; cold-start callers share one Promise.
-- **Dual-tier polling**: 30s homepage, 15s game detail via `router.refresh()` — no page reload.
-- **Timezone-aware grouping**: Calendar + DateNav + `/api/games` group games by user's local IANA timezone (via `Intl.DateTimeFormat().resolvedOptions().timeZone`) instead of NBA's ET. A 7pm ET game on May 15 shows on the May 16 cell for a Beijing user — matching their lived experience.
-- **Service Worker**: Bucketed strategies — network-first for HTML, cache-first for `_next/static`, stale-while-revalidate for cdn.nba.com images. Versioned caches with activate-time purge.
-- **Code-split heavy charts**: `next/dynamic` for ShotChart, ShotHeatmap, PlayByPlay, RadarChart, ScoringFlow, WinProbability, PlayerShotChart so the game-page bundle stays lean.
-- **Static all-time leaders**: NBA's playerIndex only includes active players and serves last-season averages. A real career leaderboard (Jordan 30.12 PPG, Wilt 22.9 RPG, Magic 11.19 APG, Stockton 15,806 career assists, …) is hand-curated in `lib/allTimeLeaders.ts`.
-
-## What's new (2026-05 update)
-
-50+ commits across these tracks (see [`docs/2026-05-update.md`](docs/2026-05-update.md) for the full story):
-
-| Track | Highlights |
-|-------|------------|
-| **Reliability** | `error.tsx` siblings on 5 detail routes · `fetchWithRetry` with backoff · `getScheduleAge()` + `<UpdatedPill>` freshness chips on 17 pages · Cache-Control: no-store on every 500 response |
-| **Discoverability** | `<Breadcrumbs>` + `<RelatedPages>` on every detail + analytic page — 100% coverage, zero dead ends · 230+ search aliases in zh & en · "Recently viewed" tracker |
-| **A11y (WCAG AA)** | Focus trap + restoration on CommandPalette + Teams modal · aria-labels on all icon-only buttons · `role="img"` + summary on every SVG chart · CommandPalette input labelled |
-| **Mobile** | Tiny text bumped (text-[8-10px] → text-[11-12px] on mobile only) · 44px touch targets · iOS `env(safe-area-inset-top)` sticky · Swipe Y-axis guard prevents accidental date flips |
-| **i18n** | `/about` + `/explore` + `/clutch` + `/rookie-watch` + `/milestones` + `/awards-race` fully translated · Glossary 47 → 82 terms with Hupu-style Chinese · Search filters both languages |
-| **Modern web** | Speculation Rules predictive prefetch (Chrome 122+) · `text-wrap: balance` on headings · `:has()` parent hover · Container queries on cards · CSS scroll-driven progress bar (Chrome 115+) |
-| **PWA** | Service Worker with bucketed caches · `<InstallPrompt>` for Chrome/Edge/Android · iOS Safari "Add to Home Screen" hint · `<OnlineStatus>` offline/online banner · Maskable + apple-touch icons |
-| **Code quality** | BracketTree.tsx **911 → 163** lines · game/[id]/page.tsx **1026 → 243** · team/[tricode]/page.tsx **786 → 295** · 11 new lib modules extracting 80+ duplicate sites |
-| **Data accuracy** | `/all-time-leaders` replaced with real career data · `/rookie-watch` keyed by draftYear · `/milestones` relabeled as projections · `/awards-race` ROY tab now actually filters rookies · `by-X` pages note "last season" |
-| **Polish** | Global `<ToastProvider>` for action feedback · Flash-of-wrong-theme killed via inline ThemeScript · `prefers-color-scheme` auto-detect · System-aware meta theme-color · Web Vitals reporter |
-
-## Getting started
-
-### Prerequisites
-
-- Node.js 18+
-- npm / pnpm / yarn
-
-### 1. Clone & install
+主要浏览页面无需配置 API key 或数据库。上游接口受网络、访问限制和数据覆盖影响，不保证所有比赛或球员都有完整数据。
 
 ```bash
 git clone https://github.com/fxy2026/nba-tracker.git
 cd nba-tracker
-npm install
+npm ci
+npm run dev
 ```
 
-### 2. Environment variables
+打开 [http://localhost:3000](http://localhost:3000)。需要管理后台或其他可选功能时，再按下文配置环境变量。
 
-Copy `.env.example` to `.env.local` and fill in:
+### 常用命令
+
+| 命令 | 用途 |
+| --- | --- |
+| `npm run dev` | 启动开发服务器 |
+| `npm run build` | 生成 Next.js 生产构建 |
+| `npm start` | 运行已生成的生产构建 |
+| `npm run lint` | ESLint 检查 |
+| `npm run typecheck` | TypeScript 类型检查 |
+| `npm test -- --maxWorkers=1` | 单 worker 运行 Vitest 测试 |
+| `npm run test:watch` | Vitest 监听模式 |
+| `npm run data:generate` | 从仓库内逐场快照校验并生成聚合数据 |
+| `npm run project:stats` | 统计当前工作树中 Git 跟踪的项目文件 |
+
+`dev`、`build`、`test`、`test:watch` 和 `typecheck` 的 npm 前置脚本会自动运行 `data:generate`。它只读取本地快照，不抓取上游数据；不要手改生成的聚合 JSON。新检出仓库请使用 `npm run typecheck`，避免直接运行 `tsc` 跳过生成步骤。
+
+生产模式本地检查：
+
+```bash
+npm run build
+npm start
+```
+
+构建使用 `next/font/google` 下载字体，访问部分页面也会请求上游接口。在受限网络中，字体下载失败或上游超时需要单独排查；离线单元测试通过不代表线上数据可用。
+
+项目规模也可输出为 JSON：
+
+```bash
+npm run --silent project:stats -- --json
+```
+
+统计基于 Git 跟踪且当前存在的普通文件，按路径名称排除常见凭据、依赖与构建产物；它不是秘密扫描器。行数区分物理行和非空行，包含注释，不代表去注释后的代码量或测试覆盖率。页面/API 数量是约定文件数，不是动态展开后的 URL 或 HTTP 方法数；具体口径见命令输出。
+
+## 架构与目录
+
+这是一个 **单仓库、单个 Next.js 应用**。页面、Route Handlers、数据适配和本地档案共同交付；数据采集工作流独立于访客请求执行。内部模块边界、Docker 自托管与拆仓库的适用条件，见[项目结构与部署选择](docs/design/project-structure.md)。
+
+- **Web**：Next.js App Router、React、TypeScript、Tailwind CSS、Lucide；具体版本见 [`package.json`](package.json) 和锁文件。
+- **页面层**：Server Components 组织页面和服务端数据，Client Components 负责筛选、交互与按需加载图表。
+- **数据层**：[`src/lib/api.ts`](src/lib/api.ts) 处理 NBA CDN 数据与赛程缓存；[`src/lib/statsProxy.ts`](src/lib/statsProxy.ts) 为 NBA Stats 请求提供超时与熔断；各功能模块负责校验和来源边界。
+- **共享类型**：[`src/lib/nba-contracts.ts`](src/lib/nba-contracts.ts) 集中维护比赛、球员与投篮的数据类型；调用方使用 `import type`，`api.ts` 保留兼容的类型导出。
+- **持久化**：受控采集和人工核验结果保存为仓库内快照，部分聚合文件在开发、测试和构建前生成。Supabase 仅保留可选的历史功能，不是核心页面启动条件。
+
+```text
+NBA CDN / NBA Stats / ESPN
+          │
+          ▼
+服务端适配、校验与缓存 ◀── 已保存且满足对应校验规则的档案
+          │
+          ├── Server Components
+          └── /api/* → Client Components → 图表与交互
+
+受控采集 / 来源核验 → 逐场事实与证据 → 本地生成与校验 → 构建
+```
+
+回退顺序由各模块定义；实时响应、已保存档案、计划赛程和推导指标有不同语义，不应混合成一个“完整实时数据集”。
+
+```text
+.
+├── src/
+│   ├── app/              # 页面、布局与 api/ Route Handlers
+│   │   └── …/_components/ # 与具体路由共同维护的页面组件
+│   ├── components/       # 跨页面 UI、导航与图表
+│   ├── lib/              # 数据适配、领域逻辑、校验与测试
+│   ├── data/             # 事实快照、来源元数据和生成数据
+│   └── locales/          # 中英文文案与翻译类型
+├── scripts/              # 数据生成、受控采集、导入和维护工具
+├── docs/                 # 数据契约、功能说明、证据与设计记录
+├── public/               # 浏览器可直接访问的静态资源与 Service Worker
+├── supabase/migrations/  # 已有数据库迁移记录
+├── design-system/        # 设计规范与页面设计记录
+├── article-images/       # README 与技术文章的演示素材
+└── .github/workflows/    # 受控数据采集与历史工作流
+```
+
+Vitest 测试与代码就近存放，入口匹配 `src/**/*.test.{ts,tsx}`。服务端档案、压缩数据和来源证据不要放入 `public/` 或直接导入客户端组件；已有文件追踪配置见 [`next.config.ts`](next.config.ts)。
+
+## 数据来源与边界
+
+| 来源 | 当前用途 | 需要注意 |
+| --- | --- | --- |
+| NBA CDN / NBA Stats | 比分、赛程、球员与比赛统计 | 可能超时、受限或缺失；按功能使用缓存、已有档案或不可用状态 |
+| ESPN | 新闻、伤病，以及部分球员生涯数据回退 | 来源 ID 和统计口径需要单独核验 |
+| NBA 页面、gamebook 与赛程 PDF | 经核验的比分、投篮、生涯及计划赛程快照 | 仅覆盖已收录对象；捕获时间不等于上游更新时间 |
+| BigBallsData | 受控工作流保存的逐场球员数据 | 页面读取已保存快照；供应商校验不自动证明历史球队归属 |
+| BallDontLie | 可选薪资接口 | 需要服务端 key 和对应接口权限，不是启动条件 |
+| 本地整理与计算 | 历史专题、榜单和部分分析指标 | 以具体模块的来源、范围和计算说明为准 |
+
+维护数据时，需保留以下边界：
+
+- 缺失、过期、部分覆盖和不可用必须明确表达；不能将缺失统计补成真实的零。
+- 计划赛程不是已发生比赛；历史样本不是完整赛季；投篮坐标、比分观察序列和逐回合事件不能相互推造。
+- 通用供应商快照与独立核验的历史档案分别保留来源和验证范围。新增记录需要相应证据、校验和测试。
+- 视频回放链接已退出公开页面和管理界面；保留的旧 API 与存储不代表公开回放功能仍在使用。
+
+从 [文档导航中的数据章节](docs/README.md#数据与来源) 查看每类数据的契约和证据。
+
+## 可选配置
+
+可以从 [`.env.example`](.env.example) 创建本地配置：
 
 ```bash
 cp .env.example .env.local
 ```
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `BALLDONTLIE_API_KEY` | Yes | Free key from [balldontlie.io](https://www.balldontlie.io/) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Optional | Supabase project URL (legacy replay-link storage only) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase anon key (legacy replay-link storage only) |
-| `ADMIN_PASSWORD` | Optional | Password for the `/admin` management dashboard |
+示例文件保留了一些历史注释；当前功能含义如下。无需为了运行首页填写所有变量，也不要提交真实 key 或密码。
 
-> The core features (scores, box scores, shot charts, standings, analytics) work without any API keys — they use the free NBA CDN.
+| 变量 | 用途 |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | 服务端内部请求使用的绝对站点 origin；未设置时优先使用 Vercel 的生产域名变量，本地回退到 localhost |
+| `ADMIN_PASSWORD` | `/admin` 与相关受保护接口的管理密码 |
+| `BALLDONTLIE_API_KEY` | 服务端薪资查询；未设置时该接口返回空数据 |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 保留的旧回放存储配置；公开页面不依赖它们 |
 
-Video replay links are retired from the public site and management dashboard. Public pages no longer load replay metadata or Supabase replay links. Existing database records, storage configuration, and the legacy replay API remain preserved; statistical game archives, recaps, and play-by-play remain available.
+特别注意：
 
-The rebuilt `/admin` dashboard provides protected bundled-data coverage and an optional visitor-analytics overview. Visitor collection is disabled by default and shows an explicit unconfigured state until durable storage and access controls are verified. Basketball analytics and visitor analytics are separate features. See [visitor analytics setup and verification](docs/design/visitor-analytics.md) before enabling collection; the proposed SQL is not automatically applied.
+- `NEXT_PUBLIC_SITE_URL` 不会自动改写所有品牌链接、SEO metadata、robots 或 sitemap。派生部署需检查 [`layout.tsx`](src/app/layout.tsx)、[`robots.ts`](src/app/robots.ts) 和 [`sitemap.ts`](src/app/sitemap.ts) 中的站点地址。
+- Preview 环境默认可能通过 `VERCEL_PROJECT_PRODUCTION_URL` 读取生产站点的赛程投影；需要独立预览数据时，为对应环境明确设置 origin。
+- `BIGBALLSDATA_API_KEY` 只属于受控 GitHub Actions 采集流程，不要部署到 Vercel 或暴露给浏览器。详见 [采集维护文档](scripts/recovery/README.md)。
+- 当前页面访问统计使用 Vercel Web Analytics，仅在 Vercel production 环境挂载，并受路径与隐私信号过滤；是否收集还需核验项目面板设置。旧 Supabase 采集已停用，历史报表配置不属于新部署必需项。详见 [访问统计说明](docs/design/vercel-web-analytics.md)。
 
-### 3. Run
+## 部署到 Vercel
+
+现有线上入口为 [nba.xpy.me](https://nba.xpy.me)。部署自己的副本可导入 GitHub 仓库，或使用按钮创建项目：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffxy2026%2Fnba-tracker&project-name=nba-tracker&repository-name=nba-tracker)
+
+1. 选择 **Next.js** framework preset，项目根目录使用仓库根目录。
+2. 使用 `npm ci` 安装、`npm run build` 构建；Output Directory 保留框架默认值。构建脚本会先校验并生成本地档案。
+3. Node.js 选择 **24.x**，与现有工作流一致；可用版本以 [Vercel 官方说明](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions) 为准。
+4. 只按需添加上面的可选配置。管理密码、供应商 key 和服务端数据库凭据不得使用 `NEXT_PUBLIC_` 前缀。
+5. 核对部署对应的 commit、首页、比赛/球员页面、静态档案读取和错误状态，再检查自定义域名与 SEO 地址。访问统计需单独启用和验证，构建成功不等于已收到访问数据。
+
+应用依赖服务端路由和文件读取，不能仅发布为静态 HTML。保留 `next.config.ts` 中的服务端档案追踪配置，避免构建成功但运行时缺少压缩档案。
+
+## 参与开发
+
+1. 先阅读涉及功能的[文档](docs/README.md)，确认数据范围、路由边界和现有测试。
+2. 页面专用组件放在对应路由的 `_components/`，可复用 UI 放在 `src/components/`，数据规则与校验放在 `src/lib/`。小范围提交，避免为目录整齐批量搬动数据。
+3. 修改行为时补充相邻测试；修改来源或数据契约时同步更新事实、证据和说明。不要手工修改生成的聚合文件。
+4. 提交前运行以下检查，并在 PR 中说明改动范围、测试结果、数据影响及未验证事项；UI 修改附截图。
 
 ```bash
-npm run dev
+npm run lint
+npm run typecheck
+npm test -- --maxWorkers=1
+npm run test:project-stats
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+测试使用的重建 fixture 不等于真实来源完整性证明。网络访问、部署验证与受控供应商采集各自独立，运行开发检查不会自动完成这些验证。
 
-### 4. Build
+## 进一步阅读
 
-```bash
-npm run build      # Production build (Turbopack)
-npm run lint       # ESLint with react-hooks strict rules
-```
-
-## Tech stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16.2 (App Router + experimental.viewTransition) |
-| UI | React 19 (Server Components, `use()` hook, async transitions) |
-| Language | TypeScript 5 (strict mode, zero `any` in new code) |
-| Styling | Tailwind CSS 4 — `@theme inline`, `:has()`, container queries |
-| Icons | Lucide React |
-| Database | Supabase (PostgreSQL) — optional, retained for legacy replay-link data |
-| Data | NBA CDN + ESPN injuries + BallDontLie |
-| Deploy | Vercel (edge + Node runtime mix) |
-| Telemetry | `next/web-vitals` — local logs + localStorage buffer |
-
-## Stats
-
-```
-30,000+ lines of hand-written TypeScript/TSX
-71      React components
-46      pages (46 routes)
-16      API routes
-20      lib modules
-82      glossary terms (zh + en)
-230+    player search aliases
-~5s     production build (Turbopack)
-0       lint errors, 0 type errors
-```
-
-## Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffxy2026%2Fnba-tracker&env=BALLDONTLIE_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,ADMIN_PASSWORD&envDescription=API%20keys%20needed%20for%20full%20functionality.%20Only%20BALLDONTLIE_API_KEY%20is%20required%2C%20others%20are%20optional.&project-name=nba-tracker&repository-name=nba-tracker)
+- [文档导航](docs/README.md)：按开发、数据、可视化和运维查找说明。
+- [技术文章](https://www.xpy.me/article/nba-tracker)：项目实现背景。
+- [2026 年 5 月更新记录](docs/2026-05-update.md)：历史设计与改版记录，其中版本、数量和状态不作为当前承诺。
 
 ## License
 
 MIT
+
+仓库目前尚未提供独立的 `LICENSE` 文件。
+
+代码许可声明不构成第三方数据、图片、队标或商标的再分发授权；使用这些内容前请核对各来源的条款。

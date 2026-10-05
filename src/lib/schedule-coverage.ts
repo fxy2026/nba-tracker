@@ -1,4 +1,4 @@
-import type { ScheduleDate } from './api';
+import type { ScheduleDate } from './nba-contracts';
 import { TEAM_META } from './teams';
 
 /** Coverage belongs to a particular immutable schedule array, never a cache-load timestamp. */

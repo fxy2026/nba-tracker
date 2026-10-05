@@ -1,5 +1,5 @@
 import type { PlayAction } from "@/components/PlayByPlay";
-import type { ShotAction, ScoringShot } from "./api";
+import type { ShotAction, ScoringShot } from "./nba-contracts";
 
 export interface GamePlayByPlay {
   actions: PlayAction[];

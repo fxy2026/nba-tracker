@@ -1,4 +1,4 @@
-import type { ScheduleDate, ScheduleGame } from "@/lib/api";
+import type { ScheduleDate, ScheduleGame } from "@/lib/nba-contracts";
 import archiveGameSeasons from "@/data/archive-game-seasons.json";
 
 /** A merged schedule includes archived years. Scope season analytics by the

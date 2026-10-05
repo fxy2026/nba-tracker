@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { ScheduleGame } from "@/lib/api";
+import type { ScheduleGame } from "@/lib/nba-contracts";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
 import { createLatestRequestGate } from "@/lib/latest-request";

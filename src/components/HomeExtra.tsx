@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import type { ScheduleGame } from "@/lib/api";
+import type { ScheduleGame } from "@/lib/nba-contracts";
 import RecentHighlights from "./RecentHighlights";
 
 const BracketPlaceholder = () => <div className="skeleton-shimmer rounded-xl" style={{ minHeight: 400 }} />;

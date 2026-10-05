@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
-import type { ScheduleGame } from "@/lib/api";
+import type { ScheduleGame } from "@/lib/nba-contracts";
 import { isPlayoff } from "@/lib/games";
 import TeamLogo from "./TeamLogo";
 import { ChevronRight } from "lucide-react";

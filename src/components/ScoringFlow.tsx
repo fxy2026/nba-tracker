@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useRef } from "react";
-import type { PeriodScore } from "@/lib/api";
+import type { PeriodScore } from "@/lib/nba-contracts";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface ScoreEvent {

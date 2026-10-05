@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, memo } from "react";
-import type { ShotAction } from "@/lib/api";
+import type { ShotAction } from "@/lib/nba-contracts";
 import {
   BASKET_PCT_X,
   FT_LINE_PCT_X,

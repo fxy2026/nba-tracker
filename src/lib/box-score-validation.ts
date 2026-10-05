@@ -1,4 +1,4 @@
-import type { BoxScore } from "./api";
+import type { BoxScore } from "./nba-contracts";
 
 const numericStats = [
   "points", "reboundsTotal", "reboundsOffensive", "reboundsDefensive", "assists",

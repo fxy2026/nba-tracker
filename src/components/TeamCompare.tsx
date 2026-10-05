@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { BoxScoreTeam } from "@/lib/api";
+import type { BoxScoreTeam } from "@/lib/nba-contracts";
 import { useLocale } from "@/components/LocaleProvider";
 
 interface Props {
