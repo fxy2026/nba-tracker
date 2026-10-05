@@ -60,11 +60,12 @@ async function getInjuries(): Promise<TeamInjury[]> {
 function teamInjuries(all: TeamInjury[], tricode: string): InjuryItem[] {
   const meta = TEAM_META[tricode];
   if (!meta) return [];
-  const cityLower = meta.city.toLowerCase();
-  const nameLower = meta.name.toLowerCase();
+  const fullName = `${meta.city} ${meta.name}`.toLowerCase();
   const entry = all.find((t) => {
-    const dn = (t.displayName || "").toLowerCase();
-    return dn.includes(nameLower) || dn.includes(cityLower);
+    if (typeof t?.displayName !== "string") return false;
+    const name = t.displayName.trim().replace(/\s+/g, " ").toLowerCase();
+    // Exact full names prevent LA/Orlando and Nets/Hornets collisions.
+    return name === fullName || (tricode === "LAC" && name === "los angeles clippers");
   });
   return (entry?.injuries || []).filter((i) => i.athlete?.displayName);
 }
