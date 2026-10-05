@@ -1,5 +1,6 @@
 import PlayerProfilePanels, { PlayerProfilePart, PlayerDesktopOnly, PlayerDeferred } from "@/components/player/PlayerProfilePanels";
 import PlayerMobileIdentity from "@/components/player/PlayerMobileIdentity";
+import PlayerMobileSummary from "@/components/player/PlayerMobileSummary";
 import mobileStyles from "@/components/player/player-mobile.module.css";
 import { knownAverage, hasCompleteAverages, profileStatContext, type StatContext } from "@/lib/player-profile-stats";
 import { currentSeason } from "@/lib/constants";
@@ -187,7 +188,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className={`${mobileStyles.page} max-w-6xl mx-auto px-4 py-6`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -201,9 +202,9 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       />
 
       </PlayerDesktopOnly>
-      <PlayerProfilePanels key={personId} playerId={personId} locale={locale} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} header={<PlayerMobileIdentity id={personId} name={fullName} subtitle={`${player.teamCity} ${player.teamName}`} teamHref={player.teamAbbr ? `/team/${player.teamAbbr}` : undefined} facts={[player.position, player.jersey ? `#${player.jersey}` : "", player.height || ""].filter(Boolean)} source={playerIndexLabel(snapshot.provenance, locale)} color={teamColor} locale={locale} />}>
+      <PlayerProfilePanels key={personId} playerId={personId} locale={locale} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} header={<PlayerMobileIdentity id={personId} name={fullName} subtitle={`${player.teamCity} ${player.teamName}`} teamHref={player.teamAbbr ? `/team/${player.teamAbbr}` : undefined} teamId={player.teamId} facts={[player.position, player.jersey ? `#${player.jersey}` : "", player.height || ""].filter(Boolean)} source={playerIndexLabel(snapshot.provenance, locale)} color={teamColor} locale={locale} />}>
       <PlayerProfilePart panel="data">
-      <p className="sm:hidden mt-5 text-sm font-semibold">{snapshot.provenance.season} · {isZh ? "常规赛快照" : "Regular-season snapshot"}</p>
+      <PlayerDesktopOnly>
       <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
       <details className="mt-1 text-xs text-text-secondary">
         <summary className="min-h-11 cursor-pointer rounded-md py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
@@ -215,6 +216,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
             : "Comparison basis: recorded per-game values in this player index, with positive PPG and a known value for each stat. Sample averages weight players equally, with no games-played or minutes minimum. Rank is 1 + the number strictly higher; P is the rounded percentage of the sample strictly below. Ties share rank and P."}
         </p>
       </details>
+      </PlayerDesktopOnly>
 
       </PlayerProfilePart>
       <PlayerDesktopOnly>
@@ -241,10 +243,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       <PlayerProfilePart panel="data">
       {/* ─── Bento Hero ─────────────────────────────────────── */}
       <div id="overview" className={`${mobileStyles.overview} scroll-mt-24 mt-6 grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 auto-rows-[110px] sm:auto-rows-[120px]`}>
+        <PlayerMobileSummary playerId={personId} locale={locale} source={playerIndexLabel(snapshot.provenance, locale)}
+          metrics={[
+            { label: isZh ? "得分" : "Points", abbreviation: "PTS", value: ppg, context: ptsCtx },
+            { label: isZh ? "篮板" : "Rebounds", abbreviation: "REB", value: rpg, context: rebCtx },
+            { label: isZh ? "助攻" : "Assists", abbreviation: "AST", value: apg, context: astCtx },
+          ]} />
+
 
         {/* Tile 1 — HEADSHOT (Apple-card style: photo top + meta bottom, no bleed) */}
         <div
-          className={`${mobileStyles.portrait} glass-tile glass-tile-featured col-span-2 sm:col-span-2 row-span-3 sm:row-span-3 group cursor-default bento-rise`}
+          className="glass-tile glass-tile-featured col-span-2 sm:col-span-2 row-span-3 sm:row-span-3 group cursor-default bento-rise"
           style={{
             animationDelay: "0ms",
             // Team-color tinted halo on the featured ring
@@ -252,7 +261,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           }}
         >
           {/* Top: photo area — fixed height, image properly centered on face */}
-          <div className={`${mobileStyles.portraitImage} relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary kenburns-parent`}>
+          <div className="relative h-[200px] sm:h-[220px] overflow-hidden bg-bg-secondary kenburns-parent">
             {/* Team color gradient backdrop */}
             <div
               className="absolute inset-0 opacity-50"
@@ -282,7 +291,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
             />
           </div>
           {/* Bottom: meta */}
-          <div className={`${mobileStyles.portraitMeta} relative flex flex-col gap-1 p-4`}>
+          <div className="relative flex flex-col gap-1 p-4">
             <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-accent-amber">
               #{player.jersey} · {player.position}
             </p>
@@ -299,7 +308,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           </div>
           {/* Favorite + Share share one glass pill. Share embeds the canonical
               URL inside the text body so the link travels with the payload. */}
-          <div className={`${mobileStyles.portraitActions} absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg`}>
+          <div className="absolute top-2 right-2 z-10 flex items-center bg-bg-card/60 backdrop-blur-md rounded-lg">
             <FavoriteButton type="player" id={personId} />
             <ShareButton subject="player" text={`${fullName} — ${playerIndexLabel(snapshot.provenance, locale)} · ${playerIndexStat(player.pts)} PPG · ${playerIndexStat(player.reb)} RPG · ${playerIndexStat(player.ast)} APG | NBA Tracker\nhttps://nba.xpy.me/player/${personId}`} />
           </div>

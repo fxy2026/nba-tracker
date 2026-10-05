@@ -149,3 +149,34 @@
 @media(prefers-reduced-motion:reduce) { .explorer *, .explorer *::before, .explorer *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 
 @media(max-width:800px) { .zoneVisual { display:block; max-width:560px; margin-inline:auto; } .zoneLegend { padding:18px 0 12px; } .zoneLegendTitle { font-size:12px; } .zoneLegendSubtitle { margin-top:3px; font-size:11px; } .zoneLegendBins { grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; margin-top:13px; } .zoneLegendBins > span { min-width:0; flex-direction:column; gap:7px; font-size:11px; white-space:normal; text-align:center; } .zoneLegendBins > span > span { min-height:2.8em; line-height:1.4; } .zoneLegendBins i { width:100%; height:8px; border-radius:2px; } .zoneBoundaryKey { border:0; padding-top:0; margin-top:15px; font-size:10px; } .zoneVisual > .microcopy { font-size:11px; line-height:1.75; margin-top:2px; } }
+
+/* Compact player-panel treatment only. Other explorers and desktop stay unchanged. */
+@media (max-width: 639px) {
+  :global([data-player-panel]) .explorer { --map-bg:var(--bg-primary); --map-soft:var(--bg-secondary); --map-border:var(--border); --map-ink:var(--text-primary); --map-muted:var(--text-secondary); border:0; border-radius:0; padding:0; background:transparent; }
+  :global(html[data-theme='dark'] [data-player-panel]) .explorer { --map-line:#8c9fa7; --map-strong:#c1d5d9; --map-density:#b9dfd5; --map-court:#15232c; }
+  :global([data-player-panel]) .header { gap:12px; margin-bottom:14px; }
+  :global([data-player-panel]) .header h2 { font-size:17px; font-weight:700; letter-spacing:-.025em; }
+  :global([data-player-panel]) .eyebrow, :global([data-player-panel]) .subtitle { display:none; }
+  :global([data-player-panel]) .filters { gap:8px; }
+  :global([data-player-panel]) .filters .seasonSelect { min-height:46px; border-radius:9px; background:var(--bg-card); font-size:12px; font-weight:550; }
+  :global([data-player-panel]) .segments { border:0; padding:2px; border-radius:9px; }
+  :global([data-player-panel]) .segments button { min-height:44px; }
+  :global([data-player-panel]) .segments button[aria-pressed='true'] { background:var(--bg-card); box-shadow:0 1px 3px #0000000d; }
+  :global([data-player-panel]) .stats { padding:14px 0; margin-bottom:14px; }
+  :global([data-player-panel]) .stat { padding-left:clamp(8px, 3vw, 14px); }
+  :global([data-player-panel]) .stat:first-child { padding-left:0; }
+  :global([data-player-panel]) .stat strong { font-size:clamp(22px, 7vw, 27px); font-weight:650; }
+  :global([data-player-panel]) .stat small { font-size:10px; margin-top:4px; }
+  :global([data-player-panel]) .modes { border:0; padding:3px; border-radius:10px; }
+  :global([data-player-panel]) .modes button[aria-pressed='true'] { background:var(--bg-card); box-shadow:0 1px 4px #00000012; }
+  :global([data-player-panel]) .modes svg { display:block; width:14px; height:14px; }
+  :global([data-player-panel]) .courtWrap { border:1px solid var(--map-border); border-radius:12px; }
+  :global([data-player-panel]) .courtLine > path, :global([data-player-panel]) .courtLine > rect { vector-effect:non-scaling-stroke; stroke-width:1; }
+  :global([data-player-panel]) .zoneCourtLine > path, :global([data-player-panel]) .zoneCourtLine > rect { stroke-width:1.2; }
+  :global([data-player-panel]) .legend { font-size:11px; color:var(--map-ink); padding-top:13px; }
+  :global([data-player-panel]) .swatches i { width:19px; height:9px; }
+  :global([data-player-panel]) .microcopy { font-size:11px; line-height:1.7; }
+  :global([data-player-panel]) .coverage { border:0; border-left:2px solid var(--map-border); border-radius:0; background:transparent; margin-top:16px; padding:4px 0 4px 11px; font-size:11px; }
+  :global([data-player-panel]) .scope { padding-top:4px; margin-top:12px; }
+  :global([data-player-panel]) .scope summary { font-size:12px; font-weight:550; }
+}

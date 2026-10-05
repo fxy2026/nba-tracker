@@ -16,13 +16,16 @@
   .shell[data-player-panel="games"] .part:not([data-profile-part="games"]),
   .shell[data-player-panel="news"] .part:not([data-profile-part="news"]),
   .shell[data-player-panel="details"] .part:not([data-profile-part="details"]) { display: none; }
-  .tabs { display: flex; position: sticky; scroll-margin-top: var(--site-header-height, 48px); top: var(--site-header-height, 48px); z-index: 20; gap: 5px; margin: 16px -4px 0; padding: 0 4px; border-bottom: 1px solid var(--border); background: var(--bg-primary); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .tabs { display: flex; position: sticky; scroll-margin-top: var(--site-header-height, 48px); top: var(--site-header-height, 48px); z-index: 20; gap: 4px; margin: 10px -4px 0; padding: 0 4px; border-bottom: 1px solid var(--border); background-color: var(--bg-primary); background-image: linear-gradient(to right, var(--bg-primary) 30%, transparent), linear-gradient(to left, var(--bg-primary) 30%, transparent), linear-gradient(to right, var(--border), transparent), linear-gradient(to left, var(--border), transparent); background-position: left center, right center, left center, right center; background-size: 20px 100%, 20px 100%, 10px 100%, 10px 100%; background-repeat: no-repeat; background-attachment: local, local, scroll, scroll; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
-  .tabs button { position: relative; flex: 1 0 auto; min-width: 53px; min-height: 52px; padding: 12px 9px; font-size: 15px; font-weight: 600; color: var(--text-secondary); touch-action: manipulation; cursor: pointer; }
-  .tabs button[aria-selected="true"] { color: var(--text-primary); }
-  .tabs button[aria-selected="true"]::after { content: ""; position: absolute; bottom: 0; left: 11px; right: 11px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent-amber); }
+  .tabs button { position: relative; flex: 1 0 auto; min-width: 52px; min-height: 48px; padding: 12px 10px; font-size: 14px; font-weight: 550; color: var(--text-secondary); touch-action: manipulation; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--text-primary); font-weight: 750; }
+  .tabs button[aria-selected="true"]::after { content: ""; position: absolute; bottom: 0; left: calc(50% - 10px); width: 20px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent-amber); }
   .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 8px; }
   .part > section, .part > div { margin-top: 18px; }
+  .shell :global(.glass-tile) { border-radius: 14px; box-shadow: none; background: var(--bg-card); }
+  .shell :global(.glass-tile)::before { background: none; }
+  .shell :global(.glass-tile):hover { transform: none; }
 }
 
 @media (min-width: 640px) {

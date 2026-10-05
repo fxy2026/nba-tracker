@@ -1,5 +1,6 @@
 import PlayerProfilePanels, { PlayerProfilePart, PlayerDesktopOnly, PlayerDeferred } from "./PlayerProfilePanels";
 import PlayerMobileIdentity from "./PlayerMobileIdentity";
+import mobileStyles from "./player-mobile.module.css";
 import PlayerHonors from "./PlayerHonors";
 import { getAccolades } from "@/lib/playerAccolades";
 import Link from "next/link";
@@ -56,7 +57,7 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
       {!historicalCareer && <p className="mt-3 text-sm text-text-secondary">{isZh ? "完整逐赛季生涯表暂未收录。不使用投篮档案覆盖范围推算出场数、场均数据或生涯年限。" : "A complete season-by-season career table has not been recorded. Shot-archive coverage is not used to infer games played, per-game averages or career length."}</p>}
       {iconicSeasons.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{iconicSeasons.map(season => <Link key={season.id} href={`/compare?p1=${encodeURIComponent(season.id)}`} className="chip min-h-11 inline-flex items-center">{season.seasonYear} · {isZh ? "代表赛季" : "Featured season"}</Link>)}</div>}
     </section>;
-  return <div className="max-w-6xl mx-auto px-4 py-6" lang={isZh ? "zh-CN" : "en"}>
+  return <div className={`${mobileStyles.page} max-w-6xl mx-auto px-4 py-6`} lang={isZh ? "zh-CN" : "en"}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     <RecentVisitTracker kind="player" id={String(player.id)} label={player.name} />
     <PlayerDesktopOnly><Breadcrumbs items={[{ label: isZh ? "球员" : "Players", href: "/search" }, { label: player.name }]} />
@@ -89,10 +90,10 @@ export default function ArchivedPlayerProfile({ player, locale, catalog, initial
       panels={accolades ? ["data", "shooting", "honors", "career", "details"] : ["data", "shooting", "career", "details"]}
       header={<PlayerMobileIdentity id={player.id} name={player.name} subtitle={isZh ? "已收录球员身份" : "Recorded player identity"} source={sourceLabel} locale={locale} />}>
     <PlayerProfilePart panel="data" mobileOnly>
-      <section className="glass-tile p-4">
+      <section className={mobileStyles.archiveSummary}>
         <h2 className="text-base font-semibold">{isZh ? "已收录数据" : "Available records"}</h2>
         <p className="mt-2 text-xs text-text-secondary">{historicalCareer ? (isZh ? "逐赛季记录见生涯页；各赛事类型及来源分别标注。" : "Season-by-season records are in Career, with competition types and sources labelled separately.") : (isZh ? "以已收录档案为准。缺失记录不代表零出场或零次出手。" : "Based on available archives. Missing records do not imply zero games or zero attempts.")}</p>
-        {legend && <><p className="mt-4 text-xs text-text-secondary">{isZh ? "本站历史生涯摘要" : "Curated historical career summary"}</p><dl className="mt-2 grid grid-cols-3 gap-2">{[["PPG", legend.ppg], ["RPG", legend.rpg], ["APG", legend.apg]].map(([label, value]) => <div key={label} className="rounded-lg bg-bg-secondary p-3"><dt className="text-xs text-text-secondary">{label}</dt><dd className="mt-1 text-2xl font-mono">{Number(value).toFixed(1)}</dd></div>)}</dl></>}
+        {legend && <><p className="mt-4 text-xs text-text-secondary">{isZh ? "本站历史生涯摘要" : "Curated historical career summary"}</p><dl className={mobileStyles.archiveMetrics}>{[["PPG", legend.ppg], ["RPG", legend.rpg], ["APG", legend.apg]].map(([label, value]) => <div key={label} className={mobileStyles.archiveMetric}><dt className="text-xs text-text-secondary">{label}</dt><dd className="mt-1 text-2xl font-mono">{Number(value).toFixed(1)}</dd></div>)}</dl></>}
         {player.sourceYears && <p className="mt-4 text-xs text-text-secondary">{isZh ? "NBA 名录赛季起始年" : "NBA indexed season-start years"}: {player.sourceYears.from} → {player.sourceYears.to}</p>}
         {player.shotCoverage && <p className="mt-3 text-xs text-text-secondary">{isZh ? "投篮档案覆盖，不代表生涯起止年份" : "Shot archive coverage, not career dates"}: {player.shotCoverage.firstSeason} → {player.shotCoverage.lastSeason}</p>}
       </section>
