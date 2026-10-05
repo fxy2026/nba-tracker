@@ -1,3 +1,4 @@
+import { withEspnPlayerLogGamePages } from "./player-game-log-links";
 import { OFFICIAL_PLAYER_IDENTITIES } from "./official-player-registry";
 import { parseEspnPlayerGameLog } from "./espn-player-game-log";
 import type { PlayerGameLogData } from "./player-game-log-data";
@@ -93,5 +94,6 @@ export async function fetchEspnPlayerGameLog(identity: Pick<PlayerGameLogData, "
   if (!espnId || signal.aborted) return null;
   const raw = await fetchPublicLogJson(`https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${espnId}/gamelog?season=${Number(identity.season.slice(0, 4)) + 1}`, signal);
   if (signal.aborted) return null;
-  return parseEspnPlayerGameLog(raw, identity, espnId, new Date().toISOString());
+  const data = parseEspnPlayerGameLog(raw, identity, espnId, new Date().toISOString());
+  return data ? withEspnPlayerLogGamePages(data, raw) : null;
 }

@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { parseNbaPlayerGameLog } from "./player-game-log-data";

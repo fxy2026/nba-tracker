@@ -5,6 +5,8 @@ export type PlayerLogStat = typeof PLAYER_LOG_STATS[number];
 export interface PlayerLogRow extends Record<PlayerLogStat, number | null> {
   id: string;
   nbaGameId: string | null;
+  /** Verified available on-site final summary; separate from a provider NBA ID. */
+  internalGameId?: string | null;
   date: string;
   team: string;
   opponent: string;
@@ -50,6 +52,7 @@ export function normalizePlayerGameLog(raw: unknown, identity: Pick<PlayerGameLo
       || row.date < `${identity.season.slice(0, 4)}-07-01` || row.date > `${Number(identity.season.slice(0, 4)) + 1}-10-31`
       || row.team === row.opponent || typeof row.home !== "boolean" || !["W", "L", null].includes(row.wl as string | null)
       || !safeUrl(row.sourceUrl) || !(row.nbaGameId === null || (typeof row.nbaGameId === "string" && new RegExp(`^${prefix}\\d{5}$`).test(row.nbaGameId)))) return null;
+    if (row.internalGameId !== undefined && row.internalGameId !== null && (typeof row.internalGameId !== "string" || !new RegExp(`^${prefix}\\d{5}$`).test(row.internalGameId) || (row.nbaGameId !== null && row.nbaGameId !== row.internalGameId))) return null;
     for (const key of PLAYER_LOG_STATS) {
       const value = row[key];
       if (value !== null && (typeof value !== "number" || !Number.isFinite(value) || (key !== "plusMinus" && value < 0)

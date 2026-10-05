@@ -1,3 +1,4 @@
+import { withNbaPlayerLogGamePages } from "@/lib/player-game-log-links";
 import { NextRequest, NextResponse } from "next/server";
 import { parsePlayerId } from "@/lib/player-identity";
 import { parseNbaPlayerGameLog, validLogSeason, type PlayerGameLogData, type PlayerLogSeasonType } from "@/lib/player-game-log-data";
@@ -37,7 +38,8 @@ export async function GET(request: NextRequest) {
   };
   const nba = record((async () => {
     const result = await fetchStatsJson(`${STATS_BASE}/playergamelog?${query}`, { key: "playergamelog", timeoutMs: 3500, revalidate: 3600, signal });
-    return result?.ok && !signal.aborted ? parseNbaPlayerGameLog(result.data, identity, new Date().toISOString()) : null;
+    const data = result?.ok && !signal.aborted ? parseNbaPlayerGameLog(result.data, identity, new Date().toISOString()) : null;
+    return data ? withNbaPlayerLogGamePages(data) : null;
   })());
   let onAbort: () => void = () => {};
   const aborted = new Promise<null>(resolve => { onAbort = () => resolve(null); if (signal.aborted) onAbort(); else signal.addEventListener("abort", onAbort, { once: true }); });

@@ -1,0 +1,80 @@
+[
+  {
+    "espnId": "401810664",
+    "nbaId": "0022500809",
+    "home": "LAL",
+    "away": "LAC",
+    "homeScore": 125,
+    "awayScore": 122,
+    "espnUTC": "2026-02-21T03:15:00Z",
+    "nbaUTC": "2026-02-21T03:00:00Z",
+    "source": "https://www.nba.com/game/lac-vs-lal-0022500809",
+    "nbaHtmlSha256": "e6a510c598abaed8613d8d58141e1a8dcc7280bcc85f4793cb8a11d3e779a7db",
+    "season": "2025-26",
+    "seasonType": "Regular Season",
+    "reviewedOn": "2026-10-05",
+    "nbaEvidencePath": "props.pageProps.game",
+    "espnArchive": {
+      "playerId": 2544,
+      "espnId": "1966",
+      "season": "2025-26",
+      "file": "2544-2025-26.json.gz",
+      "sha256": "804e3a587e947ddaf4d9c0f43ef756e2d047547d75a6cbdbdd6a97d9d9f52f3b",
+      "retrievedAt": "2026-10-05T07:45:35.816145+00:00",
+      "retrievalPrecision": "exact",
+      "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2026"
+    }
+  },
+  {
+    "espnId": "401809240",
+    "nbaId": "0022500011",
+    "home": "GSW",
+    "away": "DAL",
+    "homeScore": 126,
+    "awayScore": 116,
+    "espnUTC": "2025-12-25T22:17:00Z",
+    "nbaUTC": "2025-12-25T22:00:00Z",
+    "source": "https://www.nba.com/game/dal-vs-gsw-0022500011",
+    "nbaHtmlSha256": "5280f0e6c03fe2c5f71d137805b7e9e1ec36236d1e131d226e5c1b7eadefeaf6",
+    "season": "2025-26",
+    "seasonType": "Regular Season",
+    "reviewedOn": "2026-10-05",
+    "nbaEvidencePath": "props.pageProps.game",
+    "espnArchive": {
+      "playerId": 201939,
+      "espnId": "3975",
+      "season": "2025-26",
+      "file": "201939-2025-26.json.gz",
+      "sha256": "b6c8a07205d522cf81bc53d1181c2200dd5fb4832bbeaab7e5dca638e19b8f8e",
+      "retrievedAt": "2026-10-05T07:45:35.833491+00:00",
+      "retrievalPrecision": "exact",
+      "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2026"
+    }
+  },
+  {
+    "espnId": "401809237",
+    "nbaId": "0022500006",
+    "home": "GSW",
+    "away": "DEN",
+    "homeScore": 137,
+    "awayScore": 131,
+    "espnUTC": "2025-10-24T02:17:00Z",
+    "nbaUTC": "2025-10-24T02:00:00Z",
+    "source": "https://www.nba.com/game/den-vs-gsw-0022500006",
+    "nbaHtmlSha256": "2d5a54a404784f53049b875d7426506b79eaa475e957dbc33b2b78c6f1995432",
+    "season": "2025-26",
+    "seasonType": "Regular Season",
+    "reviewedOn": "2026-10-05",
+    "nbaEvidencePath": "props.pageProps.game",
+    "espnArchive": {
+      "playerId": 201939,
+      "espnId": "3975",
+      "season": "2025-26",
+      "file": "201939-2025-26.json.gz",
+      "sha256": "b6c8a07205d522cf81bc53d1181c2200dd5fb4832bbeaab7e5dca638e19b8f8e",
+      "retrievedAt": "2026-10-05T07:45:35.833491+00:00",
+      "retrievalPrecision": "exact",
+      "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/3975/gamelog?season=2026"
+    }
+  }
+]

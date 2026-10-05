@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import catalog from "@/data/player-game-log-archives/manifest.json";
+import { withEspnPlayerLogGamePages } from "./player-game-log-links";
 import { parseEspnPlayerGameLog } from "./espn-player-game-log";
 import { getReviewedCareerArchive } from "./player-career-archive";
 import { getHistoricalCareerArchive } from "./historical-career-archive";
@@ -26,7 +27,8 @@ export async function getPlayerGameLogArchive(playerId: number, season: string, 
   try {
     const bytes = gunzipSync(await readFile(join(process.cwd(), "src/data/player-game-log-archives", entry.file)));
     if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256) return null;
-    const data = parseEspnPlayerGameLog(JSON.parse(bytes.toString("utf8")), { playerId, season, seasonType }, entry.espnId, entry.retrievedAt, true);
-    return data ? withPlayerLogCoverage(data) : null;
+    const raw = JSON.parse(bytes.toString("utf8"));
+    const data = parseEspnPlayerGameLog(raw, { playerId, season, seasonType }, entry.espnId, entry.retrievedAt, true);
+    return data ? withPlayerLogCoverage(withEspnPlayerLogGamePages(data, raw)) : null;
   } catch { return null; }
 }

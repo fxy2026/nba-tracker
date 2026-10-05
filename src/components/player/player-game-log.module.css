@@ -1,0 +1,57 @@
+.mobileGames, .mobileAverages { display: none; }
+.desktopGames { min-width: 0; }
+.desktopFallback summary { cursor: pointer; min-height: 44px; list-style: none; }
+.desktopFallback summary::-webkit-details-marker { display: none; }
+.desktopFallback[open] { white-space: normal; width: min(280px, 70vw); }
+.detailsContent { padding: 0 12px 8px; }
+.shootingStats, .secondaryStats { display: grid; gap: 10px; padding: 12px 0; margin: 0; }
+.shootingStats { grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--border); }
+.secondaryStats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.shootingStats dt, .secondaryStats dt { font-size: 10px; color: var(--text-secondary); }
+.shootingStats dd, .secondaryStats dd { margin: 3px 0 0; font-size: 13px; font-weight: 550; font-variant-numeric: tabular-nums; }
+.shootingStats dd span { color: var(--text-secondary); font-size: 11px; font-weight: 400; }
+.unavailable { font-size: 11px; line-height: 1.6; color: var(--text-secondary); }
+.sourceLink { display: inline-flex; align-items: center; min-height: 44px; font-size: 11px; color: var(--accent); }
+
+@media (max-width: 639px) {
+  .desktopGames { display: none; }
+  .mobileAverages { display: block; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); }
+  .mobileAverages > summary { min-height: 44px; padding: 12px; font-size: 12px; font-weight: 550; cursor: pointer; }
+  .mobileAverages > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 10px; }
+  .mobileGames { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; min-width: 0; }
+  .gameCard { min-width: 0; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); overflow: hidden; }
+  .cardLink, .cardMain { display: block; padding: 10px 12px; }
+  .cardLink { transition: background-color 120ms ease; }
+  .cardLink:hover { background: var(--bg-hover); }
+  .cardMeta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 10px; line-height: 18px; color: var(--text-secondary); }
+  .cardMeta time { font-variant-numeric: tabular-nums; }
+  .result { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; padding-inline: 6px; border-radius: 4px; font-size: 10px; font-weight: 650; letter-spacing: .05em; }
+  .win { color: var(--text-primary); background: color-mix(in srgb, var(--success) 10%, transparent); }
+  .loss { color: var(--text-primary); background: color-mix(in srgb, var(--danger) 9%, transparent); }
+  .cardBody { display: flex; align-items: center; gap: 8px; margin-top: 7px; min-height: 36px; }
+  .opponent { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; }
+  .teamLogo { display: flex; align-items: center; flex: 0 0 30px; }
+  .opponent strong { display: block; font-size: 14px; font-weight: 650; letter-spacing: -.025em; white-space: nowrap; }
+  .venue { color: var(--text-secondary); font-size: 10px; font-weight: 400; }
+  .homeAway { display: block; font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .coreStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; flex: 0 0 112px; text-align: center; margin: 0; }
+  .coreStats dt { font-size: 9px; line-height: 12px; font-weight: 500; letter-spacing: .04em; color: var(--text-secondary); }
+  .coreStats dd { margin: 3px 0 0; font-size: 20px; line-height: 22px; letter-spacing: -.04em; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .coreStats > :first-child dd { color: var(--accent-amber); }
+  .gameArrow { display: flex; color: var(--text-secondary); flex: 0 0 14px; }
+  .cardDisclosure > summary { min-height: 44px; cursor: pointer; list-style: none; }
+  .cardDisclosure > summary::-webkit-details-marker { display: none; }
+  .detailsLabel { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 10px; font-variant-numeric: tabular-nums; }
+  .detailsLabel > span { display: flex; align-items: center; gap: 6px; }
+  .detailsLabel > :last-child { color: var(--accent); font-size: 11px; }
+  .cardDisclosure[open] > summary .disclosureArrow { transform: rotate(180deg); }
+  .cardDisclosure[open] > summary .detailsLabel { border-bottom: 1px solid var(--border); }
+  .cardLink:focus-visible, .cardDisclosure > summary:focus-visible, .sourceLink:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 10px; }
+}
+@media (max-width: 359px) {
+  .cardLink, .cardMain { padding-inline: 10px; }
+  .coreStats { flex-basis: 96px; gap: 8px; }
+  .opponent { gap: 5px; }
+  .cardBody { gap: 5px; }
+  .gameArrow { flex-basis: 10px; }
+}

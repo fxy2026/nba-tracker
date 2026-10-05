@@ -34,6 +34,7 @@ vi.mock("react", async original => ({
   },
 }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: runtime.locale }) }));
+vi.mock("@/components/TeamLogo", () => ({ default: ({ tricode }: { tricode: string }) => <span>{tricode}</span> }));
 vi.mock("next/link", () => ({ default: ({ children, ...props }: Props) => createElement("a", props, children) }));
 
 import PlayerProfilePanels, { commitPlayerProfileUrl, PlayerProfilePart } from "./PlayerProfilePanels";
