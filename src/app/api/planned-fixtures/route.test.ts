@@ -1,3 +1,4 @@
+vi.mock("@/lib/espn-scoreboard-server", async original => ({ ...await original<typeof import("@/lib/espn-scoreboard-server")>(), getEspnDailyScoreboard: vi.fn(async () => undefined) }));
 import { beforeEach, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 const state = vi.hoisted(() => ({ coverage: null as unknown, schedule: [] as unknown[], sourceDate: null as string | null, live: [] as unknown[] }));

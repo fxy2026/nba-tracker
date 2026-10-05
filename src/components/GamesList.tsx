@@ -19,6 +19,8 @@ import ScoreTicker from "./ScoreTicker";
 import LiveScoreRefresher from "./LiveScoreRefresher";
 import TodayStars from "./TodayStars";
 import EmptyState from "./EmptyState";
+import EspnScoreboard from "./EspnScoreboard";
+import { normalizeEspnScoreboardView, type EspnScoreboardView } from "@/lib/espn-scoreboard";
 import { AlertCircle } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -38,7 +40,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
   // Keep implicit-local identity stable across SSR/hydration. Resolve the actual
   // browser timezone only in fetchGames, as before.
   const requestKey = `${selectedDate}:${timeZone ?? "local"}`;
-  const [{ games: responseGames, navigation, planned, key: responseKey }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; key: string }>({ games: initialGames || [], navigation: null, planned: null, key: requestKey });
+  const [{ games: responseGames, navigation, planned, espn: responseEspn, key: responseKey }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; espn: EspnScoreboardView | null; key: string }>({ games: initialGames || [], navigation: null, planned: null, espn: null, key: requestKey });
   const [loading, setLoading] = useState(!initialGames);
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const initialFetchDone = useRef(!!initialGames?.length);
@@ -48,6 +50,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
   const hasMatchingResults = responseKey === requestKey;
   const games = useMemo(() => hasMatchingResults ? responseGames : [], [responseGames, hasMatchingResults]);
   const error = errorKey === requestKey;
+  const espn = hasMatchingResults && games.length === 0 ? responseEspn : null;
 
   const fetchGames = useCallback(async (date: string) => {
     const request = requests.begin();
@@ -65,7 +68,15 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
         const order = (s: number) => s === 2 ? 0 : s === 1 ? 1 : 2;
         return order(a.gameStatus) - order(b.gameStatus);
       });
-      setResults({ games: rawGames, planned: gamesJson.planned ? normalizePlannedFixtureView(gamesJson.planned, { mode: "day", date, timeZone: timeZone ?? localTz() }) : null, navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, key });
+      const nextEspn = gamesJson.espn ? normalizeEspnScoreboardView(gamesJson.espn, date, timeZone ?? localTz()) : null;
+      const providerFailed = rawGames.length === 0 && !!gamesJson.espn && (!nextEspn || nextEspn.state === "unavailable");
+      if (providerFailed) setErrorKey(key);
+      setResults(previous => ({ games: rawGames,
+        // A failed provider refresh must not erase last-known same-scope scores
+        // or stop their refresh loop. The existing failure banner marks them stale.
+        espn: providerFailed && previous.key === key && previous.espn?.state === "ready" && previous.espn.games.length > 0 ? previous.espn : nextEspn,
+        planned: gamesJson.planned ? normalizePlannedFixtureView(gamesJson.planned, { mode: "day", date, timeZone: timeZone ?? localTz() }) : null,
+        navigation: rawGames.length === 0 ? gamesJson.navigation ?? null : null, key }));
     } catch {
       if (request.isCurrent()) setErrorKey(key);
     } finally {
@@ -142,7 +153,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
 
   // Full-screen error when this scope has nothing to show. A failed same-scope
   // refresh keeps its scores with a soft banner, never another date/zone's scores.
-  if (error && games.length === 0) {
+  if (error && games.length === 0 && !espn) {
     return (
       <div className="mt-6">
         <EmptyState
@@ -166,7 +177,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
       {error && (
         <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30 text-warning text-xs">
           <AlertCircle size={14} className="shrink-0" />
-          <span className="flex-1">{t.home.refreshFailed}</span>
+          <span className="flex-1">{espn?.games.length ? (isZh ? "刷新失败，正在显示上次成功获取的 ESPN 比分。" : "Refresh failed. Showing the last successfully retrieved ESPN scores.") : t.home.refreshFailed}</span>
           <button
             onClick={() => { fetchGames(selectedDate); }}
             className="font-medium underline decoration-dashed hover:no-underline"
@@ -175,7 +186,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
           </button>
         </div>
       )}
-      <LiveScoreRefresher hasLiveGames={hasLiveGames} onRefresh={refreshGames} />
+      <LiveScoreRefresher hasLiveGames={hasLiveGames || !!espn?.games.some(game => game.status === "live")} onRefresh={refreshGames} />
 
       {/* Live score ticker (only when live games — high-signal real-time element) */}
       {hasLiveGames && (
@@ -283,6 +294,8 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
         </Link>
       )}
 
+      {espn?.state === "unavailable" && <EspnScoreboard view={espn} />}
+
       {/* Game cards by status — each group is its own section divider */}
       {games.length > 0 ? (
         <div className="space-y-6 mt-6">
@@ -356,6 +369,8 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
             </div>
           )}
         </div>
+      ) : espn?.state === "ready" ? (
+        <EspnScoreboard view={espn} />
       ) : hasMatchingResults && planned?.state === "snapshot" ? (
         <PlannedFixtureSection view={planned} />
       ) : (
@@ -417,7 +432,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
         </div>
       )}
 
-      {isToday && <TodayStars />}
+      {isToday && !espn && <TodayStars />}
     </>
   );
 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGamesByDate, getTodayScoreboard, getFullSchedule, getScheduleCoverage, getScoreboardSourceDate, formatDate, type ScheduleDate, type ScheduleGame } from "@/lib/api";
 
+import { getEspnDailyScoreboard, localDayUtcWindow } from "@/lib/espn-scoreboard-server";
+import { currentSeason } from "@/lib/constants";
 import { getPlannedFixtureView } from "@/lib/planned-fixtures-server";
 import { validCalendarDate, validTimeZone } from "@/lib/planned-fixtures";
 import { getScheduleDayView, type ScheduleNavigation } from "@/lib/schedule-navigation";
@@ -89,6 +91,7 @@ export async function GET(request: NextRequest) {
       // transient CDN error instead of 500ing the endpoint (mirrors the tz path).
       const liveGames = await getTodayScoreboard().catch(() => []);
       canonicalDayAvailable = getScoreboardSourceDate(liveGames) === etToday;
+      if (canonicalDayAvailable) canonicalDatesET.push(etToday);
       games = liveGames.map((g) => ({
         gameId: g.gameId,
         gameCode: g.gameCode,
@@ -104,14 +107,35 @@ export async function GET(request: NextRequest) {
       games = await getGamesByDate(date);
     }
 
-    const cacheControl = isToday
+    // Whole-season metadata (or one regular-season game) does not prove
+    // preseason coverage. Only explicitly empty dated rows from the matching
+    // validated NBA schedule establish additional empty ET days.
+    const coverage = getScheduleCoverage(schedule);
+    if (games.length === 0 && coverage?.season === currentSeason(new Date(`${date}T12:00:00Z`))) {
+      const requiredDates = localDayUtcWindow(date, tz ?? "America/New_York").datesET;
+      for (const day of schedule) {
+        if (day.games.length !== 0) continue;
+        const [month, dayOfMonth, year] = day.gameDate.slice(0, 10).split("/");
+        const emptyDate = `${year}-${month}-${dayOfMonth}`;
+        if (requiredDates.includes(emptyDate) && !canonicalDatesET.includes(emptyDate)) canonicalDatesET.push(emptyDate);
+      }
+      canonicalDayAvailable ||= requiredDates.length > 0 && requiredDates.every(key => canonicalDatesET.includes(key));
+    }
+
+    // Keep provider-native IDs out of `data`: all existing detail, stars, ticker,
+    // analytics and box-score consumers treat those IDs as NBA identities.
+    const espn = games.length === 0 && (tz || isToday) && !canonicalDayAvailable
+      ? await getEspnDailyScoreboard(date, tz ?? "America/New_York", canonicalDatesET, request.signal)
+      : undefined;
+
+    const cacheControl = espn?.state === "unavailable" ? "no-store" : isToday || espn?.games.some(game => game.status === "live")
       ? "public, s-maxage=30, stale-while-revalidate=120"
       : date < localToday
       ? "public, s-maxage=3600, stale-while-revalidate=86400"
       : "public, s-maxage=300, stale-while-revalidate=3600";
 
     return NextResponse.json(
-      { data: games, ...(games.length === 0 && navigation ? { navigation } : {}), ...(games.length === 0 && tz ? { planned: getPlannedFixtureView({ mode: "day", date, timeZone: tz }, schedule, getScheduleCoverage(schedule), canonicalDayAvailable, canonicalDatesET) } : {}) },
+      { data: games, ...(espn ? { espn } : {}), ...(games.length === 0 && navigation ? { navigation } : {}), ...(games.length === 0 && tz ? { planned: getPlannedFixtureView({ mode: "day", date, timeZone: tz }, schedule, getScheduleCoverage(schedule), canonicalDayAvailable, canonicalDatesET) } : {}) },
       { headers: { "Cache-Control": cacheControl } }
     );
   } catch {

@@ -1,3 +1,4 @@
+vi.mock("@/lib/espn-scoreboard-server", async original => ({ ...await original<typeof import("@/lib/espn-scoreboard-server")>(), getEspnDailyScoreboard: vi.fn(async () => undefined) }));
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { NbaGame, ScheduleDate, ScheduleGame } from "@/lib/api";

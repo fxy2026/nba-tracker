@@ -35,6 +35,7 @@ vi.mock("react", async original => {
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: runtime.locale, t: getTranslations(runtime.locale) }) }));
 vi.mock("@/lib/timezone", () => ({ localTz: runtime.localTz }));
 import GamesList from "./GamesList";
+import EspnScoreboard from "./EspnScoreboard";
 import GameCard from "./GameCard";
 import LiveScoreRefresher from "./LiveScoreRefresher";
 import ScoreTicker from "./ScoreTicker";
@@ -393,4 +394,56 @@ describe("scores belong to the selected timezone scope", () => {
     expect(error.props.title).toBe(getTranslations(locale).home.failedToLoad);
     expect(error.props.description).toBe(locale === "zh" ? "网络可能较慢，或数据源暂时不可用。" : "Network may be slow or the data source is temporarily unavailable.");
   });
+});
+
+describe('ESPN scores remain separate from NBA identities', () => {
+  const espn = () => ({ source: 'espn', state: 'ready', date: '2026-10-05', timeZone: 'Asia/Shanghai', retrievedAtUTC: '2026-10-05T05:19:00Z', games: [{
+    source: 'espn', eventId: '401914127', key: 'espn:401914127', tipoffUTC: '2026-10-04T23:00:00Z', seasonYear: 2027, seasonType: 1, status: 'live', statusText: 'Q2',
+    home: { id: '7', name: 'Denver Nuggets', abbreviation: 'DEN', tricode: 'DEN', score: 97 }, away: { id: '26', name: 'Utah Jazz', abbreviation: 'UTAH', tricode: 'UTA', score: 109 },
+    sourceUrl: 'https://www.espn.com/nba/game/_/gameId/401914127/jazz-nuggets',
+  }] });
+  const props = { selectedDate: '2026-10-05', timeZone: 'Asia/Shanghai', isToday: true };
+  it('shows fallback, enables existing live refresh, and never supplies ESPN IDs to NBA widgets', async () => {
+    render(props); scores()[0].reply.resolve(response({ data: [], espn: espn() })); await settle();
+    const view = render(props); expect(view.some(node => node.type === EspnScoreboard)).toBe(true);
+    expect(view.some(node => node.type === GameCard || node.type === ScoreTicker || node.type === TodayStars || node.type === PlannedFixtureSection)).toBe(false);
+    expect(view.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    expect(view.some(node => String(node.props.href).startsWith('/game/'))).toBe(false);
+  });
+  it('hides fallback immediately on date/timezone changes and ignores late old responses', async () => {
+    render(props); scores()[0].reply.resolve(response({ data: [], espn: espn() })); await settle();
+    expect(render(props).some(node => node.type === EspnScoreboard)).toBe(true);
+    const next = { ...props, timeZone: 'America/New_York' };
+    expect(render(next).some(node => node.type === EspnScoreboard)).toBe(false);
+    scores()[1].reply.resolve(response({ data: [], espn: espn() })); await settle();
+    expect(render(next).some(node => node.type === EspnScoreboard)).toBe(false);
+  });
+  it('retains same-scope ESPN scores through a failed refresh and lets recovered canonical data take precedence', async () => {
+    render(props); scores()[0].reply.resolve(response({ data: [], espn: espn() })); await settle();
+    refresh(render(props)); scores()[1].reply.reject(new Error('offline')); await settle();
+    const failed = render(props); expect(failed.some(node => node.type === EspnScoreboard)).toBe(true); expect(failed.some(node => String(node.props.children).includes('last successfully retrieved ESPN'))).toBe(true);
+    refresh(failed); scores()[2].reply.resolve(response({ data: [game('0012600010', 3)], espn: espn() })); await settle();
+    const recovered = render(props); expect(cardIds(recovered)).toEqual(['0012600010']); expect(recovered.some(node => node.type === EspnScoreboard)).toBe(false);
+  });
+});
+
+it('retains source scores on an HTTP-200 unavailable refresh, marks them stale, and keeps live polling', async () => {
+  const props = { selectedDate: '2026-10-05', timeZone: 'Asia/Shanghai', isToday: false };
+  const provider = { source: 'espn', state: 'ready', date: props.selectedDate, timeZone: props.timeZone, retrievedAtUTC: '2026-10-05T05:19:00Z', games: [{ source: 'espn', eventId: '401914127', key: 'espn:401914127', tipoffUTC: '2026-10-04T23:00:00Z', seasonYear: 2027, seasonType: 1, status: 'live', statusText: 'Q2', home: { id: '7', name: 'Denver Nuggets', abbreviation: 'DEN', tricode: 'DEN', score: 97 }, away: { id: '26', name: 'Utah Jazz', abbreviation: 'UTAH', tricode: 'UTA', score: 109 }, sourceUrl: null }] };
+  render(props); scores()[0].reply.resolve(response({ data: [], espn: provider })); await settle();
+  expect(render(props).find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+  refresh(render(props)); scores()[1].reply.resolve(response({ data: [], espn: { ...provider, state: 'unavailable', games: [] } })); await settle();
+  const stale = render(props); expect(stale.find(node => node.type === EspnScoreboard)?.props.view).toEqual(provider);
+  expect(stale.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+  expect(stale.some(node => String(node.props.children).includes('last successfully retrieved ESPN'))).toBe(true);
+});
+it('offers retry and keeps navigation when providers are unavailable on the first load', async () => {
+  const props = { selectedDate: '2026-10-05', timeZone: 'Asia/Shanghai', isToday: true };
+  const provider = { source: 'espn', state: 'unavailable', date: props.selectedDate, timeZone: props.timeZone, retrievedAtUTC: '2026-10-05T05:19:00Z', games: [] };
+  const navigation = { availableFrom: '2025-10-03', availableThrough: '2026-06-14', latestFinalDate: '2026-06-14', nextScheduledDate: null };
+  render(props); scores()[0].reply.resolve(response({ data: [], espn: provider, navigation })); await settle();
+  const failed = render(props); expect(failed.some(node => node.type === EspnScoreboard)).toBe(true);
+  expect(failed.find(node => node.type === ScheduleEmptyNavigation)?.props.navigation).toEqual(navigation);
+  const retry = failed.find(node => node.type === 'button' && node.props.children === en.common.retry)!;
+  expect(retry).toBeDefined(); (retry.props.onClick as () => void)(); expect(scores()).toHaveLength(2);
 });
