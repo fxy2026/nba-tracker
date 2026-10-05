@@ -1,0 +1,2567 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-05",
+  "sourceCommit": "506510340d768dbeba4b81aa8bdcd041ee016658",
+  "scope": "31 previously unassigned game snapshots, replaced by independently extracted official NBA final report records; no current-roster inference and no provider-to-NBA player-ID mapping.",
+  "priorVerifiedFiles": {
+    "0022500340.json": "dc6968671c785699400469e8dcf6b0944203505acc62e2be16b69802b4c4bb29",
+    "0022500961.json": "f538a91336b7b8c61a05fb1666f823af8e6b990d655759b757a3292228fca96c",
+    "0042500101.json": "ffb6e56fdc1a0f4e4ea15773d342c9281407d38cca97af2751d63b7e9e896120",
+    "0042500102.json": "a46dea0eed455de4166486567633e2f14ad5356ceefe113431dc4f73c9ba54b1",
+    "0042500103.json": "8b64214f6786a51760dd8aab677985b122fd88687d1c6885805167943dbe67e1",
+    "0042500104.json": "76261e58a4b67c7b408a636d5ab4e66815eeea61e7d6d773f03ac69d21ae8701",
+    "0042500105.json": "5c61eeb2c1b03da5f9bce68fde96720a982e62b591ca19ad7a3381e6dc37f2c3",
+    "0042500106.json": "e038ba55ad557ea0d7747379eef246c2414a89eb9b293b28fc6ab5c18968b49e",
+    "0042500107.json": "435f27c437ecb6d01c165c06731d8a0ad7c43b1ae0d13e433539798d4ebf9f10",
+    "0042500111.json": "1221ae58fec16afb70d25618e95c75caa7e93857279a50b371ec500eadc264b7",
+    "0042500112.json": "baa055c57339e1c42df6351d3445af4ba6124cf2402a84fc71faf82cb2317c18",
+    "0042500113.json": "5777fe654aaccfabab2c993b49e21663c308f232e58ae751180bf23e34060001",
+    "0042500114.json": "d71b82940f2bf459dbbc6f60080cf67c043aacdae978dbe1a7c167ac29e824ab",
+    "0042500115.json": "5ac7317c7ce62fa58cb1d874bf3ff82c762d9d95cc6c75ad4d85b8de832c3275",
+    "0042500116.json": "8f0b83636346c6c322e395a690594e9b7113a3fc96c016bffec2d5e8ee9e929b",
+    "0042500117.json": "6e5d45a34f106abac019b33eaadfaedf166fa13f481f33b97995bb20c6243064",
+    "0042500121.json": "c500d11eb67345fa7361ffe0083d8bc6376baba7be299e33e50e481f573f8ca7",
+    "0042500122.json": "dc0a33ebc663599c59cbff94ed281962bba572eb602341347153773baecb9a33",
+    "0042500123.json": "719968c61502b5b4aab3a46dd1e6bbe87418f3de22ff187d15d5535e23893e3a",
+    "0042500124.json": "81847b86440a6f931998458d9128d22a817c51364f3b7fbbc18799f460a8e171",
+    "0042500125.json": "6f041d76820be2ea3f3467f04b6e72cb3b91e21bd111c923665a436ea60541de",
+    "0042500126.json": "cd434fe4c667071c59adb34f18b761c164332436a694a1a8bc091499f93f21b9",
+    "0042500131.json": "07732f567d06ae776ac097f7d78010085232b430b6d30d0bd2eb06f4491839aa",
+    "0042500132.json": "62f21077db14ea2b0c398fc9dea245dd9d372311017fdf53c551a565e05eda44",
+    "0042500133.json": "d899c68f45b17e65b93fcb1d12ea0cc67fb2d7e35202e35806967df82b1a349d",
+    "0042500134.json": "65b00e68b5218b5bad055a15d957c78c8620d090f0ffa721bff985f2dd577771",
+    "0042500135.json": "8b867f1383d8e666e51de6871fd3ab48cae4b5830860c82265722cdbe9ddd5ce",
+    "0042500136.json": "348e1c790c0bd06d7b04e45a097e003ad5a114e9946b11b01893b6496261f2b4",
+    "0042500137.json": "987e5497fbe4bfc18f33fb58b54944a0def24f974a0f9b1dddf78fd613bac643",
+    "0042500141.json": "7fb44bf449e659dcd8e9cc13ffa8442c3942efe9abc4c313673a37dd64f1a37f",
+    "0042500142.json": "9cd9e858267dcaf0c18fa3792422afe142db6386780d96b9a3182101e9146899",
+    "0042500143.json": "1b83bd49c1ab2b446e1fc410a01bca04aea79f12e0e53a5327073b6ebca37e86",
+    "0042500144.json": "e63590c699b221d626a50b844e23d451470b915a76e6bbaab209a8a525bb97a0",
+    "0042500151.json": "5bce26210c3065814cbc27af3bc66ae41abd0c413e56980e2b71da0902158dcb",
+    "0042500152.json": "595a6d8ceb2df34843a8afc3e0e4ea2a633c1e93c029c8ff827ee5844bd38809",
+    "0042500153.json": "fe3f8e4b62169fd9561711e6735e131f491199f8b5b49d6a56014ddfc4f0b985",
+    "0042500154.json": "26abf1137c2eaac7b5f98cfc8be4b9ffbecb78a057d85080bbdbfdb830a88949",
+    "0042500155.json": "bd9712247e33f2e1c62031d4f0de7fa2270eb8da0b6fc44388232b134133840b",
+    "0042500161.json": "9b69c4a5b3b27a6af282088438d55dcdbd892ddc458f4847201c9e2d8333c325",
+    "0042500162.json": "74f34dd984d9676b7baac168d764c95d5daa25cc423f00642a6ecc97fa8209be",
+    "0042500163.json": "c8b57437f3cd4ebecfefb67ff61662f4ae8e9c8ca1deab371ea0e7b8c908a223",
+    "0042500164.json": "508e9658fef7e77c7f873973ab482b10af27285232130c68adfdd1dd263de970",
+    "0042500165.json": "b4d00fd50d6984c5cb77573a923cbde753ce1d7257fd00866f363daee694204c",
+    "0042500166.json": "d33bfde965f0cceb2ce607f7e6156f41714e15086c087ebd788db69f6d401d0b",
+    "0042500171.json": "bf18e5f06c1a9e1eb86d6be809aef9bf9093b708c7e1ae242f3ff1c0bdca8645",
+    "0042500172.json": "ef51070997c45b6742ac9a65533d9d055e148d57f63a5b334e5adfd6cdae0153",
+    "0042500173.json": "a178d801dd4c4dc8d7d327ce9ce75f4ccd458c59efb64a76075e34f32833748a",
+    "0042500174.json": "8f4cddb1336f93a194e624d9c4830f6c9a0f8a1636279e3076e1b7f43811d387",
+    "0042500175.json": "66ace90ee4b5b034b616b214b40c3756b114975ea46b052a3dda19e47af6bf66",
+    "0042500176.json": "f8a10afe2503fba664a0884d012166c7ffefe8254f0c9aba6be7a879d0c179ab",
+    "0042500201.json": "f44010a390a5a0131dfd694f437e2381ea315f554f27ec62ff3194405b5c32ed",
+    "0042500202.json": "f44e12b9c0317aacfac333750b32dbf967f21bce1eab96a1725baeb0ee8d227c",
+    "0042500203.json": "b5211c3166031873a66d8bb3fdba055d3137f3e323d9c739855b378881d37536",
+    "0042500204.json": "e7019ca000dc51a46f7914966f853e99eb49cf3cb4a0d31e53f0fbd72bfd3390",
+    "0042500205.json": "c4aebe374bdd16938828b501d05b6f738265c765773f1b4790bdb00d8646bcf8",
+    "0042500206.json": "7d35197791598291858c9b7d84432e95e1ea447d62c48113efe1c4ff6935a4fb",
+    "0042500207.json": "a234582c563f1af1fe5c073d8b5a43a0d9c42194d7a2792bc5f6f19afe830c11",
+    "0042500211.json": "f190733df9708aeacda9e8174a6b7d0222cc4c043c5f2b098082ed439decf1eb",
+    "0042500212.json": "6d499acbd0c33203d11daae4946d5a76d6181f1a8ef72c07db7e1a4d27d10ea5",
+    "0042500213.json": "ee1cc68f9a7e0a231cecf5b81d0797d10a9daeffdb8c80878d030feac581abb9",
+    "0042500214.json": "09cdaa947af485c930b76f9f6f0920fdec0de18c0059082f340d10d96a010097",
+    "0042500221.json": "92fef4152a996a80b73ff111b54359f488923ba5a9fa2592d61f068f0fa58f1a",
+    "0042500222.json": "5d4920ca41af72ec7e9fb1f668c79da2cd2098e1afebdc5512439755cdbf7065",
+    "0042500223.json": "6dde1ca20626751e4c4314756e93c0f1f7c0b95c86e4e1b51ba690e42828af5a",
+    "0042500224.json": "3e8664c67777f437f393e05266f014650d01d4b377ea2dd57f011b0bb0d9c31a",
+    "0042500231.json": "12ed4d6215b83153a5601c297679805e692c66e0201e1188f3633db6c6a231b4",
+    "0042500232.json": "2aab1a4dbec27e102c4da20cc6f592e9583247a799896a1b27c5d5e9177a3b81",
+    "0042500233.json": "a52a284c57e83bd12026a43513fe940c996bc558481b1fbfc4d1af8c687750f0",
+    "0042500234.json": "6ca92511361903dedde16986a35bf9d1e7da76a6b810bca67a724946f76f6f2f",
+    "0042500235.json": "71f2197b089ab7f345b861f9604445fb8a386bc25fa2d37164307d43caa00aaa",
+    "0042500236.json": "ad906a623dd3d55393e06cabb2f29a2ea620df7fe63c9e48a3aed3f41df9bc07",
+    "0042500301.json": "d7b86ad90863ecbfe2d53b306ca23032e36e06159a8a04b79b11bff9315b5b14",
+    "0042500302.json": "92d3e2b171c3e71742a6c109b8c6542f8ee45ac610a295f1dfc49754fe5f9b56",
+    "0042500303.json": "fd661eab08361ba8991c5483a18b5eab9f4bce311435493cd02150c48b684d6a",
+    "0042500304.json": "e6e1c84b249c0364c08f504db96adff57b790c60253a57c1cf7255e03df7b30a",
+    "0042500311.json": "17f95fa6cc87cc444a6c6e4f68959d2a00f9ecc9668632b122cab3d8e7980300",
+    "0042500312.json": "47a3a65c48190d726e17d8ca1be3d94f0af4c5ddf9eeb67a20b45e316a5e85c7",
+    "0042500313.json": "514d86c83c4be54710a266d66e2be7ee8326c237d6f13d397814fca5d5871879",
+    "0042500314.json": "1e1d01013fd493b51be5d85bdc690f3894feb5acc0118f0c26a736f7e70fa718",
+    "0042500315.json": "418b8bbf7b6a46c95621a3556872a92d414aaab46f5abed4a3c54f48520c8986",
+    "0042500316.json": "7283b7d61ffcab7bc29560105ec17259da10c38aab3e7a479cae40ac729cc6a4",
+    "0042500317.json": "1d44bac55e336a521b3629f52d7dd498a3392572a1bf6c797f652b52bb4e9aff",
+    "0042500401.json": "b10b451b368fe6b9ea84f3eadefe1538ac168d8ca508735163895aca26b73661",
+    "0042500402.json": "dc2ddb0dee8b006d314de1f4eff67edf00c5c8931365fe08655e0489247c2eb0",
+    "0042500403.json": "22cfac4a4f9c1249b2d0501e4cccdcaa62f4f50e07417d8e8fb9c4c5654a4e44",
+    "0042500404.json": "9fd5ec3ebdbe6ff0b2f0da53997be4183333b25a02382354a0051cd024eb718a",
+    "0042500405.json": "ab4f25a4016eecb5875929430ee0abb05283b42712b5d3a4b975cd8564259591"
+  },
+  "games": {
+    "0022501167": {
+      "gameDate": "2026-04-09",
+      "home": "BKN",
+      "away": "IND",
+      "homeScore": 94,
+      "awayScore": 123,
+      "playerCount": 16,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260409/20260409_INDBKN.pdf",
+          "status": 200,
+          "size": 27133,
+          "sha256": "3a474e8420e4064116509208f6b03f2c1ce6e17d277494438ed6dcfe7e44c632",
+          "retrievedAt": "2026-10-05T09:19:07.023927+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/ind-vs-bkn-0022501167/box-score",
+          "status": 200,
+          "size": 501757,
+          "sha256": "b9e9a8a6707e8fa6c908d171737ba252d5a76245c1868cced354663e98afd534",
+          "retrievedAt": "2026-10-05T09:19:05.032121+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501167.json",
+      "originalProviderSha256": "197447107efef37df2dc7c59438733dba5fd940c62f4cd7763c2b54fcbcc580c",
+      "officialSnapshotSha256": "17717f71a8cbdb9e475cfd916f14cd28f26b103f73b8d6963cd86b6a08508065",
+      "nameToTeam": {
+        "Jalen Slawson": "IND",
+        "Jarace Walker": "IND",
+        "Micah Potter": "IND",
+        "Ethan Thompson": "IND",
+        "Quenton Jackson": "IND",
+        "Obi Toppin": "IND",
+        "Taelon Peter": "IND",
+        "Kam Jones": "IND",
+        "Jay Huff": "IND",
+        "Malachi Smith": "BKN",
+        "E.J. Liddell": "BKN",
+        "Trevon Scott": "BKN",
+        "Tyson Etienne": "BKN",
+        "Ben Saraf": "BKN",
+        "Drake Powell": "BKN",
+        "Jalen Wilson": "BKN"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "24 Kobe Brown                                             DND - Injury/Illness - Lumbar; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "26 Ben Sheppard                                           DND - Injury/Illness - Right Hip; Strain"
+        },
+        {
+          "side": "home",
+          "text": "30 Ochai Agbaji                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "33 Nic Claxton                                            DND - Injury/Illness - Right Fifth Finger; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "31 Chaney Johnson                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "1 Ziaire Williams                                         DND - Injury/Illness - Left Foot; Tenosynovitis / Bursitis"
+        },
+        {
+          "side": "home",
+          "text": "2 Danny Wolf                                              DND - Injury/Illness - Left Ankle; Sprain"
+        }
+      ]
+    },
+    "0022501168": {
+      "gameDate": "2026-04-09",
+      "home": "NYK",
+      "away": "BOS",
+      "homeScore": 112,
+      "awayScore": 106,
+      "playerCount": 17,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260409/20260409_BOSNYK.pdf",
+          "status": 200,
+          "size": 26849,
+          "sha256": "0d615109a146e43b1fca1d1219eb7967a498ba992caa38265bee0eb9131923c9",
+          "retrievedAt": "2026-10-05T09:19:07.127253+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/bos-vs-nyk-0022501168/box-score",
+          "status": 200,
+          "size": 483590,
+          "sha256": "94e6fdad8b122cfbd89923565e2f18c96221f34f04e76049e2904ae885330be2",
+          "retrievedAt": "2026-10-05T09:19:04.760263+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501168.json",
+      "originalProviderSha256": "7d3fd70545a3a1965730cb339a93707fc23e3849a4b945403e52315fd3e31bcd",
+      "officialSnapshotSha256": "228850a4ae4177ad43776659704f06c4a431d735b8fdbb2bdb49c312fdeb7528",
+      "nameToTeam": {
+        "Sam Hauser": "BOS",
+        "Jayson Tatum": "BOS",
+        "Neemias Queta": "BOS",
+        "Jordan Walsh": "BOS",
+        "Derrick White": "BOS",
+        "Payton Pritchard": "BOS",
+        "Baylor Scheierman": "BOS",
+        "Nikola Vucevic": "BOS",
+        "OG Anunoby": "NYK",
+        "Josh Hart": "NYK",
+        "Karl-Anthony Towns": "NYK",
+        "Mikal Bridges": "NYK",
+        "Jalen Brunson": "NYK",
+        "Landry Shamet": "NYK",
+        "Mitchell Robinson": "NYK",
+        "Miles McBride": "NYK",
+        "Jordan Clarkson": "NYK"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "52 Luka Garza                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "28 Hugo Gonzalez                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "13 Ron Harper Jr.                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "44 Max Shulga                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "8 John Tonje                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "77 Amari Williams                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "5 Jose Alvarado                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "4 Pacome Dadiet                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "51 Mohamed Diawara                                     DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "55 Ariel Hukporti                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "9 Kevin McCullar Jr.                                   DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "20 Jeremy Sochan                                       DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501169": {
+      "gameDate": "2026-04-09",
+      "home": "HOU",
+      "away": "PHI",
+      "homeScore": 113,
+      "awayScore": 102,
+      "playerCount": 19,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260409/20260409_PHIHOU.pdf",
+          "status": 200,
+          "size": 27061,
+          "sha256": "dae20e7220bf0c5eaf823f94a649c8672ea2011ff027874a90f4ddfa96aa4f51",
+          "retrievedAt": "2026-10-05T09:19:07.221161+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/phi-vs-hou-0022501169/box-score",
+          "status": 200,
+          "size": 520549,
+          "sha256": "206c3ec436a144ed9ae8dc3e2bfc28b56a6df3b92cb30b617cdcbdd96add2e4a",
+          "retrievedAt": "2026-10-05T09:19:11.500593+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501169.json",
+      "originalProviderSha256": "a826c5697c3cbf80490283dc40ff25bdc35d6330d2f6f4b37d4ac8f50e43b49d",
+      "officialSnapshotSha256": "5c12fffa68593c7ea34822fe880b81e11c8d6ecd200d73b35bc097f97a9f75a3",
+      "nameToTeam": {
+        "Kelly Oubre Jr.": "PHI",
+        "Paul George": "PHI",
+        "Adem Bona": "PHI",
+        "VJ Edgecombe": "PHI",
+        "Tyrese Maxey": "PHI",
+        "Quentin Grimes": "PHI",
+        "Dominick Barlow": "PHI",
+        "Andre Drummond": "PHI",
+        "Jabari Walker": "PHI",
+        "Justin Edwards": "PHI",
+        "Kevin Durant": "HOU",
+        "Jabari Smith Jr.": "HOU",
+        "Alperen Sengun": "HOU",
+        "Josh Okogie": "HOU",
+        "Amen Thompson": "HOU",
+        "Tari Eason": "HOU",
+        "Clint Capela": "HOU",
+        "Reed Sheppard": "HOU",
+        "Aaron Holiday": "HOU"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "16 MarJon Beauchamp                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "7 Kyle Lowry                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "23 Tyrese Martin                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "12 Trendon Watford                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "27 Isaiah Crawford                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "4 JD Davison                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "2 Dorian Finney-Smith                                    DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "32 Jeff Green                                            DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "00 Tristen Newton                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "8 Jae'Sean Tate                                          DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501170": {
+      "gameDate": "2026-04-09",
+      "home": "GSW",
+      "away": "LAL",
+      "homeScore": 103,
+      "awayScore": 119,
+      "playerCount": 23,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260409/20260409_LALGSW.pdf",
+          "status": 200,
+          "size": 27847,
+          "sha256": "e8eb6f2018a7dd904276eb654904ad2d68e34c72232b0f5fe9627311c0a6450d",
+          "retrievedAt": "2026-10-05T09:19:15.225558+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/lal-vs-gsw-0022501170/box-score",
+          "status": 200,
+          "size": 483715,
+          "sha256": "084c2ee06a2ab3e0686116562e899d33461091e0af6c5224fe5ea1ce5960b23b",
+          "retrievedAt": "2026-10-05T09:19:11.803360+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501170.json",
+      "originalProviderSha256": "5c49652c8404132e2ab77bb62002b59d5059fd7b1cc5a72d22c3c3ac5afa5899",
+      "officialSnapshotSha256": "575e8320a6fc92e68ffa2d9eac77aff6f26db08b21d8ebcc710e9abb9eec359c",
+      "nameToTeam": {
+        "LeBron James": "LAL",
+        "Rui Hachimura": "LAL",
+        "Deandre Ayton": "LAL",
+        "Jake LaRavia": "LAL",
+        "Luke Kennard": "LAL",
+        "Jarred Vanderbilt": "LAL",
+        "Bronny James": "LAL",
+        "Maxi Kleber": "LAL",
+        "Adou Thiero": "LAL",
+        "Drew Timme": "LAL",
+        "Nick Smith Jr.": "LAL",
+        "Dalton Knecht": "LAL",
+        "Kobe Bufkin": "LAL",
+        "Pat Spencer": "GSW",
+        "Nate Williams": "GSW",
+        "Draymond Green": "GSW",
+        "De'Anthony Melton": "GSW",
+        "Brandin Podziemski": "GSW",
+        "Charles Bassey": "GSW",
+        "Seth Curry": "GSW",
+        "Gary Payton II": "GSW",
+        "LJ Cryer": "GSW",
+        "Malevy Leons": "GSW"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "30 Chris Manon                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "3 Will Richard                                           DND - Injury/Illness - Bilateral low back strain"
+        },
+        {
+          "side": "home",
+          "text": "15 Gui Santos                                            DND - Injury/Illness - Right Pelvic; Contusion"
+        }
+      ]
+    },
+    "0022501171": {
+      "gameDate": "2026-04-10",
+      "home": "CHA",
+      "away": "DET",
+      "homeScore": 100,
+      "awayScore": 118,
+      "playerCount": 27,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_DETCHA.pdf",
+          "status": 200,
+          "size": 27510,
+          "sha256": "25f7b96968b47a4f5f21945af170c1c68ed7a3a589f344a7954c65fd907e5f3c",
+          "retrievedAt": "2026-10-05T09:19:15.730245+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/det-vs-cha-0022501171/box-score",
+          "status": 200,
+          "size": 527647,
+          "sha256": "53c95b568e165633729115f42b4632bb65ca05e045650da6565770405e9dd884",
+          "retrievedAt": "2026-10-05T09:19:16.115782+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501171.json",
+      "originalProviderSha256": "f7ac14d0d6cc484ea5455bd49232871fed4d0d80847392199ff108baca621f73",
+      "officialSnapshotSha256": "81ef13811b9c2e8b650924f7deb1885003098ecb111665bdb504bcb0aa22c4c1",
+      "nameToTeam": {
+        "Ausar Thompson": "DET",
+        "Tobias Harris": "DET",
+        "Jalen Duren": "DET",
+        "Duncan Robinson": "DET",
+        "Cade Cunningham": "DET",
+        "Daniss Jenkins": "DET",
+        "Caris LeVert": "DET",
+        "Kevin Huerter": "DET",
+        "Isaiah Stewart": "DET",
+        "Ronald Holland II": "DET",
+        "Javonte Green": "DET",
+        "Paul Reed": "DET",
+        "Chaz Lanier": "DET",
+        "Marcus Sasser": "DET",
+        "Kon Knueppel": "CHA",
+        "Miles Bridges": "CHA",
+        "Moussa Diabate": "CHA",
+        "Brandon Miller": "CHA",
+        "LaMelo Ball": "CHA",
+        "Sion James": "CHA",
+        "Ryan Kalkbrenner": "CHA",
+        "Coby White": "CHA",
+        "Grant Williams": "CHA",
+        "Josh Green": "CHA",
+        "Pat Connaughton": "CHA",
+        "Tre Mann": "CHA",
+        "Xavier Tillman": "CHA"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "3 Isaac Jones                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "35 Tolu Smith                                         DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501172": {
+      "gameDate": "2026-04-10",
+      "home": "WAS",
+      "away": "MIA",
+      "homeScore": 117,
+      "awayScore": 140,
+      "playerCount": 20,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_MIAWAS.pdf",
+          "status": 200,
+          "size": 27419,
+          "sha256": "b06ab4e64b5cfa1832160017ca1138aef6cc10c720d7991753fb336943ca5938",
+          "retrievedAt": "2026-10-05T09:19:14.916785+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/mia-vs-was-0022501172/box-score",
+          "status": 200,
+          "size": 491288,
+          "sha256": "3076a978afea5280077b266d16898ce8aecbfad1086306d01dc96b1ec94426c1",
+          "retrievedAt": "2026-10-05T09:19:23.313333+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501172.json",
+      "originalProviderSha256": "eb6b356b5d7df0c6316216a4ca40b23235202f644869e50090aa503d92aa45b8",
+      "officialSnapshotSha256": "3130e6409150109ad73caf719054e389461372c7f75d24cdd021e49f7684eea0",
+      "nameToTeam": {
+        "Andrew Wiggins": "MIA",
+        "Bam Adebayo": "MIA",
+        "Kel'el Ware": "MIA",
+        "Kasparas Jakucionis": "MIA",
+        "Simone Fontecchio": "MIA",
+        "Jaime Jaquez Jr.": "MIA",
+        "Pelle Larsson": "MIA",
+        "Keshad Johnson": "MIA",
+        "Myron Gardner": "MIA",
+        "Trevor Keels": "MIA",
+        "Jahmir Young": "MIA",
+        "Vladislav Goldin": "MIA",
+        "Leaky Black": "WAS",
+        "Anthony Gill": "WAS",
+        "Julian Reese": "WAS",
+        "Bilal Coulibaly": "WAS",
+        "Bub Carrington": "WAS",
+        "Jamir Watkins": "WAS",
+        "Will Riley": "WAS",
+        "Sharife Cooper": "WAS"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "14 Tyler Herro                                            DND - Injury/Illness - Right Foot; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "45 Davion Mitchell                                        DND - Injury/Illness - Right Shoulder; Contusion"
+        },
+        {
+          "side": "away",
+          "text": "24 Norman Powell                                          DND - Injury/Illness - Right Groin; Soreness"
+        },
+        {
+          "side": "home",
+          "text": "9 Justin Champagnie                                       DND - Injury/Illness - Right Knee; Contusion"
+        },
+        {
+          "side": "home",
+          "text": "8 Jaden Hardy                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "12 Tre Johnson                                            DND - Injury/Illness - Right Foot; Sprain; Low Back Strain"
+        },
+        {
+          "side": "home",
+          "text": "00 Tristan Vukcevic                                       DND - Injury/Illness - Right Knee; Contusion"
+        }
+      ]
+    },
+    "0022501173": {
+      "gameDate": "2026-04-10",
+      "home": "ATL",
+      "away": "CLE",
+      "homeScore": 124,
+      "awayScore": 102,
+      "playerCount": 27,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_CLEATL.pdf",
+          "status": 200,
+          "size": 27832,
+          "sha256": "ebaaf60d6950b4eba3483eea94cb95e4f46dc3f242a33e57146bd914bd637c4a",
+          "retrievedAt": "2026-10-05T09:19:19.849370+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/cle-vs-atl-0022501173/box-score",
+          "status": 200,
+          "size": 518364,
+          "sha256": "a7dd4f80d896f0f85883a38ff973068b7332e7b529874bc3b7cf131d1485da0f",
+          "retrievedAt": "2026-10-05T09:19:23.444248+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501173.json",
+      "originalProviderSha256": "fc9deb420d4cd1be4708598279666e7ba7d38e40110dd10bbbc944149cf8e796",
+      "officialSnapshotSha256": "3b534929b98734575976bfe325f725fa824f04d523bcad70727d613bdb67a321",
+      "nameToTeam": {
+        "Jaylon Tyson": "CLE",
+        "Dean Wade": "CLE",
+        "Evan Mobley": "CLE",
+        "Max Strus": "CLE",
+        "James Harden": "CLE",
+        "Keon Ellis": "CLE",
+        "Dennis Schroder": "CLE",
+        "Larry Nance Jr.": "CLE",
+        "Craig Porter Jr.": "CLE",
+        "Nae'Qwan Tomlin": "CLE",
+        "Tristan Enaruna": "CLE",
+        "Tyrese Proctor": "CLE",
+        "Olivier Sarr": "CLE",
+        "Riley Minix": "CLE",
+        "Dyson Daniels": "ATL",
+        "Jalen Johnson": "ATL",
+        "Onyeka Okongwu": "ATL",
+        "Nickeil Alexander-Walker": "ATL",
+        "CJ McCollum": "ATL",
+        "Gabe Vincent": "ATL",
+        "Jonathan Kuminga": "ATL",
+        "Zaccharie Risacher": "ATL",
+        "Mouhamed Gueye": "ATL",
+        "Tony Bradley": "ATL",
+        "Corey Kispert": "ATL",
+        "Asa Newell": "ATL",
+        "Keaton Wallace": "ATL"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "home",
+          "text": "8 Buddy Hield                                              DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "35 Christian Koloko                                        DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501174": {
+      "gameDate": "2026-04-10",
+      "home": "BOS",
+      "away": "NOP",
+      "homeScore": 144,
+      "awayScore": 118,
+      "playerCount": 21,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_NOPBOS.pdf",
+          "status": 200,
+          "size": 27200,
+          "sha256": "0778ea7242710f8e5bb235a37f7436d9e3b09ee019e075ee0be961a190575783",
+          "retrievedAt": "2026-10-05T09:19:19.933058+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/nop-vs-bos-0022501174/box-score",
+          "status": 200,
+          "size": 510991,
+          "sha256": "167822b924834788918e4de14703f35b6fbe84bfa4cf8ef16e0ce129ece46c32",
+          "retrievedAt": "2026-10-05T09:19:23.197388+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501174.json",
+      "originalProviderSha256": "bb92bd5589335c26e931d72d2aa3515db8a63f7657b6ff5c5b79ff1e3bb205c1",
+      "officialSnapshotSha256": "c2e687c7890cd68fdefaa06cba6bfbfc0eadd792cc4a349c4d963b0cf5af1cf0",
+      "nameToTeam": {
+        "Micah Peavy": "NOP",
+        "Derik Queen": "NOP",
+        "Kevon Looney": "NOP",
+        "Jordan Poole": "NOP",
+        "Jeremiah Fears": "NOP",
+        "Josh Oduro": "NOP",
+        "Hunter Dickinson": "NOP",
+        "Trey Alexander": "NOP",
+        "Jordan Hawkins": "NOP",
+        "Sam Hauser": "BOS",
+        "Jordan Walsh": "BOS",
+        "Neemias Queta": "BOS",
+        "Jaylen Brown": "BOS",
+        "Derrick White": "BOS",
+        "Payton Pritchard": "BOS",
+        "Nikola Vucevic": "BOS",
+        "Hugo Gonzalez": "BOS",
+        "Baylor Scheierman": "BOS",
+        "Luka Garza": "BOS",
+        "Ron Harper Jr.": "BOS",
+        "Max Shulga": "BOS"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "6 DeAndre Jordan                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "11 Bryce McGowens                                       DNP - Injury/Illness - Right Small Toe; Fracture"
+        },
+        {
+          "side": "home",
+          "text": "8 John Tonje                                            DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "77 Amari Williams                                       DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501175": {
+      "gameDate": "2026-04-10",
+      "home": "IND",
+      "away": "PHI",
+      "homeScore": 94,
+      "awayScore": 105,
+      "playerCount": 19,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_PHIIND.pdf",
+          "status": 200,
+          "size": 27035,
+          "sha256": "e0d6dfea4fcbb06cd2b626a51120f128971a4f9fe057d3605823c90d9cbdc687",
+          "retrievedAt": "2026-10-05T09:19:24.747502+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/phi-vs-ind-0022501175/box-score",
+          "status": 200,
+          "size": 516914,
+          "sha256": "9868af6c47dcdfcc60a2c3271bca6f3381bea444049a8b26a74c78b46cf1d15f",
+          "retrievedAt": "2026-10-05T09:19:32.648979+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501175.json",
+      "originalProviderSha256": "74dc7aff03fdd8bc35fd9cb674f9fd44d99c4f1667acbce72590ae08e65f255c",
+      "officialSnapshotSha256": "74779635dc34b172aefc86700162346bd8264ad7aaae74d50e56e82d212057d3",
+      "nameToTeam": {
+        "Kelly Oubre Jr.": "PHI",
+        "Paul George": "PHI",
+        "Adem Bona": "PHI",
+        "VJ Edgecombe": "PHI",
+        "Tyrese Maxey": "PHI",
+        "Andre Drummond": "PHI",
+        "Quentin Grimes": "PHI",
+        "Dominick Barlow": "PHI",
+        "Justin Edwards": "PHI",
+        "Kobe Brown": "IND",
+        "Jarace Walker": "IND",
+        "Micah Potter": "IND",
+        "Ethan Thompson": "IND",
+        "Quenton Jackson": "IND",
+        "Taelon Peter": "IND",
+        "Jay Huff": "IND",
+        "Kam Jones": "IND",
+        "Jalen Slawson": "IND",
+        "Obi Toppin": "IND"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "16 MarJon Beauchamp                                    DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "7 Kyle Lowry                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "23 Tyrese Martin                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "14 Dalen Terry                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "33 Jabari Walker                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "12 Trendon Watford                                     DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "26 Ben Sheppard                                        DND - Injury/Illness - Right Hip; Sprain"
+        }
+      ]
+    },
+    "0022501176": {
+      "gameDate": "2026-04-10",
+      "home": "NYK",
+      "away": "TOR",
+      "homeScore": 112,
+      "awayScore": 95,
+      "playerCount": 24,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_TORNYK.pdf",
+          "status": 200,
+          "size": 27868,
+          "sha256": "4c065d8791844f72ff299d10b55f27926b9730c937e4d1b4b864b55b41d45b2b",
+          "retrievedAt": "2026-10-05T09:19:24.697849+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/tor-vs-nyk-0022501176/box-score",
+          "status": 200,
+          "size": 485077,
+          "sha256": "8607bfacbc2d3cc1f48e6a12ed2351a79adb3fff48e5b5bdf1fb931d030f7f12",
+          "retrievedAt": "2026-10-05T09:19:31.732976+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501176.json",
+      "originalProviderSha256": "49991d4fcbc7d8e764595f87bac7fde78891cbcca9f4210742f55c7d26dbc1bf",
+      "officialSnapshotSha256": "58337f16fd9d453db2eb909f65643043ba9ea125730df89f05df1559cd201414",
+      "nameToTeam": {
+        "Scottie Barnes": "TOR",
+        "Brandon Ingram": "TOR",
+        "Jakob Poeltl": "TOR",
+        "Jamal Shead": "TOR",
+        "Ja'Kobe Walter": "TOR",
+        "A.J. Lawson": "TOR",
+        "Jonathan Mogbo": "TOR",
+        "Sandro Mamukelashvili": "TOR",
+        "Alijah Martin": "TOR",
+        "Jamison Battle": "TOR",
+        "Gradey Dick": "TOR",
+        "OG Anunoby": "NYK",
+        "Josh Hart": "NYK",
+        "Karl-Anthony Towns": "NYK",
+        "Mikal Bridges": "NYK",
+        "Jalen Brunson": "NYK",
+        "Jordan Clarkson": "NYK",
+        "Jeremy Sochan": "NYK",
+        "Landry Shamet": "NYK",
+        "Jose Alvarado": "NYK",
+        "Ariel Hukporti": "NYK",
+        "Mohamed Diawara": "NYK",
+        "Pacome Dadiet": "NYK",
+        "Trey Jemison III": "NYK"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "9 RJ Barrett                                             DND - Injury/Illness - Right Knee; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "17 Garrett Temple                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "1 Dillon Jones                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "9 Kevin McCullar Jr.                                     DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501177": {
+      "gameDate": "2026-04-10",
+      "home": "CHI",
+      "away": "ORL",
+      "homeScore": 103,
+      "awayScore": 127,
+      "playerCount": 24,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_ORLCHI.pdf",
+          "status": 200,
+          "size": 27901,
+          "sha256": "9da86fd6a453b61135612e5e9e3cf574ac5ef8d757a74430e5496a4c838b4a6b",
+          "retrievedAt": "2026-10-05T09:19:29.284977+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/orl-vs-chi-0022501177/box-score",
+          "status": 200,
+          "size": 524537,
+          "sha256": "4149145666ff2ef035e5cf843a056a62c3e105008fb80f922d354d369c70d0c2",
+          "retrievedAt": "2026-10-05T09:19:31.859064+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501177.json",
+      "originalProviderSha256": "983fb6b4f689c0756eaa086be2889d6110b801d16b3832594203d2444866cdc9",
+      "officialSnapshotSha256": "518d9609df4c81a36ccbe9f6c336c3c189d3786e7e56f2ddcb998b662fd84365",
+      "nameToTeam": {
+        "Franz Wagner": "ORL",
+        "Paolo Banchero": "ORL",
+        "Wendell Carter Jr.": "ORL",
+        "Desmond Bane": "ORL",
+        "Jalen Suggs": "ORL",
+        "Jamal Cain": "ORL",
+        "Tristan da Silva": "ORL",
+        "Anthony Black": "ORL",
+        "Goga Bitadze": "ORL",
+        "Jevon Carter": "ORL",
+        "Noah Penda": "ORL",
+        "Jase Richardson": "ORL",
+        "Colin Castleton": "ORL",
+        "Alex Morales": "ORL",
+        "Matas Buzelis": "CHI",
+        "Leonard Miller": "CHI",
+        "Lachlan Olbrich": "CHI",
+        "Collin Sexton": "CHI",
+        "Tre Jones": "CHI",
+        "Rob Dillingham": "CHI",
+        "Patrick Williams": "CHI",
+        "Mac McClung": "CHI",
+        "Yuki Kawamura": "CHI",
+        "Mouhamadou Gueye": "CHI"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "21 Moritz Wagner                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "12 Zach Collins                                          DND - Injury/Illness - Right 1st Toe; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "22 Anfernee Simons                                       DND - Injury/Illness - Left Ulnar Styloid; Fracture"
+        }
+      ]
+    },
+    "0022501178": {
+      "gameDate": "2026-04-10",
+      "home": "HOU",
+      "away": "MIN",
+      "homeScore": 132,
+      "awayScore": 136,
+      "playerCount": 19,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_MINHOU.pdf",
+          "status": 200,
+          "size": 27363,
+          "sha256": "bfccc57de45564c3003bd2ab13c5918b82c993615e61456fdcb3a5f79aaf04e0",
+          "retrievedAt": "2026-10-05T09:19:37.958159+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/min-vs-hou-0022501178/box-score",
+          "status": 200,
+          "size": 511928,
+          "sha256": "00e2004d82a71d73991291963e5be8ef56d975ac8fb3a97a304d22cde617657a",
+          "retrievedAt": "2026-10-05T09:19:40.557198+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501178.json",
+      "originalProviderSha256": "928530343e6c04c32a4fb8c7a8da86310418724fc357e1f48ee70108390dd337",
+      "officialSnapshotSha256": "ed158fa76acc4184cdeaa419ce17a4c7052907abb527ad69e14c42d965e7e6ee",
+      "nameToTeam": {
+        "Kyle Anderson": "MIN",
+        "Jaden McDaniels": "MIN",
+        "Joan Beringer": "MIN",
+        "Anthony Edwards": "MIN",
+        "Donte DiVincenzo": "MIN",
+        "Terrence Shannon Jr.": "MIN",
+        "Ayo Dosunmu": "MIN",
+        "Mike Conley": "MIN",
+        "Jaylen Clark": "MIN",
+        "Kevin Durant": "HOU",
+        "Jabari Smith Jr.": "HOU",
+        "Alperen Sengun": "HOU",
+        "Josh Okogie": "HOU",
+        "Amen Thompson": "HOU",
+        "Tari Eason": "HOU",
+        "Clint Capela": "HOU",
+        "Reed Sheppard": "HOU",
+        "Aaron Holiday": "HOU",
+        "Jae'Sean Tate": "HOU"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "25 Enrique Freeman                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "4 Julian Phillips                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "15 Zyon Pullin                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "44 Rocco Zikarsky                                       DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "27 Isaiah Crawford                                      DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "4 JD Davison                                            DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "2 Dorian Finney-Smith                                   DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "32 Jeff Green                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "00 Tristen Newton                                       DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501179": {
+      "gameDate": "2026-04-10",
+      "home": "MIL",
+      "away": "BKN",
+      "homeScore": 125,
+      "awayScore": 108,
+      "playerCount": 15,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_BKNMIL.pdf",
+          "status": 200,
+          "size": 27501,
+          "sha256": "c3ff325c786cc8072da9600f48c0fc4414c19327b1c5dcd36569d239c57cd2dc",
+          "retrievedAt": "2026-10-05T09:19:37.898830+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/bkn-vs-mil-0022501179/box-score",
+          "status": 200,
+          "size": 475813,
+          "sha256": "9f0d6c777b7647e258b63116b2a289b072b696dbcf31d569db4f975b24f0b520",
+          "retrievedAt": "2026-10-05T09:19:40.097970+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501179.json",
+      "originalProviderSha256": "7d001904d3830e7474061579940903d717c92303e35fa2cccc9cad629e059856",
+      "officialSnapshotSha256": "6d12dedfa5ea54bf9e5c1f7ce42ee422a9ed8c60cf1d2bab90473d0dae062e92",
+      "nameToTeam": {
+        "Malachi Smith": "BKN",
+        "E.J. Liddell": "BKN",
+        "Trevon Scott": "BKN",
+        "Ben Saraf": "BKN",
+        "Tyson Etienne": "BKN",
+        "Nolan Traore": "BKN",
+        "Jalen Wilson": "BKN",
+        "Taurean Prince": "MIL",
+        "Ousmane Dieng": "MIL",
+        "Myles Turner": "MIL",
+        "Cormac Ryan": "MIL",
+        "AJ Green": "MIL",
+        "Jericho Sims": "MIL",
+        "Kyle Kuzma": "MIL",
+        "Andre Jackson Jr.": "MIL"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "30 Ochai Agbaji                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "33 Nic Claxton                                            DND - Injury/Illness - Right Fifth Finger; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "31 Chaney Johnson                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "4 Drake Powell                                            DND - Injury/Illness - Left Knee; Injury Management"
+        },
+        {
+          "side": "away",
+          "text": "2 Danny Wolf                                              DND - Injury/Illness - Left Ankle; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "29 Alex Antetokounmpo                                     DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "43 Thanasis Antetokounmpo                                 DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "11 Gary Harris                                            DND - Injury/Illness - Right Groin Tightness"
+        }
+      ]
+    },
+    "0022501180": {
+      "gameDate": "2026-04-10",
+      "home": "SAS",
+      "away": "DAL",
+      "homeScore": 139,
+      "awayScore": 120,
+      "playerCount": 21,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_DALSAS.pdf",
+          "status": 200,
+          "size": 27065,
+          "sha256": "0ab5a550c094446192ce97d29fa577b7833f8fb35e622bd035b9e77bab9d3772",
+          "retrievedAt": "2026-10-05T09:19:43.909472+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/dal-vs-sas-0022501180/box-score",
+          "status": 200,
+          "size": 510974,
+          "sha256": "ffeec2f027dc21411d3e215537a63e7abbe01317916380acd7c3df55f8e81ef5",
+          "retrievedAt": "2026-10-05T09:19:40.260873+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501180.json",
+      "originalProviderSha256": "7e8e140a8c41a1ca44ee400706eddccc659529d2d637af922a0425c73c21c575",
+      "officialSnapshotSha256": "ebe922fbdce15443cc22cbe500691da490e76dda4e2a95c2e5f9417fd5b7a451",
+      "nameToTeam": {
+        "Cooper Flagg": "DAL",
+        "Khris Middleton": "DAL",
+        "Marvin Bagley III": "DAL",
+        "Max Christie": "DAL",
+        "Ryan Nembhard": "DAL",
+        "Moussa Cisse": "DAL",
+        "John Poulakidas": "DAL",
+        "Tyler Smith": "DAL",
+        "AJ Johnson": "DAL",
+        "Dwight Powell": "DAL",
+        "Devin Vassell": "SAS",
+        "Julian Champagnie": "SAS",
+        "Victor Wembanyama": "SAS",
+        "Dylan Harper": "SAS",
+        "De'Aaron Fox": "SAS",
+        "Keldon Johnson": "SAS",
+        "Luke Kornet": "SAS",
+        "Harrison Barnes": "SAS",
+        "Carter Bryant": "SAS",
+        "Jordan McLaughlin": "SAS",
+        "Harrison Ingram": "SAS"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "13 Naji Marshall                                           DND - Injury/Illness - Left Hip; Contusion"
+        },
+        {
+          "side": "away",
+          "text": "25 P.J. Washington                                         DND - Injury/Illness - Left Elbow; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "18 Bismack Biyombo                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "8 Kelly Olynyk                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "45 Mason Plumlee                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "43 Lindy Waters III                                        DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501181": {
+      "gameDate": "2026-04-10",
+      "home": "UTA",
+      "away": "MEM",
+      "homeScore": 147,
+      "awayScore": 101,
+      "playerCount": 13,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_MEMUTA.pdf",
+          "status": 200,
+          "size": 27192,
+          "sha256": "7acc3a623b0a8031f715e180346b42517609b43b3f292a2936ccfa4b51d5a645",
+          "retrievedAt": "2026-10-05T09:19:44.004116+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/mem-vs-uta-0022501181/box-score",
+          "status": 200,
+          "size": 512968,
+          "sha256": "0cd00b9efec60739d5f14e7828d386a8b7401ce75df2be4ed9ddb026a9293813",
+          "retrievedAt": "2026-10-05T09:19:50.512909+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501181.json",
+      "originalProviderSha256": "bc073c97b774ec413b98aeff7db538420f3544fac234d69464b8e35f500ce7e7",
+      "officialSnapshotSha256": "09b3fdb422232e8bd28cfa37ce02da1cbc2556ef4c705cbfe6beae8e7e3bf324",
+      "nameToTeam": {
+        "Toby Okani": "MEM",
+        "Adama Bal": "MEM",
+        "Jahmai Mashack": "MEM",
+        "Dariq Whitehead": "MEM",
+        "Lucas Williamson": "MEM",
+        "Rayan Rupert": "MEM",
+        "Cody Williams": "UTA",
+        "Blake Hinson": "UTA",
+        "Oscar Tshiebwe": "UTA",
+        "Ace Bailey": "UTA",
+        "Kennedy Chandler": "UTA",
+        "Bez Mbeng": "UTA",
+        "John Konchar": "UTA"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "23 Cedric Coward                                          DND - Injury/Illness - Low Back; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "67 Taj Gibson                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "45 GG Jackson                                             DND - Injury/Illness - Left Knee; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "18 Olivier-Maxence Prosper                                DND - Injury/Illness - Right Ankle; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "10 Javon Small                                            DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "24 Cam Spencer                                            DND - Injury/Illness - Low Back; Soreness"
+        },
+        {
+          "side": "home",
+          "text": "8 Isaiah Collier                                          DND - Injury/Illness - Left Hamstring; Strain"
+        },
+        {
+          "side": "home",
+          "text": "22 Kyle Filipowski                                        DND - Injury/Illness - Low Back; Injury management"
+        },
+        {
+          "side": "home",
+          "text": "42 Kevin Love                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "10 Svi Mykhailiuk                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "28 Brice Sensabaugh                                       DND - Rest"
+        }
+      ]
+    },
+    "0022501184": {
+      "gameDate": "2026-04-10",
+      "home": "SAC",
+      "away": "GSW",
+      "homeScore": 124,
+      "awayScore": 118,
+      "playerCount": 21,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_GSWSAC.pdf",
+          "status": 200,
+          "size": 27854,
+          "sha256": "ec55832cc77bbeadeccfc51da73c65f09d1c58f857a916a1cf5fa8d12770f397",
+          "retrievedAt": "2026-10-05T09:19:44.258433+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/gsw-vs-sac-0022501184/box-score",
+          "status": 200,
+          "size": 523839,
+          "sha256": "037057de4ba548193beae01c22a93b362eb3abf2ba1115a315a7d287ab2ff63e",
+          "retrievedAt": "2026-10-05T09:19:50.390084+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501184.json",
+      "originalProviderSha256": "b6224bad9ec21ea1f544eef9c18055fb82916cc7353ec1b9fae2499f6efdcba3",
+      "officialSnapshotSha256": "d4a2b288358c15a83568aa4415b4b3a8031b96a291be770bc7170d7450288560",
+      "nameToTeam": {
+        "Gui Santos": "GSW",
+        "Draymond Green": "GSW",
+        "Kristaps Porzingis": "GSW",
+        "Brandin Podziemski": "GSW",
+        "Stephen Curry": "GSW",
+        "Gary Payton II": "GSW",
+        "De'Anthony Melton": "GSW",
+        "Al Horford": "GSW",
+        "Charles Bassey": "GSW",
+        "Pat Spencer": "GSW",
+        "Will Richard": "GSW",
+        "Malevy Leons": "GSW",
+        "Daeqwon Plowden": "SAC",
+        "Precious Achiuwa": "SAC",
+        "Maxime Raynaud": "SAC",
+        "Nique Clifford": "SAC",
+        "Devin Carter": "SAC",
+        "Malik Monk": "SAC",
+        "Killian Hayes": "SAC",
+        "Doug McDermott": "SAC",
+        "Dylan Cardwell": "SAC"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "31 Seth Curry                                             DND - Injury/Illness - Left Adductor Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "19 Drew Eubanks                                           DND - Injury/Illness - Left Thumb UCL Repair"
+        },
+        {
+          "side": "home",
+          "text": "15 De'Andre Hunter                                        DND - Injury/Illness - Left Eye; Retinal Repair"
+        },
+        {
+          "side": "home",
+          "text": "13 Keegan Murray                                          DND - Injury/Illness - Left Ankle; Sprain"
+        }
+      ]
+    },
+    "0022501185": {
+      "gameDate": "2026-04-10",
+      "home": "LAL",
+      "away": "PHX",
+      "homeScore": 101,
+      "awayScore": 73,
+      "playerCount": 27,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260410/20260410_PHXLAL.pdf",
+          "status": 200,
+          "size": 27765,
+          "sha256": "c8af7bae7995d818db5aab42206b6529b21f59978c65146dfb1c74020a0e8310",
+          "retrievedAt": "2026-10-05T09:19:48.716239+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/phx-vs-lal-0022501185/box-score",
+          "status": 200,
+          "size": 505525,
+          "sha256": "c41f3bc950b2de11ea44ea06a83d56c60c54ef4f44fabd98ccf5e7408d222b96",
+          "retrievedAt": "2026-10-05T09:19:49.250266+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501185.json",
+      "originalProviderSha256": "d52aa859ec189dce30c19a69a9afb1cae1e094c5f15dfff36fcea4b5b85ea666",
+      "officialSnapshotSha256": "46d18876c74a34f43ff5216b1f56707f464c4c6d91f58145c2deda8cdb2d280e",
+      "nameToTeam": {
+        "Ryan Dunn": "PHX",
+        "Dillon Brooks": "PHX",
+        "Mark Williams": "PHX",
+        "Collin Gillespie": "PHX",
+        "Grayson Allen": "PHX",
+        "Royce O'Neale": "PHX",
+        "Jamaree Bouyea": "PHX",
+        "Oso Ighodaro": "PHX",
+        "Rasheer Fleming": "PHX",
+        "Amir Coffey": "PHX",
+        "Koby Brea": "PHX",
+        "Khaman Maluach": "PHX",
+        "CJ Huntley": "PHX",
+        "LeBron James": "LAL",
+        "Rui Hachimura": "LAL",
+        "Deandre Ayton": "LAL",
+        "Jake LaRavia": "LAL",
+        "Luke Kennard": "LAL",
+        "Bronny James": "LAL",
+        "Jarred Vanderbilt": "LAL",
+        "Maxi Kleber": "LAL",
+        "Nick Smith Jr.": "LAL",
+        "Marcus Smart": "LAL",
+        "Drew Timme": "LAL",
+        "Dalton Knecht": "LAL",
+        "Adou Thiero": "LAL",
+        "Chris Manon": "LAL"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "4 Jalen Green                                            DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501186": {
+      "gameDate": "2026-04-12",
+      "home": "BOS",
+      "away": "ORL",
+      "homeScore": 113,
+      "awayScore": 108,
+      "playerCount": 18,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_ORLBOS.pdf",
+          "status": 200,
+          "size": 26868,
+          "sha256": "cf7e28d1e57c82ab59a10dde31e8b7ebad1a448a99a35cc07b7a6c7c639a1574",
+          "retrievedAt": "2026-10-05T09:19:56.807367+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/orl-vs-bos-0022501186/box-score",
+          "status": 200,
+          "size": 527519,
+          "sha256": "bdd7b23cf5cd1012009c5a13fe043593056bd36cf12132e07138d9c686fd1e92",
+          "retrievedAt": "2026-10-05T09:19:54.913198+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501186.json",
+      "originalProviderSha256": "032c4a82c5d4828b78dbf34c407396a768cd8f66b041acb58988cc147017aa22",
+      "officialSnapshotSha256": "c2384c4e5fe3c13813283ba25fb60c1cad0329108bfae5c469bb23e7d130d05b",
+      "nameToTeam": {
+        "Franz Wagner": "ORL",
+        "Paolo Banchero": "ORL",
+        "Wendell Carter Jr.": "ORL",
+        "Desmond Bane": "ORL",
+        "Jalen Suggs": "ORL",
+        "Tristan da Silva": "ORL",
+        "Jamal Cain": "ORL",
+        "Goga Bitadze": "ORL",
+        "Anthony Black": "ORL",
+        "Jevon Carter": "ORL",
+        "Baylor Scheierman": "BOS",
+        "Jordan Walsh": "BOS",
+        "Luka Garza": "BOS",
+        "Max Shulga": "BOS",
+        "Ron Harper Jr.": "BOS",
+        "Dalano Banton": "BOS",
+        "Amari Williams": "BOS",
+        "John Tonje": "BOS"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "14 Colin Castleton                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "30 Alex Morales                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "93 Noah Penda                                             DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "11 Jase Richardson                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "21 Moritz Wagner                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "28 Hugo Gonzalez                                          DND - Injury/Illness - Right Foot; Bone Bruise"
+        },
+        {
+          "side": "home",
+          "text": "30 Sam Hauser                                             DND - Injury/Illness - Low Back; Spasm"
+        },
+        {
+          "side": "home",
+          "text": "11 Payton Pritchard                                       DND - Injury/Illness - Left Foot; Plantar Fasciitis"
+        },
+        {
+          "side": "home",
+          "text": "88 Neemias Queta                                          DND - Injury/Illness - Right Toe; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "4 Nikola Vucevic                                          DND - Injury/Illness - Right Ring Finger; Fracture Management"
+        }
+      ]
+    },
+    "0022501187": {
+      "gameDate": "2026-04-12",
+      "home": "CLE",
+      "away": "WAS",
+      "homeScore": 130,
+      "awayScore": 117,
+      "playerCount": 18,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_WASCLE.pdf",
+          "status": 200,
+          "size": 27636,
+          "sha256": "6795ebf1c5b35566089f81740816834d19db7d1959c0c03c4a5f71509bb3b199",
+          "retrievedAt": "2026-10-05T09:19:57.023767+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/was-vs-cle-0022501187/box-score",
+          "status": 200,
+          "size": 501122,
+          "sha256": "70b779f2d1db286b8e347f31887b13fdcf68fe264b11ab9976a703d8537e9922",
+          "retrievedAt": "2026-10-05T09:19:54.447369+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501187.json",
+      "originalProviderSha256": "72c95823751f9b1986089617b511e18b5a4526c0646c9d5c74dc90d0ee407a5f",
+      "officialSnapshotSha256": "cddf673b1d13f2684edb8891f991aca47279fa6ee12f6646b8b7a1ff10d9cec8",
+      "nameToTeam": {
+        "Jamir Watkins": "WAS",
+        "Justin Champagnie": "WAS",
+        "Anthony Gill": "WAS",
+        "Will Riley": "WAS",
+        "Bub Carrington": "WAS",
+        "Sharife Cooper": "WAS",
+        "Jaden Hardy": "WAS",
+        "Leaky Black": "WAS",
+        "Julian Reese": "WAS",
+        "Jaylon Tyson": "CLE",
+        "Nae'Qwan Tomlin": "CLE",
+        "Larry Nance Jr.": "CLE",
+        "Max Strus": "CLE",
+        "Craig Porter Jr.": "CLE",
+        "Tyrese Proctor": "CLE",
+        "Riley Minix": "CLE",
+        "Olivier Sarr": "CLE",
+        "Tristan Enaruna": "CLE"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "00 Tristan Vukcevic                                        DNP - Injury/Illness - Right Knee; Contusion"
+        },
+        {
+          "side": "away",
+          "text": "1 Cam Whitmore                                             DNP - Injury/Illness - Right Shoulder; Deep Vein Thrombosis"
+        },
+        {
+          "side": "home",
+          "text": "14 Keon Ellis                                              DND - Injury/Illness - Left Knee; Contusion"
+        },
+        {
+          "side": "home",
+          "text": "8 Dennis Schroder                                          DND - Rest"
+        }
+      ]
+    },
+    "0022501188": {
+      "gameDate": "2026-04-12",
+      "home": "IND",
+      "away": "DET",
+      "homeScore": 121,
+      "awayScore": 133,
+      "playerCount": 24,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_DETIND.pdf",
+          "status": 200,
+          "size": 27779,
+          "sha256": "0ebf032d590cf9255ec3ef2f6d91de34a85da012948ca9e115d8311ff71566b1",
+          "retrievedAt": "2026-10-05T09:19:56.835598+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/det-vs-ind-0022501188/box-score",
+          "status": 200,
+          "size": 511340,
+          "sha256": "b107416c52874d84cef9ab90d7845b02c33e7cec2051038a52a386831a7b707e",
+          "retrievedAt": "2026-10-05T09:19:59.997307+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501188.json",
+      "originalProviderSha256": "e825b8ffb6fdf7e9edbae5c6eb02d8c4849b4e21c33e3797b89fa9f19903e063",
+      "officialSnapshotSha256": "6a8767e89103d58f8bde42a8543a1c5be0b34f16b4489a36aab16e917af70179",
+      "nameToTeam": {
+        "Ausar Thompson": "DET",
+        "Tobias Harris": "DET",
+        "Paul Reed": "DET",
+        "Duncan Robinson": "DET",
+        "Cade Cunningham": "DET",
+        "Caris LeVert": "DET",
+        "Kevin Huerter": "DET",
+        "Isaiah Stewart": "DET",
+        "Ronald Holland II": "DET",
+        "Daniss Jenkins": "DET",
+        "Javonte Green": "DET",
+        "Isaac Jones": "DET",
+        "Marcus Sasser": "DET",
+        "Chaz Lanier": "DET",
+        "Tolu Smith": "DET",
+        "Kobe Brown": "IND",
+        "Jalen Slawson": "IND",
+        "Micah Potter": "IND",
+        "Ethan Thompson": "IND",
+        "Quenton Jackson": "IND",
+        "Obi Toppin": "IND",
+        "Jay Huff": "IND",
+        "Taelon Peter": "IND",
+        "Kam Jones": "IND"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "home",
+          "text": "9 T.J. McConnell                                         DND - Injury/Illness - Bilateral Hamstring; Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "26 Ben Sheppard                                          DND - Injury/Illness - Right Hip; Sprain"
+        },
+        {
+          "side": "home",
+          "text": "5 Jarace Walker                                          DND - Injury/Illness - Left Foot; Sprain"
+        }
+      ]
+    },
+    "0022501189": {
+      "gameDate": "2026-04-12",
+      "home": "MIA",
+      "away": "ATL",
+      "homeScore": 143,
+      "awayScore": 117,
+      "playerCount": 22,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_ATLMIA.pdf",
+          "status": 200,
+          "size": 27321,
+          "sha256": "0318a69738c6d844a11c6c5e7d6fc26344e85fe25bb87cbc196cb0d4ba1aee33",
+          "retrievedAt": "2026-10-05T09:20:05.580716+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/atl-vs-mia-0022501189/box-score",
+          "status": 200,
+          "size": 500403,
+          "sha256": "d4bd5b95e930729f26b4f3cf922c845494ec7bb7224242cdc7c31671288c30a8",
+          "retrievedAt": "2026-10-05T09:19:59.814630+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501189.json",
+      "originalProviderSha256": "997c1d723e9086c1dab90b66a2513a89752cec1c53eae716190ad2979ada8f51",
+      "officialSnapshotSha256": "fc62ed7c8997e9386b0984fc294eff915870fd22007a7ea10889ff7698396d52",
+      "nameToTeam": {
+        "Zaccharie Risacher": "ATL",
+        "Asa Newell": "ATL",
+        "Tony Bradley": "ATL",
+        "Corey Kispert": "ATL",
+        "Keaton Wallace": "ATL",
+        "RayJ Dennis": "ATL",
+        "Christian Koloko": "ATL",
+        "Keshon Gilbert": "ATL",
+        "Buddy Hield": "ATL",
+        "Andrew Wiggins": "MIA",
+        "Bam Adebayo": "MIA",
+        "Kel'el Ware": "MIA",
+        "Tyler Herro": "MIA",
+        "Davion Mitchell": "MIA",
+        "Jaime Jaquez Jr.": "MIA",
+        "Keshad Johnson": "MIA",
+        "Norman Powell": "MIA",
+        "Kasparas Jakucionis": "MIA",
+        "Myron Gardner": "MIA",
+        "Trevor Keels": "MIA",
+        "Jahmir Young": "MIA",
+        "Vladislav Goldin": "MIA"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "7 Nickeil Alexander-Walker                                DND - Injury/Illness - Right Great Toe; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "5 Dyson Daniels                                           DND - Injury/Illness - Left Great Toe; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "18 Mouhamed Gueye                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "9 Pelle Larsson                                           DND - Injury/Illness - Right Lower Leg; Contusion"
+        }
+      ]
+    },
+    "0022501190": {
+      "gameDate": "2026-04-12",
+      "home": "NYK",
+      "away": "CHA",
+      "homeScore": 96,
+      "awayScore": 110,
+      "playerCount": 24,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_CHANYK.pdf",
+          "status": 200,
+          "size": 27151,
+          "sha256": "97962195ac017e94d3d484217b51938f0d0aa1597b631c7f6e0bee4d1df22b7b",
+          "retrievedAt": "2026-10-05T09:20:05.594290+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/cha-vs-nyk-0022501190/box-score",
+          "status": 200,
+          "size": 501631,
+          "sha256": "275a1fce2eb2baddc0eef78b973f8ae62216eb57e32fd7df1d3644073df72be3",
+          "retrievedAt": "2026-10-05T09:20:06.519672+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501190.json",
+      "originalProviderSha256": "ca42ce584cc35c873bab81761c35cc2e96d58d972ead2e30ec8d8e6a048a201e",
+      "officialSnapshotSha256": "ef9002e72a2c3ca6ffca67e6c5d30b7bd291000fd8f53a858ccd21c80c319952",
+      "nameToTeam": {
+        "Miles Bridges": "CHA",
+        "Kon Knueppel": "CHA",
+        "Moussa Diabate": "CHA",
+        "LaMelo Ball": "CHA",
+        "Brandon Miller": "CHA",
+        "Sion James": "CHA",
+        "Grant Williams": "CHA",
+        "Coby White": "CHA",
+        "Ryan Kalkbrenner": "CHA",
+        "Josh Green": "CHA",
+        "Tre Mann": "CHA",
+        "Tidjane Salaun": "CHA",
+        "Liam McNeeley": "CHA",
+        "Mikal Bridges": "NYK",
+        "Mohamed Diawara": "NYK",
+        "Ariel Hukporti": "NYK",
+        "Jose Alvarado": "NYK",
+        "Miles McBride": "NYK",
+        "Jordan Clarkson": "NYK",
+        "Pacome Dadiet": "NYK",
+        "Jeremy Sochan": "NYK",
+        "Trey Jemison III": "NYK",
+        "Kevin McCullar Jr.": "NYK",
+        "Dillon Jones": "NYK"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "21 Pat Connaughton                                     DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "26 Xavier Tillman                                      DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501191": {
+      "gameDate": "2026-04-12",
+      "home": "PHI",
+      "away": "MIL",
+      "homeScore": 126,
+      "awayScore": 106,
+      "playerCount": 23,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_MILPHI.pdf",
+          "status": 200,
+          "size": 27486,
+          "sha256": "424ab6bd08f45112a6b73ea8d4ed4a8e1964c738fb0a896536670df9dbd0cf54",
+          "retrievedAt": "2026-10-05T09:20:05.762237+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/mil-vs-phi-0022501191/box-score",
+          "status": 200,
+          "size": 505851,
+          "sha256": "2ebaa06982e45178a0cf13ff0a48ac49e9333847dc3cb240a9746cba371f69ae",
+          "retrievedAt": "2026-10-05T09:20:14.601502+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501191.json",
+      "originalProviderSha256": "5b03ab3f1dd8603080186e92197db9b1101cff6a13fac1bc4fcc45df95affc73",
+      "officialSnapshotSha256": "27bf5a54745e309a1e28cf1482811dd037fe253ba41ed4c1654b8f549f099516",
+      "nameToTeam": {
+        "Taurean Prince": "MIL",
+        "Ousmane Dieng": "MIL",
+        "Jericho Sims": "MIL",
+        "Cormac Ryan": "MIL",
+        "AJ Green": "MIL",
+        "Andre Jackson Jr.": "MIL",
+        "Thanasis Antetokounmpo": "MIL",
+        "Alex Antetokounmpo": "MIL",
+        "Kelly Oubre Jr.": "PHI",
+        "Paul George": "PHI",
+        "Adem Bona": "PHI",
+        "VJ Edgecombe": "PHI",
+        "Tyrese Maxey": "PHI",
+        "Andre Drummond": "PHI",
+        "Quentin Grimes": "PHI",
+        "Justin Edwards": "PHI",
+        "Dominick Barlow": "PHI",
+        "Jabari Walker": "PHI",
+        "Trendon Watford": "PHI",
+        "Kyle Lowry": "PHI",
+        "Dalen Terry": "PHI",
+        "MarJon Beauchamp": "PHI",
+        "Tyrese Martin": "PHI"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "35 Pete Nance                                             DND - Injury/Illness - Right Knee; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "7 Kevin Porter Jr.                                        NWT - Injury/Illness - Right Knee Surgery"
+        },
+        {
+          "side": "away",
+          "text": "9 Bobby Portis                                            DND - Injury/Illness - Left Wrist; Sprain"
+        }
+      ]
+    },
+    "0022501192": {
+      "gameDate": "2026-04-12",
+      "home": "TOR",
+      "away": "BKN",
+      "homeScore": 136,
+      "awayScore": 101,
+      "playerCount": 23,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_BKNTOR.pdf",
+          "status": 200,
+          "size": 27523,
+          "sha256": "35caf4d1149765295762f660aa1556130ed2106fe9f980c8ece7046ec13325ed",
+          "retrievedAt": "2026-10-05T09:20:10.306452+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/bkn-vs-tor-0022501192/box-score",
+          "status": 200,
+          "size": 511553,
+          "sha256": "a78051c45bd93418d4ae19e1993ee5e0ad03a2c4c4023565cb774de52bd93b1a",
+          "retrievedAt": "2026-10-05T09:20:14.588001+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501192.json",
+      "originalProviderSha256": "d62347ae217e4ceb43bc840e11625510091a5e796d0d6f89cadc3e9cf1aaee9f",
+      "officialSnapshotSha256": "6346fa1eaa0f6d6a6f7ea5746a9c5a6524bfd9ac3422fcf94a3344f5eebc19f9",
+      "nameToTeam": {
+        "Malachi Smith": "BKN",
+        "E.J. Liddell": "BKN",
+        "Trevon Scott": "BKN",
+        "Drake Powell": "BKN",
+        "Ben Saraf": "BKN",
+        "Jalen Wilson": "BKN",
+        "Chaney Johnson": "BKN",
+        "Tyson Etienne": "BKN",
+        "Brandon Ingram": "TOR",
+        "Scottie Barnes": "TOR",
+        "Jakob Poeltl": "TOR",
+        "RJ Barrett": "TOR",
+        "Immanuel Quickley": "TOR",
+        "Collin Murray-Boyles": "TOR",
+        "Jamal Shead": "TOR",
+        "Sandro Mamukelashvili": "TOR",
+        "Ja'Kobe Walter": "TOR",
+        "A.J. Lawson": "TOR",
+        "Gradey Dick": "TOR",
+        "Jonathan Mogbo": "TOR",
+        "Trayce Jackson-Davis": "TOR",
+        "Jamison Battle": "TOR",
+        "Garrett Temple": "TOR"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "30 Ochai Agbaji                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "33 Nic Claxton                                            DND - Injury/Illness - Right Fifth Finger; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "20 Day'Ron Sharpe                                         DND - Injury/Illness - Left Thumb; Surgery"
+        },
+        {
+          "side": "away",
+          "text": "88 Nolan Traore                                           DND - Injury/Illness - N/a; Illness"
+        }
+      ]
+    },
+    "0022501193": {
+      "gameDate": "2026-04-12",
+      "home": "DAL",
+      "away": "CHI",
+      "homeScore": 149,
+      "awayScore": 128,
+      "playerCount": 19,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_CHIDAL.pdf",
+          "status": 200,
+          "size": 27706,
+          "sha256": "2b6c397725ce93c4eb4efe69c35cf3753779153f569fe1269f8dd0fe95a7996d",
+          "retrievedAt": "2026-10-05T09:20:10.402041+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/chi-vs-dal-0022501193/box-score",
+          "status": 200,
+          "size": 531139,
+          "sha256": "212d3a39e6e20bcc4350a7b81f4b0fda1e55693465b8f22a4d413c5002ecda70",
+          "retrievedAt": "2026-10-05T09:20:14.359020+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501193.json",
+      "originalProviderSha256": "b97aa8036a7d078eb8343df5e8c8b49cd1ff7aabaf2ba702fba00bc7b4507c48",
+      "officialSnapshotSha256": "d6b5389b914e19cf763d330f0b5cb3356d0bd0711361bb769de285347e584af7",
+      "nameToTeam": {
+        "Patrick Williams": "CHI",
+        "Leonard Miller": "CHI",
+        "Lachlan Olbrich": "CHI",
+        "Collin Sexton": "CHI",
+        "Tre Jones": "CHI",
+        "Mouhamadou Gueye": "CHI",
+        "Rob Dillingham": "CHI",
+        "Mac McClung": "CHI",
+        "Yuki Kawamura": "CHI",
+        "Cooper Flagg": "DAL",
+        "Khris Middleton": "DAL",
+        "Dwight Powell": "DAL",
+        "Max Christie": "DAL",
+        "Ryan Nembhard": "DAL",
+        "Moussa Cisse": "DAL",
+        "AJ Johnson": "DAL",
+        "Klay Thompson": "DAL",
+        "John Poulakidas": "DAL",
+        "Tyler Smith": "DAL"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "12 Zach Collins                                           DND - Injury/Illness - Right 1st Toe; Surgery"
+        },
+        {
+          "side": "away",
+          "text": "13 Nick Richards                                          DNP - Injury/Illness - Right Elbow; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "22 Anfernee Simons                                        DND - Injury/Illness - Left Ulnar Styloid; Fracture"
+        },
+        {
+          "side": "home",
+          "text": "35 Marvin Bagley III                                      DND - Injury/Illness - Left Shoulder; Impingement"
+        },
+        {
+          "side": "home",
+          "text": "13 Naji Marshall                                          DND - Injury/Illness - Left Hip; Contusion"
+        }
+      ]
+    },
+    "0022501194": {
+      "gameDate": "2026-04-12",
+      "home": "HOU",
+      "away": "MEM",
+      "homeScore": 132,
+      "awayScore": 101,
+      "playerCount": 18,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_MEMHOU.pdf",
+          "status": 200,
+          "size": 27829,
+          "sha256": "d4bef860bed7f60feb6b274e6960feee661316fda1dee8480c2e3b7753f8e800",
+          "retrievedAt": "2026-10-05T09:20:16.231325+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/mem-vs-hou-0022501194/box-score",
+          "status": 200,
+          "size": 512903,
+          "sha256": "975d0526b98214bb4ec2693e8c9134dea7d6154fe63fcd4a3df6c601294e5f91",
+          "retrievedAt": "2026-10-05T09:20:23.064755+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501194.json",
+      "originalProviderSha256": "b2c1a8ceb490ca680e1ab51e90190a8055a57cf03a0295c2e3555f3882150b03",
+      "officialSnapshotSha256": "15d08b8f7c3f8e968ca405a1827fd8a50e2823090ae1dfb8a8f09ab86fc3fb5c",
+      "nameToTeam": {
+        "Toby Okani": "MEM",
+        "Rayan Rupert": "MEM",
+        "Taj Gibson": "MEM",
+        "Dariq Whitehead": "MEM",
+        "Jahmai Mashack": "MEM",
+        "Lucas Williamson": "MEM",
+        "Javon Small": "MEM",
+        "Tari Eason": "HOU",
+        "Jae'Sean Tate": "HOU",
+        "Clint Capela": "HOU",
+        "Reed Sheppard": "HOU",
+        "Josh Okogie": "HOU",
+        "Jeff Green": "HOU",
+        "Aaron Holiday": "HOU",
+        "Dorian Finney-Smith": "HOU",
+        "Isaiah Crawford": "HOU",
+        "JD Davison": "HOU",
+        "Tristen Newton": "HOU"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "72 Adama Bal                                            DND - Injury/Illness - Right Ankle; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "23 Cedric Coward                                        DND - Injury/Illness - Low Back; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "45 GG Jackson                                           DND - Injury/Illness - Left Knee; Injury Management"
+        },
+        {
+          "side": "away",
+          "text": "18 Olivier-Maxence Prosper                              DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "24 Cam Spencer                                          DND - Injury/Illness - Low Back; Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "1 Amen Thompson                                         DND - Rest"
+        }
+      ]
+    },
+    "0022501195": {
+      "gameDate": "2026-04-12",
+      "home": "MIN",
+      "away": "NOP",
+      "homeScore": 132,
+      "awayScore": 126,
+      "playerCount": 16,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_NOPMIN.pdf",
+          "status": 200,
+          "size": 27097,
+          "sha256": "b216463c8627b77a4712b8ef384bc119e7cf564d84c5fdf90e57f54e9c442c0a",
+          "retrievedAt": "2026-10-05T09:20:16.103465+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/nop-vs-min-0022501195/box-score",
+          "status": 200,
+          "size": 545380,
+          "sha256": "c7807e45d8a667c4b7dee53f9f49a15873e6947084e7aa64c84ca80b87c6d4d3",
+          "retrievedAt": "2026-10-05T09:20:23.225061+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501195.json",
+      "originalProviderSha256": "c282a009b45d0d79e91a0dd62c279353c78bda75c0b9985d6960131d5129768d",
+      "officialSnapshotSha256": "ed91fc80de0bb1e2581728abbe68d627023017e9c2274b9e584a77c260c33c7f",
+      "nameToTeam": {
+        "Micah Peavy": "NOP",
+        "Josh Oduro": "NOP",
+        "Derik Queen": "NOP",
+        "Jordan Hawkins": "NOP",
+        "Jeremiah Fears": "NOP",
+        "Hunter Dickinson": "NOP",
+        "Trey Alexander": "NOP",
+        "Terrence Shannon Jr.": "MIN",
+        "Joe Ingles": "MIN",
+        "Joan Beringer": "MIN",
+        "Jaylen Clark": "MIN",
+        "Donte DiVincenzo": "MIN",
+        "Julian Phillips": "MIN",
+        "Enrique Freeman": "MIN",
+        "Zyon Pullin": "MIN",
+        "Rocco Zikarsky": "MIN"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "9 DeAndre Jordan                                        DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "55 Kevon Looney                                         DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "11 Bryce McGowens                                       DND - Injury/Illness - Right Small Toe; Fracture"
+        },
+        {
+          "side": "away",
+          "text": "3 Jordan Poole                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "10 Mike Conley                                          DND - Rest"
+        },
+        {
+          "side": "home",
+          "text": "13 Ayo Dosunmu                                          DND - Injury/Illness - Right Calf; Injury Maintenance"
+        },
+        {
+          "side": "home",
+          "text": "8 Bones Hyland                                          DND - Injury/Illness - Right Hip; Injury Maintenance"
+        }
+      ]
+    },
+    "0022501196": {
+      "gameDate": "2026-04-12",
+      "home": "OKC",
+      "away": "PHX",
+      "homeScore": 103,
+      "awayScore": 135,
+      "playerCount": 17,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_PHXOKC.pdf",
+          "status": 200,
+          "size": 27212,
+          "sha256": "a92f84ef1dcbca119a31c9f4b051b0849e6d9a3162a1e2111574b3fac4f3b342",
+          "retrievedAt": "2026-10-05T09:20:20.743665+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/phx-vs-okc-0022501196/box-score",
+          "status": 200,
+          "size": 487994,
+          "sha256": "1fbda92c553875f6db38d35425a77121a664b5347fd920cc38311efc487e14bf",
+          "retrievedAt": "2026-10-05T09:20:23.166264+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501196.json",
+      "originalProviderSha256": "e100a04bc3f618719fbe9c1b9086de07156a32e909cd434bac1a5b099b9025ff",
+      "officialSnapshotSha256": "1b08bc1b25726d0464b58e358ca20ee01c50c1f0034ae97a9ec9fb74cfd351ff",
+      "nameToTeam": {
+        "Amir Coffey": "PHX",
+        "Rasheer Fleming": "PHX",
+        "Oso Ighodaro": "PHX",
+        "Ryan Dunn": "PHX",
+        "Jamaree Bouyea": "PHX",
+        "Haywood Highsmith": "PHX",
+        "Khaman Maluach": "PHX",
+        "Koby Brea": "PHX",
+        "CJ Huntley": "PHX",
+        "Luguentz Dort": "OKC",
+        "Aaron Wiggins": "OKC",
+        "Branden Carlson": "OKC",
+        "Jared McCain": "OKC",
+        "Nikola Topic": "OKC",
+        "Kenrich Williams": "OKC",
+        "Brooks Barnhizer": "OKC",
+        "Payton Sandfort": "OKC"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "12 Collin Gillespie                                      DND - Injury/Illness - Right Shoulder; Contusion"
+        },
+        {
+          "side": "away",
+          "text": "23 Jordan Goodwin                                        DND - Injury/Illness - Left Ankle; Sprain"
+        },
+        {
+          "side": "away",
+          "text": "4 Jalen Green                                            DND - Injury/Illness - Right Knee; Soreness"
+        },
+        {
+          "side": "away",
+          "text": "15 Mark Williams                                         DND - Injury/Illness - Left Foot; Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "11 Isaiah Joe                                            DND - Injury/Illness - Left Knee; Sorenes"
+        },
+        {
+          "side": "home",
+          "text": "25 Ajay Mitchell                                         DND - Injury/Illness - Left Ankle; Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "22 Cason Wallace                                         DND - Injury/Illness - Left Great Toe; Soreness"
+        },
+        {
+          "side": "home",
+          "text": "6 Jaylin Williams                                        DND - Injury/Illness - Right Achilles; Tendinitis"
+        }
+      ]
+    },
+    "0022501198": {
+      "gameDate": "2026-04-12",
+      "home": "LAL",
+      "away": "UTA",
+      "homeScore": 131,
+      "awayScore": 107,
+      "playerCount": 22,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_UTALAL.pdf",
+          "status": 200,
+          "size": 27320,
+          "sha256": "a40f7e804be235923ccd910915b7c4a664ddc1d959e4805d8e4617ccb2b3ff28",
+          "retrievedAt": "2026-10-05T09:17:58.116410+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/uta-vs-lal-0022501198/box-score",
+          "status": 200,
+          "size": 512489,
+          "sha256": "0c98358d98e624307760d53532c8353b2cc4b3ff375ba3737b11fc2329b8237d",
+          "retrievedAt": "2026-10-05T09:17:44.100905+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501198.json",
+      "originalProviderSha256": "22c155d3ac2f153bb12cdd85384cd0bbbdc06a8d76e0c4cecb1b8a34aaffedab",
+      "officialSnapshotSha256": "495baa21e4641b5da0f98b55249843aaa50e71dcef6ce49785645739be6dcde6",
+      "nameToTeam": {
+        "Cody Williams": "UTA",
+        "Blake Hinson": "UTA",
+        "Oscar Tshiebwe": "UTA",
+        "Ace Bailey": "UTA",
+        "Bez Mbeng": "UTA",
+        "Brice Sensabaugh": "UTA",
+        "John Konchar": "UTA",
+        "Hayden Gray": "UTA",
+        "LeBron James": "LAL",
+        "Rui Hachimura": "LAL",
+        "Deandre Ayton": "LAL",
+        "Marcus Smart": "LAL",
+        "Luke Kennard": "LAL",
+        "Bronny James": "LAL",
+        "Jake LaRavia": "LAL",
+        "Maxi Kleber": "LAL",
+        "Jarred Vanderbilt": "LAL",
+        "Nick Smith Jr.": "LAL",
+        "Adou Thiero": "LAL",
+        "Dalton Knecht": "LAL",
+        "Drew Timme": "LAL",
+        "Chris Manon": "LAL"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "8 Isaiah Collier                                         DND - Injury/Illness - Left Hamstring; Strain"
+        },
+        {
+          "side": "away",
+          "text": "16 Elijah Harkless                                       DND - Injury/Illness - Left Hamstring; Strain"
+        },
+        {
+          "side": "away",
+          "text": "42 Kevin Love                                            DNP - Coach's Decision"
+        },
+        {
+          "side": "away",
+          "text": "10 Svi Mykhailiuk                                        DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0022501199": {
+      "gameDate": "2026-04-12",
+      "home": "LAC",
+      "away": "GSW",
+      "homeScore": 115,
+      "awayScore": 110,
+      "playerCount": 23,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260412/20260412_GSWLAC.pdf",
+          "status": 200,
+          "size": 27436,
+          "sha256": "bc08e6488706e18fbd2b672da2572f710a1d922dea42af0cbf3d596952bed366",
+          "retrievedAt": "2026-10-05T09:17:58.102767+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/gsw-vs-lac-0022501199/box-score",
+          "status": 200,
+          "size": 509466,
+          "sha256": "3cb2e05f3c84487b4360a43e0d3a8d6e5729d32c37b08a0b5e4f7812a7547206",
+          "retrievedAt": "2026-10-05T09:20:23.155522+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0022501199.json",
+      "originalProviderSha256": "c5128ac9e49db8233102bce5fd61086e4842bc0b4d7f0b8fec273a21b844f7bf",
+      "officialSnapshotSha256": "1ccef78d0eaaad83296978258b2ac86b66fe0e9d6e2c4072b314614dda0d6163",
+      "nameToTeam": {
+        "De'Anthony Melton": "GSW",
+        "Al Horford": "GSW",
+        "Kristaps Porzingis": "GSW",
+        "Brandin Podziemski": "GSW",
+        "Stephen Curry": "GSW",
+        "Gui Santos": "GSW",
+        "Gary Payton II": "GSW",
+        "Will Richard": "GSW",
+        "Charles Bassey": "GSW",
+        "Seth Curry": "GSW",
+        "Pat Spencer": "GSW",
+        "Malevy Leons": "GSW",
+        "Nate Williams": "GSW",
+        "Derrick Jones Jr.": "LAC",
+        "John Collins": "LAC",
+        "Brook Lopez": "LAC",
+        "Kris Dunn": "LAC",
+        "Darius Garland": "LAC",
+        "Bennedict Mathurin": "LAC",
+        "Jordan Miller": "LAC",
+        "Kobe Sanders": "LAC",
+        "Nicolas Batum": "LAC",
+        "Bogdan Bogdanovic": "LAC"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "away",
+          "text": "23 Draymond Green                                         DNP - Injury/Illness - Left Low Back; Injury Management"
+        },
+        {
+          "side": "home",
+          "text": "12 Cam Christie                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "55 Norchad Omier                                          DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "00 Sean Pedulla                                           DNP - Coach's Decision"
+        },
+        {
+          "side": "home",
+          "text": "15 TyTy Washington Jr.                                    DNP - Coach's Decision"
+        }
+      ]
+    },
+    "0052500211": {
+      "gameDate": "2026-04-17",
+      "home": "PHX",
+      "away": "GSW",
+      "homeScore": 111,
+      "awayScore": 96,
+      "playerCount": 25,
+      "sourceFiles": [
+        {
+          "kind": "pdf",
+          "url": "https://statsdmz.nba.com/pdfs/20260417/20260417_GSWPHX.pdf",
+          "status": 200,
+          "size": 27392,
+          "sha256": "e92b97bd80d79d15377a2547997ea02a5c6f0b63452e677cbd68d809c8f9fc42",
+          "retrievedAt": "2026-10-05T09:20:30.769370+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        },
+        {
+          "kind": "nba-page",
+          "url": "https://www.nba.com/game/gsw-vs-phx-0052500211/box-score",
+          "status": 200,
+          "size": 511185,
+          "sha256": "b309366df2d79938794b2d9aebd5f627f504eb9d90a87eb24cc327d7c7adc688",
+          "retrievedAt": "2026-10-05T09:20:28.186404+00:00",
+          "retrievedAtBasis": "source-file-written-after-successful-HTTP-read"
+        }
+      ],
+      "page": 1,
+      "originalProviderFile": "docs/evidence/game-team-assignments/original-provider/0052500211.json",
+      "originalProviderSha256": "e57b88ef3a3d07016e95aaf85d4d156a51f6ef803b45996992e6ffe8e24a1930",
+      "officialSnapshotSha256": "eaeb881168ccbc9a81dc6a77f915d57899deb9e5ba5d7267b185eb474b4433d0",
+      "nameToTeam": {
+        "Gui Santos": "GSW",
+        "Draymond Green": "GSW",
+        "Kristaps Porzingis": "GSW",
+        "Brandin Podziemski": "GSW",
+        "Stephen Curry": "GSW",
+        "Gary Payton II": "GSW",
+        "De'Anthony Melton": "GSW",
+        "Al Horford": "GSW",
+        "Will Richard": "GSW",
+        "Charles Bassey": "GSW",
+        "Pat Spencer": "GSW",
+        "Seth Curry": "GSW",
+        "Jordan Goodwin": "PHX",
+        "Dillon Brooks": "PHX",
+        "Oso Ighodaro": "PHX",
+        "Jalen Green": "PHX",
+        "Devin Booker": "PHX",
+        "Collin Gillespie": "PHX",
+        "Royce O'Neale": "PHX",
+        "Khaman Maluach": "PHX",
+        "Ryan Dunn": "PHX",
+        "Haywood Highsmith": "PHX",
+        "Amir Coffey": "PHX",
+        "Jamaree Bouyea": "PHX",
+        "Rasheer Fleming": "PHX"
+      },
+      "crossCheck": "All played names, sides, starter positions and 16 scalar statistics agree with NBA game page. Durations agree except the two explicitly documented :60 formatting cases; PDF MM:SS is authoritative. Jersey comes from PDF, compared where present.",
+      "excludedNonPlayedReportRows": [
+        {
+          "side": "home",
+          "text": "8 Grayson Allen                                           DNP - Coach's Decision"
+        }
+      ]
+    }
+  },
+  "nbaWebDurationExceptions": [
+    {
+      "gameId": "0022501176",
+      "player": "Sandro Mamukelashvili",
+      "webDuration": "24:60",
+      "reportDuration": "25:00"
+    },
+    {
+      "gameId": "0022501192",
+      "player": "Scottie Barnes",
+      "webDuration": "31:60",
+      "reportDuration": "32:00"
+    }
+  ]
+}

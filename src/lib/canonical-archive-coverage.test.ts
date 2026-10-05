@@ -39,9 +39,10 @@ it("preserves every physical final and all 87 recovered box files byte-for-byte"
   expect(physical).toEqual(baseline.physicalFinals);
   const directory = new URL("../data/recovered-player-boxes/", import.meta.url);
   const files = (await readdir(directory)).filter(file => file.endsWith(".json")).sort();
-  expect(files).toEqual(Object.keys(baseline.recoveredBoxSha256).sort());
-  expect(files).toHaveLength(87);
-  for (const file of files) {
+  const preserved = Object.keys(baseline.recoveredBoxSha256).sort();
+  expect(preserved).toHaveLength(87);
+  expect(files).toEqual(expect.arrayContaining(preserved));
+  for (const file of preserved) {
     const hash = createHash("sha256").update(await readFile(new URL(file, directory))).digest("hex");
     expect(hash, file).toBe(baseline.recoveredBoxSha256[file as keyof typeof baseline.recoveredBoxSha256]);
   }
