@@ -25,23 +25,35 @@ interface TeamInjury {
 }
 
 async function getInjuries(): Promise<TeamInjury[]> {
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(
-      "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries",
-      {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-        next: { revalidate: 1800 },
-        signal: controller.signal,
-      }
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.injuries || [];
+    return await Promise.race([
+      (async (): Promise<TeamInjury[]> => {
+        const res = await fetch(
+          "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries",
+          {
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+            next: { revalidate: 1800 },
+            signal: controller.signal,
+          }
+        );
+        if (!res.ok) return [];
+        const json = await res.json();
+        return Array.isArray(json?.injuries) ? json.injuries : [];
+      })(),
+      // Bound headers and body together, even if a transport ignores abort.
+      new Promise<TeamInjury[]>((resolve) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          resolve([]);
+        }, 5000);
+      }),
+    ]);
   } catch {
     return [];
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
