@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { getTodayScoreboard, type ScheduleGame } from "@/lib/api";
+import { getTodayScoreboard, getScoreboardSourceDate, type ScheduleGame } from "@/lib/api";
 import HomeClient from "./HomeClient";
 
 interface Props {
@@ -16,9 +16,10 @@ export default async function HomeGames({ initialDate, initialIsToday, afterGame
   if (initialIsToday) {
     try {
       const liveGames = await getTodayScoreboard();
-      // Failure or an empty response must not manufacture a verified empty day.
-      // Preserve the existing client fetch/skeleton when no SSR rows are known.
-      if (liveGames.length > 0) initialGames = liveGames.map(g => ({
+      // The CDN can still serve the previous day's finals after ET midnight.
+      // Only seed rows from this ET date; unknown/mismatched dates and empty
+      // responses retain client recovery instead of suppressing its first fetch.
+      if (liveGames.length > 0 && getScoreboardSourceDate(liveGames) === initialDate) initialGames = liveGames.map(g => ({
         gameId: g.gameId,
         gameCode: g.gameCode,
         gameStatus: g.gameStatus,

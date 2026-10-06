@@ -3,8 +3,8 @@ import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
 import { PassThrough } from "node:stream";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { NbaGame } from "@/lib/api";
-const provider = vi.hoisted(() => ({ scoreboard: vi.fn<() => Promise<NbaGame[]>>() }));
-vi.mock("@/lib/api", () => ({ formatDate: () => "2026-10-04", getTodayScoreboard: provider.scoreboard }));
+const provider = vi.hoisted(() => ({ scoreboard: vi.fn<() => Promise<NbaGame[]>>(), sourceDate: vi.fn<(games: NbaGame[]) => string | null>() }));
+vi.mock("@/lib/api", () => ({ formatDate: () => "2026-10-04", getTodayScoreboard: provider.scoreboard, getScoreboardSourceDate: provider.sourceDate }));
 vi.mock("@/lib/locale", () => ({ getLocale: async () => "en" }));
 vi.mock("@/components/HomePlayerSearch", () => ({ default: () => <div>Player search shell</div> }));
 vi.mock("@/components/HomeClient", () => ({ default: ({ initialGames }: { initialGames?: unknown }) => <div data-testid="streamed-games">{JSON.stringify(initialGames)}</div> }));
@@ -14,6 +14,7 @@ vi.mock("@/components/DailyIconicPick", () => ({ default: () => null }));
 import HomePage from "@/app/page";
 import HomeGames, { HomeGamesLoading } from "./HomeGames";
 import HomePlayerSearch from "./HomePlayerSearch";
+import { dateInTz } from "@/lib/timezone";
 
 const live = {
   gameId: "0022600001", gameCode: "20261004/LALBOS", gameStatus: 2, gameStatusText: "Q2",
@@ -22,7 +23,7 @@ const live = {
   awayTeam: { teamId: 2, teamTricode: "LAL", teamName: "Lakers", teamCity: "Los Angeles", teamSlug: "lakers", score: 39, wins: 0, losses: 0, seed: 0 },
   seriesText: "Test series", gameLeaders: { homeLeaders: { personId: 1, name: "Test", teamTricode: "BOS", points: 15, rebounds: 3, assists: 2 } },
 } satisfies NbaGame;
-beforeEach(() => { provider.scoreboard.mockReset(); });
+beforeEach(() => { provider.scoreboard.mockReset(); provider.sourceDate.mockReset().mockReturnValue("2026-10-04"); });
 
 it("returns search and an explicit games Suspense boundary while its scoreboard is unresolved", async () => {
   let release!: (rows: NbaGame[]) => void;
@@ -52,6 +53,32 @@ it.each(["empty", "failure"])("preserves client recovery rather than an empty-da
   else provider.scoreboard.mockRejectedValue(new Error("offline"));
   const tree = await HomeGames({ initialDate: "2026-10-04", initialIsToday: true });
   expect(tree.props.initialGames).toBeUndefined();
+});
+it.each(["2026-10-03", "2026-10-05", null])("preserves client recovery for nonempty finals with a mismatched or missing source date (%s)", async sourceDate => {
+  const rows = [{ ...live, gameStatus: 3, gameStatusText: "Final" }];
+  provider.scoreboard.mockResolvedValue(rows);
+  provider.sourceDate.mockReturnValue(sourceDate);
+  const tree = await HomeGames({ initialDate: "2026-10-04", initialIsToday: true });
+  expect(provider.sourceDate).toHaveBeenCalledWith(rows);
+  expect(tree.props.initialGames).toBeUndefined();
+  expect(tree.props.initialDate).toBe("2026-10-04");
+});
+it("seeds same-source-date finals without adding a client loading gap", async () => {
+  provider.scoreboard.mockResolvedValue([{ ...live, gameStatus: 3, gameStatusText: "Final" }]);
+  const tree = await HomeGames({ initialDate: "2026-10-04", initialIsToday: true });
+  expect(tree.props.initialGames).toEqual([expect.objectContaining({ gameId: live.gameId, gameStatus: 3 })]);
+});
+it("keeps ET source-date validation separate from UTC+8 day correction", async () => {
+  const rows = [{ ...live, gameTimeUTC: "2026-10-04T23:30:00Z" }];
+  expect(dateInTz(new Date(rows[0].gameTimeUTC), "America/New_York")).toBe("2026-10-04");
+  expect(dateInTz(new Date(rows[0].gameTimeUTC), "Asia/Shanghai")).toBe("2026-10-05");
+  provider.scoreboard.mockResolvedValue(rows);
+  const etDay = await HomeGames({ initialDate: "2026-10-04", initialIsToday: true });
+  expect(etDay.props.initialGames).toEqual([expect.objectContaining({ gameDateTimeUTC: rows[0].gameTimeUTC })]);
+  // Even a row that falls on Oct 5 in UTC+8 cannot make an Oct 4 source a
+  // verified Oct 5 ET seed. HomeClient retains its own local-date correction.
+  const nextEtDay = await HomeGames({ initialDate: "2026-10-05", initialIsToday: true });
+  expect(nextEtDay.props.initialGames).toBeUndefined();
 });
 it("never requests the scoreboard or schedule for a dated server segment", async () => {
   const tree = await HomeGames({ initialDate: "2026-10-03", initialIsToday: false });
