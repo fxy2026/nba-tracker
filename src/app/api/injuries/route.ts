@@ -23,31 +23,44 @@ function isValidInjuryFeed(json: unknown): json is { injuries: ESPNInjuryTeam[] 
   });
 }
 
+function unavailable(status: 500 | 502) {
+  return NextResponse.json({ data: [] }, { status, headers: { "Cache-Control": "no-store" } });
+}
+
 export async function GET() {
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(ESPN_INJURIES, {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-      next: { revalidate: 1800 },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    return await Promise.race([
+      (async () => {
+        const res = await fetch(ESPN_INJURIES, {
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+          next: { revalidate: 1800 },
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted || !res.ok) {
+          void res.body?.cancel().catch(() => {});
+          return unavailable(502);
+        }
 
-    if (!res.ok) {
-      return NextResponse.json({ data: [] }, { status: 502 });
-    }
-
-    const json = await res.json();
-    if (!isValidInjuryFeed(json)) {
-      return NextResponse.json({ data: [] }, { status: 502, headers: { "Cache-Control": "no-store" } });
-    }
-    return NextResponse.json({ data: json.injuries }, {
-      headers: {
-        "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
-      },
-    });
+        const json = await res.json();
+        // Never validate or publish a late body after the deadline won.
+        if (controller.signal.aborted || !isValidInjuryFeed(json)) return unavailable(502);
+        return NextResponse.json({ data: json.injuries }, {
+          headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" },
+        });
+      })(),
+      // One budget for headers and body, including transports that ignore abort.
+      new Promise<Response>((resolve) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          resolve(unavailable(500));
+        }, 5000);
+      }),
+    ]);
   } catch {
-    return NextResponse.json({ data: [] }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return unavailable(500);
+  } finally {
+    clearTimeout(timeout);
   }
 }
