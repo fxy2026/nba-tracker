@@ -11,6 +11,8 @@ import { dateInTz, localTz } from "@/lib/timezone";
 interface DateNavProps {
   selectedDate: string;
   timeZone?: string;
+  // Home owns the midnight/resume clock so all Today controls update together.
+  todayDate?: string;
   onDateChange?: (date: string) => void;
 }
 
@@ -19,7 +21,7 @@ interface DateNavProps {
 const NO_TODAY = "";
 
 
-export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNavProps) {
+export default function DateNav({ selectedDate, onDateChange, timeZone, todayDate }: DateNavProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   const router = useRouter();
@@ -31,7 +33,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
   const [mounted, setMounted] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag: localTz() is unknowable during SSR
   useEffect(() => setMounted(true), []);
-  const tzLabel = useMemo(() => {
+  const tzLabel = (() => {
     const tz = timeZone ?? localTz();
     if (tz === "Asia/Shanghai" || tz === "Asia/Hong_Kong" || tz === "Asia/Macau") {
       return t.common.beijingTime;
@@ -43,7 +45,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
       .formatToParts(new Date())
       .find((p) => p.type === "timeZoneName")?.value;
     return timeZone ? `${isZh ? "日期时区" : "Date timezone"}: ${timeZone} (${short ?? timeZone})` : short ? `${t.dateNav.localTimeZone} ${short}` : t.dateNav.localTimeZone;
-  }, [locale, t, timeZone, isZh]);
+  })();
 
   const navigate = useCallback((date: string) => {
     if (onDateChange) {
@@ -100,7 +102,7 @@ export default function DateNav({ selectedDate, onDateChange, timeZone }: DateNa
   // sentinel that matches no date, keeping the chip highlight + reset chip hidden
   // on first paint to match the server HTML. Reserve the reset chip's width so
   // learning the local date never squeezes or shifts the date scroller.
-  const today = useMemo(() => (mounted ? dateInTz(new Date(), timeZone ?? localTz()) : NO_TODAY), [mounted, timeZone]);
+  const today = mounted ? todayDate ?? dateInTz(new Date(), timeZone ?? localTz()) : NO_TODAY;
   const showToday = Boolean(today && selectedDate !== today);
 
   const prevDate = offsetCalendarDate(selectedDate, -1);

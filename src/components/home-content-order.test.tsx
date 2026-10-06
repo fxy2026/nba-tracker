@@ -7,6 +7,8 @@ vi.mock("react", async (original) => ({
   ...await original<typeof import("react")>(),
   useState: (initial: unknown) => [typeof initial === "boolean" ? state.mounted : initial, vi.fn()],
   useEffect: () => {},
+  useRef: (initial: unknown) => ({ current: initial }),
+  useCallback: (callback: unknown) => callback,
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => ({ get: (key: string) => key === "tz" ? state.tz : state.date }),

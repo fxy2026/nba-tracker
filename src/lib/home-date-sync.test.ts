@@ -5,6 +5,8 @@ vi.mock("react", async (original) => ({
   ...await original<typeof import("react")>(),
   useState: (initial: unknown) => [initial, typeof initial === "string" ? state.setDate : vi.fn()],
   useEffect: (run: () => void, deps?: unknown[]) => state.effects.push({ run, deps }),
+  useRef: (initial: unknown) => ({ current: initial }),
+  useCallback: (callback: unknown) => callback,
 }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => ({ get: (key:string) => key === "tz" ? state.tz : state.date }), useRouter: () => ({ push: state.push }) }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: "en", t: getTranslations("en") }) }));
