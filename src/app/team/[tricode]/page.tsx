@@ -26,6 +26,8 @@ import TeamTrendsPanel, { type Rivalry } from "./_components/TeamTrendsPanel";
 import TeamRoster from "./_components/TeamRoster";
 import TeamLegends from "./_components/TeamLegends";
 import TeamDraftPicks from "./_components/TeamDraftPicks";
+import TeamArchiveCoverage from "./_components/TeamArchiveCoverage";
+import { getLatestCompletedTeamArchiveCoverage } from "@/lib/player-box-coverage";
 import { getSixersSeasonArchive } from "@/lib/sixers-season-archive";
 import SixersSeasonArchive, { SixersSeasonNavigation } from "./_components/SixersSeasonArchive";
 
@@ -315,6 +317,8 @@ export default async function TeamPage({ params, searchParams }: PageProps) {
         <TeamScheduleCard mode="recent" t={t} games={recentGames} />
         {upcomingGames.length > 0 || hasCanonicalSeasonCoverage(schedule, getScheduleCoverage(schedule), PLANNED_SEASON) ? <TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} difficulty={upcomingDifficulty} /> : <PlannedFixturesPanel team={team.tricode} compact fallback={<TeamScheduleCard mode="upcoming" t={t} games={upcomingGames} />} />}
       </div>
+
+      <TeamArchiveCoverage coverage={getLatestCompletedTeamArchiveCoverage(team.tricode)} isZh={isZh} />
 
       <TeamTrendsPanel t={t} recentGames={regularGames} rivalries={rivalries} />
 

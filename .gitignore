@@ -62,3 +62,6 @@ article-images/frames/
 
 # Generated content identity for the shared slim schedule cache.
 /src/data/schedule-projection-revision.json
+
+# Generated small archive-coverage metadata; never player statistics.
+/src/data/player-box-coverage.json
