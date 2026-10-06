@@ -22,3 +22,30 @@ it('rejects invalid season/type and preserves explicit cancellation',async()=>{e
 
 it('returns nonempty validated rows immediately without waiting for the optional provider',async()=>{vi.useFakeTimers();mocks.nba.mockResolvedValue({ok:true,data:raw});mocks.espn.mockImplementation(()=>new Promise(()=>{}));const response=await GET(request());expect(response.status).toBe(200);expect((await response.json()).rows).toHaveLength(1);expect(vi.getTimerCount()).toBe(0);});
 it('keeps the whole identity-and-log chain bounded and returns unavailable rather than empty on timeout',async()=>{vi.useFakeTimers();mocks.nba.mockImplementation(()=>new Promise(()=>{}));mocks.espn.mockImplementation(()=>new Promise(()=>{}));const pending=GET(request());await vi.advanceTimersByTimeAsync(28000);const response=await pending;expect(response.status).toBe(503);expect(await response.json()).toEqual({error:'Game-log source unavailable'});expect(vi.getTimerCount()).toBe(0);});
+it('retains a reviewed archive on equal game coverage, without changing NBA tie priority',async()=>{
+  const archive={...data(),source:{...data().source,provider:'ESPN',archived:true,reviewed:true}};
+  mocks.archive.mockResolvedValue(archive);
+  mocks.espn.mockResolvedValue({...archive,source:{...archive.source,archived:false,reviewed:false}});
+  expect((await (await GET(request('&refresh=1'))).json()).source.archived).toBe(true);
+  mocks.nba.mockResolvedValue({ok:true,data:raw});
+  expect((await (await GET(request('&refresh=1'))).json()).source.provider).toBe('NBA Stats');
+});
+it('does not prefer an archive merely because different game coverage has the same row count',async()=>{
+  const archive={...data(),source:{...data().source,provider:'ESPN',archived:true,reviewed:true}};
+  mocks.archive.mockResolvedValue(archive);
+  mocks.espn.mockResolvedValue({...archive,rows:[{...archive.rows[0],id:'espn:999999999',date:'2025-10-22',nbaGameId:null}],source:{...archive.source,archived:false,reviewed:false}});
+  expect((await (await GET(request('&refresh=1'))).json()).rows[0].date).toBe('2025-10-22');
+});
+it('discloses conflicting reviewed refresh records while retaining the reviewed archive',async()=>{
+  const { getPlayerGameLogArchive }=await vi.importActual<typeof import('./player-game-log-archive')>('./player-game-log-archive');
+  const archive=(await getPlayerGameLogArchive(2544,'2013-14','Regular Season'))!;
+  mocks.archive.mockResolvedValue(archive);
+  const fresh=structuredClone(archive);fresh.source.provider='ESPN';fresh.source.archived=false;
+  fresh.rows.find(row=>row.id==='espn:400489766')!.ast=6;
+  mocks.espn.mockResolvedValue(fresh);
+  const response=await GET(new NextRequest('http://localhost/api/player-game-log?playerId=2544&season=2013-14&refresh=1'));
+  const selected=await response.json();
+  expect(selected.refreshNotice).toBe('review-conflict');
+  expect(selected.rows.find((row:{id:string})=>row.id==='espn:400489766').ast).toBe(4);
+  expect(selected.source.archived).toBe(true);
+});

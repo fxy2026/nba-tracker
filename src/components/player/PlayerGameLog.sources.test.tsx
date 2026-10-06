@@ -1,0 +1,38 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, expect, it, vi } from "vitest";
+import PlayerGameLog from "./PlayerGameLog";
+import PlayerGameCards from "./PlayerGameCards";
+import { getPlayerGameLogArchive } from "@/lib/player-game-log-archive";
+vi.mock("server-only", () => ({}));
+const state = vi.hoisted(() => ({ locale: "en" }));
+vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: state.locale }) }));
+vi.mock("@/components/TeamLogo", () => ({ default: ({ tricode }: { tricode: string }) => <span>{tricode}</span> }));
+vi.mock("./PlayerProfilePanels", () => ({ usePlayerProfileLocation: () => "", commitPlayerProfileUrl: vi.fn() }));
+beforeEach(() => { state.locale = "en"; });
+it.each(["en", "zh"])("labels mixed archive and recovered row provenance in %s", async locale => {
+  state.locale = locale;
+  const data = (await getPlayerGameLogArchive(2544, "2012-13", "Regular Season"))!;
+  const html = renderToStaticMarkup(<PlayerGameLog playerId={2544} seasons={["2012-13"]} initialData={data} />);
+  expect(html).toContain("ESPN + StatMuse");
+  expect(html).toContain(locale === "zh" ? "每场保留各自来源" : "Each game retains its source");
+  expect(html).toContain(`href="${data.source.supplement!.url}"`);
+  expect(html).toContain(locale === "zh" ? "NBA 杯决赛" : "NBA Cup final");
+  const rows = data.rows.filter(row => row.sourceProvider === "StatMuse");
+  const cards = renderToStaticMarkup(<PlayerGameCards rows={rows} isZh={locale === "zh"} />);
+  expect(cards).toContain(locale === "zh" ? "查看原始来源 · StatMuse" : "Original source · StatMuse");
+  expect(cards).not.toContain('href="/game/');
+  expect(cards).not.toContain('espn.com');
+});
+it.each(["en", "zh"])("keeps the assist caveat and both sources explicit in %s", async locale => {
+  state.locale = locale;
+  const data = (await getPlayerGameLogArchive(2544, "2013-14", "Regular Season"))!;
+  const row = data.rows.find(row => row.assistReview)!;
+  const html = renderToStaticMarkup(<PlayerGameCards rows={[row]} isZh={locale === "zh"} />);
+  expect(html).toContain(locale === "zh" ? "StatMuse 为 4，ESPN 原记录为 5" : "StatMuse lists 4; the original ESPN record lists 5");
+  expect(html).toContain(locale === "zh" ? "尚未通过 NBA 官方单场技术统计核验" : "an official NBA individual box score has not been verified");
+  expect(html).toContain(`href="${row.sourceUrl}"`);
+  expect(html).toContain(`href="${row.assistReview!.url}"`);
+  expect(html).not.toContain('href="/game/');
+  const conflict = renderToStaticMarkup(<PlayerGameLog playerId={2544} seasons={["2013-14"]} initialData={{ ...data, refreshNotice: "review-conflict" }} />);
+  expect(conflict).toContain(locale === "zh" ? "暂时保留已核对存档" : "Keeping the reviewed archive for now");
+});

@@ -9,8 +9,8 @@ import type { PlayerLogStat } from "./player-game-log-data";
 
 vi.mock("server-only", () => ({}));
 
-// Only this independently reviewed five-season batch is promoted. Older
-// captures and 2023-24 still need phase/era review and are not imported here.
+// Keep the original five-season release byte-for-byte while later career
+// captures receive their own independent review and regression coverage.
 const seasons = [
   { season: "2018-19", regular: 55, playoffs: 0, preseason: 4, bytes: 18928, sha256: "79dc0df0815d211c5fa6fc543f6821e6937a14600897078513edafbaab02be54" },
   { season: "2019-20", regular: 67, playoffs: 21, preseason: 4, bytes: 26730, sha256: "9221a9d48064575d3e9a5943d0f4a55c9228298df7f4715ef6a3c306fb49d654" },
@@ -88,13 +88,13 @@ describe.each(seasons)("LeBron's recorded $season archive", entry => {
   });
 });
 
-it("adds 338 source records without reusing phase identities or promoting an absent season", async () => {
+it("adds 338 source records without reusing phase identities or changing the original batch", async () => {
   const records = (await Promise.all(seasons.flatMap(entry =>
     (["Regular Season", "Playoffs", "Pre Season"] as const).map(type => getPlayerGameLogArchive(2544, entry.season, type))))).flatMap(data => data!.rows);
   expect(records).toHaveLength(338);
   expect(new Set(records.map(row => row.id)).size).toBe(338);
   expect(seasons.reduce((sum, entry) => sum + entry.bytes, 0)).toBe(104137);
-  expect(await getPlayerGameLogArchive(2544, "2023-24", "Regular Season")).toBeNull();
+  expect((await getPlayerGameLogArchive(2544, "2023-24", "Regular Season"))?.rows).toHaveLength(71);
   const profile = await getPlayerGameLogProfile(2544, { from: 2003, to: 2026 }, "2026-27");
   expect(profile.defaultSeason).toBe("2025-26");
   expect(profile.initialData?.rows).toHaveLength(60);

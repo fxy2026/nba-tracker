@@ -1,3 +1,4 @@
+import { reconcileReviewedEspnGameLog, sameReviewedGameLogCoverage } from "@/lib/lebron-game-log-review";
 import { withNbaPlayerLogGamePages } from "@/lib/player-game-log-links";
 import { NextRequest, NextResponse } from "next/server";
 import { parsePlayerId } from "@/lib/player-identity";
@@ -46,10 +47,19 @@ export async function GET(request: NextRequest) {
   try {
     await Promise.race([Promise.all([nba, record(fetchEspnPlayerGameLog(identity, signal))]), usable, aborted]);
     if (request.signal.aborted) return unavailable();
-    const candidates = [...completed, archive].filter((data): data is PlayerGameLogData => data !== null);
-    // Prefer more actual records, NBA on a tie. Do not merge providers or
-    // silently deduplicate different ID systems without verified game identity.
-    candidates.sort((a, b) => b.rows.length - a.rows.length || Number(b.source.provider === "NBA Stats") - Number(a.source.provider === "NBA Stats"));
+    let reviewConflict = false;
+    const refreshed = completed.map(data => {
+      const reviewed = archive ? reconcileReviewedEspnGameLog(data, archive) : data;
+      if (!reviewed) reviewConflict = true;
+      return reviewed;
+    });
+    const retainedArchive = archive && reviewConflict ? { ...archive, refreshNotice: "review-conflict" as const } : archive;
+    const candidates = [...refreshed, retainedArchive].filter((data): data is PlayerGameLogData => data !== null);
+    // Prefer more actual records, NBA on a tie. A reviewed archive wins an
+    // ESPN tie only for matching game coverage. Supplement reconciliation above
+    // requires exact reviewed identity and compatible counting statistics.
+    candidates.sort((a, b) => b.rows.length - a.rows.length || Number(b.source.provider === "NBA Stats") - Number(a.source.provider === "NBA Stats")
+      || (sameReviewedGameLogCoverage(a, b) ? Number(!!b.source.reviewed && b.source.archived) - Number(!!a.source.reviewed && a.source.archived) : 0));
     const selected = candidates[0];
     return selected ? respond(await withPlayerLogCoverage(selected)) : unavailable();
   } finally { clearTimeout(timer); signal.removeEventListener("abort", onAbort); deadline.abort(); }

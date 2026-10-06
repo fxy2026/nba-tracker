@@ -30,7 +30,8 @@ export function PlayerGameRowDetails({ row, isZh }: { row: PlayerLogRow; isZh: b
     <dl className={styles.shootingStats}>{shooting.map(([made, attempts, label]) => <div key={label}><dt>{label}</dt><dd>{show(row[made])}<span> / {show(row[attempts])}</span></dd></div>)}</dl>
     <dl className={styles.secondaryStats}>{secondary.map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{show(row[key])}</dd></div>)}</dl>
     {!row.internalGameId && <p className={styles.unavailable}>{isZh ? "本站暂未收录此场完整比赛页，以上为该球员的逐场记录。" : "A full game page is not available here yet. These are this player’s recorded stats."}</p>}
-    <a className={styles.sourceLink} href={row.sourceUrl} target="_blank" rel="noopener noreferrer">{isZh ? "查看原始来源" : "Original source"} ↗</a>
+    {row.assistReview && <p className={styles.unavailable}>{isZh ? "助攻核对：StatMuse 为 4，ESPN 原记录为 5。4 次助攻可与 NBA 赛季总计对齐；尚未通过 NBA 官方单场技术统计核验。" : "Assist review: StatMuse lists 4; the original ESPN record lists 5. Using 4 reconciles the NBA season total; an official NBA individual box score has not been verified."} <a className={styles.sourceLink} href={row.assistReview.url} target="_blank" rel="noopener noreferrer">StatMuse ↗</a></p>}
+    <a className={styles.sourceLink} href={row.sourceUrl} target="_blank" rel="noopener noreferrer">{isZh ? "查看原始来源" : "Original source"}{row.sourceProvider === "StatMuse" ? " · StatMuse" : row.id.startsWith("espn:") ? " · ESPN" : ""} ↗</a>
   </div>;
 }
 export default function PlayerGameCards({ rows, isZh }: { rows: PlayerLogRow[]; isZh: boolean }) {

@@ -39,6 +39,13 @@ export function parseEspnPlayerGameLog(raw: unknown, identity: Pick<PlayerGameLo
         if (!home && event.team.id !== event.awayTeamId || event.opponent.id !== (home ? event.awayTeamId : event.homeTeamId)) return null;
         const date = sourceDate(event.gameDate);
         if (!date) return null;
+        // This championship is present in ESPN's regular group but does not
+        // count toward NBA regular-season statistics. Never broaden by title alone.
+        if (identity.playerId === 2544 && identity.season === "2023-24" && identity.seasonType === "Regular Season" && line.eventId === "401607495") {
+          if (date !== "2023-12-09" || event.team.id !== "13" || event.opponent.id !== "11" || !home
+            || event.eventNote !== "NBA In-Season Tournament Championship") return null;
+          continue;
+        }
         const statsByName = Object.fromEntries(names.map((name, index) => [name, (line.stats as unknown[])[index]]));
         // Non-appearance/DNP rows are not games played. Reject unknown text
         // rather than publishing it as a zero-minute statistical appearance.

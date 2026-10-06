@@ -1,4 +1,5 @@
 // Server-only raw evidence. Never bundle archive payloads into client modules.
+import { withLeBronGameLogReview } from "./lebron-game-log-review";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
@@ -29,6 +30,7 @@ export async function getPlayerGameLogArchive(playerId: number, season: string, 
     if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256) return null;
     const raw = JSON.parse(bytes.toString("utf8"));
     const data = parseEspnPlayerGameLog(raw, { playerId, season, seasonType }, entry.espnId, entry.retrievedAt, true);
-    return data ? withPlayerLogCoverage(withEspnPlayerLogGamePages(data, raw)) : null;
+    const reviewed = data ? await withLeBronGameLogReview(withEspnPlayerLogGamePages(data, raw), entry.sha256) : null;
+    return reviewed ? withPlayerLogCoverage(reviewed) : null;
   } catch { return null; }
 }

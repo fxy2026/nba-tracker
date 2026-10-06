@@ -1,0 +1,363 @@
+[
+  {
+    "seasonEndYear": 2013,
+    "season": "2012-13",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2013",
+    "retrievedAt": "2026-10-06T11:40:31.102912+00:00",
+    "retrievalTimeNote": "Exact original capture time; later static extraction recorded separately.",
+    "htmlSha256": "88e52fd53ad453c8f1caf25acf02f8b74b5a9d64269ff75f2401b93c47374b1e",
+    "htmlBytes": 1535476,
+    "tablesFile": "statmuse-2013-tables.json.gz",
+    "tablesGzipSha256": "80a3c817ae59337e7cd45b60d80c3f29cd93f8c721e531678811914acffdf032",
+    "tablesUncompressedSha256": "7f984f1d427c2024c45f80ec3ddab76addd395671f104fd4567c3bd65dc47c47",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 7
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 7
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 5
+      },
+      {
+        "name": "First Round",
+        "rows": 4
+      },
+      {
+        "name": "April",
+        "rows": 4
+      },
+      {
+        "name": "March",
+        "rows": 17
+      },
+      {
+        "name": "February",
+        "rows": 13
+      },
+      {
+        "name": "January",
+        "rows": 13
+      },
+      {
+        "name": "December",
+        "rows": 15
+      },
+      {
+        "name": "November",
+        "rows": 13
+      },
+      {
+        "name": "October",
+        "rows": 1
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution",
+    "verifiedExistingAt": "2026-10-06T11:42:14.512305+00:00"
+  },
+  {
+    "seasonEndYear": 2014,
+    "season": "2013-14",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2014",
+    "retrievedAt": "2026-10-06T11:42:25.163577+00:00",
+    "retrievalTimeNote": "captured during this request",
+    "htmlSha256": "870380515cbc2a64f996cfa129e687b4664894fe1ccbf81211853f651f618672",
+    "htmlBytes": 1513653,
+    "tablesFile": "statmuse-2014-tables.json.gz",
+    "tablesGzipSha256": "07f2f28f61e81078678c3d4d1a2a548533ea5cfce4d3dc332c32413fa8d77bc1",
+    "tablesUncompressedSha256": "c17958900fde4fe00235684d3e3e9b86e33e1055f71112f7ccfd117afcec8dce",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 5
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 6
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 5
+      },
+      {
+        "name": "First Round",
+        "rows": 4
+      },
+      {
+        "name": "April",
+        "rows": 7
+      },
+      {
+        "name": "March",
+        "rows": 17
+      },
+      {
+        "name": "February",
+        "rows": 9
+      },
+      {
+        "name": "January",
+        "rows": 14
+      },
+      {
+        "name": "December",
+        "rows": 14
+      },
+      {
+        "name": "November",
+        "rows": 14
+      },
+      {
+        "name": "October",
+        "rows": 2
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution"
+  },
+  {
+    "seasonEndYear": 2015,
+    "season": "2014-15",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2015",
+    "retrievedAt": "2026-10-06T11:42:35.632888+00:00",
+    "retrievalTimeNote": "captured during this request",
+    "htmlSha256": "8da1cf079d55a54f4fc695308664c30ff9c07f7cb6243d76cc151e3ee9ad0e18",
+    "htmlBytes": 1429858,
+    "tablesFile": "statmuse-2015-tables.json.gz",
+    "tablesGzipSha256": "d63fc126ee265c875cdbdd84693dbe6a1894f0cb06b09788af474fca7dcaa066",
+    "tablesUncompressedSha256": "346b8597dc906b85a8d077f5f3806676c1a9b5cfa493524bb4ac3a17df58d85c",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 6
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 4
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 6
+      },
+      {
+        "name": "First Round",
+        "rows": 4
+      },
+      {
+        "name": "April",
+        "rows": 5
+      },
+      {
+        "name": "March",
+        "rows": 15
+      },
+      {
+        "name": "February",
+        "rows": 10
+      },
+      {
+        "name": "January",
+        "rows": 10
+      },
+      {
+        "name": "December",
+        "rows": 14
+      },
+      {
+        "name": "November",
+        "rows": 13
+      },
+      {
+        "name": "October",
+        "rows": 2
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution"
+  },
+  {
+    "seasonEndYear": 2016,
+    "season": "2015-16",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2016",
+    "retrievedAt": "2026-10-06T11:42:46.100236+00:00",
+    "retrievalTimeNote": "captured during this request",
+    "htmlSha256": "79d37599b61470168d32b0e60177b2114c63500b2a9e4935739db940bfce82ea",
+    "htmlBytes": 1516571,
+    "tablesFile": "statmuse-2016-tables.json.gz",
+    "tablesGzipSha256": "136febcd3ad92071a66caaa73e7ac3776f6be4296f82c0ac6e951f4ba684f6f6",
+    "tablesUncompressedSha256": "0f61099276430dfdbe741a8e2e69605ccacd602ab071f1311f809eecdee123f1",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 7
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 6
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 4
+      },
+      {
+        "name": "First Round",
+        "rows": 4
+      },
+      {
+        "name": "April",
+        "rows": 5
+      },
+      {
+        "name": "March",
+        "rows": 14
+      },
+      {
+        "name": "February",
+        "rows": 12
+      },
+      {
+        "name": "January",
+        "rows": 16
+      },
+      {
+        "name": "December",
+        "rows": 12
+      },
+      {
+        "name": "November",
+        "rows": 14
+      },
+      {
+        "name": "October",
+        "rows": 3
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution"
+  },
+  {
+    "seasonEndYear": 2017,
+    "season": "2016-17",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2017",
+    "retrievedAt": "2026-10-06T11:42:56.957778+00:00",
+    "retrievalTimeNote": "captured during this request",
+    "htmlSha256": "45f12df9fc8225eaa86b31d57056db1c58e2dc4b94eda9f55457b05e7118e2a9",
+    "htmlBytes": 1462271,
+    "tablesFile": "statmuse-2017-tables.json.gz",
+    "tablesGzipSha256": "3d293289acc3529595d2bba29f84d763de8f5c73ce1b39fe9d8e9d941e1bb235",
+    "tablesUncompressedSha256": "59fa5db0e049e5996f683ce246508b5d718dee1e2e7b2fa0e9551241ae0eee3b",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 5
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 5
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 4
+      },
+      {
+        "name": "First Round",
+        "rows": 4
+      },
+      {
+        "name": "April",
+        "rows": 5
+      },
+      {
+        "name": "March",
+        "rows": 15
+      },
+      {
+        "name": "February",
+        "rows": 10
+      },
+      {
+        "name": "January",
+        "rows": 15
+      },
+      {
+        "name": "December",
+        "rows": 14
+      },
+      {
+        "name": "November",
+        "rows": 12
+      },
+      {
+        "name": "October",
+        "rows": 3
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution"
+  },
+  {
+    "seasonEndYear": 2018,
+    "season": "2017-18",
+    "status": "saved",
+    "sourceUrl": "https://www.statmuse.com/nba/player/lebron-james-1780/game-log?seasonYear=2018",
+    "retrievedAt": "2026-10-06T11:43:07.278156+00:00",
+    "retrievalTimeNote": "captured during this request",
+    "htmlSha256": "1c3686754c1e1add9f054f2010753d1de2a8b3a483bffe1d8b4430a80c39ed0f",
+    "htmlBytes": 1592485,
+    "tablesFile": "statmuse-2018-tables.json.gz",
+    "tablesGzipSha256": "ba0d826fc0137e84740ca2dec7e0684ad3aec690df30f4ec1f86b9c1a5d71043",
+    "tablesUncompressedSha256": "72b67c6d2b96c4079072781871646eb7aa4a0bb3f5e0a0d5b648abf5753a6f21",
+    "tables": [
+      {
+        "name": "NBA Finals",
+        "rows": 4
+      },
+      {
+        "name": "Conference Finals",
+        "rows": 7
+      },
+      {
+        "name": "Conference Semifinals",
+        "rows": 4
+      },
+      {
+        "name": "First Round",
+        "rows": 7
+      },
+      {
+        "name": "April",
+        "rows": 6
+      },
+      {
+        "name": "March",
+        "rows": 16
+      },
+      {
+        "name": "February",
+        "rows": 10
+      },
+      {
+        "name": "January",
+        "rows": 14
+      },
+      {
+        "name": "December",
+        "rows": 14
+      },
+      {
+        "name": "November",
+        "rows": 15
+      },
+      {
+        "name": "October",
+        "rows": 7
+      }
+    ],
+    "extraction": "Static public HTML table props only; no JavaScript execution"
+  }
+]
