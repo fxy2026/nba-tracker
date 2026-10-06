@@ -52,7 +52,7 @@ vi.mock("react", async original => {
 });
 vi.mock("next/navigation", () => ({ useSearchParams: () => runtime.search, useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/components/LocaleProvider", () => ({ useLocale: () => ({ locale: runtime.locale, t: getTranslations(runtime.locale) }) }));
-vi.mock("@/lib/timezone", () => ({ localTz: () => "UTC", dateInTz: () => "2026-10-04" }));
+vi.mock("@/lib/timezone", () => ({ localTz: () => "America/New_York", dateInTz: () => "2026-10-04" }));
 import HomeClient from "./HomeClient";
 import GamesList from "./GamesList";
 import HomeExtra from "./HomeExtra";

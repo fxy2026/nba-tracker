@@ -44,6 +44,11 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday, 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration flag: local tz is unknowable during SSR
   useEffect(() => setMounted(true), []);
 
+  // The server seed describes an ET day, not an implicit browser-local day.
+  // Preserve that identity through the first hydration render, then remount
+  // GamesList if the browser's real zone differs, even for the same date string.
+  const gamesTimeZone = chosenTimeZone ?? (mounted ? getLocalTz() : "America/New_York");
+
   // Keep explicit date links and browser Back/Forward in sync. A bare Home URL
   // resolves to local today only after mount, preserving the SSR first paint.
   useEffect(() => {
@@ -83,14 +88,14 @@ export default function HomeClient({ initialDate, initialGames, initialIsToday, 
           </div>
         );
       })()}
-      {/* SSR'd games only apply to the server-rendered date. If the client
-          tz-correction snapped to a different local "today", GamesList falls
-          back to its own fetch for the new date. */}
+      {/* A non-ET browser needs the complete local day, which can overlap two
+          ET days. Filtering this seed alone cannot establish that coverage. */}
       <GamesList
-        key={chosenTimeZone ?? "local"}
+        key={gamesTimeZone}
         timeZone={chosenTimeZone}
         selectedDate={selectedDate}
-        initialGames={!chosenTimeZone && selectedDate === initialDate ? initialGames : undefined}
+        initialGames={gamesTimeZone === "America/New_York" && selectedDate === initialDate ? initialGames : undefined}
+        readyToFetch={mounted}
         isToday={isToday}
       />
 

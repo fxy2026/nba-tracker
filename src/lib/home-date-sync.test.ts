@@ -27,6 +27,6 @@ it('explicit timezone follows URL changes and scopes both date and game navigati
   const tree=HomeClient({initialDate:'2026-03-01',initialIsToday:false,initialGames:[]});
   const chosen=tz==='invalid-zone'||tz===null?undefined:tz;
   const sync=state.effects.find(effect=>effect.deps?.length===2&&effect.deps[0]===state.date);expect(sync?.deps?.[1]).toBe(chosen);
-  const children=tree.props.children;const games=children.find((child:unknown)=>child&&typeof child==='object'&&'props'in child&&(child.props as Record<string,unknown>).isToday!==undefined);expect(games.props.timeZone).toBe(chosen);if(chosen)expect(games.props.initialGames).toBeUndefined();
+  const children=tree.props.children;const games=children.find((child:unknown)=>child&&typeof child==='object'&&'props'in child&&(child.props as Record<string,unknown>).isToday!==undefined);expect(games.props.timeZone).toBe(chosen);if(chosen&&chosen!=='America/New_York')expect(games.props.initialGames).toBeUndefined();
  }
 });

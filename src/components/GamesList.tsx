@@ -28,13 +28,16 @@ interface GamesListProps {
   selectedDate: string;
   timeZone?: string;
   initialGames?: ScheduleGame[];
+  // HomeClient resolves the browser date/zone after hydration. Keep any valid
+  // server seed visible, but avoid an immediately superseded initial request.
+  readyToFetch?: boolean;
   // Computed in HomeClient behind a post-mount flag (false until hydration) so
   // the tz-dependent live UI — ScoreTicker/LiveScoreRefresher/auto badge/
   // TodayStars — stays absent on first paint and matches the SSR HTML.
   isToday: boolean;
 }
 
-export default function GamesList({ selectedDate, initialGames, isToday, timeZone }: GamesListProps) {
+export default function GamesList({ selectedDate, initialGames, isToday, timeZone, readyToFetch = true }: GamesListProps) {
   const { t, locale } = useLocale();
   const isZh = locale === "zh";
   // Keep implicit-local identity stable across SSR/hydration. Resolve the actual
@@ -43,7 +46,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
   const [{ games: responseGames, navigation, planned, espn: responseEspn, key: responseKey }, setResults] = useState<{ games: ScheduleGame[]; navigation: ScheduleNavigation | null; planned: PlannedFixtureView | null; espn: EspnScoreboardView | null; key: string }>({ games: initialGames || [], navigation: null, planned: null, espn: null, key: requestKey });
   const [loading, setLoading] = useState(!initialGames);
   const [errorKey, setErrorKey] = useState<string | null>(null);
-  const initialFetchDone = useRef(!!initialGames?.length);
+  const initialSeedKey = useRef(initialGames?.length ? requestKey : null);
   const [requests] = useState(createLatestRequestGate);
   // Gate every score consumer before date/timezone effects run. Retained scores
   // and errors only belong to their requested day and timezone scope.
@@ -85,14 +88,16 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
   }, [requests, timeZone]);
 
   useEffect(() => {
-    if (initialFetchDone.current) {
-      initialFetchDone.current = false;
+    if (!readyToFetch) return;
+    const seededScope = initialSeedKey.current;
+    initialSeedKey.current = null;
+    if (seededScope === requestKey) {
       return () => requests.cancel();
     }
     setLoading(true);
     fetchGames(selectedDate);
     return () => requests.cancel();
-  }, [selectedDate, fetchGames, requests]);
+  }, [selectedDate, fetchGames, requests, readyToFetch, requestKey]);
 
   const refreshGames = useCallback(() => {
     fetchGames(selectedDate);
