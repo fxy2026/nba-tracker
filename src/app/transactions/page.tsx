@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award, Newspaper } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Activity, ListOrdered, Crown, Heart, Award, Newspaper, AlertCircle } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { useLocale } from "@/components/LocaleProvider";
@@ -27,6 +27,32 @@ interface PlayerIndexEntry {
   personId: number;
   firstName: string;
   lastName: string;
+}
+
+const REQUEST_TIMEOUT = 12_000;
+
+function parseTransactions(payload: unknown): Transaction[] {
+  if (!payload || typeof payload !== "object" || !("transactions" in payload) || !Array.isArray(payload.transactions)) {
+    throw new Error("Invalid transactions response");
+  }
+  return payload.transactions.map((row: unknown) => {
+    if (!row || typeof row !== "object") throw new Error("Invalid transaction");
+    const item = row as Record<string, unknown>;
+    if (["date", "team", "teamAbbr", "player", "type", "description"].some(key => typeof item[key] !== "string") ||
+      (item.players != null && (!Array.isArray(item.players) || item.players.some(name => typeof name !== "string"))) ||
+      (item.kind != null && typeof item.kind !== "string") ||
+      (item.teamLogo != null && typeof item.teamLogo !== "string")) {
+      throw new Error("Invalid transaction");
+    }
+    return { ...item, players: item.players ?? [], kind: item.kind ?? "other", teamLogo: item.teamLogo ?? "" } as unknown as Transaction;
+  });
+}
+
+function isPlayerIndexEntry(row: unknown): row is PlayerIndexEntry {
+  if (!row || typeof row !== "object") return false;
+  const item = row as Record<string, unknown>;
+  return typeof item.personId === "number" && Number.isSafeInteger(item.personId) && item.personId > 0 &&
+    typeof item.firstName === "string" && typeof item.lastName === "string";
 }
 
 function getKindColor(kind: string) {
@@ -58,31 +84,60 @@ export default function TransactionsPage() {
   const [playerIndex, setPlayerIndex] = useState<PlayerIndexEntry[]>([]);
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all([
-      fetch("/api/transactions?limit=150", { signal: controller.signal })
-        .then((r) => r.json())
-        .catch(() => ({ transactions: [] })),
-      fetch("/api/player-index", { signal: controller.signal })
-        .then((r) => r.json())
-        .catch(() => ({ data: [] })),
-    ])
-      .then(([txData, piData]) => {
-        const list: Transaction[] = (txData.transactions || []).map((t: Transaction) => ({
-          ...t,
-          players: t.players ?? [],
-          kind: t.kind ?? "other",
-          teamLogo: t.teamLogo ?? "",
-        }));
-        setTransactions(list);
-        setPlayerIndex(piData.data || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-    return () => controller.abort();
-  }, []);
+    const timeout = setTimeout(() => {
+      controller.abort();
+      setError(true);
+      setLoading(false);
+    }, REQUEST_TIMEOUT);
+    void (async () => {
+      try {
+        const response = await fetch("/api/transactions?limit=150", { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        if (!response.ok) throw new Error("Transactions unavailable");
+        const payload: unknown = await response.json();
+        if (controller.signal.aborted) return;
+        setTransactions(parseTransactions(payload));
+      } catch {
+        if (!controller.signal.aborted) setError(true);
+      } finally {
+        clearTimeout(timeout);
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+    return () => { controller.abort(); clearTimeout(timeout); };
+  }, [retryKey]);
+
+  // Player links are optional enrichment: show the feed first, and don't request
+  // the league-wide index for an empty feed or rows without parsed player names.
+  const needsPlayerIndex = transactions.some(transaction => transaction.players.length > 0);
+  useEffect(() => {
+    if (!needsPlayerIndex) return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    void (async () => {
+      try {
+        const response = await fetch("/api/player-index", { signal: controller.signal });
+        if (!response.ok || controller.signal.aborted) return;
+        const payload: unknown = await response.json();
+        if (!controller.signal.aborted && payload && typeof payload === "object" && "data" in payload && Array.isArray(payload.data)) {
+          setPlayerIndex(payload.data.filter(isPlayerIndexEntry));
+        }
+      } catch { /* Keep readable player names when optional links are unavailable. */ }
+      finally { clearTimeout(timeout); }
+    })();
+    return () => { controller.abort(); clearTimeout(timeout); };
+  }, [needsPlayerIndex]);
+
+  const retry = () => {
+    setError(false);
+    setLoading(true);
+    setRetryKey(key => key + 1);
+  };
 
   const nameToId = useMemo(() => {
     const m = new Map<string, number>();
@@ -143,7 +198,7 @@ export default function TransactionsPage() {
       />
 
       {loading && (
-        <div className="space-y-4">
+        <div className="space-y-4" role="status" aria-label={isZh ? "正在加载交易动态" : "Loading transactions"} aria-busy="true">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i}>
               <div className="h-5 w-40 skeleton-shimmer rounded mb-2" />
@@ -196,7 +251,18 @@ export default function TransactionsPage() {
         );
       })()}
 
-      {!loading && transactions.length === 0 && (
+      {!loading && error && (
+        <EmptyState
+          icon={AlertCircle}
+          tone="danger"
+          title={isZh ? "交易动态暂时不可用" : "Transactions are temporarily unavailable"}
+          description={isZh ? "无法加载最新动态，请重试。" : "The latest feed could not be loaded. Please try again."}
+          action={{ label: isZh ? "重试" : "Retry", onClick: retry }}
+          className="[&_button]:min-h-11 [&_button]:min-w-11"
+        />
+      )}
+
+      {!loading && !error && transactions.length === 0 && (
         <EmptyState
           icon={ArrowLeftRight}
           title={isZh ? "暂无最新交易动态" : "No recent transactions available"}

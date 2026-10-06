@@ -26,11 +26,12 @@ const MAX_LIMIT = 500;
 
 export async function GET(request: NextRequest) {
   const raw = Number(request.nextUrl.searchParams.get("limit"));
-  const limit = Number.isFinite(raw) && raw > 0 ? Math.min(Math.floor(raw), MAX_LIMIT) : DEFAULT_LIMIT;
+  const limit = Number.isFinite(raw) && raw > 0 ? Math.max(1, Math.min(Math.floor(raw), MAX_LIMIT)) : DEFAULT_LIMIT;
 
+  // One deadline covers headers AND the JSON body; all exit paths release it.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(
       `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=${limit}`,
       {
@@ -39,15 +40,16 @@ export async function GET(request: NextRequest) {
         signal: controller.signal,
       }
     );
-    clearTimeout(timeout);
-
     if (!res.ok) {
-      return NextResponse.json({ transactions: [] }, { status: 502 });
+      void res.body?.cancel().catch(() => {});
+      return NextResponse.json({ transactions: [] }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
 
-    const data = await res.json();
+    const data: unknown = await res.json();
+    controller.signal.throwIfAborted();
     // Shape guard (batch 1 C11c): an unexpected body must not be cached as "none".
-    const items: unknown = data.transactions ?? data.items;
+    const payload = data && typeof data === "object" ? data as Record<string, unknown> : null;
+    const items: unknown = payload?.transactions ?? payload?.items;
     if (!Array.isArray(items)) {
       return NextResponse.json({ transactions: [] }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
@@ -77,5 +79,7 @@ export async function GET(request: NextRequest) {
     );
   } catch {
     return NextResponse.json({ transactions: [] }, { status: 500, headers: { "Cache-Control": "no-store" } });
+  } finally {
+    clearTimeout(timeout);
   }
 }
