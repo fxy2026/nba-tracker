@@ -68,5 +68,55 @@
     "retrievedAt": "2026-10-05T07:47:41.383315+00:00",
     "retrievalPrecision": "exact",
     "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/110/gamelog?season=2016"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2018-19",
+    "file": "2544-2018-19.json.gz",
+    "sha256": "79dc0df0815d211c5fa6fc543f6821e6937a14600897078513edafbaab02be54",
+    "retrievedAt": "2026-10-06T11:27:54.874789+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2019"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2019-20",
+    "file": "2544-2019-20.json.gz",
+    "sha256": "9221a9d48064575d3e9a5943d0f4a55c9228298df7f4715ef6a3c306fb49d654",
+    "retrievedAt": "2026-10-06T11:28:03.397345+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2020"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2020-21",
+    "file": "2544-2020-21.json.gz",
+    "sha256": "c8517995095cb0b77315d79f791d03c07995d05fed49a4465504045f2faa52f8",
+    "retrievedAt": "2026-10-06T11:28:10.922023+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2021"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2021-22",
+    "file": "2544-2021-22.json.gz",
+    "sha256": "f07288306184a60cf67f98871552203e37ebc7c2cbd966ed3eecfbb5773a8178",
+    "retrievedAt": "2026-10-06T11:28:18.160573+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2022"
+  },
+  {
+    "playerId": 2544,
+    "espnId": "1966",
+    "season": "2022-23",
+    "file": "2544-2022-23.json.gz",
+    "sha256": "8ad604bad8dbffcb11817213f3f413ade44b8e6c85b17ee9571e6a6f40654f2b",
+    "retrievedAt": "2026-10-06T11:28:28.474145+00:00",
+    "retrievalPrecision": "exact",
+    "url": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/1966/gamelog?season=2023"
   }
 ]
