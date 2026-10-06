@@ -98,22 +98,30 @@ export async function GET(request: NextRequest) {
         }
       }
     } else if (isToday) {
-      // ET path — original behavior. Degrades to an empty scoreboard on a
-      // transient CDN error instead of 500ing the endpoint (mirrors the tz path).
+      // Like the ET homepage seed, a complete day requires its own matching
+      // scoreboard date. Yesterday's cached finals cannot stand in for today.
       const liveGames = await getTodayScoreboard().catch(() => []);
       canonicalDayAvailable = getScoreboardSourceDate(liveGames) === etToday;
-      if (canonicalDayAvailable) canonicalDatesET.push(etToday);
-      games = liveGames.map((g) => ({
-        gameId: g.gameId,
-        gameCode: g.gameCode,
-        gameStatus: g.gameStatus,
-        gameStatusText: g.gameStatusText,
-        gameDateTimeUTC: g.gameTimeUTC,
-        homeTeam: { ...g.homeTeam, teamSlug: "" },
-        awayTeam: { ...g.awayTeam, teamSlug: "" },
-        seriesText: g.seriesText,
-        gameLeaders: g.gameLeaders,
-      }));
+      if (canonicalDayAvailable) {
+        canonicalDatesET.push(etToday);
+        games = liveGames.map((g) => ({
+          gameId: g.gameId,
+          gameCode: g.gameCode,
+          gameStatus: g.gameStatus,
+          gameStatusText: g.gameStatusText,
+          gameDateTimeUTC: g.gameTimeUTC,
+          homeTeam: { ...g.homeTeam, teamSlug: "" },
+          awayTeam: { ...g.awayTeam, teamSlug: "" },
+          seriesText: g.seriesText,
+          gameLeaders: g.gameLeaders,
+        }));
+      } else {
+        // Recover from dated schedule evidence before trying ESPN. Preserve the
+        // source array so a validated explicit-empty day can still be trusted.
+        // Unknown/mismatched scoreboard rows must not overwrite this fallback.
+        schedule = await getFullSchedule().catch(() => []);
+        games = getScheduleDayView(schedule, date, "America/New_York").games;
+      }
     } else {
       games = await getGamesByDate(date);
       if (hasRecentLiveGame(games)) {

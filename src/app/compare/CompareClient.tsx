@@ -485,7 +485,11 @@ function PlayerSearchBox({ player, query, results, placeholder, isZh, compact, o
         </button>
       )}
       {results.length > 0 && !player && (
-        <div className="absolute z-50 top-full mt-1 w-full glass-tile shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+        <div
+          className="z-50 top-full mt-1 w-full glass-tile shadow-xl max-h-48"
+          // Unlayered glass-tile relative/hidden rules override Tailwind utilities.
+          style={{ position: "absolute", overflowY: "auto" }}
+        >
           {results.map((p) => (
             <button key={p.personId} onClick={() => onPick(p)}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">

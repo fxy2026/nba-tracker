@@ -136,7 +136,11 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl overflow-hidden max-h-[360px] overflow-y-auto animate-fade-in">
+        <div
+          className="z-50 top-full mt-2 w-full glass-tile shadow-2xl max-h-[360px] animate-fade-in"
+          // Unlayered glass-tile relative/hidden rules override Tailwind utilities.
+          style={{ position: "absolute", overflowY: "auto" }}
+        >
           {results.map((p) => (
             <button
               key={p.personId}
@@ -166,7 +170,10 @@ export default function PlayerPicker({ isZh, currentName }: Props) {
       )}
 
       {open && results.length === 0 && query.length >= 2 && !loading && (
-        <div className="absolute z-50 top-full mt-2 w-full glass-tile shadow-2xl p-4 text-center">
+        <div
+          className="z-50 top-full mt-2 w-full glass-tile shadow-2xl p-4 text-center"
+          style={{ position: "absolute" }}
+        >
           <p className="text-text-secondary text-xs">
             {isZh ? `未找到 “${query}”` : `No players match “${query}”`}
           </p>

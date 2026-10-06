@@ -347,4 +347,29 @@ describe('Compare pending lookup and effect cleanup', () => {
     navigate('p1=893-1995'); await settle(); body.resolve({ data: [wilt] }); await settle();
     expect(boxes()[0].query).toBe(''); expect(boxes()[0].results).toEqual([]); expect(boxes()[0].player).toEqual(jordan);
   });
+
+  it.each([0, 1, 2])('keeps slot %s results above the page, scrollable, and selectable through the last row', async slot => {
+    const results = Array.from({ length: 12 }, (_, index) => ({ ...curry, personId: 800000 + index, firstName: 'Search', lastName: `Result ${index + 1}` }));
+    fetcher.mockImplementation((url: string) => Promise.resolve(url.includes('?q=')
+      ? { ok: true, json: async () => ({ data: results }) }
+      : response(records.get(new URL(url, 'https://example.test').searchParams.get('id') ?? '') ?? null)));
+    mount(slot === 2 ? pairA : ''); await settle();
+    type(slot, 'Search'); await vi.advanceTimersByTimeAsync(300); await settle();
+    const box = nodes(tree).filter(n => typeof n.type === 'function' && n.type.name === 'PlayerSearchBox')[slot];
+    const rendered = nodes((box.type as (props: typeof box.props) => ReactNode)(box.props));
+    const popup = rendered.find(n => n.type === 'div' && String(n.props.className).includes('z-50'))!;
+    // Inline declarations beat the unlayered glass-tile position/overflow.
+    // This is a CSS cascade contract, not a simulated browser measurement.
+    expect(popup.props.style).toMatchObject({ position: 'absolute', overflowY: 'auto' });
+    expect(popup.props.className).toContain('top-full');
+    expect(popup.props.className).toContain('w-full');
+    expect(popup.props.className).toContain('max-h-48');
+    const resultButtons = nodes(popup).filter(n => n.type === 'button');
+    expect(resultButtons).toHaveLength(12);
+    (resultButtons.at(-1)!.props.onClick as () => void)(); flush(); await settle();
+    expect(boxes()[slot].player).toEqual(results.at(-1));
+    expect(boxes()[slot].results).toEqual([]);
+    expect(boxes()[slot].query).toBe('');
+    expect(new URLSearchParams(actualURL.search).get(`p${slot + 1}`)).toBe('800011');
+  });
 });
