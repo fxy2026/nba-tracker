@@ -110,7 +110,10 @@ export default function InstallPrompt() {
 
   return (
     <div
-      className="mobile-floating fixed right-4 left-4 sm:left-auto sm:max-w-sm z-40 glass-tile shadow-xl border-accent/30 p-3 flex items-center gap-3"
+      className="mobile-floating right-4 left-4 sm:left-auto sm:max-w-sm z-40 glass-tile shadow-xl border-accent/30 p-3 flex items-center gap-3"
+      // The unlayered .glass-tile position:relative overrides Tailwind utilities.
+      // Keep viewport anchoring explicit so left/right insets constrain its width.
+      style={{ position: "fixed" }}
       role="dialog"
       aria-label={isZh ? "安装 NBA Tracker 应用" : "Install NBA Tracker app"}
     >
@@ -131,13 +134,15 @@ export default function InstallPrompt() {
       </div>
       {!iosHint && (
         <button
+          type="button"
           onClick={onInstall}
-          className="px-3 py-1.5 text-xs font-bold bg-accent-gradient text-white rounded-lg hover:opacity-90 transition-opacity shrink-0 cursor-pointer min-h-[44px]"
+          className="px-3 py-1.5 text-xs font-bold bg-accent-gradient text-white rounded-lg hover:opacity-90 transition-opacity shrink-0 cursor-pointer min-h-[44px] min-w-[44px]"
         >
           {isZh ? "安装" : "Install"}
         </button>
       )}
       <button
+        type="button"
         onClick={onDismiss}
         aria-label={isZh ? "关闭" : "Dismiss"}
         className="p-1.5 text-text-secondary hover:text-text-primary transition-colors shrink-0 cursor-pointer min-h-[44px] min-w-[44px] inline-flex items-center justify-center"

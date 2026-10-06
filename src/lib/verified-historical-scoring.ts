@@ -213,10 +213,30 @@ export function decodeReviewedHistoricalJson(bytes: Buffer, key: keyof typeof hi
     return JSON.parse(bytes.toString("utf8"));
   } catch { return null; }
 }
+// Keep literal paths at the filesystem reads. Turbopack cannot resolve paths
+// selected from an imported manifest and otherwise traces the entire project.
+// Tests keep these reads aligned with the hash allowlist and route includes.
+const reviewedFileReaders = {
+  facts: () => {
+    const path = join(process.cwd(), "src/data/verified-play-by-play/0042500405.json");
+    return statSync(path).size > 200_000 ? null : readFileSync(path);
+  },
+  box: () => {
+    const path = join(process.cwd(), "src/data/recovered-player-boxes/0042500405.json");
+    return statSync(path).size > 200_000 ? null : readFileSync(path);
+  },
+  shots: () => {
+    const path = join(process.cwd(), "src/data/verified-shot-charts/0042500405.json");
+    return statSync(path).size > 200_000 ? null : readFileSync(path);
+  },
+  periods: () => {
+    const path = join(process.cwd(), "src/data/official-period-scores/0042500405.json");
+    return statSync(path).size > 200_000 ? null : readFileSync(path);
+  },
+} as const;
 function readReviewedFile(key: keyof typeof historicalScoringFiles): unknown | null {
-  const path = join(process.cwd(), historicalScoringFiles[key].path);
-  if (statSync(path).size > 200_000) return null;
-  return decodeReviewedHistoricalJson(readFileSync(path), key);
+  const bytes = reviewedFileReaders[key]();
+  return bytes === null ? null : decodeReviewedHistoricalJson(bytes, key);
 }
 function freeze<T>(value: T): T {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {

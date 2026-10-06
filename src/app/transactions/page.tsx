@@ -170,7 +170,7 @@ export default function TransactionsPage() {
   });
 
   const chipCls = (active: boolean) =>
-    `text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
+    `inline-flex min-h-11 min-w-11 items-center justify-center sm:min-h-0 sm:min-w-0 text-xs px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
       active ? "bg-accent text-white" : "bg-bg-card border border-border text-text-secondary hover:text-text-primary"
     }`;
 
@@ -210,16 +210,18 @@ export default function TransactionsPage() {
 
       {/* Team filter — derived from unique teamAbbr present in the feed */}
       {!loading && teamAbbrs.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+        <div className="flex flex-wrap items-center gap-1.5 mb-4" role="group" aria-label={isZh ? "按球队筛选" : "Filter by team"}>
           <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary/60 mr-1">
             {isZh ? "球队" : "Teams"}
           </span>
-          <button onClick={() => setTeamFilter(null)} className={chipCls(!teamFilter)}>
+          <button type="button" aria-pressed={!teamFilter} onClick={() => setTeamFilter(null)} className={chipCls(!teamFilter)}>
             {isZh ? "全部" : "All"}
           </button>
           {teamAbbrs.map((abbr) => (
             <button
               key={abbr}
+              type="button"
+              aria-pressed={teamFilter === abbr}
               onClick={() => setTeamFilter(teamFilter === abbr ? null : abbr)}
               className={`${chipCls(teamFilter === abbr)} font-mono`}
             >

@@ -219,3 +219,35 @@ it("localizes the loading, failure and retry states in Chinese", async () => {
   retry(); await resolveFeed([]);
   expect(states()[0].title).toBe("暂无最新交易动态");
 });
+
+it.each(["en", "zh"] as const)("keeps mobile team filters touch-sized, wrapped and stateful after retry (%s)", async locale => {
+  runtime.locale = locale;
+  const group = () => view.find(node => node.props.role === "group" && node.props["aria-label"] === (locale === "zh" ? "按球队筛选" : "Filter by team"));
+  const buttons = () => nodes(group()?.props.children as ReactNode).filter(node => node.type === "button");
+  const click = (label: string) => { (buttons().find(node => node.props.children === label)!.props.onClick as () => void)(); render(); };
+  render(); expect(group()).toBeUndefined();
+  feeds()[0].response.reject(new Error("Offline")); await settle();
+  expect(group()).toBeUndefined();
+  retry(); expect(group()).toBeUndefined();
+  await resolveFeed([
+    { ...transaction("Lakers move"), players: [] },
+    { ...transaction("Celtics move"), team: "Boston Celtics", teamAbbr: "BOS", players: [] },
+  ]);
+  expect(group()?.props.className).toContain("flex-wrap");
+  expect(buttons()).toHaveLength(3);
+  for (const button of buttons()) {
+    expect(button.props.type).toBe("button");
+    expect(button.props.className).toContain("min-h-11 min-w-11");
+    expect(button.props.className).toContain("sm:min-h-0 sm:min-w-0");
+  }
+  const all = locale === "zh" ? "全部" : "All";
+  expect(buttons().find(node => node.props.children === all)?.props["aria-pressed"]).toBe(true);
+  click("LAL");
+  expect(hasText("Lakers move")).toBe(true); expect(hasText("Celtics move")).toBe(false);
+  expect(buttons().find(node => node.props.children === "LAL")?.props["aria-pressed"]).toBe(true);
+  expect(buttons().find(node => node.props.children === all)?.props["aria-pressed"]).toBe(false);
+  click("LAL"); expect(hasText("Celtics move")).toBe(true);
+  click("BOS"); expect(hasText("Lakers move")).toBe(false);
+  click(all); expect(hasText("Lakers move")).toBe(true); expect(hasText("Celtics move")).toBe(true);
+  expect(feeds()).toHaveLength(2); expect(indexes()).toHaveLength(0);
+});
