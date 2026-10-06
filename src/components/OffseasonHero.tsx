@@ -24,24 +24,47 @@ interface HeroNews {
   published: string;
 }
 
-// Mirrors the /api/transactions route fetch (UA header + 5s abort + revalidate
-// + shape guard); best-effort — any failure degrades to an empty section.
+// Each optional section gets one budget for headers and body consumption.
+// The race also bounds a transport that ignores abort, so the hero can stream.
+async function fetchHeroJson(url: string): Promise<unknown | null> {
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      (async () => {
+        const res = await fetch(url, {
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+          next: { revalidate: 1800 },
+          signal: controller.signal,
+        });
+        if (!res.ok || controller.signal.aborted) {
+          void res.body?.cancel().catch(() => {});
+          return null;
+        }
+        const data: unknown = await res.json();
+        return controller.signal.aborted ? null : data;
+      })(),
+      new Promise<null>((resolve) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          resolve(null);
+        }, 5000);
+      }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// Best-effort: any failure degrades only this optional section.
 async function fetchLatestTransactions(): Promise<HeroTxn[]> {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(
+    const data = await fetchHeroJson(
       "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=20",
-      {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-        next: { revalidate: 1800 },
-        signal: controller.signal,
-      }
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const items: EspnTxn[] = data.transactions || data.items || [];
+    ) as { transactions?: EspnTxn[]; items?: EspnTxn[] } | null;
+    const items = data?.transactions || data?.items || [];
     if (!Array.isArray(items)) return [];
     return items.slice(0, 5).map((t) => ({
       date: t.date || "",
@@ -56,21 +79,10 @@ async function fetchLatestTransactions(): Promise<HeroTxn[]> {
 
 async function fetchTopNews(): Promise<HeroNews[]> {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(
+    const data = await fetchHeroJson(
       "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=10",
-      {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-        next: { revalidate: 1800 },
-        signal: controller.signal,
-      }
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const articles: { headline?: string; links?: { web?: { href?: string } }; published?: string }[] =
-      data.articles || [];
+    ) as { articles?: { headline?: string; links?: { web?: { href?: string } }; published?: string }[] } | null;
+    const articles = data?.articles || [];
     if (!Array.isArray(articles)) return [];
     return articles.slice(0, 3).map((a) => ({
       headline: a.headline || "",
