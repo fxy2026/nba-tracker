@@ -1,11 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGamesByDate, getTodayScoreboard, getFullSchedule, getScheduleCoverage, getScoreboardSourceDate, formatDate, type ScheduleDate, type ScheduleGame } from "@/lib/api";
+import { getGamesByDate, getTodayScoreboard, getFullSchedule, getScheduleCoverage, getScoreboardSourceDate, formatDate, type NbaGame, type ScheduleDate, type ScheduleGame } from "@/lib/api";
 
 import { getEspnDailyScoreboard, localDayUtcWindow } from "@/lib/espn-scoreboard-server";
 import { currentSeason } from "@/lib/constants";
 import { getPlannedFixtureView } from "@/lib/planned-fixtures-server";
 import { validCalendarDate, validTimeZone } from "@/lib/planned-fixtures";
 import { getScheduleDayView, type ScheduleNavigation } from "@/lib/schedule-navigation";
+import { hasRecentLiveGame } from "@/lib/live-game-relevance";
+
+function overlayLiveGames(games: ScheduleGame[], liveGames: NbaGame[]): ScheduleGame[] {
+  const liveById = new Map(liveGames.map(game => [game.gameId, game]));
+  return games.map(game => {
+    const live = liveById.get(game.gameId);
+    if (!live) return game;
+    return {
+      ...game,
+      gameStatus: live.gameStatus,
+      gameStatusText: live.gameStatusText,
+      homeTeam: { ...game.homeTeam, score: live.homeTeam.score, periods: live.homeTeam.periods },
+      awayTeam: { ...game.awayTeam, score: live.awayTeam.score, periods: live.awayTeam.periods },
+      gameLeaders: live.gameLeaders,
+    };
+  });
+}
 
 // "YYYY-MM-DD" of a UTC instant in the given IANA timezone.
 function dateInTz(utcIso: string, tz: string): string {
@@ -46,7 +63,7 @@ export async function GET(request: NextRequest) {
       // These sources are independent. Start the applicable live overlay now
       // rather than adding its deadline after the cold full-schedule chain.
       // Catch immediately so schedule failure cannot leave an unhandled reject.
-      const liveGamesPending = isToday || date === etToday
+      let liveGamesPending = isToday || date === etToday
         ? getTodayScoreboard().catch(() => [])
         : null;
       // Timezone-aware: scan full schedule, pick games whose UTC tipoff falls
@@ -56,25 +73,19 @@ export async function GET(request: NextRequest) {
       games = view.games;
       navigation = view.navigation;
 
+      // A selected slate can still be playing after ET/local midnight. Only
+      // extend the overlay for recent live rows belonging to this local day.
+      if (!liveGamesPending && hasRecentLiveGame(games)) {
+        liveGamesPending = getTodayScoreboard().catch(() => []);
+      }
+
       // For live games (currently playing in ET), upgrade scores from live scoreboard.
       if (liveGamesPending) {
         const liveGames = await liveGamesPending;
         const sourceDate = getScoreboardSourceDate(liveGames);
         if (sourceDate === etToday) canonicalDatesET.push(sourceDate);
         canonicalDayAvailable = sourceDate === date && new Intl.DateTimeFormat('en-US', { timeZone: tz }).resolvedOptions().timeZone === 'America/New_York';
-        const liveById = new Map(liveGames.map((g) => [g.gameId, g]));
-        games = games.map((g) => {
-          const live = liveById.get(g.gameId);
-          if (!live) return g;
-          return {
-            ...g,
-            gameStatus: live.gameStatus,
-            gameStatusText: live.gameStatusText,
-            homeTeam: { ...g.homeTeam, score: live.homeTeam.score, periods: live.homeTeam.periods },
-            awayTeam: { ...g.awayTeam, score: live.awayTeam.score, periods: live.awayTeam.periods },
-            gameLeaders: live.gameLeaders,
-          };
-        });
+        games = overlayLiveGames(games, liveGames);
         // A live scoreboard can supply real rows when the full schedule is
         // unavailable. Filter by UTC in the selected zone and never duplicate IDs.
         const seen = new Set(games.map(game => game.gameId));
@@ -105,6 +116,9 @@ export async function GET(request: NextRequest) {
       }));
     } else {
       games = await getGamesByDate(date);
+      if (hasRecentLiveGame(games)) {
+        games = overlayLiveGames(games, await getTodayScoreboard().catch(() => []));
+      }
     }
 
     // Whole-season metadata (or one regular-season game) does not prove
@@ -128,7 +142,7 @@ export async function GET(request: NextRequest) {
       ? await getEspnDailyScoreboard(date, tz ?? "America/New_York", canonicalDatesET, request.signal)
       : undefined;
 
-    const cacheControl = espn?.state === "unavailable" ? "no-store" : isToday || espn?.games.some(game => game.status === "live")
+    const cacheControl = espn?.state === "unavailable" ? "no-store" : isToday || hasRecentLiveGame(games) || espn?.games.some(game => game.status === "live")
       ? "public, s-maxage=30, stale-while-revalidate=120"
       : date < localToday
       ? "public, s-maxage=3600, stale-while-revalidate=86400"

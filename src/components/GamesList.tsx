@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { ScheduleGame } from "@/lib/nba-contracts";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { isPlayoff } from "@/lib/games";
+import { hasRecentLiveGame } from "@/lib/live-game-relevance";
 import { createLatestRequestGate } from "@/lib/latest-request";
 import { offsetCalendarDate } from "@/lib/calendar-date";
 import { homeDateUrl } from "@/lib/date-navigation";
@@ -31,9 +32,8 @@ interface GamesListProps {
   // HomeClient resolves the browser date/zone after hydration. Keep any valid
   // server seed visible, but avoid an immediately superseded initial request.
   readyToFetch?: boolean;
-  // Computed in HomeClient behind a post-mount flag (false until hydration) so
-  // the tz-dependent live UI — ScoreTicker/LiveScoreRefresher/auto badge/
-  // TodayStars — stays absent on first paint and matches the SSR HTML.
+  // HomeClient supplies a server-stable first paint, then resolves local today.
+  // Recent games can keep playing after this selected calendar day has ended.
   isToday: boolean;
 }
 
@@ -108,7 +108,9 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
     upcoming: games.filter((g) => g.gameStatus === 1),
     final: games.filter((g) => g.gameStatus === 3),
   }), [games]);
-  const hasLiveGames = isToday && liveNow.length > 0;
+  // Recheck on each render/refresh so a stale live-looking schedule row ages
+  // out. The after-midnight extension waits for HomeClient's hydration gate.
+  const hasLiveGames = liveNow.length > 0 && (isToday || (readyToFetch && hasRecentLiveGame(liveNow)));
 
   const gameOfTheDay = useMemo(() => {
     if (final.length === 0) return null;
@@ -323,7 +325,7 @@ export default function GamesList({ selectedDate, initialGames, isToday, timeZon
                 <span className="h-px flex-1 bg-success/30" />
                 <span className="text-[10px] font-mono tabular-nums text-success/80">
                   {liveNow.length} {isZh ? "场比赛" : liveNow.length === 1 ? "game" : "games"}
-                  {isToday && <span className="text-text-secondary/60 ml-2">· {isZh ? "自动刷新" : "auto"}</span>}
+                  {hasLiveGames && <span className="text-text-secondary/60 ml-2">· {isZh ? "自动刷新" : "auto"}</span>}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

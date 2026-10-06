@@ -90,6 +90,61 @@ afterEach(() => {
   expect(replays()).toHaveLength(0);
   expect(calls.every(call => call.url.startsWith("/api/games?"))).toBe(true);
   vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
+describe("canonical live games after midnight", () => {
+  const props = { selectedDate: "2026-03-01", timeZone: "America/New_York", initialGames: [game("0022500001", 2)], isToday: false };
+  beforeEach(() => { vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2026-03-02T05:10:00Z")); });
+
+  it("keeps polling, ticker and auto label when a pinned live day becomes yesterday, then stops at final", async () => {
+    const today = render({ ...props, isToday: true });
+    expect(today.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    const overnight = render(props);
+    expect(overnight.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    expect(overnight.some(node => node.type === ScoreTicker)).toBe(true);
+    expect(overnight.some(node => Array.isArray(node.props.children) && node.props.children.includes("auto"))).toBe(true);
+    expect(overnight.some(node => node.type === TodayStars)).toBe(false);
+    expect(scores()).toHaveLength(0);
+
+    refresh(overnight); scores()[0].reply.resolve(response({ data: [game("0022500001", 3)] })); await settle();
+    const finished = render(props);
+    expect(finished.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+    expect(finished.some(node => node.type === ScoreTicker)).toBe(false);
+    expect(cardIds(finished)).toEqual(["0022500001"]);
+  });
+
+  it("retains an overnight refresh loop through a same-scope network failure", async () => {
+    refresh(render(props)); scores()[0].reply.reject(new Error("offline")); await settle();
+    const stale = render(props);
+    expect(hasRefreshError(stale)).toBe(true);
+    expect(stale.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+  });
+
+  it.each([{ initialGames: [] }, { initialGames: [game("final", 3)] }, { initialGames: [game("upcoming", 1)] }])("does not poll a selected day without live rows", ({ initialGames }) => {
+    const view = render({ ...props, initialGames });
+    expect(view.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+    expect(view.some(node => node.type === ScoreTicker)).toBe(false);
+  });
+
+  it.each(["2026-02-27T00:00:00Z", "", "invalid", "2026-03-03T00:00:00Z"])("does not extend polling for old, unknown or future tipoffs (%s)", gameDateTimeUTC => {
+    const view = render({ ...props, initialGames: [{ ...game("0022500001", 2), gameDateTimeUTC }] });
+    expect(view.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+  });
+
+  it("rechecks calendar relevance on refresh, stopping stale status-2 data once it is older than ET yesterday", async () => {
+    const first = render(props);
+    expect(first.find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    vi.setSystemTime(new Date("2026-03-03T05:00:01Z"));
+    refresh(first); scores()[0].reply.resolve(response({ data: props.initialGames })); await settle();
+    expect(render(props).find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+  });
+
+  it("waits until hydration resolves before enabling the non-today refresh extension", () => {
+    expect(render({ ...props, readyToFetch: false }).find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(false);
+    expect(render(props).find(node => node.type === LiveScoreRefresher)?.props.hasLiveGames).toBe(true);
+    expect(scores()).toHaveLength(0);
+  });
 });
 
 describe("score loading after video replay retirement", () => {
