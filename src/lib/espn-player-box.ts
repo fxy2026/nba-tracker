@@ -33,7 +33,7 @@ export interface EspnPlayerBox {
   provider: "ESPN";
   coverage: "source-boxscore";
   game: {
-    nbaGameId: string; espnEventId: string; season: "2025-26"; seasonType: "Regular Season";
+    nbaGameId: string; espnEventId: string; season: "2024-25" | "2025-26"; seasonType: "Regular Season";
     gameDate: string; gameCode: string; gameTimeUTC: string; home: EspnBoxTeam; away: EspnBoxTeam;
   };
   retrievedAt: string;
@@ -55,14 +55,17 @@ const fields = ["minutesRounded", "rebounds", "assists", "fieldGoalsMade", "fiel
 const sourceUrl = (eventId: string) => `https://www.espn.com/nba/boxscore/_/gameId/${eventId}`;
 export const espnBoxApiUrl = (eventId: string) => `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${eventId}`;
 const etDate = (date: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(date));
+const boxSeason = (gameId: string) => /^00224\d{5}$/.test(gameId) ? "2024-25" : /^00225\d{5}$/.test(gameId) ? "2025-26" : null;
 function validIdentity(game: EspnBoxIdentity): boolean {
-  if (!object(game) || typeof game.gameId !== "string" || !/^00225\d{5}$/.test(game.gameId) || game.gameStatus !== 3 || !iso(game.gameDateTimeUTC)
+  if (!object(game) || typeof game.gameId !== "string" || !boxSeason(game.gameId) || game.gameStatus !== 3 || !iso(game.gameDateTimeUTC)
     || !object(game.homeTeam) || !object(game.awayTeam)) return false;
   const home = game.homeTeam, away = game.awayTeam;
   return [home, away].every(t => typeof t.teamTricode === "string" && Object.hasOwn(TEAM_META, t.teamTricode)
     && TEAM_META[t.teamTricode].teamId === t.teamId && count(t.score))
     && home.teamTricode !== away.teamTricode && home.score !== away.score
     && [home.teamId, away.teamId].includes(1610612755)
+    && game.gameDateTimeUTC >= `${boxSeason(game.gameId)!.slice(0, 4)}-07-01`
+    && game.gameDateTimeUTC < `${Number(boxSeason(game.gameId)!.slice(0, 4)) + 1}-07-01`
     && game.gameCode === `${etDate(game.gameDateTimeUTC).replaceAll("-", "")}/${away.teamTricode}${home.teamTricode}`;
 }
 function validTeam(actual: unknown, expected: EspnBoxIdentity["homeTeam"]): actual is EspnBoxTeam {
@@ -73,7 +76,7 @@ function validTeam(actual: unknown, expected: EspnBoxIdentity["homeTeam"]): actu
 export function validateEspnPlayerBox(raw: unknown, game: EspnBoxIdentity): EspnPlayerBox | null {
   if (!validIdentity(game) || !object(raw) || !exact(raw, ["version", "provider", "coverage", "game", "retrievedAt", "source", "players", "excluded"]) || raw.version !== 1 || raw.provider !== "ESPN" || raw.coverage !== "source-boxscore"
     || !object(raw.game) || !exact(raw.game, ["nbaGameId", "espnEventId", "season", "seasonType", "gameDate", "gameCode", "gameTimeUTC", "home", "away"]) || raw.game.nbaGameId !== game.gameId || !id(raw.game.espnEventId)
-    || raw.game.season !== "2025-26" || raw.game.seasonType !== "Regular Season" || raw.game.gameCode !== game.gameCode
+    || raw.game.season !== boxSeason(game.gameId) || raw.game.seasonType !== "Regular Season" || raw.game.gameCode !== game.gameCode
     || raw.game.gameTimeUTC !== game.gameDateTimeUTC || raw.game.gameDate !== etDate(game.gameDateTimeUTC)
     || !validTeam(raw.game.home, game.homeTeam) || !validTeam(raw.game.away, game.awayTeam)
     || !iso(raw.retrievedAt) || !object(raw.source) || !exact(raw.source, ["url", "apiUrl", "rawSha256", "archived"]) || raw.source.archived !== true || !sha(raw.source.rawSha256)
@@ -124,7 +127,7 @@ export function parseEspnPlayerBox(raw: unknown, game: EspnBoxIdentity, capture:
     || !object(raw) || !object(raw.header) || !object(raw.boxscore)) return null;
   const h = raw.header, eventId = capture.eventId;
   if (h.id !== eventId || h.uid !== `s:40~l:46~e:${eventId}` || !object(h.league) || h.league.id !== "46" || h.league.uid !== "s:40~l:46" || h.league.slug !== "nba"
-    || !object(h.season) || h.season.year !== 2026 || h.season.type !== 2 || !Array.isArray(h.competitions) || h.competitions.length !== 1) return null;
+    || !object(h.season) || h.season.year !== Number(boxSeason(game.gameId)!.slice(0, 4)) + 1 || h.season.type !== 2 || !Array.isArray(h.competitions) || h.competitions.length !== 1) return null;
   const competition = h.competitions[0];
   if (!object(competition) || competition.id !== eventId || competition.uid !== `s:40~l:46~e:${eventId}~c:${eventId}`
     || !iso(competition.date) || Date.parse(competition.date) !== Date.parse(game.gameDateTimeUTC)
@@ -180,7 +183,7 @@ export function parseEspnPlayerBox(raw: unknown, game: EspnBoxIdentity, capture:
     }
   }
   return validateEspnPlayerBox({ version: 1, provider: "ESPN", coverage: "source-boxscore",
-    game: { nbaGameId: game.gameId, espnEventId: eventId, season: "2025-26", seasonType: "Regular Season", gameDate: etDate(game.gameDateTimeUTC),
+    game: { nbaGameId: game.gameId, espnEventId: eventId, season: boxSeason(game.gameId), seasonType: "Regular Season", gameDate: etDate(game.gameDateTimeUTC),
       gameCode: game.gameCode, gameTimeUTC: game.gameDateTimeUTC, home: sides.home, away: sides.away },
     retrievedAt: capture.retrievedAt, source: { url: sourceUrl(eventId), apiUrl: espnBoxApiUrl(eventId), rawSha256: capture.rawSha256, archived: true }, players, excluded }, game);
 }

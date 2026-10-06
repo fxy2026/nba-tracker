@@ -17,7 +17,7 @@ export interface EspnBoxArchiveEntry {
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const sha = (v: unknown) => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
 function validEntry(entry: EspnBoxArchiveEntry, game: EspnBoxIdentity): boolean {
-  return entry.gameId === game.gameId && /^00225\d{5}$/.test(entry.gameId) && /^[1-9]\d{0,11}$/.test(entry.eventId)
+  return entry.gameId === game.gameId && /^0022[45]\d{5}$/.test(entry.gameId) && /^[1-9]\d{0,11}$/.test(entry.eventId)
     && entry.file === `${entry.gameId}.json.gz` && sha(entry.sha256) && sha(entry.compressedSha256) && sha(entry.sourceRawSha256)
     && Number.isSafeInteger(entry.bytes) && entry.bytes > 0 && entry.bytes <= ESPN_BOX_COMPRESSED_LIMIT
     && Number.isSafeInteger(entry.uncompressedBytes) && entry.uncompressedBytes > 0 && entry.uncompressedBytes <= ESPN_BOX_DECODED_LIMIT
@@ -40,9 +40,19 @@ export async function getEspnPlayerBox(game: EspnBoxIdentity) {
   if (matches.length !== 1) return null;
   const entry = matches[0];
   if (!validEntry(entry, game) || manifest.filter(row => row.eventId === entry.eventId).length !== 1) return null;
+  return readEspnPlayerBoxEntry(entry, game, "espn-player-boxes");
+}
+/** Fixed archive roots only; callers must select a unique entry from a catalog. */
+export async function readEspnPlayerBoxEntry(entry: EspnBoxArchiveEntry, game: EspnBoxIdentity, archive: "espn-player-boxes" | "sixers-2024-25") {
+  if (!["espn-player-boxes", "sixers-2024-25"].includes(archive) || !validEntry(entry, game) || isPlayerBoxQuarantined(game.gameId)) return null;
   try {
-    // The basename comes from the validated catalog; request paths are never read.
-    const file = await open(join(process.cwd(), "src/data/espn-player-boxes", entry.file), constants.O_RDONLY | constants.O_NOFOLLOW);
+    // Keep both roots literal so Next's output tracer cannot widen a dynamic
+    // directory segment to every file under src/data. Only the validated
+    // catalog basename varies; request paths are never read.
+    const path = archive === "espn-player-boxes"
+      ? join(process.cwd(), "src/data/espn-player-boxes", entry.file)
+      : join(process.cwd(), "src/data/sixers-2024-25", entry.file);
+    const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
     try {
       const stat = await file.stat();
       if (!stat.isFile() || stat.size !== entry.bytes || stat.size > ESPN_BOX_COMPRESSED_LIMIT) return null;

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { getBoxScore } from "@/lib/api";
 import { TEAM_META } from "@/lib/teams";
 import { teamLogoUrl } from "@/lib/teamUrls";
+import { getSixersArchiveGame } from "@/lib/sixers-season-archive";
 
 export const runtime = "nodejs";
 export const alt = "NBA game score";
@@ -11,6 +12,13 @@ export const contentType = "image/png";
 // Every multi-child <div> needs display: flex per Satori (next/og engine).
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const archive = getSixersArchiveGame(id);
+  if (archive) return new ImageResponse(
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 30, background: "#0A0E27", color: "white", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ display: "flex", fontSize: 28, color: "#B7C8E8" }}>2024–25 · Archived final</div>
+      <div style={{ display: "flex", fontSize: 80, fontWeight: 700 }}>{archive.awayTeam.teamTricode} {archive.awayTeam.score} @ {archive.homeTeam.teamTricode} {archive.homeTeam.score}</div>
+      <div style={{ display: "flex", fontSize: 28, color: "#B7C8E8" }}>NBA Tracker · ESPN archived player stats</div>
+    </div>, size);
   const box = await getBoxScore(id).catch(() => null);
 
   if (!box) {

@@ -24,6 +24,7 @@ import { getTranslations } from "@/locales";
 import { isPlayerBoxQuarantined } from "@/lib/player-box-quarantine";
 import { getProviderPlayerBox } from "@/lib/provider-player-archive";
 import { getEspnPlayerBox } from "@/lib/espn-player-box-archive";
+import { getSixersArchiveGame, getSixersArchivePlayerBox } from "@/lib/sixers-season-archive";
 import ProviderPlayerBox from "./_components/ProviderPlayerBox";
 import { getRecoveredPlayerBox } from "@/lib/recovered-player-box-archive";
 import RecoveredPlayerBox from "./_components/RecoveredPlayerBox";
@@ -60,6 +61,14 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id: requestedId } = await params;
   const id = resolveArchiveGameId(requestedId);
+  const archivedGame = getSixersArchiveGame(id);
+  if (archivedGame) {
+    const locale = await getLocale();
+    const title = `${archivedGame.awayTeam.teamTricode} ${archivedGame.awayTeam.score} @ ${archivedGame.homeTeam.teamTricode} ${archivedGame.homeTeam.score} · 2024–25`;
+    const description = locale === "zh" ? "2024–25 历史比赛：ESPN 已归档球员基础数据，比赛身份已核对。" : "2024–25 archived game: ESPN basic player stats with a cross-checked game identity.";
+    return { title, description, alternates: { canonical: `/game/${id}` },
+      openGraph: { title, description, url: `/game/${id}` }, twitter: { card: "summary_large_image", title, description } };
+  }
   const [box, locale] = await Promise.all([getBoxScore(id), getLocale()]);
   const t = getTranslations(locale);
   if (!box) {
@@ -117,7 +126,9 @@ export default async function GamePage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
 
-  const boxScore = await getBoxScore(id);
+  // Explicit historical IDs resolve locally, without consulting live/current feeds.
+  const archivedGame = getSixersArchiveGame(id);
+  const boxScore = archivedGame ? null : await getBoxScore(id);
   // Start optional PBP as soon as the box arrives, independently of player info.
   const pbp = boxScore && boxScore.gameStatus >= 2 ? getGamePlayByPlay(id) : null;
 
@@ -126,7 +137,7 @@ export default async function GamePage({ params }: PageProps) {
   if (!boxScore) {
     // No box score yet (CDN publishes it close to tipoff) — if the schedule
     // knows the game, show a full pre-game preview instead of an empty state.
-    const sg = findScheduleGame(await getFullSchedule().catch(() => []), id);
+    const sg = archivedGame ?? findScheduleGame(await getFullSchedule().catch(() => []), id);
     if (sg && sg.gameStatus === 1) {
       const beijingTime = toBeijingTime(sg.gameDateTimeUTC);
       return (
@@ -177,7 +188,7 @@ export default async function GamePage({ params }: PageProps) {
       const reportedSequence = getReportedScoreSequence(sg);
       const officialPeriods = getOfficialPeriodScores(sg);
       const verifiedShots = getVerifiedShotChart(sg);
-      const providerBox = recoveredBox ? null : (await getEspnPlayerBox(sg)) ?? getProviderPlayerBox(sg);
+      const providerBox = recoveredBox ? null : archivedGame ? await getSixersArchivePlayerBox(id) : (await getEspnPlayerBox(sg)) ?? getProviderPlayerBox(sg);
       const quarantined = isPlayerBoxQuarantined(sg.gameId);
       const sgPlayoffs = isPlayoff(sg.gameId);
       const dateCode = sg.gameCode.split("/")[0];
@@ -193,6 +204,7 @@ export default async function GamePage({ params }: PageProps) {
             ]}
           />
           <div className="glass-tile p-6 sm:p-10 mt-4">
+            {archivedGame && <p className="mb-4 text-center text-xs text-text-secondary">2024–25 · {isZh ? "历史比赛 · " : "Archived game · "}<Link className="text-accent hover:underline" href="/team/PHI?season=2024-25">{isZh ? "返回76人历史赛季" : "Back to the 76ers season archive"}</Link></p>}
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-secondary text-center">
               {isZh ? "终场" : "Final"} · {sgDate}
             </p>

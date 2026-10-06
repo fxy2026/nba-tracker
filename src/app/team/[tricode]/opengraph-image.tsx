@@ -40,6 +40,16 @@ export default async function Image({ params }: { params: Promise<{ tricode: str
     );
   }
 
+  // This file-based image serves both PHI's overview and query-selected archive.
+  // It cannot receive searchParams, so keep it neutral rather than sharing a
+  // current-season record alongside an historical-season link.
+  if (team.tricode === "PHI") return new ImageResponse(
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 28, background: "linear-gradient(135deg, #006BB6 0%, #0A0E27 75%)", color: "white", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ display: "flex", fontSize: 26, color: "#B7C8E8" }}>NBA TRACKER</div>
+      <div style={{ display: "flex", fontSize: 80, fontWeight: 700 }}>Philadelphia 76ers</div>
+      <div style={{ display: "flex", fontSize: 30, color: "#B7C8E8" }}>Season results · Player statistics</div>
+    </div>, size);
+
   // Compute regular-season record from schedule
   const schedule = await getCurrentSeasonSchedule().catch(() => []);
   let wins = 0, losses = 0;

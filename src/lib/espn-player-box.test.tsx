@@ -185,7 +185,7 @@ it.each([true, false])("renders ESPN source, real game-time teams and no fabrica
 });
 it("traces only the compact server archive on existing game routes", () => {
   const config = readFileSync("next.config.ts", "utf8");
-  expect(config).toContain('"/game/*": ["./src/data/espn-player-boxes/*.gz"]');
+  expect(config).toContain('"/game/*": ["./src/data/espn-player-boxes/*.gz", "./src/data/sixers-2024-25/*.gz"]');
   expect(config).not.toContain("sixers-data-collection");
   expect(readFileSync("src/lib/espn-player-box-archive.ts", "utf8")).toContain('import "server-only"');
 });

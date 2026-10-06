@@ -26,12 +26,20 @@ import TeamTrendsPanel, { type Rivalry } from "./_components/TeamTrendsPanel";
 import TeamRoster from "./_components/TeamRoster";
 import TeamLegends from "./_components/TeamLegends";
 import TeamDraftPicks from "./_components/TeamDraftPicks";
+import { getSixersSeasonArchive } from "@/lib/sixers-season-archive";
+import SixersSeasonArchive, { SixersSeasonNavigation } from "./_components/SixersSeasonArchive";
 
-export async function generateMetadata({ params }: { params: Promise<{ tricode: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { tricode } = await params;
   const [team, locale] = [TEAM_META[tricode.toUpperCase()], await getLocale()];
   const t = getTranslations(locale);
   if (!team) return {};
+  if (team.tricode === "PHI" && (await searchParams)?.season === "2024-25") {
+    const title = "Philadelphia 76ers · 2024–25";
+    const description = locale === "zh" ? "76人 2024–25 历史赛季：常规赛与季前赛结果、已归档球员数据及来源。" : "Philadelphia 76ers 2024–25 season archive: regular-season and preseason results, archived player stats and sources.";
+    return { title, description, alternates: { canonical: "/team/PHI?season=2024-25" },
+      openGraph: { title, description, url: "/team/PHI?season=2024-25" }, twitter: { card: "summary_large_image", title, description } };
+  }
   return {
     title: `${team.city} ${team.name}`,
     description: locale === "zh" ? t.teamPage.teamDesc : t.teamPage.teamDescEn,
@@ -46,9 +54,10 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ tricode: string }>;
+  searchParams?: Promise<{ season?: string | string[] }>;
 }
 
-export default async function TeamPage({ params }: PageProps) {
+export default async function TeamPage({ params, searchParams }: PageProps) {
   const { tricode } = await params;
   const team = TEAM_META[tricode.toUpperCase()];
   if (!team) notFound();
@@ -56,6 +65,16 @@ export default async function TeamPage({ params }: PageProps) {
   const locale = await getLocale();
   const t = getTranslations(locale);
   const isZh = locale === "zh";
+
+  if (team.tricode === "PHI") {
+    const season = (await searchParams)?.season;
+    if (season === "2024-25") {
+      const archive = getSixersSeasonArchive();
+      if (!archive) notFound();
+      return <SixersSeasonArchive archive={archive} isZh={isZh} />;
+    }
+    if (season !== undefined) notFound();
+  }
 
   const [schedule, playerIndex] = await Promise.all([
     getCurrentSeasonSchedule().catch(() => []),
@@ -261,6 +280,7 @@ export default async function TeamPage({ params }: PageProps) {
         ]}
       />
 
+      {team.tricode === "PHI" && <SixersSeasonNavigation historical={false} isZh={isZh} />}
       <p className="mb-3 text-xs text-text-secondary">{currentSeason()} · {isZh ? "常规赛统计；季后赛战绩单独列出" : "Regular-season statistics; playoff record shown separately"}</p>
       <TeamHero
         team={team} t={t} season={currentSeason()}
