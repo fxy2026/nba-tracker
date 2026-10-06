@@ -23,6 +23,7 @@ import { getTranslations } from "@/locales";
 
 import { isPlayerBoxQuarantined } from "@/lib/player-box-quarantine";
 import { getProviderPlayerBox } from "@/lib/provider-player-archive";
+import { getEspnPlayerBox } from "@/lib/espn-player-box-archive";
 import ProviderPlayerBox from "./_components/ProviderPlayerBox";
 import { getRecoveredPlayerBox } from "@/lib/recovered-player-box-archive";
 import RecoveredPlayerBox from "./_components/RecoveredPlayerBox";
@@ -176,7 +177,7 @@ export default async function GamePage({ params }: PageProps) {
       const reportedSequence = getReportedScoreSequence(sg);
       const officialPeriods = getOfficialPeriodScores(sg);
       const verifiedShots = getVerifiedShotChart(sg);
-      const providerBox = recoveredBox ? null : getProviderPlayerBox(sg);
+      const providerBox = recoveredBox ? null : (await getEspnPlayerBox(sg)) ?? getProviderPlayerBox(sg);
       const quarantined = isPlayerBoxQuarantined(sg.gameId);
       const sgPlayoffs = isPlayoff(sg.gameId);
       const dateCode = sg.gameCode.split("/")[0];

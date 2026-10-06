@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Compressed archives are server-only; never put them under public or import into client code.
   outputFileTracingIncludes: {
+    "/game/*": ["./src/data/espn-player-boxes/*.gz"],
     "/lab/game-impact": [
       "./src/data/verified-play-by-play/0042500405.json",
       "./src/data/recovered-player-boxes/0042500405.json",
