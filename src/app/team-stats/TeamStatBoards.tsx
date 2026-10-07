@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useEffect, useCallback } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
@@ -133,34 +133,51 @@ export default function TeamStatBoards({ scheduleBoards, recorded = false }: { s
   const [upstream, setUpstream] = useState<UpstreamBoards | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (recorded) return;
+  const [retryKey, setRetryKey] = useState(0);
+  const requestRef = useRef<AbortController | null>(null);
+  const retry = () => {
+    requestRef.current?.abort();
     setLoading(true);
     setFailed(false);
-    try {
-      const qs = new URLSearchParams(UPSTREAM_PARAMS).toString();
-      const res = await fetch(`${STATS_API}?${qs}`, { signal });
-      if (!res.ok) throw new Error(`${res.status}`);
-      const boards = parseUpstreamBoards(await res.json());
-      if (!boards) throw new Error("unexpected payload");
-      setUpstream(boards);
-    } catch {
-      if (signal?.aborted) return;
-      setUpstream(null);
-      setFailed(true);
-    }
-    setLoading(false);
-  }, [recorded]);
+    setRetryKey(key => key + 1);
+  };
 
-  // load() internally calls setLoading(true) → intentional mount-time fetch.
   useEffect(() => {
     if (recorded) return;
     const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load(controller.signal);
-    return () => controller.abort();
-  }, [load, recorded]);
+    requestRef.current = controller;
+    let active = true;
+    const current = () => active && !controller.signal.aborted;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount/retry starts its owned request
+    setLoading(true);
+    setFailed(false);
+    const timeout = setTimeout(() => {
+      if (!current()) return;
+      controller.abort();
+      setUpstream(null);
+      setFailed(true);
+      setLoading(false);
+    }, 12000);
+    (async () => {
+      try {
+        const qs = new URLSearchParams(UPSTREAM_PARAMS).toString();
+        const res = await fetch(`${STATS_API}?${qs}`, { signal: controller.signal });
+        if (!current()) return;
+        if (!res.ok) throw new Error(`${res.status}`);
+        const data = await res.json();
+        if (!current()) return;
+        const boards = parseUpstreamBoards(data);
+        if (!boards) throw new Error("unexpected payload");
+        setUpstream(boards);
+      } catch {
+        if (current()) { setUpstream(null); setFailed(true); }
+      } finally {
+        clearTimeout(timeout);
+        if (current()) setLoading(false);
+      }
+    })();
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [recorded, retryKey]);
 
   const categories = recorded ? CATEGORIES.filter(c => c.source === "schedule") : CATEGORIES;
   const category = categories.find((c) => c.key === cat) ?? CATEGORIES[0];
@@ -210,7 +227,7 @@ export default function TeamStatBoards({ scheduleBoards, recorded = false }: { s
               ? "stats.nba.com 暂时无法访问。得分、失分与净胜分榜不受影响，可先切换查看。"
               : "stats.nba.com is unreachable right now. The points, points-allowed, and point-diff boards are unaffected — switch tabs to view them."
           }
-          action={{ label: t.common.retry, onClick: () => load() }}
+          action={{ label: t.common.retry, onClick: retry }}
         />
       ) : null}
     </div>

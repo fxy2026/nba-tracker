@@ -145,6 +145,21 @@ describe('PlayerLeaders request ownership and safe numeric rendering', () => {
     expect(select.props.options).toEqual([{ value: 'Regular Season', label: t.statsPage.regularSeason }, { value: 'Playoffs', label: t.statsPage.playoffs }]);
     expect(nodes(tree).some(n => n.type === 'select')).toBe(false);
   });
+  it.each(['en', 'zh'])('explains an empty successful response for the selected season type (%s)', async locale => {
+    runtime.locale = locale;
+    fetcher.mockResolvedValue(response([])); mount(PlayerLeaders); await settle();
+    expect(hasText(locale === 'en' ? 'No player stats yet' : '暂无球员统计')).toBe(true);
+    const empty = nodes(tree).find(n => n.props.title === (locale === 'en' ? 'No player stats yet' : '暂无球员统计'))!;
+    expect(empty.props.description).toContain(CURRENT_SEASON);
+    expect(empty.props.description).toContain(locale === 'en' ? en.statsPage.regularSeason : zh.statsPage.regularSeason);
+    expect(empty.props.tone).not.toBe('danger');
+    expect(empty.props.action).toBeUndefined();
+    expect(nodes(tree).some(n => n.type === 'table')).toBe(false);
+    season('Playoffs'); await settle();
+    expect(nodes(tree).find(n => n.props.title === (locale === 'en' ? 'No player stats yet' : '暂无球员统计'))!.props.description)
+      .toContain(locale === 'en' ? en.statsPage.playoffs : zh.statsPage.playoffs);
+    expect(loading()).toBe(false);
+  });
   it('a retried Points request cannot overwrite a newer Rebs response', async () => {
     const old = deferred<ReturnType<typeof response>>();
     fetcher.mockResolvedValueOnce({ ok: false, status: 504 }).mockImplementationOnce(() => old.promise).mockResolvedValueOnce(response([reb]));

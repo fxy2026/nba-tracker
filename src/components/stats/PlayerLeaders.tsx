@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Users } from "lucide-react";
 
 import { CURRENT_SEASON } from "@/lib/constants";
 import { useLocale } from "@/components/LocaleProvider";
@@ -135,6 +135,15 @@ export default function PlayerLeaders() {
           title={t.statsPage.failedToLoad}
           description={locale === "zh" ? "球员统计来源暂不可用，请重试。" : "Player statistics are unavailable. Please try again."}
           action={{ label: t.common.retry, onClick: retry }}
+        />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          tone="neutral"
+          title={locale === "zh" ? "暂无球员统计" : "No player stats yet"}
+          description={locale === "zh"
+            ? `${CURRENT_SEASON} ${seasonType === "Playoffs" ? t.statsPage.playoffs : t.statsPage.regularSeason} 暂无该类别的球员统计。可切换类别或赛季类型查看。`
+            : `No player statistics are available for this category in the ${CURRENT_SEASON} ${seasonType === "Playoffs" ? t.statsPage.playoffs : t.statsPage.regularSeason}. Try another category or season type.`}
         />
       ) : (
         <div className="glass-tile overflow-hidden">
