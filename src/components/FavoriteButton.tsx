@@ -19,7 +19,7 @@ interface FavoriteButtonProps {
 
 export default function FavoriteButton({ type, id, className = "" }: FavoriteButtonProps) {
   const [isFav, setIsFav] = useState(false);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { toast } = useToast();
 
   // Hydration: sync isFav from localStorage on mount and on prop change.
@@ -36,10 +36,18 @@ export default function FavoriteButton({ type, id, className = "" }: FavoriteBut
     let nowFav: boolean;
     if (type === "team") {
       const updated = toggleFavoriteTeam(id as string);
+      if (updated === null) {
+        toast(locale === "zh" ? "无法保存关注更改，请检查浏览器存储后重试。" : "Couldn't save your follow changes. Check browser storage and try again.", "warning");
+        return;
+      }
       nowFav = updated.includes(id as string);
       setIsFav(nowFav);
     } else {
       const updated = toggleFavoritePlayer(id as number);
+      if (updated === null) {
+        toast(locale === "zh" ? "无法保存关注更改，请检查浏览器存储后重试。" : "Couldn't save your follow changes. Check browser storage and try again.", "warning");
+        return;
+      }
       nowFav = updated.includes(id as number);
       setIsFav(nowFav);
     }

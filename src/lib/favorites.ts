@@ -5,13 +5,14 @@ export function getFavoriteTeams(): string[] {
   catch { return []; }
 }
 
-export function toggleFavoriteTeam(tricode: string): string[] {
+// Null means the change was not saved; callers must retain their current UI.
+export function toggleFavoriteTeam(tricode: string): string[] | null {
   const favs = getFavoriteTeams();
   const idx = favs.indexOf(tricode);
   if (idx >= 0) favs.splice(idx, 1);
   else favs.push(tricode);
   try { localStorage.setItem('fav_teams', JSON.stringify(favs)); }
-  catch { /* storage full */ }
+  catch { return null; }
   return favs;
 }
 
@@ -21,12 +22,12 @@ export function getFavoritePlayers(): number[] {
   catch { return []; }
 }
 
-export function toggleFavoritePlayer(id: number): number[] {
+export function toggleFavoritePlayer(id: number): number[] | null {
   const favs = getFavoritePlayers();
   const idx = favs.indexOf(id);
   if (idx >= 0) favs.splice(idx, 1);
   else favs.push(id);
   try { localStorage.setItem('fav_players', JSON.stringify(favs)); }
-  catch { /* storage full */ }
+  catch { return null; }
   return favs;
 }

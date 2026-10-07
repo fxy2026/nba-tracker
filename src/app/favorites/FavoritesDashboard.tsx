@@ -59,6 +59,7 @@ export default function FavoritesDashboard() {
   const [mounted, setMounted] = useState(false);
   const [favTeams, setFavTeams] = useState<string[]>([]);
   const [favPlayers, setFavPlayers] = useState<number[]>([]);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const [digest, setDigest] = useState<FollowDigest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,13 +166,25 @@ export default function FavoritesDashboard() {
   }, [mounted, favTeams]);
 
   const removeTeam = useCallback((tricode: string) => {
-    setFavTeams(toggleFavoriteTeam(tricode).slice());
+    const updated = toggleFavoriteTeam(tricode);
+    if (updated === null) {
+      setSaveFailed(true);
+      return;
+    }
+    setSaveFailed(false);
+    setFavTeams(updated.slice());
     // Optimistic splice so removal is instant — the remaining cards' data is
     // unchanged by dropping one follow, so we don't wait on the background refetch.
     setDigest((d) => (d ? { ...d, teams: d.teams.filter((t) => t.tricode !== tricode) } : d));
   }, []);
   const removePlayer = useCallback((id: number) => {
-    setFavPlayers(toggleFavoritePlayer(id).slice());
+    const updated = toggleFavoritePlayer(id);
+    if (updated === null) {
+      setSaveFailed(true);
+      return;
+    }
+    setSaveFailed(false);
+    setFavPlayers(updated.slice());
     setDigest((d) => (d ? { ...d, players: d.players.filter((p) => p.personId !== id) } : d));
   }, []);
 
@@ -207,6 +220,11 @@ export default function FavoritesDashboard() {
 
   return (
     <div>
+      {saveFailed && (
+        <p role="alert" className="glass-tile p-4 mb-5 text-sm text-accent-amber">
+          {isZh ? "无法保存关注更改，请检查浏览器存储后重试。" : "Couldn't save your follow changes. Check browser storage and try again."}
+        </p>
+      )}
       {/* Toolbar: counts + export. Gated on the RESOLVED digest (not localStorage)
           so a stale/unknown tricode can't show "1 team" above the empty state. */}
       {!loading && digest && (digest.teams.length > 0 || digest.players.length > 0) && (
