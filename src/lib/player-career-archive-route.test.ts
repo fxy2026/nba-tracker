@@ -39,7 +39,7 @@ describe("reviewed dated fallback after the bounded live chain", () => {
   describe.each([["201939", curry, "GSW", "3975"], ["203507", giannis, "MIL", "3032977"]] as const)("newly reviewed player %s", (id, record, team, espnId) => {
     it.each(["truncated", "empty", "older-games", "wrong-player"])("retains complete archived coverage for %s live data", async scenario => {
       const rows = scenario === "empty" ? [] : scenario === "truncated" ? record.data.careerSeasons.slice(1)
-        : record.data.careerSeasons.map((row, index) => scenario === "older-games" && index === 0 ? { ...row, GP: row.GP - 1 } : row);
+        : record.data.careerSeasons.map((row, index) => scenario === "older-games" && index === 0 ? { ...row, GP: row.GP - 1, GS: Math.min(row.GS, row.GP - 1) } : row);
       providers.nba.mockResolvedValue(nba(rows, scenario === "wrong-player" ? 2544 : Number(id)));
       const res = await GET(request(id));
       expect(res.status).toBe(200);
@@ -93,7 +93,7 @@ describe("reviewed dated fallback after the bounded live chain", () => {
 
   it.each(["truncated", "empty", "older-games", "wrong-player"])("does not replace known history with %s live data", async scenario => {
     const rows = scenario === "empty" ? [] : scenario === "truncated" ? lebron.data.careerSeasons.slice(1)
-      : lebron.data.careerSeasons.map((row, i) => scenario === "older-games" && i === 22 ? { ...row, GP: 59 } : row);
+      : lebron.data.careerSeasons.map((row, i) => scenario === "older-games" && i === 22 ? { ...row, GP: 59, GS: 59 } : row);
     providers.nba.mockResolvedValue(nba(rows, scenario === "wrong-player" ? 203999 : 2544));
     const res = await GET(request());
     expect(await res.json()).toEqual({ ...lebron.data, recentGames: null });

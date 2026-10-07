@@ -8,18 +8,19 @@ import { usePlayerCareer, type CareerSeasonRow } from "@/lib/usePlayerCareer";
 import type { Translations } from "@/locales/types";
 import PlayerCareerChart from "@/components/player/PlayerCareerChart";
 import PlayerRankBadges from "@/components/player/PlayerRankBadges";
-import type { CareerAverage } from "@/lib/player-career-data";
+import type { CareerAverage, PlayerCareerData } from "@/lib/player-career-data";
 import PlayerCareerSource from "@/components/player/PlayerCareerSource";
 
 interface Props {
   playerId: number;
   playerName?: string;
   teamTricode?: string;
+  initialData?: PlayerCareerData | null;
 }
 
-export default function PlayerStatsBundle({ playerId, playerName, teamTricode }: Props) {
+export default function PlayerStatsBundle({ playerId, playerName, teamTricode, initialData }: Props) {
   const { t, locale } = useLocale();
-  const { data, loading, error, stale, retry } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
+  const { data, loading, error, stale, retry } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "", initialData);
   const seasons = data?.careerSeasons ?? null;
 
   if (loading && !data) {
@@ -68,17 +69,19 @@ export default function PlayerStatsBundle({ playerId, playerName, teamTricode }:
   return (
     <div className="space-y-6">
       {stale && <div role="status" className="text-xs text-text-secondary">
-        {data?.stale
+        {loading
+          ? (locale === "zh" ? "正在检查实时来源；先显示已有数据。" : "Checking live sources; showing available data meanwhile.")
+          : data?.stale
           ? (locale === "zh" ? "显示已存档快照。可在 30 秒后重试实时来源。" : "Showing an archived snapshot. Retry live sources after 30 seconds.")
           : (locale === "zh" ? "刷新暂不可用，保留上次成功加载的数据。请在 30 秒后重试。" : "Refresh unavailable. Showing the last successfully loaded data. Retry after 30 seconds.")}
-        <button onClick={retry} className="ml-2 text-accent">{t.common.retry}</button>
+        <button onClick={retry} disabled={loading} className="ml-2 text-accent disabled:opacity-50">{loading ? (locale === "zh" ? "检查中…" : "Checking…") : t.common.retry}</button>
       </div>}
       {/* Current-season league-rank badges (silent-hide when not a leader) */}
       <PlayerRankBadges playerId={playerId} />
 
       {/* Career Stats — table by default, with an opt-in chart view */}
       <div className="space-y-3">
-        <PlayerCareerSource provenance={data?.provenance} isZh={locale === "zh"} />
+        <PlayerCareerSource provenance={data?.provenance} isZh={locale === "zh"} checkingLive={loading} />
         <CareerSection careerAverage={data?.careerAverage} careerShooting={data?.careerShooting} seasons={seasons} t={t} isZh={locale === "zh"} />
       </div>
     </div>

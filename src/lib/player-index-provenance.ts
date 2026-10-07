@@ -19,3 +19,13 @@ export function playerIndexLabel(meta: PlayerIndexProvenance, locale: string): s
 export function playerIndexStat(value: unknown, decimals = 1): string {
   return typeof value === "number" && Number.isFinite(value) ? value.toFixed(decimals) : "—";
 }
+
+/** A missing team in a dated index does not establish free-agent or retired status. */
+export function playerIndexTeamLabel(player: { teamCity?: string | null; teamName?: string | null }, locale: string): string {
+  const label = [player.teamCity, player.teamName]
+    .filter((part): part is string => typeof part === "string")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .join(" ");
+  return label || (locale === "zh" ? "此快照未列出球队" : "Team not listed in this snapshot");
+}

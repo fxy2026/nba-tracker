@@ -8,22 +8,22 @@ import { validateCareerArchive, type ValidatedCareerArchive } from "./player-car
 const archives: Record<string, { reviewed: boolean; sha256: string; read: () => Promise<unknown> }> = {
   "2544": {
     reviewed: true,
-    sha256: "519e96ee707e44df00c52400ce19dee4119fd9b35969961d7bc8ee7178e2911d",
+    sha256: "5f7b73768c91111508da248e55f8070eab71ea8ff5d39fea5c93238a8eea343b",
     read: () => import("@/data/player-career-archives/2544-2026-10-03.json").then(module => module.default),
   },
   "203999": {
     reviewed: true,
-    sha256: "9b09f438d30dd89a5fa2480c97178020df08c9f110eb45e36bdc4648c4383241",
+    sha256: "70b8b255c97d7a74160c7493d46dc3ef7b11c561164ad0c08d55061940a4682f",
     read: () => import("@/data/player-career-archives/203999-2026-10-03.json").then(module => module.default),
   },
   "201939": {
     reviewed: true,
-    sha256: "280e3340ab86bf6f998e8d448dabcdd6706439efbca6979f7438348af731560c",
+    sha256: "8f84c64775d19545806ccdd1480a42e4d2ed47b2dc420ee56c85bf6c7d56a716",
     read: () => import("@/data/player-career-archives/201939-2026-10-03.json").then(module => module.default),
   },
   "203507": {
     reviewed: true,
-    sha256: "8270f47fe4bf8af14c9ed810337c31ed204838bd7dff750b30fd7458713e01fb",
+    sha256: "b73fb099aef69b35649c1f4481f40907aa9d8fef0fad4b600e04cca26b80057f",
     read: () => import("@/data/player-career-archives/203507-2026-10-03.json").then(module => module.default),
   },
 };

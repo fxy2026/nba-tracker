@@ -3,6 +3,7 @@
 import { TrendingUp } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { usePlayerCareer, type CareerSeasonRow } from "@/lib/usePlayerCareer";
+import type { PlayerCareerData } from "@/lib/player-career-data";
 
 interface AdvancedData {
   TS_PCT: number | null;
@@ -32,9 +33,9 @@ function computeAdvanced(seasons: CareerSeasonRow[]): AdvancedData | null {
   return { TS_PCT: tsPct, EFG_PCT: efgPct, USG_PCT: null };
 }
 
-export default function PlayerAdvancedStats({ playerId, playerName, teamTricode }: { playerId: number; playerName?: string; teamTricode?: string }) {
+export default function PlayerAdvancedStats({ playerId, playerName, teamTricode, initialData }: { playerId: number; playerName?: string; teamTricode?: string; initialData?: PlayerCareerData | null }) {
   const { t, locale } = useLocale();
-  const { data, loading, error, stale } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "");
+  const { data, loading, error, stale } = usePlayerCareer(playerId, playerName ?? "", teamTricode ?? "", initialData);
   const stats = data ? computeAdvanced(data.careerSeasons) : null;
 
   if (loading && !data) {

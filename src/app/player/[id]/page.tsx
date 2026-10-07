@@ -7,7 +7,7 @@ import PlayerMobileSummary from "@/components/player/PlayerMobileSummary";
 import mobileStyles from "@/components/player/player-mobile.module.css";
 import { knownAverage, hasCompleteAverages, profileStatContext, type StatContext } from "@/lib/player-profile-stats";
 import { currentSeason } from "@/lib/constants";
-import { playerIndexLabel, playerIndexStat } from "@/lib/player-index-provenance";
+import { playerIndexLabel, playerIndexStat, playerIndexTeamLabel } from "@/lib/player-index-provenance";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,11 +66,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   const name = `${player.firstName} ${player.lastName}`;
   const provenanceLabel = playerIndexLabel(snapshot.provenance, locale);
+  const teamLabel = playerIndexTeamLabel(player, locale);
   const desc = locale === "zh"
-    ? `${name} 球员档案（${provenanceLabel}）：${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${player.teamCity} ${player.teamName}`
-    : `${name} player profile (${provenanceLabel}): ${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${player.teamCity} ${player.teamName}`;
+    ? `${name} 球员档案（${provenanceLabel}）：${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${teamLabel}`
+    : `${name} player profile (${provenanceLabel}): ${playerIndexStat(player.pts)} PPG / ${playerIndexStat(player.reb)} RPG / ${playerIndexStat(player.ast)} APG | ${player.position} | ${teamLabel}`;
   return {
-    title: `${name} — ${player.teamCity} ${player.teamName}`,
+    title: `${name} — ${teamLabel}`,
     description: desc,
     alternates: { canonical: `/player/${id}` },
     openGraph: {
@@ -115,6 +116,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
   // enters the browser bundle.
   const accolades = getAccolades(personId);
   const fullName = `${player.firstName} ${player.lastName}`;
+  const teamLabel = playerIndexTeamLabel(player, locale);
+  const teamHref = player.teamAbbr ? `/team/${player.teamAbbr}` : undefined;
 
   // No server-side stats fetch — stats.nba.com blocks Vercel IPs.
   // Client components will attempt fetch and show graceful fallback if blocked.
@@ -178,9 +181,9 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
     givenName: player.firstName,
     familyName: player.lastName,
     jobTitle: "Professional basketball player",
-    affiliation: snapshot.provenance.source === "nba-cdn" && !snapshot.provenance.stale && snapshot.provenance.season === currentSeason() && player.teamAbbr && TEAM_META[player.teamAbbr] ? {
+    affiliation: snapshot.provenance.source === "nba-cdn" && !snapshot.provenance.stale && snapshot.provenance.season === currentSeason() && player.teamAbbr && TEAM_META[player.teamAbbr] && (player.teamCity?.trim() || player.teamName?.trim()) ? {
       "@type": "SportsTeam",
-      name: `${player.teamCity} ${player.teamName}`,
+      name: teamLabel,
       url: `https://nba.xpy.me/team/${player.teamAbbr}`,
     } : undefined,
     height: player.height ? player.height : undefined,
@@ -206,7 +209,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       />
 
       </PlayerDesktopOnly>
-      <PlayerProfilePanels key={personId} playerId={personId} locale={locale} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} header={<PlayerMobileIdentity id={personId} name={fullName} subtitle={`${player.teamCity} ${player.teamName}`} teamHref={player.teamAbbr ? `/team/${player.teamAbbr}` : undefined} teamId={player.teamId} facts={[player.position, player.jersey ? `#${player.jersey}` : "", player.height || ""].filter(Boolean)} source={playerIndexLabel(snapshot.provenance, locale)} color={teamColor} locale={locale} />}>
+      <PlayerProfilePanels key={personId} playerId={personId} locale={locale} initialSearch={new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString()} header={<PlayerMobileIdentity id={personId} name={fullName} subtitle={teamLabel} teamHref={teamHref} teamId={player.teamId} facts={[player.position, player.jersey ? `#${player.jersey}` : "", player.height || ""].filter(Boolean)} source={playerIndexLabel(snapshot.provenance, locale)} color={teamColor} locale={locale} />}>
       <PlayerProfilePart panel="data">
       <PlayerDesktopOnly>
       <p className="mt-3 text-xs text-text-secondary">{playerIndexLabel(snapshot.provenance, locale)} · {isZh ? "球队归属和场均数据以该快照为准" : "Team affiliation and averages reflect this snapshot"}</p>
@@ -285,14 +288,14 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
             <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, transparent 50%, rgba(0,0,0,0.25) 100%)" }} />
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-bg-card/95 to-transparent" />
             {/* Team logo watermark, top-left */}
-            <Image
+            {player.teamId > 0 && <Image
               src={teamLogoUrl(player.teamId)}
               alt=""
               width={28}
               height={28}
               unoptimized
               className="absolute top-2 left-2 opacity-60 group-hover:opacity-90 transition-opacity drop-shadow-lg"
-            />
+            />}
           </div>
           {/* Bottom: meta */}
           <div className="relative flex flex-col gap-1 p-4">
@@ -303,12 +306,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
               <span className="block text-base font-extralight text-text-secondary">{player.firstName}</span>
               <span className="block text-2xl font-bold text-text-primary">{player.lastName}</span>
             </h1>
-            <Link
-              href={`/team/${player.teamAbbr}`}
+            {teamHref ? <Link
+              href={teamHref}
               className="mt-1 text-[11px] text-text-secondary hover:text-accent transition-colors font-medium cursor-pointer w-fit"
             >
-              {player.teamCity} {player.teamName}
+              {teamLabel}
             </Link>
+              : <p className="mt-1 text-[11px] text-text-secondary font-medium">{teamLabel}</p>}
           </div>
           {/* Favorite + Share share one glass pill. Share embeds the canonical
               URL inside the text body so the link travels with the payload. */}
@@ -500,8 +504,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </PlayerProfilePart>
         <PlayerProfilePart panel="career">
         <div id="career" className="scroll-mt-24 space-y-4">
-          <PlayerDeferred panel="career"><PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} />
-          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} /></PlayerDeferred>
+          <PlayerDeferred panel="career"><PlayerStatsBundle playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} initialData={careerArchive?.data} />
+          <PlayerAdvancedStats playerId={personId} playerName={fullName} teamTricode={player.teamAbbr} initialData={careerArchive?.data} /></PlayerDeferred>
         </div>
         </PlayerProfilePart>
         <PlayerProfilePart panel="details" deferred>
@@ -680,7 +684,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
               <div>
                 <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-text-secondary">{player.teamAbbr}</p>
                 <p className="text-lg font-bold text-text-primary group-hover:text-accent transition-colors">
-                  {player.teamCity} {player.teamName}
+                  {teamLabel}
                 </p>
                 <p className="text-xs text-text-secondary mt-0.5">View team roster &amp; schedule</p>
               </div>

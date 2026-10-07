@@ -40,6 +40,18 @@ for historical row teams.
   Per Game counting/attempt values are copied directly. Displayed percentages
   are divided by 100 (e.g. 50.7 → 0.507); no percentages are calculated from
   rounded makes/attempts. Zero remains zero; absent values are never invented.
+- The 2026-10-07 normalization correction restores eight omitted source fields
+  (`FGM`, `3PM` → `FG3M`, `FTM`, `GS`, `TOV`, `PF`, `OREB`, `DREB`) across all
+  64 existing season rows: 512 values. Every added value was independently
+  matched to the existing Per Game evidence by exact Season + TEAM. `GS` stays
+  a season count; the other restored fields retain their displayed per-game
+  values. No new source capture, season, player, or aggregate was added. All
+  previously normalized values, direct Overall values, capture dates, coverage,
+  evidence bytes and evidence hashes are unchanged. Only the normalized records
+  and their independently reviewed content pins change.
+- Regression checks compare every normalized season field and direct Overall
+  value with that evidence, render all eight restored fields for all 64 seasons
+  in both EN/ZH, and retain the zero/null/absent distinction for legacy rows.
 - All season/team/TOT rows must remain intact. Coverage counts distinct seasons
   separately from rows. TOT is used only to avoid duplicate career arithmetic,
   never to erase displayed team rows.

@@ -49,8 +49,10 @@ describe("independently reviewed official career archives", () => {
   });
 
   it.each([
-    [curry, "201939", "280e3340ab86bf6f998e8d448dabcdd6706439efbca6979f7438348af731560c"],
-    [giannis, "203507", "8270f47fe4bf8af14c9ed810337c31ed204838bd7dff750b30fd7458713e01fb"],
+    [lebron, "2544", "5f7b73768c91111508da248e55f8070eab71ea8ff5d39fea5c93238a8eea343b"],
+    [jokic, "203999", "70b8b255c97d7a74160c7493d46dc3ef7b11c561164ad0c08d55061940a4682f"],
+    [curry, "201939", "8f84c64775d19545806ccdd1480a42e4d2ed47b2dc420ee56c85bf6c7d56a716"],
+    [giannis, "203507", "b73fb099aef69b35649c1f4481f40907aa9d8fef0fad4b600e04cca26b80057f"],
   ] as const)("pins the independently approved bytes for $1", (raw, id, approvedHash) => {
     expect(hash(raw)).toBe(approvedHash);
     expect(validateReviewedCareerArchive(raw, id, approvedHash)?.data).toEqual(raw.data);
@@ -110,7 +112,7 @@ describe("independently reviewed official career archives", () => {
   it("preserves traded team/TOT rows without double counting game coverage", () => {
     const split = edited(x => {
       const total = x.data.careerSeasons[0]; total.TEAM_ABBREVIATION = "TOT";
-      x.data.careerSeasons.splice(1, 0, { ...total, TEAM_ABBREVIATION: "CLE", GP: 50 }, { ...total, TEAM_ABBREVIATION: "LAL", GP: 29 });
+      x.data.careerSeasons.splice(1, 0, { ...total, TEAM_ABBREVIATION: "CLE", GP: 50, GS: 50 }, { ...total, TEAM_ABBREVIATION: "LAL", GP: 29, GS: 29 });
       x.data.provenance.coverage.rowCount += 2;
     });
     const parsed = validateCareerArchive(split, "2544")!;
@@ -122,7 +124,7 @@ describe("independently reviewed official career archives", () => {
     const data = normalizePlayerCareerData(lebron.data)!;
     expect(coversArchivedCareer({ careerSeasons: [] }, data)).toBe(false);
     expect(coversArchivedCareer({ careerSeasons: data.careerSeasons.slice(1) }, data)).toBe(false);
-    expect(coversArchivedCareer({ careerSeasons: data.careerSeasons.map((r, i) => i === 22 ? { ...r, GP: 59 } : r) }, data)).toBe(false);
+    expect(coversArchivedCareer({ careerSeasons: data.careerSeasons.map((r, i) => i === 22 ? { ...r, GP: 59, GS: 59 } : r) }, data)).toBe(false);
     expect(coversArchivedCareer({ careerSeasons: data.careerSeasons.map(r => ({ ...r, PTS: r.PTS + .1 })) }, data)).toBe(true);
   });
 
