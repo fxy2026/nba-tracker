@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { GitCompareArrows, ArrowLeftRight, Users, Award, TrendingUp, Crown, Activity, Share2, ThumbsUp } from "lucide-react";
@@ -464,12 +464,80 @@ function PlayerSearchBox({ player, query, results, placeholder, isZh, compact, o
   onPick: (p: PlayerData) => void;
   onClear?: () => void;
 }) {
+  const listId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [dismissedQuery, setDismissedQuery] = useState<string | null>(null);
+  const [highlight, setHighlight] = useState<{ query: string; results: PlayerData[]; index: number } | null>(null);
+  // Dismiss the draft, rather than its current result array: a response that
+  // arrives after Escape/outside click must not reopen the same suggestions.
+  // A new preset query still opens automatically, as it did before.
+  const isOpen = !player && query.length >= 2 && results.length > 0 && dismissedQuery !== query;
+  const activeIndex = isOpen && highlight?.query === query && highlight.results === results ? highlight.index : -1;
+  const optionId = (index: number) => `${listId}-${comparisonPlayerId(results[index])}`;
+  const dismiss = useCallback(() => {
+    setDismissedQuery(query);
+    setHighlight(null);
+  }, [query]);
+  const pickPlayer = (selected: PlayerData) => {
+    dismiss();
+    onPick(selected);
+  };
+
+  useEffect(() => {
+    const outsidePointer = (event: PointerEvent) => {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) dismiss();
+    };
+    document.addEventListener("pointerdown", outsidePointer);
+    return () => document.removeEventListener("pointerdown", outsidePointer);
+  }, [dismiss]);
+
+  useEffect(() => {
+    if (activeIndex >= 0) {
+      listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeIndex]);
+
   return (
-    <>
+    <div ref={rootRef} onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) dismiss();
+    }}>
       <input
         type="text"
+        role="combobox"
+        aria-label={placeholder}
+        aria-autocomplete="list"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
+        aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
+        autoComplete="off"
         value={player ? `${player.firstName} ${player.lastName}` : query}
-        onChange={(e) => onQuery(e.target.value)}
+        onFocus={() => setDismissedQuery(null)}
+        onClick={() => setDismissedQuery(null)}
+        onChange={(e) => {
+          setDismissedQuery(null);
+          setHighlight(null);
+          onQuery(e.target.value);
+        }}
+        onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+          if (event.key === "Escape") {
+            if (isOpen) { event.preventDefault(); event.stopPropagation(); }
+            dismiss();
+          } else if (event.key === "Tab") {
+            dismiss();
+          } else if ((event.key === "ArrowDown" || event.key === "ArrowUp") && !player && query.length >= 2 && results.length > 0) {
+            event.preventDefault();
+            setDismissedQuery(null);
+            const index = event.key === "ArrowDown"
+              ? (activeIndex + 1) % results.length
+              : (activeIndex < 0 ? results.length - 1 : (activeIndex - 1 + results.length) % results.length);
+            setHighlight({ query, results, index });
+          } else if (event.key === "Enter" && activeIndex >= 0) {
+            event.preventDefault();
+            pickPlayer(results[activeIndex]);
+          }
+        }}
         placeholder={placeholder}
         className={compact
           ? "w-full glass-tile px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary/70 focus:outline-none focus:border-accent"
@@ -484,15 +552,22 @@ function PlayerSearchBox({ player, query, results, placeholder, isZh, compact, o
           {isZh ? "移除" : "Remove"}
         </button>
       )}
-      {results.length > 0 && !player && (
+      {isOpen && (
         <div
+          id={listId}
+          ref={listRef}
+          role="listbox"
+          aria-label={placeholder}
           className="z-50 top-full mt-1 w-full glass-tile shadow-xl max-h-48"
           // Unlayered glass-tile relative/hidden rules override Tailwind utilities.
           style={{ position: "absolute", overflowY: "auto" }}
         >
-          {results.map((p) => (
-            <button key={p.personId} onClick={() => onPick(p)}
-              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm">
+          {results.map((p, index) => (
+            <button key={comparisonPlayerId(p)} id={optionId(index)} type="button" role="option"
+              aria-selected={index === activeIndex} tabIndex={-1}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => pickPlayer(p)}
+              className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-bg-hover text-left text-sm ${index === activeIndex ? "bg-bg-hover" : ""}`}>
               <span className="font-medium">{p.firstName} {p.lastName}</span>
               {p.isIconicSeason ? (
                 <span className="text-[9px] font-mono tabular-nums px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
@@ -508,7 +583,7 @@ function PlayerSearchBox({ player, query, results, placeholder, isZh, compact, o
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -530,6 +605,8 @@ export default function ComparePage() {
   // Toggle the radar chart between regular-season per-game and playoff
   // per-game (only when both selected players carry playoff stats).
   const [radarMode, setRadarMode] = useState<"RS" | "PO">("RS");
+  // Reapplying a preset is a fresh search intent, even if its text is unchanged.
+  const [presetRevision, setPresetRevision] = useState(0);
 
   const searchParams = useSearchParams();
   const incomingQuery = searchParams.toString();
@@ -727,12 +804,13 @@ export default function ComparePage() {
         {/* Player 1 */}
         <div className="relative">
           <PlayerSearchBox
+            key={presetRevision}
             player={player1}
             query={query1}
             results={results1}
             placeholder={t.comparePage.searchPlayer1}
             isZh={isZh}
-            onQuery={(q) => { setQuery1(q); selectPlayer(0, null); }}
+            onQuery={(q) => { setQuery1(q); setResults1([]); selectPlayer(0, null); }}
             onPick={(p) => { selectPlayer(0, p); setResults1([]); setQuery1(""); }}
           />
         </div>
@@ -747,6 +825,8 @@ export default function ComparePage() {
               commitPlayers([second, first, third], [secondId, firstId, thirdId]);
               setQuery1(query2);
               setQuery2(tempQ);
+              setResults1(results2);
+              setResults2(results1);
             }}
             className="p-2.5 rounded-xl glass-tile hover:border-accent/50 transition-colors text-text-secondary hover:text-accent cursor-pointer"
             title={t.comparePage.swapPlayers}
@@ -758,12 +838,13 @@ export default function ComparePage() {
         {/* Player 2 */}
         <div className="relative">
           <PlayerSearchBox
+            key={presetRevision}
             player={player2}
             query={query2}
             results={results2}
             placeholder={t.comparePage.searchPlayer2}
             isZh={isZh}
-            onQuery={(q) => { setQuery2(q); selectPlayer(1, null); }}
+            onQuery={(q) => { setQuery2(q); setResults2([]); selectPlayer(1, null); }}
             onPick={(p) => { selectPlayer(1, p); setResults2([]); setQuery2(""); }}
           />
         </div>
@@ -782,7 +863,7 @@ export default function ComparePage() {
               placeholder={isZh ? "（可选）加入第 3 个球员对比" : "(optional) add a 3rd player"}
               isZh={isZh}
               compact
-              onQuery={(q) => { setQuery3(q); selectPlayer(2, null); }}
+              onQuery={(q) => { setQuery3(q); setResults3([]); selectPlayer(2, null); }}
               onPick={(p) => { selectPlayer(2, p); setResults3([]); setQuery3(""); }}
               onClear={() => { selectPlayer(2, null); setQuery3(""); setResults3([]); }}
             />
@@ -807,7 +888,13 @@ export default function ComparePage() {
           ].map((preset) => (
             <button
               key={preset.label}
-              onClick={() => { setQuery1(preset.q1); setQuery2(preset.q2); commitPlayers([null, null, null], [null, null, null]); setQuery3(""); setResults3([]); }}
+              onClick={() => {
+                setPresetRevision(revision => revision + 1);
+                if (query1 !== preset.q1) setResults1([]);
+                if (query2 !== preset.q2) setResults2([]);
+                setQuery1(preset.q1); setQuery2(preset.q2);
+                commitPlayers([null, null, null], [null, null, null]); setQuery3(""); setResults3([]);
+              }}
               className="px-3 py-1.5 glass-tile text-xs text-text-secondary hover:text-accent transition-colors cursor-pointer"
             >
               {preset.label}

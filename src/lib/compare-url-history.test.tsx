@@ -18,6 +18,7 @@ const runtime = vi.hoisted(() => ({
 // This is an effect/handler fixture, not a substitute for the live browser repro.
 vi.mock('react', async original => ({
   ...await original<typeof import('react')>(),
+  useId: () => 'compare-url-test-picker',
   useState: (initial: unknown) => {
     const index = runtime.cursor++;
     let slot = runtime.hooks[index];
@@ -236,6 +237,55 @@ describe('Compare URL navigation and real selection handlers', () => {
 });
 
 describe('Compare pending lookup and effect cleanup', () => {
+  it.each([0, 1, 2])('clears slot %s old suggestions immediately when its draft changes', async slot => {
+    fetcher.mockImplementation((url: string) => Promise.resolve(url.includes('?q=')
+      ? { ok: true, json: async () => ({ data: [curry] }) }
+      : response(records.get(new URL(url, 'https://example.test').searchParams.get('id') ?? '') ?? null)));
+    mount(slot === 2 ? pairA : ''); await settle();
+    type(slot, 'Curry'); await vi.advanceTimersByTimeAsync(300); await settle();
+    expect(boxes()[slot].results).toEqual([curry]);
+    type(slot, 'Jordan');
+    expect(boxes()[slot].results).toEqual([]);
+    expect(boxes()[slot].query).toBe('Jordan');
+  });
+
+  it('keeps completed autocomplete results attached to their swapped drafts', async () => {
+    fetcher.mockImplementation((url: string) => Promise.resolve({ ok: true, json: async () => ({ data: url.includes('Curry') ? [curry] : [jordan] }) }));
+    mount(); await settle(); type(0, 'Curry'); type(1, 'Jordan');
+    await vi.advanceTimersByTimeAsync(300); await settle();
+    swap();
+    expect(boxes().map(b => [b.query, b.results])).toEqual([['Jordan', [jordan]], ['Curry', [curry]]]);
+  });
+
+  it('clears old results when a preset supplies a different draft', async () => {
+    fetcher.mockResolvedValue({ ok: true, json: async () => ({ data: [jordan] }) });
+    mount(); await settle(); type(0, 'Jordan'); type(1, 'Jordan');
+    await vi.advanceTimersByTimeAsync(300); await settle();
+    preset('LeBron vs Curry');
+    expect(boxes().map(b => b.results)).toEqual([[], []]);
+  });
+
+  it('reapplying a preset resets picker dismissal even when both queries stay unchanged', async () => {
+    fetcher.mockResolvedValue({ ok: true, json: async () => ({ data: [curry] }) });
+    mount(); await settle(); preset('LeBron vs Curry');
+    await vi.advanceTimersByTimeAsync(300); await settle();
+    const oldKeys = nodes(tree).filter(n => typeof n.type === 'function' && n.type.name === 'PlayerSearchBox').map(n => n.key);
+    preset('LeBron vs Curry');
+    const newKeys = nodes(tree).filter(n => typeof n.type === 'function' && n.type.name === 'PlayerSearchBox').map(n => n.key);
+    expect(newKeys[0]).not.toBe(oldKeys[0]); expect(newKeys[1]).not.toBe(oldKeys[1]);
+    expect(boxes().map(b => [b.query, b.results])).toEqual([['LeBron', [curry]], ['Curry', [curry]]]);
+  });
+
+  it('does not commit a superseded autocomplete body over a newer draft', async () => {
+    const old = deferred<{ data: PlayerData[] }>();
+    fetcher.mockImplementation((url: string) => Promise.resolve({ ok: true, json: () => url.includes('Curry') ? old.promise : Promise.resolve({ data: [jordan] }) }));
+    mount(); await settle(); type(0, 'Curry'); await vi.advanceTimersByTimeAsync(300); await settle();
+    const signal = fetcher.mock.calls[0][1].signal as AbortSignal;
+    type(0, 'Jordan'); await vi.advanceTimersByTimeAsync(300); await settle();
+    old.resolve({ data: [curry] }); await settle();
+    expect(signal.aborted).toBe(true); expect(boxes()[0].results).toEqual([jordan]);
+  });
+
   it('ignores a superseded response even when fetch ignores its abort signal', async () => {
     const old = deferred<ReturnType<typeof response>>();
     fetcher.mockImplementation((url: string) => url.includes('76375') ? old.promise : Promise.resolve(response(curry)));

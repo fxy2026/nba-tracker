@@ -59,14 +59,15 @@ export function PlannedFixtureSection({ view, compact = false }: { view: Planned
 export default function PlannedFixturesPanel({ team, compact = false, fallback = null }: { team?: string; compact?: boolean; fallback?: ReactNode }) {
   const { locale } = useLocale();
   const [zone, setZone] = useState<string | null>(null);
-  const [response, setResponse] = useState<{ key: string; view: PlannedFixtureView | null; error: boolean }>({ key: '', view: null, error: false });
+  const [response, setResponse] = useState<{ key: string; view: PlannedFixtureView | null; error: boolean; loading: boolean }>({ key: '', view: null, error: false, loading: true });
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- browser timezone is unavailable during server rendering
     setZone(localTz());
   }, []);
   const from = zone ? fixtureDateInZone(new Date().toISOString(), zone) : '';
-  const key = `${team ?? ''}:${zone ?? ''}:${from}`;
+  // A new attempt must hide the previous error while its request is pending.
+  const key = `${team ?? ''}:${zone ?? ''}:${from}:${retry}`;
   useEffect(() => {
     if (!zone) return;
     const controller = new AbortController();
@@ -76,11 +77,13 @@ export default function PlannedFixturesPanel({ team, compact = false, fallback =
       if (!result.ok) throw new Error('Planned fixtures unavailable');
       const view = normalizePlannedFixtureView(await result.json(), query);
       if (!view) throw new Error('Invalid planned fixture response');
-      if (!controller.signal.aborted) setResponse({ key, view, error: false });
-    }).catch(() => { if (!controller.signal.aborted) setResponse({ key, view: null, error: true }); });
+      if (!controller.signal.aborted) setResponse({ key, view, error: false, loading: false });
+    }).catch(() => { if (!controller.signal.aborted) setResponse({ key, view: null, error: true, loading: false }); });
     return () => controller.abort();
   }, [zone, team, from, key, retry]);
-  if (response.key !== key) return <p className="px-4 py-6 text-xs text-text-secondary" role="status">{locale === 'zh' ? '正在加载计划赛程…' : 'Loading published schedule…'}</p>;
+  // Remember pending selections too, so A → B → A cannot restore A's old result.
+  if (response.key !== key) setResponse({ key, view: null, error: false, loading: true });
+  if (response.key !== key || response.loading) return <p className="px-4 py-6 text-xs text-text-secondary" role="status">{locale === 'zh' ? '正在加载计划赛程…' : 'Loading published schedule…'}</p>;
   if (response.error) return <div className="glass-tile p-4 text-sm"><p>{locale === 'zh' ? '计划赛程暂时无法加载。' : 'Published schedule could not be loaded.'}</p><button className="min-h-[44px] text-accent" onClick={() => setRetry(value => value + 1)}>{locale === 'zh' ? '重试' : 'Retry'}</button></div>;
   return response.view?.state === 'snapshot' ? <PlannedFixtureSection view={response.view} compact={compact} /> : fallback;
 }
