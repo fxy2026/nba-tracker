@@ -118,13 +118,13 @@ describe.each(endpoints)("offseason %s request deadline", stalledEndpoint => {
   });
 });
 
-it("keeps both successful sections, original requests, and no leftover deadlines", async () => {
+it("keeps both successful sections, shared transaction request, and no leftover deadlines", async () => {
   fetchMock.mockImplementation(url => Promise.resolve(response(endpointFor(url))));
   const html = renderToStaticMarkup(await OffseasonHero());
   expectStaticContent(html);
   for (const text of Object.values(content)) expect(html).toContain(text);
   expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-    "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=20",
+    "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=150",
     "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=10",
   ]);
   for (const [, init] of fetchMock.mock.calls) expect(init).toMatchObject({

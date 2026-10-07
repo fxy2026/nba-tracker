@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
 const request = (limit?: string) => new NextRequest(`https://example.test/api/transactions${limit === undefined ? "" : `?limit=${encodeURIComponent(limit)}`}`);
-const cached = "public, s-maxage=1800, stale-while-revalidate=3600";
+const responseCacheControl = "no-store";
 const unavailable = async (response: Response, status: number) => {
   expect(response.status).toBe(status);
   expect(response.headers.get("Cache-Control")).toBe("no-store");
@@ -91,7 +91,7 @@ it.each(["transactions", "items"])("preserves a successful empty %s array and it
   vi.stubGlobal("fetch", vi.fn((_: string, init: RequestInit) => { signal = init.signal!; return Promise.resolve(Response.json({ [key]: [] })); }));
   const response = await GET(request());
   expect(response.status).toBe(200); expect(await response.json()).toEqual({ transactions: [] });
-  expect(response.headers.get("Cache-Control")).toBe(cached); expect(vi.getTimerCount()).toBe(0);
+  expect(response.headers.get("Cache-Control")).toBe(responseCacheControl); expect(vi.getTimerCount()).toBe(0);
   await vi.advanceTimersByTimeAsync(6000); expect(signal.aborted).toBe(false);
 });
 
@@ -102,7 +102,7 @@ it("preserves normalized transaction fields, player parsing and fallback default
   ] }));
   vi.stubGlobal("fetch", fetch);
   const response = await GET(request("23"));
-  expect(response.status).toBe(200); expect(response.headers.get("Cache-Control")).toBe(cached);
+  expect(response.status).toBe(200); expect(response.headers.get("Cache-Control")).toBe(responseCacheControl);
   expect(await response.json()).toEqual({ transactions: [
     { date: "2026-10-05T18:00:00Z", team: "Los Angeles Lakers", teamAbbr: "LAL", player: "Test Player", type: "Signing", description: "Signed G Test Player.", players: ["Test Player"], kind: "signed", teamLogo: "https://example.test/lal.png" },
     { date: "", team: "Unknown", teamAbbr: "", player: "", type: "Transaction", description: "Waived F Other Player.", players: ["Other Player"], kind: "waived", teamLogo: "" },

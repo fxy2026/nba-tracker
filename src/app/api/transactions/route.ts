@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseTransactionPlayers, classifyTransaction } from "@/lib/transactions";
+import { DEFAULT_TRANSACTION_LIMIT, transactionFeedUrl } from "@/lib/transaction-feed";
 
 interface ESPNTransaction {
   date: string;
@@ -21,19 +22,18 @@ interface CleanedTransaction {
   teamLogo: string;
 }
 
-const DEFAULT_LIMIT = 150;
 const MAX_LIMIT = 500;
 
 export async function GET(request: NextRequest) {
   const raw = Number(request.nextUrl.searchParams.get("limit"));
-  const limit = Number.isFinite(raw) && raw > 0 ? Math.max(1, Math.min(Math.floor(raw), MAX_LIMIT)) : DEFAULT_LIMIT;
+  const limit = Number.isFinite(raw) && raw > 0 ? Math.max(1, Math.min(Math.floor(raw), MAX_LIMIT)) : DEFAULT_TRANSACTION_LIMIT;
 
   // One deadline covers headers AND the JSON body; all exit paths release it.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch(
-      `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=${limit}`,
+      transactionFeedUrl(limit),
       {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
         next: { revalidate: 1800 },
@@ -73,7 +73,10 @@ export async function GET(request: NextRequest) {
       { transactions },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+          // The upstream fetch already has a 30-minute shared data cache.
+          // A second response cache could retain an older timeline after the
+          // home hero has read a refreshed copy of that same upstream feed.
+          "Cache-Control": "no-store",
         },
       }
     );

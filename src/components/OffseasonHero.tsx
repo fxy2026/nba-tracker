@@ -6,6 +6,7 @@ import { formatGameDate } from "@/lib/dates";
 import { teamLogoUrl } from "@/lib/teamUrls";
 import { SEASON_SNAPSHOT, type SnapshotTeam } from "@/lib/season-snapshot";
 import { PLAYOFFS_END, NEXT_SEASON_START_ESTIMATE } from "@/lib/constants";
+import { transactionFeedUrl } from "@/lib/transaction-feed";
 
 interface EspnTxn {
   date?: string;
@@ -62,7 +63,7 @@ async function fetchHeroJson(url: string): Promise<unknown | null> {
 async function fetchLatestTransactions(): Promise<HeroTxn[]> {
   try {
     const data = await fetchHeroJson(
-      "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/transactions?limit=20",
+      transactionFeedUrl(),
     ) as { transactions?: EspnTxn[]; items?: EspnTxn[] } | null;
     const items = data?.transactions || data?.items || [];
     if (!Array.isArray(items)) return [];
