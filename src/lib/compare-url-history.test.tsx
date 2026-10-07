@@ -1,6 +1,7 @@
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import en from '@/locales/en';
+import zh from '@/locales/zh';
 
 type Effect = { run: () => void | (() => void); deps?: readonly unknown[]; cleanup?: () => void };
 type Hook =
@@ -11,6 +12,7 @@ type Hook =
 const runtime = vi.hoisted(() => ({
   hooks: [] as Hook[], cursor: 0, effects: [] as { index: number; effect: Effect; old?: Effect }[],
   dirty: true, mounted: true, lateSetters: 0, query: '', autoAcknowledge: true,
+  locale: 'en', toast: vi.fn(),
 }));
 
 // Execute the component's actual effects with React's commit ordering: all
@@ -61,8 +63,8 @@ vi.mock('react', async original => ({
   },
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(runtime.query) }));
-vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: 'en', t: en }) }));
-vi.mock('@/components/ToastProvider', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/components/LocaleProvider', () => ({ useLocale: () => ({ locale: runtime.locale, t: runtime.locale === 'zh' ? zh : en }) }));
+vi.mock('@/components/ToastProvider', () => ({ useToast: () => ({ toast: runtime.toast }) }));
 import CompareClient, { type PlayerData } from '@/app/compare/CompareClient';
 
 type BoxProps = {
@@ -166,6 +168,7 @@ function replayEffects() {
 beforeEach(() => {
   runtime.hooks = []; runtime.cursor = 0; runtime.effects = []; runtime.dirty = true;
   runtime.mounted = true; runtime.lateSetters = 0; runtime.query = ''; runtime.autoAcknowledge = true;
+  runtime.locale = 'en'; runtime.toast.mockReset();
   vi.useFakeTimers();
   replace = vi.fn((_state: unknown, _title: string, url: string) => {
     actualURL = new URL(url, actualURL); history[historyIndex] = actualURL.search.slice(1);
@@ -201,6 +204,120 @@ describe('Compare choice accessibility', () => {
     expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(false);
     expect(choice('Michael Jordan').props['aria-pressed']).toBe(true);
     expect(localStorage.setItem).toHaveBeenLastCalledWith('compare-pick:76375-1961:893-1995', 'p2');
+  });
+});
+
+describe.each(['en', 'zh'] as const)('Compare choice persistence feedback in %s', locale => {
+  const savedBadge = locale === 'zh' ? '已记录于本设备' : 'Saved on this device';
+  const unsavedBadge = locale === 'zh' ? '无法保存到本设备' : 'Could not save on this device';
+  const savedToast = (name: string) => locale === 'zh' ? `已记录: ${name}` : `Saved pick: ${name}`;
+  const unsavedToast = (name: string) => locale === 'zh'
+    ? `已选择 ${name}，但无法保存到本设备。`
+    : `Selected ${name}, but could not save on this device.`;
+  const select = (name: string) => { (choice(name).props.onClick as () => void)(); flush(); };
+
+  beforeEach(() => { runtime.locale = locale; });
+
+  it.each(['SecurityError', 'QuotaExceededError'])('keeps the current choice without claiming it was saved after %s', async error => {
+    const setItem = vi.fn(() => { throw new DOMException('Storage unavailable', error); });
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem });
+    mount(pairA); await settle();
+    for (const name of ['Wilt Chamberlain', 'Michael Jordan']) {
+      select(name);
+      expect(choice(name).props['aria-pressed']).toBe(true);
+      expect(choice(name === 'Wilt Chamberlain' ? 'Michael Jordan' : 'Wilt Chamberlain').props['aria-pressed']).toBe(false);
+      expect(contentText(tree)).toContain(unsavedBadge);
+      expect(contentText(tree)).not.toContain(savedBadge);
+      expect(runtime.toast).toHaveBeenLastCalledWith(unsavedToast(name), 'warning');
+    }
+    expect(setItem).toHaveBeenLastCalledWith('compare-pick:76375-1961:893-1995', 'p2');
+  });
+
+  it('keeps successful persistence and its success feedback', async () => {
+    mount(pairA); await settle();
+    select('Wilt Chamberlain');
+    expect(localStorage.setItem).toHaveBeenLastCalledWith('compare-pick:76375-1961:893-1995', 'p1');
+    expect(contentText(tree)).toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+    expect(runtime.toast).toHaveBeenLastCalledWith(savedToast('Wilt Chamberlain'), 'success');
+  });
+
+  it.each(['p1', 'p2'] as const)('shows the saved badge only for a valid restored %s choice', async stored => {
+    vi.stubGlobal('localStorage', { getItem: () => stored, setItem: vi.fn() });
+    mount(pairA); await settle();
+    expect(contentText(tree)).toContain(savedBadge);
+    expect(choice(stored === 'p1' ? 'Wilt Chamberlain' : 'Michael Jordan').props['aria-pressed']).toBe(true);
+    expect(runtime.toast).not.toHaveBeenCalled();
+  });
+
+  it.each([null, 'invalid'])('does not report a saved choice for storage value %s', async stored => {
+    vi.stubGlobal('localStorage', { getItem: () => stored, setItem: vi.fn() });
+    mount(pairA); await settle();
+    expect(contentText(tree)).not.toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(false);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(false);
+  });
+
+  it('can retry the same session-only choice after storage recovers', async () => {
+    const setItem = vi.fn().mockImplementationOnce(() => { throw new DOMException('Full', 'QuotaExceededError'); });
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem });
+    mount(pairA); await settle();
+    select('Wilt Chamberlain');
+    expect(contentText(tree)).toContain(unsavedBadge);
+    select('Wilt Chamberlain');
+    expect(setItem).toHaveBeenCalledTimes(2);
+    expect(contentText(tree)).toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+    expect(runtime.toast).toHaveBeenLastCalledWith(savedToast('Wilt Chamberlain'), 'success');
+  });
+
+  it('downgrades saved feedback when changing a persisted pick fails, and restores the real saved pick on return', async () => {
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => key === 'compare-pick:76375-1961:893-1995' ? 'p1' : null,
+      setItem: vi.fn(() => { throw new DOMException('Full', 'QuotaExceededError'); }),
+    });
+    mount(pairA); await settle();
+    expect(contentText(tree)).toContain(savedBadge);
+    select('Michael Jordan');
+    expect(contentText(tree)).toContain(unsavedBadge);
+    expect(contentText(tree)).not.toContain(savedBadge);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(true);
+    navigate(pairB); await settle();
+    expect(contentText(tree)).not.toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+    back(); await settle();
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(true);
+    expect(contentText(tree)).toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+  });
+
+  it('describes a failed save attempt accurately even when the same choice was already saved', async () => {
+    const getItem = vi.fn(() => 'p1');
+    vi.stubGlobal('localStorage', {
+      getItem,
+      setItem: vi.fn(() => { throw new DOMException('Full', 'QuotaExceededError'); }),
+    });
+    mount(pairA); await settle();
+    expect(contentText(tree)).toContain(savedBadge);
+    select('Wilt Chamberlain');
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(true);
+    expect(getItem()).toBe('p1');
+    expect(contentText(tree)).toContain(unsavedBadge);
+    expect(runtime.toast).toHaveBeenLastCalledWith(unsavedToast('Wilt Chamberlain'), 'warning');
+  });
+
+  it('clears the previous pair choice when storage reads become blocked', async () => {
+    const getItem = vi.fn((): string | null => 'p1');
+    vi.stubGlobal('localStorage', { getItem, setItem: vi.fn() });
+    mount(pairA); await settle();
+    expect(contentText(tree)).toContain(savedBadge);
+    getItem.mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
+    navigate(pairB); await settle();
+    expect(contentText(tree)).not.toContain(savedBadge);
+    expect(contentText(tree)).not.toContain(unsavedBadge);
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(false);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(false);
   });
 });
 

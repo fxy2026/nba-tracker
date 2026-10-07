@@ -621,6 +621,7 @@ export default function ComparePage() {
   // Local "who would win" pick — keyed by the comparison pair so swapping
   // players resets the badge. localStorage only; no backend tally.
   const [pick, setPick] = useState<"p1" | "p2" | null>(null);
+  const [pickSaved, setPickSaved] = useState(false);
 
   const applyPlayers = useCallback((players: PlayerSlots) => {
     selectedRef.current = players;
@@ -729,27 +730,35 @@ export default function ComparePage() {
   // perf hint; the alternative (deriving from render) would need synchronous
   // localStorage access during SSR which crashes.
   useEffect(() => {
-    if (!player1 || !player2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPick(null);
-      return;
+    let restored: "p1" | "p2" | null = null;
+    if (player1 && player2) {
+      try {
+        const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
+        const stored = localStorage.getItem(key);
+        if (stored === "p1" || stored === "p2") restored = stored;
+      } catch { /* localStorage disabled */ }
     }
-    try {
-      const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
-      const stored = localStorage.getItem(key) as "p1" | "p2" | null;
-      setPick(stored);
-    } catch { /* localStorage disabled */ }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPick(restored);
+    setPickSaved(restored !== null);
   }, [player1, player2]);
 
   const recordPick = (side: "p1" | "p2") => {
     if (!player1 || !player2) return;
+    let saved = false;
     try {
       const key = `compare-pick:${player1.iconicId ?? player1.personId}:${player2.iconicId ?? player2.personId}`;
       localStorage.setItem(key, side);
-    } catch { /* ignore */ }
+      saved = true;
+    } catch { /* Keep the current choice even when persistence is unavailable. */ }
     setPick(side);
+    setPickSaved(saved);
     const winner = side === "p1" ? player1 : player2;
-    toast(isZh ? `已记录: ${winner.firstName} ${winner.lastName}` : `Saved pick: ${winner.firstName} ${winner.lastName}`, "success");
+    const name = `${winner.firstName} ${winner.lastName}`;
+    toast(saved
+      ? (isZh ? `已记录: ${name}` : `Saved pick: ${name}`)
+      : (isZh ? `已选择 ${name}，但无法保存到本设备。` : `Selected ${name}, but could not save on this device.`),
+    saved ? "success" : "warning");
   };
 
   const sharePair = async () => {
@@ -1127,7 +1136,9 @@ export default function ComparePage() {
               </h3>
               {pick && (
                 <span className="text-[10px] text-text-secondary">
-                  {isZh ? "已记录于本设备" : "Saved on this device"}
+                  {pickSaved
+                    ? (isZh ? "已记录于本设备" : "Saved on this device")
+                    : (isZh ? "无法保存到本设备" : "Could not save on this device")}
                 </span>
               )}
             </div>
