@@ -45,15 +45,26 @@ function render() {
     runtime.effects.splice(0).forEach(run => run());
   }
 }
-function installEvent(outcome: "accepted" | "dismissed" = "accepted") {
-  const prompt = vi.fn().mockResolvedValue(undefined);
+type InstallChoice = { outcome: "accepted" | "dismissed"; platform: string };
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+}
+function installEvent(
+  outcome: "accepted" | "dismissed" = "accepted",
+  pending: { prompt?: Promise<void>; choice?: Promise<InstallChoice> } = {},
+) {
+  const prompt = vi.fn().mockReturnValue(pending.prompt ?? Promise.resolve());
   const event = Object.assign(new Event("beforeinstallprompt", { cancelable: true }), {
-    platforms: ["web"], prompt, userChoice: Promise.resolve({ outcome, platform: "web" }),
+    platforms: ["web"], prompt, userChoice: pending.choice ?? Promise.resolve({ outcome, platform: "web" }),
   });
   windowEvents.dispatchEvent(event); render(); return event;
 }
 const dialog = () => view.find(node => node.props.role === "dialog");
 const buttons = () => view.filter(node => node.type === "button");
+const install = () => buttons().find(button => !button.props["aria-label"])!.props.onClick as () => Promise<void>;
 const dismiss = () => buttons().find(node => node.props["aria-label"] === (runtime.locale === "zh" ? "关闭" : "Dismiss"))!;
 function remount() {
   for (const slot of runtime.slots) (slot as Effect | undefined)?.cleanup?.();
@@ -207,4 +218,122 @@ it("keeps the iOS hint dismissed after reload until the seven-day policy expires
   vi.advanceTimersByTime(7 * 24 * 60 * 60 * 1000);
   remount(); vi.advanceTimersByTime(2000); render();
   expect(dialog()).toBeDefined();
+});
+
+
+it.each(["prompt", "choice"] as const)("starts an install event only once while its %s promise is pending", async stage => {
+  const prompt = deferred<void>(), choice = deferred<InstallChoice>();
+  render();
+  const event = installEvent("accepted", { prompt: stage === "prompt" ? prompt.promise : undefined, choice: choice.promise });
+  const onInstall = install();
+  const first = onInstall(), repeatedBeforeRender = onInstall();
+  await Promise.resolve(); // Let prompt() settle so the choice case reaches its pending userChoice.
+  render();
+  const repeatedAfterRender = install()();
+  prompt.resolve(undefined); choice.resolve({ outcome: "accepted", platform: "web" });
+  await Promise.all([first, repeatedBeforeRender, repeatedAfterRender]); render();
+  expect(event.prompt).toHaveBeenCalledOnce();
+  expect(dialog()).toBeUndefined(); expect(storage.size).toBe(0);
+});
+
+it.each(["accepted", "dismissed", "prompt rejects", "choice rejects"] as const)(
+  "preserves a newer install event when the previous request %s",
+  async outcome => {
+    const prompt = deferred<void>(), choice = deferred<InstallChoice>();
+    render();
+    const oldEvent = installEvent("accepted", { prompt: prompt.promise, choice: choice.promise });
+    const first = install()();
+    const newerEvent = installEvent();
+    if (outcome === "prompt rejects") prompt.reject(new Error("Prompt failed"));
+    else {
+      prompt.resolve(undefined); await Promise.resolve();
+      if (outcome === "choice rejects") choice.reject(new Error("Choice failed"));
+      else choice.resolve({ outcome, platform: "web" });
+    }
+    await first; render();
+    expect(oldEvent.prompt).toHaveBeenCalledOnce();
+    expect(dialog()).toBeDefined(); expect(storage.size).toBe(0);
+    await install()(); render();
+    expect(newerEvent.prompt).toHaveBeenCalledOnce(); expect(dialog()).toBeUndefined();
+  },
+);
+
+it("ignores an old click handler once a newer install event replaces it", async () => {
+  render(); const oldEvent = installEvent(); const oldClick = install();
+  const newerEvent = installEvent();
+  await oldClick(); render();
+  expect(oldEvent.prompt).not.toHaveBeenCalled(); expect(dialog()).toBeDefined();
+  await install()(); render();
+  expect(newerEvent.prompt).toHaveBeenCalledOnce(); expect(dialog()).toBeUndefined();
+});
+
+it.each(["close", "Escape"] as const)("does not extend a %s dismissal when an old native choice arrives late", async method => {
+  const choice = deferred<InstallChoice>();
+  render(); installEvent("accepted", { choice: choice.promise });
+  const first = install()(); await Promise.resolve();
+  await dismissPrompt(method);
+  const dismissedAt = storage.get("nba-tracker-install-dismissed");
+  vi.advanceTimersByTime(10_000);
+  choice.resolve({ outcome: "dismissed", platform: "web" }); await first; render();
+  expect(dialog()).toBeUndefined();
+  expect(storage.get("nba-tracker-install-dismissed")).toBe(dismissedAt);
+  vi.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 10_000);
+  installEvent(); expect(dialog()).toBeDefined();
+});
+
+it("ignores a late native dismissal after appinstalled", async () => {
+  const choice = deferred<InstallChoice>();
+  render(); installEvent("accepted", { choice: choice.promise });
+  const first = install()(); await Promise.resolve();
+  windowEvents.dispatchEvent(new Event("appinstalled")); render();
+  choice.resolve({ outcome: "dismissed", platform: "web" }); await first; render();
+  expect(dialog()).toBeUndefined(); expect(storage.size).toBe(0);
+});
+
+it("ignores an unmounted install request after a fresh component has shown a new prompt", async () => {
+  const choice = deferred<InstallChoice>();
+  render(); installEvent("accepted", { choice: choice.promise });
+  const first = install()(); await Promise.resolve();
+  remount(); const newerEvent = installEvent();
+  choice.resolve({ outcome: "dismissed", platform: "web" }); await first; render();
+  expect(storage.size).toBe(0); expect(dialog()).toBeDefined();
+  await install()(); render(); expect(newerEvent.prompt).toHaveBeenCalledOnce();
+});
+
+it.each(["prompt", "choice"] as const)("recovers from a current %s rejection without recording a dismissal", async stage => {
+  const prompt = deferred<void>(), choice = deferred<InstallChoice>();
+  render();
+  const event = installEvent("accepted", { prompt: prompt.promise, choice: choice.promise });
+  const first = install()();
+  if (stage === "prompt") prompt.reject(new Error("Prompt failed"));
+  else { prompt.resolve(undefined); await Promise.resolve(); choice.reject(new Error("Choice failed")); }
+  await first; render();
+  expect(event.prompt).toHaveBeenCalledOnce(); expect(dialog()).toBeUndefined(); expect(storage.size).toBe(0);
+  const retryEvent = installEvent(); await install()(); render();
+  expect(retryEvent.prompt).toHaveBeenCalledOnce(); expect(dialog()).toBeUndefined();
+});
+
+
+it.each(["dismissed", "rejected"] as const)("keeps a newer pending install single-use when the older choice is %s", async outcome => {
+  const oldChoice = deferred<InstallChoice>(), newChoice = deferred<InstallChoice>();
+  render(); installEvent("accepted", { choice: oldChoice.promise });
+  const first = install()(); await Promise.resolve();
+  const newerEvent = installEvent("accepted", { choice: newChoice.promise });
+  const newerClick = install(), second = newerClick(); await Promise.resolve();
+  if (outcome === "rejected") oldChoice.reject(new Error("Old choice failed"));
+  else oldChoice.resolve({ outcome, platform: "web" });
+  await first; render();
+  expect(dialog()).toBeDefined(); expect(storage.size).toBe(0);
+  const repeated = newerClick();
+  newChoice.resolve({ outcome: "accepted", platform: "web" });
+  await Promise.all([second, repeated]); render();
+  expect(newerEvent.prompt).toHaveBeenCalledOnce(); expect(dialog()).toBeUndefined();
+});
+
+it("does not offer installation when already running standalone", () => {
+  window.matchMedia = () => ({ matches: true }) as MediaQueryList;
+  render();
+  const event = installEvent();
+  expect(dialog()).toBeUndefined(); expect(event.prompt).not.toHaveBeenCalled();
+  expect(vi.getTimerCount()).toBe(0);
 });

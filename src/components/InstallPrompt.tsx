@@ -50,6 +50,7 @@ export default function InstallPrompt() {
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
   const dismissedAt = useRef(0);
+  const installRequest = useRef<{ event: BeforeInstallPromptEvent; started: boolean } | null>(null);
 
   useEffect(() => {
     // Bail if previously dismissed within TTL
@@ -74,18 +75,22 @@ export default function InstallPrompt() {
       // The root layout survives SPA navigation, and browsers can fire this
       // event again after Close, Escape, or a dismissed native install dialog.
       if (wasRecentlyDismissed(dismissedAt.current)) return;
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      const event = e as BeforeInstallPromptEvent;
+      installRequest.current = { event, started: false };
+      setDeferredPrompt(event);
       setVisible(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
 
     const installedHandler = () => {
+      installRequest.current = null;
       setVisible(false);
       setDeferredPrompt(null);
     };
     window.addEventListener("appinstalled", installedHandler);
 
     return () => {
+      installRequest.current = null;
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
     };
@@ -98,6 +103,7 @@ export default function InstallPrompt() {
     if (!visible) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        installRequest.current = null;
         dismissedAt.current = recordDismissal();
         setVisible(false);
         setDeferredPrompt(null);
@@ -110,19 +116,27 @@ export default function InstallPrompt() {
   if (!visible || (!deferredPrompt && !iosHint)) return null;
 
   const onInstall = async () => {
-    if (!deferredPrompt) return;
+    const request = installRequest.current;
+    if (!request || request.event !== deferredPrompt || request.started) return;
+    // Consume each browser event once, including clicks before React rerenders.
+    request.started = true;
     try {
-      await deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
+      await request.event.prompt();
+      const choice = await request.event.userChoice;
+      if (installRequest.current !== request) return;
       if (choice.outcome === "dismissed") {
         dismissedAt.current = recordDismissal();
       }
     } catch { /* ignore */ }
+    // A newer event, dismissal, installation, or unmount owns the UI now.
+    if (installRequest.current !== request) return;
+    installRequest.current = null;
     setVisible(false);
     setDeferredPrompt(null);
   };
 
   const onDismiss = () => {
+    installRequest.current = null;
     dismissedAt.current = recordDismissal();
     setVisible(false);
     setDeferredPrompt(null);
