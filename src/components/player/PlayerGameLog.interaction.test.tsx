@@ -290,3 +290,120 @@ it("deduplicates one in-flight selection shared by mounted consumers", async () 
   expect(render(fixture()).html.match(/1 \/ 60 recorded games/g)).toHaveLength(2);
   expect(fetcher).toHaveBeenCalledOnce();
 });
+
+
+it("keeps cached seasons request-free on Back after refreshing another season", async () => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  render(fixture());
+  changeSeason(render(fixture()).tree, "2024-25"); render(fixture()); await settle(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  changeSeason(render(fixture()).tree, "2025-26"); render(fixture()); await settle(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  click(render(fixture()).tree, "Refresh source"); render(fixture()); await settle(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  back(); render(fixture()); await settle();
+  expect(render(fixture()).html).toContain("2024-25 · Regular season");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("keeps repeated Back/Forward request-free after a completed explicit refresh", async () => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  render(fixture());
+  changeSeason(render(fixture()).tree, "2024-25"); render(fixture()); await settle(); render(fixture());
+  changeSeason(render(fixture()).tree, "2025-26"); render(fixture());
+  click(render(fixture()).tree, "Refresh source"); render(fixture()); await settle(); render(fixture());
+  for (let i = 0; i < 3; i++) {
+    back(); render(fixture()); await settle();
+    expect(render(fixture()).html).toContain("2024-25 · Regular season");
+    url = new URL(history[++historyIndex]); window.dispatchEvent(new Event("popstate"));
+    render(fixture()); await settle();
+    expect(render(fixture()).html).toContain("2025-26 · Regular season");
+  }
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("allows repeated explicit refreshes and deduplicates extra clicks while one is pending", async () => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  let finish!: (response: Response) => void;
+  fetcher.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  render(fixture());
+  click(render(fixture()).tree, "Refresh source"); render(fixture());
+  click(render(fixture()).tree, "Refresh source"); render(fixture());
+  expect(fetcher).toHaveBeenCalledOnce();
+  finish(response(gameData("2025-26", "Regular Season", 2544, 35))); await settle();
+  expect(render(fixture()).html).toContain(">35.0</dd>");
+  click(render(fixture()).tree, "Refresh source"); render(fixture()); await settle(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls.every(call => String(call[0]).includes("refresh=1"))).toBe(true);
+});
+
+it.each(["success", "failure"])("does not leak pending refresh intent or stale %s into cached Back/Forward selection", async outcome => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  fetcher.mockResolvedValueOnce(response(gameData("2024-25", "Regular Season", 2544, 31)));
+  render(fixture());
+  changeSeason(render(fixture()).tree, "2024-25"); render(fixture()); await settle();
+  expect(render(fixture()).html).toContain(">31.0</dd>");
+  changeSeason(render(fixture()).tree, "2025-26"); render(fixture());
+  let finish!: (response: Response) => void, fail!: (error: Error) => void;
+  fetcher.mockImplementationOnce(() => new Promise<Response>((resolve, reject) => { finish = resolve; fail = reject; }));
+  click(render(fixture()).tree, "Refresh source"); render(fixture());
+  back(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  if (outcome === "success") finish(response(gameData("2025-26", "Regular Season", 2544, 35)));
+  else fail(new Error("old refresh failed"));
+  await settle();
+  const cached = render(fixture()).html;
+  expect(cached).toContain("2024-25 · Regular season"); expect(cached).toContain(">31.0</dd>");
+  expect(cached).not.toContain(">35.0</dd>"); expect(cached).not.toContain("Refresh failed");
+  url = new URL(history[++historyIndex]); window.dispatchEvent(new Event("popstate")); render(fixture()); await settle();
+  expect(render(fixture()).html).toContain(outcome === "success" ? ">35.0</dd>" : ">20.0</dd>");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("rejoins an in-flight refresh on effect replay instead of losing the refreshed result", async () => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  let finish!: (response: Response) => void;
+  fetcher.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  render(fixture()); click(render(fixture()).tree, "Refresh source"); render(fixture());
+  // Deterministically replay mounted effects with hook state preserved, as the
+  // real effect cleanup/setup cycle can do; this is not a browser StrictMode test.
+  for (const instance of runtime.instances.values()) {
+    instance.slots.forEach((slot, index) => {
+      if (slot && typeof slot === "object" && "deps" in slot) {
+        (slot as Effect).cleanup?.(); instance.slots[index] = undefined;
+      }
+    });
+  }
+  render(fixture()); expect(fetcher).toHaveBeenCalledOnce();
+  finish(response(gameData("2025-26", "Regular Season", 2544, 38))); await settle();
+  expect(render(fixture()).html).toContain(">38.0</dd>");
+});
+
+it("rejoins the original pending refresh on Forward without starting another request", async () => {
+  runtime.server = false;
+  const seed = gameData();
+  const fixture = () => log({ initialData: seed });
+  render(fixture());
+  changeSeason(render(fixture()).tree, "2024-25"); render(fixture()); await settle(); render(fixture());
+  changeSeason(render(fixture()).tree, "2025-26"); render(fixture());
+  let finish!: (response: Response) => void;
+  fetcher.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  click(render(fixture()).tree, "Refresh source"); render(fixture());
+  back(); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  url = new URL(history[++historyIndex]); window.dispatchEvent(new Event("popstate")); render(fixture());
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  finish(response(gameData("2025-26", "Regular Season", 2544, 36))); await settle();
+  expect(render(fixture()).html).toContain(">36.0</dd>");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});

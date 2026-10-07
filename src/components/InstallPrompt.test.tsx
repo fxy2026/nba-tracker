@@ -13,6 +13,11 @@ vi.mock("react", async original => ({
     if (!(index in runtime.slots)) runtime.slots[index] = initial;
     return [runtime.slots[index], (next: unknown) => { runtime.slots[index] = next; runtime.dirty = true; }];
   },
+  useRef: (initial: unknown) => {
+    const index = runtime.index++;
+    if (!(index in runtime.slots)) runtime.slots[index] = { current: initial };
+    return runtime.slots[index];
+  },
   useEffect: (run: () => void | (() => void), deps: unknown[]) => {
     const index = runtime.index++, old = runtime.slots[index] as Effect | undefined;
     if (!old || old.deps.length !== deps.length || deps.some((value, i) => !Object.is(value, old.deps[i]))) {
@@ -50,6 +55,16 @@ function installEvent(outcome: "accepted" | "dismissed" = "accepted") {
 const dialog = () => view.find(node => node.props.role === "dialog");
 const buttons = () => view.filter(node => node.type === "button");
 const dismiss = () => buttons().find(node => node.props["aria-label"] === (runtime.locale === "zh" ? "关闭" : "Dismiss"))!;
+function remount() {
+  for (const slot of runtime.slots) (slot as Effect | undefined)?.cleanup?.();
+  runtime.slots = []; runtime.effects = []; render();
+}
+async function dismissPrompt(method: "close" | "Escape" | "native") {
+  if (method === "close") (dismiss().props.onClick as () => void)();
+  else if (method === "Escape") documentEvents.dispatchEvent(Object.assign(new Event("keydown"), { key: "Escape" }));
+  else await (buttons().find(button => !button.props["aria-label"])!.props.onClick as () => Promise<void>)();
+  render();
+}
 beforeEach(() => {
   runtime.slots = []; runtime.index = 0; runtime.effects = []; runtime.dirty = false; runtime.locale = "en";
   view = []; storage = new Map(); windowEvents = new EventTarget(); documentEvents = new EventTarget();
@@ -125,4 +140,71 @@ it("hides after appinstalled without changing the dismissal record", () => {
   render(); installEvent();
   windowEvents.dispatchEvent(new Event("appinstalled")); render();
   expect(dialog()).toBeUndefined(); expect(storage.size).toBe(0);
+});
+
+it.each(["close", "Escape", "native"] as const)("keeps a %s dismissal across repeated SPA install events and a reload", async method => {
+  render(); installEvent("dismissed");
+  await dismissPrompt(method);
+  expect(dialog()).toBeUndefined();
+  const dismissedAt = storage.get("nba-tracker-install-dismissed");
+
+  // Root-layout components stay mounted through player → team → player navigation.
+  for (let navigation = 0; navigation < 2; navigation++) {
+    vi.advanceTimersByTime(1000);
+    const event = installEvent();
+    expect(event.defaultPrevented).toBe(true);
+    expect(dialog()).toBeUndefined();
+    expect(event.prompt).not.toHaveBeenCalled();
+    expect(storage.get("nba-tracker-install-dismissed")).toBe(dismissedAt);
+  }
+
+  // Fresh component state on reload must still respect the stored preference.
+  remount(); installEvent();
+  expect(dialog()).toBeUndefined();
+});
+
+it.each(["close", "Escape", "native"] as const)("keeps a %s dismissal through SPA navigation when browser storage is blocked", async method => {
+  vi.stubGlobal("localStorage", {
+    getItem: () => { throw new Error("Storage blocked"); },
+    setItem: () => { throw new Error("Storage blocked"); },
+  });
+  render(); installEvent("dismissed");
+  await dismissPrompt(method);
+  installEvent(); expect(dialog()).toBeUndefined();
+  installEvent(); expect(dialog()).toBeUndefined();
+});
+
+it("allows a new install event after the existing seven-day dismissal expires", async () => {
+  render(); installEvent(); await dismissPrompt("close");
+  vi.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1);
+  installEvent(); expect(dialog()).toBeUndefined();
+  vi.advanceTimersByTime(1);
+  installEvent(); expect(dialog()).toBeDefined();
+});
+
+it("rechecks stored dismissals when a later install event arrives", () => {
+  render();
+  storage.set("nba-tracker-install-dismissed", String(Date.now()));
+  const event = installEvent();
+  expect(event.defaultPrevented).toBe(true);
+  expect(dialog()).toBeUndefined();
+});
+
+it("does not show a delayed iOS hint if the prompt was dismissed elsewhere while waiting", () => {
+  vi.stubGlobal("navigator", { userAgent: "iPhone Safari" });
+  render();
+  storage.set("nba-tracker-install-dismissed", String(Date.now()));
+  vi.advanceTimersByTime(2000); render();
+  expect(dialog()).toBeUndefined();
+});
+
+it("keeps the iOS hint dismissed after reload until the seven-day policy expires", async () => {
+  vi.stubGlobal("navigator", { userAgent: "iPhone Safari" });
+  render(); vi.advanceTimersByTime(2000); render();
+  await dismissPrompt("close");
+  remount(); vi.advanceTimersByTime(2000); render();
+  expect(dialog()).toBeUndefined();
+  vi.advanceTimersByTime(7 * 24 * 60 * 60 * 1000);
+  remount(); vi.advanceTimersByTime(2000); render();
+  expect(dialog()).toBeDefined();
 });

@@ -105,7 +105,7 @@ export default function StandingsMini() {
         <ConferenceColumn title={t.standingsMini.east} teams={east} />
         <ConferenceColumn title={t.standingsMini.west} teams={west} />
       </div>
-      <Link href="/stats" className="block text-center text-[10px] text-accent hover:underline mt-2">
+      <Link href="/standings" className="block text-center text-[10px] text-accent hover:underline mt-2">
         {t.standingsMini.fullStandings}
       </Link>
     </div>

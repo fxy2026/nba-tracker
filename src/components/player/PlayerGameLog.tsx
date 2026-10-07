@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/components/LocaleProvider";
 import { CURRENT_SEASON } from "@/lib/constants";
@@ -41,20 +41,25 @@ export default function PlayerGameLog({ playerId, playerName, seasons = [], init
   const seed = initialData && initialData.playerId === playerId && initialData.season === season && initialData.seasonType === seasonType ? initialData : null;
   const [state, setState] = useState<LoadState>({ key, data: seed, loading: !seed, error: false });
   const [retry, setRetry] = useState(0);
+  const refreshTarget = useRef<string | null>(null);
   const [limit, setLimit] = useState(20);
   useEffect(() => {
     let cancelled = false;
     const saved = cache.get(key) ?? seed ?? null;
+    // Refresh is a one-shot action for this selection, not a sticky mode that
+    // browser Back/Forward can carry into another cached season.
+    const forceRefresh = refreshTarget.current === key;
+    refreshTarget.current = null;
+    let request = requests.get(key);
     // Each request owns its identity; a previous season/player can never leak.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ key, data: saved, loading: !saved, error: false });
     setLimit(20);
-    if (saved && retry === 0) return;
+    if (saved && !forceRefresh && !request) return;
     const identity = { playerId, season, seasonType };
-    let request = requests.get(key);
     if (!request) {
       const params = new URLSearchParams({ playerId: String(playerId), season, seasonType });
-      if (retry) params.set("refresh", "1");
+      if (forceRefresh) params.set("refresh", "1");
       request = (async () => {
         try {
           const controller = new AbortController();
@@ -77,6 +82,10 @@ export default function PlayerGameLog({ playerId, playerName, seasons = [], init
   const data = visible.data;
   const rows = data?.rows ?? [];
   const monthly = [...new Set(rows.map(row => row.date.slice(0, 7)))].sort().map(month => ({ month, rows: rows.filter(row => row.date.startsWith(month)) }));
+  const refresh = () => {
+    refreshTarget.current = key;
+    setRetry(value => value + 1);
+  };
   const choose = (field: "gameSeason" | "gameType", value: string) => {
     const url = new URL(window.location.href);
     url.searchParams.set(field, value);
@@ -99,7 +108,7 @@ export default function PlayerGameLog({ playerId, playerName, seasons = [], init
     <h2 className="text-base font-semibold">{season} · {typeLabel} · {isZh ? "逐场数据" : "Game by game"}</h2>
     <p className="text-xs leading-relaxed text-text-secondary">{isZh ? "默认显示最近已收录赛季，可切换赛季。常规赛不含季前赛、附加赛、全明星赛与 NBA 杯决赛。" : "The latest recorded season opens by default. Regular season excludes preseason, play-in, All-Star games and the NBA Cup final."}</p>
     {visible.loading && <div role="status" aria-busy="true" className="space-y-2"><p className="text-sm text-text-secondary">{isZh ? "正在加载该赛季比赛…" : "Loading this season’s games…"}</p>{Array.from({ length: 5 }, (_, index) => <div key={index} className="h-10 rounded-lg bg-bg-secondary skeleton-shimmer" />)}</div>}
-    {visible.error && <div role="status" className="rounded-lg border border-border p-4 text-sm text-text-secondary"><p>{data ? (isZh ? "刷新未成功，保留已加载记录。" : "Refresh failed; keeping the loaded records.") : (isZh ? "所选赛季的比赛来源暂时不可用，不代表没有出场。可切换赛季或重试。" : "The game-log source is unavailable for this selection. This does not mean no games were played. Choose another season or retry.")}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-2 min-h-11 text-accent">{isZh ? "重试" : "Retry"}</button></div>}
+    {visible.error && <div role="status" className="rounded-lg border border-border p-4 text-sm text-text-secondary"><p>{data ? (isZh ? "刷新未成功，保留已加载记录。" : "Refresh failed; keeping the loaded records.") : (isZh ? "所选赛季的比赛来源暂时不可用，不代表没有出场。可切换赛季或重试。" : "The game-log source is unavailable for this selection. This does not mean no games were played. Choose another season or retry.")}</p><button type="button" onClick={refresh} className="mt-2 min-h-11 text-accent">{isZh ? "重试" : "Retry"}</button></div>}
     {data && <>
       <p role="status" className="text-xs leading-relaxed text-text-secondary">{isZh ? `已收录 ${rows.length}${data.expectedGames ? ` / ${data.expectedGames}` : ""} 场` : `${rows.length}${data.expectedGames ? ` / ${data.expectedGames}` : ""} recorded games`} · {data.source.provider} · {data.source.archived ? (isZh ? "存档" : "Archive") : (isZh ? "来源响应" : "Source response")} {data.source.retrievedAt.slice(0, 10)}{data.coverage === "partial-source" ? (isZh ? " · 部分记录，不代表完整赛季" : " · Partial records, not a complete season") : ""}</p>
       {data.source.supplement && <p className="text-xs leading-relaxed text-text-secondary">{isZh ? `部分比赛或单项数据采用 StatMuse 补充核对，存档日期 ${data.source.supplement.retrievedAt.slice(0, 10)}；每场保留各自来源。` : `Some games or individual stats use reviewed StatMuse supplements, archived ${data.source.supplement.retrievedAt.slice(0, 10)}. Each game retains its source.`}</p>}
@@ -121,7 +130,7 @@ export default function PlayerGameLog({ playerId, playerName, seasons = [], init
         </div></div>
         {limit < rows.length && <button type="button" onClick={() => setLimit(value => value + 20)} className="min-h-11 w-full rounded-lg border border-border text-sm text-accent">{isZh ? `加载更多 (${limit} / ${rows.length})` : `Show more (${limit} / ${rows.length})`}</button>}
       </>}
-      <div className="flex flex-wrap items-center gap-4 text-xs"><a href={data.source.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{isZh ? "查看来源" : "View source"} ↗</a>{data.source.supplement && <a href={data.source.supplement.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{isZh ? "StatMuse 补充来源" : "StatMuse supplement source"} ↗</a>}<button type="button" onClick={() => setRetry(value => value + 1)} className="min-h-11 text-text-secondary">{isZh ? "刷新来源" : "Refresh source"}</button></div>
+      <div className="flex flex-wrap items-center gap-4 text-xs"><a href={data.source.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{isZh ? "查看来源" : "View source"} ↗</a>{data.source.supplement && <a href={data.source.supplement.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{isZh ? "StatMuse 补充来源" : "StatMuse supplement source"} ↗</a>}<button type="button" onClick={refresh} className="min-h-11 text-text-secondary">{isZh ? "刷新来源" : "Refresh source"}</button></div>
     </>}
   </section>;
 }

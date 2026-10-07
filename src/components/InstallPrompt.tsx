@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -13,6 +13,19 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISSED_KEY = "nba-tracker-install-dismissed";
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function wasRecentlyDismissed(dismissedAt: number): boolean {
+  try {
+    dismissedAt = Math.max(dismissedAt, parseInt(localStorage.getItem(DISMISSED_KEY) || "0", 10) || 0);
+  } catch { /* Keep the in-memory dismissal when storage is unavailable. */ }
+  return dismissedAt > 0 && Date.now() - dismissedAt < DISMISS_TTL_MS;
+}
+
+function recordDismissal(): number {
+  const dismissedAt = Date.now();
+  try { localStorage.setItem(DISMISSED_KEY, String(dismissedAt)); } catch {}
+  return dismissedAt;
+}
 
 // Detect iOS Safari — that browser never fires beforeinstallprompt, so we
 // show a manual "Share → Add to Home Screen" hint instead. UA sniff is the
@@ -36,13 +49,11 @@ export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
+  const dismissedAt = useRef(0);
 
   useEffect(() => {
     // Bail if previously dismissed within TTL
-    try {
-      const dismissedAt = parseInt(localStorage.getItem(DISMISSED_KEY) || "0", 10);
-      if (dismissedAt && Date.now() - dismissedAt < DISMISS_TTL_MS) return;
-    } catch { /* localStorage may be disabled — proceed */ }
+    if (wasRecentlyDismissed(dismissedAt.current)) return;
 
     // Bail if already running as installed PWA
     if (window.matchMedia("(display-mode: standalone)").matches) return;
@@ -50,12 +61,19 @@ export default function InstallPrompt() {
     // iOS Safari — no beforeinstallprompt event ever fires; show manual hint
     if (isIosSafariNonStandalone()) {
       // Defer slightly so it doesn't pop on first paint
-      const id = setTimeout(() => { setIosHint(true); setVisible(true); }, 2000);
+      const id = setTimeout(() => {
+        if (wasRecentlyDismissed(dismissedAt.current)) return;
+        setIosHint(true);
+        setVisible(true);
+      }, 2000);
       return () => clearTimeout(id);
     }
 
     const handler = (e: Event) => {
       e.preventDefault();
+      // The root layout survives SPA navigation, and browsers can fire this
+      // event again after Close, Escape, or a dismissed native install dialog.
+      if (wasRecentlyDismissed(dismissedAt.current)) return;
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setVisible(true);
     };
@@ -80,8 +98,9 @@ export default function InstallPrompt() {
     if (!visible) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        try { localStorage.setItem(DISMISSED_KEY, String(Date.now())); } catch {}
+        dismissedAt.current = recordDismissal();
         setVisible(false);
+        setDeferredPrompt(null);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -96,7 +115,7 @@ export default function InstallPrompt() {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
       if (choice.outcome === "dismissed") {
-        try { localStorage.setItem(DISMISSED_KEY, String(Date.now())); } catch {}
+        dismissedAt.current = recordDismissal();
       }
     } catch { /* ignore */ }
     setVisible(false);
@@ -104,8 +123,9 @@ export default function InstallPrompt() {
   };
 
   const onDismiss = () => {
-    try { localStorage.setItem(DISMISSED_KEY, String(Date.now())); } catch {}
+    dismissedAt.current = recordDismissal();
     setVisible(false);
+    setDeferredPrompt(null);
   };
 
   return (
