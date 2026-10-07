@@ -24,9 +24,13 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [teamsOpen, setTeamsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchBlurTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const teamsDialogRef = useRef<HTMLDivElement>(null);
   const teamsCloseBtnRef = useRef<HTMLButtonElement>(null);
   const teamsTriggerRef = useRef<HTMLElement | null>(null);
+
+  // A delayed empty-field dismissal belongs only to its current opening.
+  useEffect(() => () => clearTimeout(searchBlurTimerRef.current), [searchOpen]);
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -240,11 +244,15 @@ export default function Navbar() {
                   autoFocus
                   name="q"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { clearTimeout(searchBlurTimerRef.current); setSearchQuery(e.target.value); }}
+                  onFocus={() => clearTimeout(searchBlurTimerRef.current)}
                   placeholder={t.nav.searchPlaceholder}
                   aria-label={t.nav.search}
                   className="w-48 bg-bg-card/70 backdrop-blur-md border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent/60 focus:bg-bg-card transition-colors"
-                  onBlur={() => { setTimeout(() => { if (!searchQuery) setSearchOpen(false); }, 150); }}
+                  onBlur={() => {
+                    clearTimeout(searchBlurTimerRef.current);
+                    if (!searchQuery) searchBlurTimerRef.current = setTimeout(() => setSearchOpen(false), 150);
+                  }}
                 />
               </form>
             ) : (
