@@ -131,6 +131,16 @@ function preset(label: string) {
   (button!.props.onClick as () => void)(); flush();
 }
 function response(player: PlayerData | null) { return { ok: true, json: async () => ({ data: player }) }; }
+function contentText(node: ReactNode): string {
+  if (Array.isArray(node)) return node.map(contentText).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) return contentText(node.props.children);
+  return typeof node === 'string' || typeof node === 'number' ? String(node) : '';
+}
+function choice(name: string) {
+  const button = nodes(tree).find(node => node.type === 'button' && contentText(node) === name);
+  if (!button) throw new Error(`Missing choice: ${name}`);
+  return button;
+}
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>(r => { resolve = r; });
@@ -167,6 +177,32 @@ beforeEach(() => {
   vi.stubGlobal('fetch', fetcher);
 });
 afterEach(() => { unmount(); vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+describe('Compare choice accessibility', () => {
+  it('exposes both choices as unpressed before choosing', async () => {
+    mount(pairA); await settle();
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(false);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(false);
+  });
+
+  it.each(['p1', 'p2'] as const)('exposes the restored %s choice', async stored => {
+    vi.stubGlobal('localStorage', { getItem: () => stored, setItem: vi.fn() });
+    mount(pairA); await settle();
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(stored === 'p1');
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(stored === 'p2');
+  });
+
+  it('updates the pressed state when switching choices', async () => {
+    mount(pairA); await settle();
+    (choice('Wilt Chamberlain').props.onClick as () => void)(); flush();
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(true);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(false);
+    (choice('Michael Jordan').props.onClick as () => void)(); flush();
+    expect(choice('Wilt Chamberlain').props['aria-pressed']).toBe(false);
+    expect(choice('Michael Jordan').props['aria-pressed']).toBe(true);
+    expect(localStorage.setItem).toHaveBeenLastCalledWith('compare-pick:76375-1961:893-1995', 'p2');
+  });
+});
 
 describe('Compare URL navigation and real selection handlers', () => {
   it('hydrates an initial mixed-source pair without rewriting the incoming URL', async () => {

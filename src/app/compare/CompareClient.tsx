@@ -1134,6 +1134,7 @@ export default function ComparePage() {
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
               <button
                 onClick={() => recordPick("p1")}
+                aria-pressed={pick === "p1"}
                 className={`flex items-center justify-center gap-2 py-3 rounded-lg border transition-colors cursor-pointer ${
                   pick === "p1"
                     ? "bg-accent-amber/15 text-accent-amber border-accent-amber/40"
@@ -1148,6 +1149,7 @@ export default function ComparePage() {
               </span>
               <button
                 onClick={() => recordPick("p2")}
+                aria-pressed={pick === "p2"}
                 className={`flex items-center justify-center gap-2 py-3 rounded-lg border transition-colors cursor-pointer ${
                   pick === "p2"
                     ? "bg-accent-amber/15 text-accent-amber border-accent-amber/40"
