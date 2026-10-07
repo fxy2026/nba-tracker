@@ -36,15 +36,21 @@ function useSeasonResource<T extends SeasonHeatmapResource|SpatialResource>(iden
  return snapshot.key===key?snapshot.resource:{status:'loading'};
 }
 function HeatmapSession({player,locale,datasets,initialSelection,initialResource}:PlayerSeasonHeatmapProps) {
- const [retry,setRetry]=useState(0);
+ const [aggregateRetry,setAggregateRetry]=useState(0);
+ const [spatialRetry,setSpatialRetry]=useState(0);
  const initialQuery=new URLSearchParams({season:initialSelection.season,seasonType:initialSelection.seasonType}).toString();
  const location=usePlayerProfileLocation(player.id,initialQuery);
  const params=new URLSearchParams(location.split('#')[0]);
  const catalog=datasets.filter((entry):entry is typeof entry & {availability:'available'}=>entry.playerId===player.id&&entry.availability==='available');
  const selection=playerShootingSelection(player.id,catalog,{season:params.get('season')??undefined,seasonType:params.get('seasonType')??undefined})??initialSelection;
  const key=datasetKey(selection),available=datasets.some(d=>d.playerId===player.id&&datasetKey(d)===key&&d.availability==='available');
- const aggregate=useSeasonResource(selection,available,retry,courtSeasonHeatmapUrl,decodeCourtSeasonHeatmapResource,{key:datasetKey(initialSelection),resource:decodeCourtSeasonHeatmapResource(initialResource,initialSelection)});
- const spatial=useSeasonResource(selection,available,retry,seasonShotMapUrl,decodeSeasonShotMapResource);
+ const aggregate=useSeasonResource(selection,available,aggregateRetry,courtSeasonHeatmapUrl,decodeCourtSeasonHeatmapResource,{key:datasetKey(initialSelection),resource:decodeCourtSeasonHeatmapResource(initialResource,initialSelection)});
+ const spatial=useSeasonResource(selection,available,spatialRetry,seasonShotMapUrl,decodeSeasonShotMapResource);
+ // Retry only failed resources; keep usable or still-loading sibling views intact.
+ const retryFailed=()=>{
+  if(aggregate.status==='error')setAggregateRetry(value=>value+1);
+  if(spatial.status==='error')setSpatialRetry(value=>value+1);
+ };
  return <RefinedShotExplorer restrictToCatalog player={player} locale={locale} datasets={datasets} selection={selection} aggregate={aggregate} spatial={spatial}
-  onChoose={identity=>{if(identity.playerId!==player.id)return;const chosen=catalog.find(entry=>entry.season===identity.season&&entry.seasonType===identity.seasonType)??catalog.find(entry=>entry.season===identity.season);if(chosen)commitPlayerProfileUrl(playerSeasonHref(window.location.href,chosen.season,chosen.seasonType));}} onRetry={()=>setRetry(value=>value+1)}/>;
+  onChoose={identity=>{if(identity.playerId!==player.id)return;const chosen=catalog.find(entry=>entry.season===identity.season&&entry.seasonType===identity.seasonType)??catalog.find(entry=>entry.season===identity.season);if(chosen)commitPlayerProfileUrl(playerSeasonHref(window.location.href,chosen.season,chosen.seasonType));}} onRetry={retryFailed}/>;
 }
